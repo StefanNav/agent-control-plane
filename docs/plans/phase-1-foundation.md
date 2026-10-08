@@ -222,7 +222,7 @@ Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a
 - `Segmented<T extends string>(props: { value: T; onChange: (value: T) => void; options: { value: T; label: ReactNode; sub?: ReactNode }[]; variant?: 'choice' | 'control' })`: `choice` = equal-grid segmented choice (radio-card treatment); `control` = compact inbox control (r3, 32 high).
 - `FilterPill(props: { on: boolean; onClick: () => void; children: ReactNode })`
 
-- [ ] **Step 1: Failing tests** (one file per primitive):
+- [x] **Step 1: Failing tests** (one file per primitive):
   - Button: `blocked` has `aria-disabled="true"` and clicking does not call `onClick`; default `type="button"`; `primary` gets the primary class.
   - Field + Input: `getByLabelText('Purpose')` finds the input (label `htmlFor` wiring); `locked` input is `readOnly` and contains a lock svg.
   - Select: choosing an option calls `onChange` with its value.
@@ -230,10 +230,10 @@ Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a
   - RadioCardGroup: `role="radiogroup"`; clicking an option calls `onChange`; ArrowDown moves to the next enabled option and selects it (skips `disabled`); selected option has `aria-checked="true"`.
   - Segmented: clicking a segment calls `onChange(value)`; selected has `aria-pressed="true"`.
   - FilterPill: `aria-pressed` mirrors `on`.
-- [ ] **Step 2: Run; verify fail.** `pnpm test src/design-system/primitives`
-- [ ] **Step 3: Implement** each primitive and its CSS Module from the handoff "Shared primitives" (Buttons, Field, Radio card, Checkbox, Segmented choice, Filter pill) and `cs-build.js`. Export all from `src/design-system/index.ts`.
-- [ ] **Step 4: Run; verify pass.**
-- [ ] **Step 5: Commit** `git commit -m "feat(ds): form primitives"`
+- [x] **Step 2: Run; verify fail.** `pnpm test src/design-system/primitives`
+- [x] **Step 3: Implement** each primitive and its CSS Module from the handoff "Shared primitives" (Buttons, Field, Radio card, Checkbox, Segmented choice, Filter pill) and `cs-build.js`. Export all from `src/design-system/index.ts`.
+- [x] **Step 4: Run; verify pass.**
+- [x] **Step 5: Commit** `git commit -m "feat(ds): form primitives"`
 
 ### Task 1.5: Display primitives
 

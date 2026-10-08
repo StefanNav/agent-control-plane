@@ -1,0 +1,19 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 3px;
+  background: var(--cs-raised);
+  color: var(--cs-text2);
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.on {
+  border-color: var(--cs-ink);
+  color: var(--cs-ink);
+  font-weight: 600;
+}

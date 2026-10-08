@@ -1,0 +1,13 @@
+.textarea {
+  display: block;
+  width: 100%;
+  min-height: 108px;
+  padding: 10px 14px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 3px;
+  font-size: 16px;
+  line-height: 24px;
+  text-wrap: pretty;
+  resize: vertical;
+}

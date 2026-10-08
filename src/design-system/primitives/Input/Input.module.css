@@ -1,0 +1,31 @@
+.box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 14px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 3px;
+}
+
+.locked {
+  background: var(--cs-fill);
+  border-color: var(--cs-line);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  line-height: 24px;
+  outline: none;
+}
+
+:global(:root[data-keyboard]) .box:focus-within {
+  outline: 2px solid var(--cs-focus);
+  outline-offset: 1px;
+}
