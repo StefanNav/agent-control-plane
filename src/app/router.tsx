@@ -1,13 +1,16 @@
 import type { ReactNode } from 'react'
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router'
 import { NotFound } from '../layout/NotFound'
+import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
 import { AppShell } from './AppShell'
 import type { RouteHandle, ShellKind } from './nav'
 import { Placeholder } from './Placeholder'
 import { redirects, routeTable } from './routes'
 
 /** Real screens by route path. Routes not listed here render their Placeholder. */
-const PAGES: Record<string, ReactNode> = {}
+const PAGES: Record<string, ReactNode> = {
+  '/about/components': <ComponentGallery />,
+}
 
 function childrenFor(shell: ShellKind): RouteObject[] {
   return routeTable

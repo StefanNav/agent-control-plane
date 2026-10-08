@@ -381,11 +381,11 @@ test('wall is kiosk; landing, about, epic are prototype; rest are app', () => { 
 **Interfaces:**
 - Produces: `ComponentGallery()` with sections `Tokens`, `Type`, `Icons`, `Buttons`, `Fields`, `Selection`, `Display`, `Table`, `Navigation`, `Menu and modal`. Phase 2 adds `Product components` (light and dark).
 
-- [ ] **Step 1: Failing e2e** `tests/e2e/gallery.spec.ts`: page has an `h2` per section above; clicking "Open modal" shows `role="dialog"`; Escape closes it; no console errors.
-- [ ] **Step 2: Run; verify fail.** `pnpm e2e tests/e2e/gallery.spec.ts`
-- [ ] **Step 3: Implement**: token swatches (light and a `data-theme="dark"` panel), the type scale, every icon, every primitive in its states (button variants and sizes; locked input; checked and unchecked checkbox; radio cards with a disabled option; segmented both variants; filter pills on/off; a 3-row table with a selected row and a group header; tabs; wizard steps with all four marks; a menu with a locked item; a modal).
-- [ ] **Step 4: Run; verify pass.**
-- [ ] **Step 5: Commit** `git commit -m "feat(prototype): primitives gallery"`
+- [x] **Step 1: Failing e2e** `tests/e2e/gallery.spec.ts`: page has an `h2` per section above; clicking "Open modal" shows `role="dialog"`; Escape closes it; no console errors.
+- [x] **Step 2: Run; verify fail.** `pnpm e2e tests/e2e/gallery.spec.ts`
+- [x] **Step 3: Implement**: token swatches (light and a `data-theme="dark"` panel), the type scale, every icon, every primitive in its states (button variants and sizes; locked input; checked and unchecked checkbox; radio cards with a disabled option; segmented both variants; filter pills on/off; a 3-row table with a selected row and a group header; tabs; wizard steps with all four marks; a menu with a locked item; a modal).
+- [x] **Step 4: Run; verify pass.**
+- [x] **Step 5: Commit** `git commit -m "feat(prototype): primitives gallery"`
 
 ### Task 1.10: CI, Vercel, checkpoint
 

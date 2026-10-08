@@ -1,10 +1,10 @@
-import type { ButtonHTMLAttributes, MouseEvent, ReactNode } from 'react'
+import type { ComponentPropsWithRef, MouseEvent, ReactNode } from 'react'
 import { cx } from '../../../lib/cx'
 import styles from './Button.module.css'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'blocked'
 
-export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> & {
+export type ButtonProps = Omit<ComponentPropsWithRef<'button'>, 'type'> & {
   variant?: ButtonVariant
   /** `md` = page buttons (36 high, ghost 32); `sm` = in-card buttons (32 high, 13 px). */
   size?: 'md' | 'sm'
