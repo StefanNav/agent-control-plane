@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button, Field, Modal, Notice, RadioCardGroup, Tabs, Textarea } from '../../design-system'
 import type { Verb } from '../../data/types'
 import { useDemo } from '../../store'
+import { can, lockReason } from '../../store/permissions'
 import { selectFixOneThing } from './selectors'
 import styles from './controls.module.css'
 
@@ -24,6 +25,8 @@ export function FixOneThing({ agentId, initialMode, onClose }: FixOneThingProps)
   const [refused, setRefused] = useState<string | null>(null)
   const chosen = mode === 'shadow' ? activity : grant
   const ready = Boolean(chosen) && reason.trim().length > 0
+  const action = mode === 'shadow' ? 'returnToShadow' : 'revokeTool'
+  const locked = can(state, state.personaId, action, { agentId }) ? undefined : lockReason(action, state.personaId)
   const rule = mode === 'shadow' && activity ? view.shadowRule(activity) : null
   const effects =
     mode === 'shadow'
@@ -56,7 +59,7 @@ export function FixOneThing({ agentId, initialMode, onClose }: FixOneThingProps)
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant={ready ? 'primary' : 'blocked'} aria-disabled={!ready} onClick={confirm}>
+          <Button variant={ready ? 'primary' : 'blocked'} aria-disabled={!ready || Boolean(locked)} locked={locked} onClick={confirm}>
             {mode === 'shadow' ? 'Return to Shadow' : 'Revoke tool'}
           </Button>
         </>

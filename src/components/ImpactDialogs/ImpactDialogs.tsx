@@ -18,6 +18,8 @@ export interface PauseDialogProps<Scope extends string> {
   audit: string
   /** Why the store refused, shown above the reason. */
   error?: string | null
+  /** The viewer may not pause here: the confirm button shows the designed locked state with this reason. */
+  locked?: string
   onCancel: () => void
   onConfirm: () => void
 }
@@ -37,7 +39,7 @@ export function PauseDialog<Scope extends string>(props: PauseDialogProps<Scope>
           <Button variant="ghost" onClick={props.onCancel}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={props.onConfirm}>
+          <Button variant="primary" locked={props.locked} onClick={props.onConfirm}>
             Pause agent
           </Button>
         </>

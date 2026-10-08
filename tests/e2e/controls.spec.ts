@@ -80,3 +80,18 @@ test('two-person resume (6d, 6e): Marcus waits, Priya approves, the agent is liv
   await expect(page.getByText('Resumed AGT-0123')).toBeVisible()
   expect(errors).toEqual([])
 })
+
+test('Review focus 5: a dialog opened by URL is read only for someone without the right', async ({ page }) => {
+  await page.goto('/operations/actions')
+  await page.getByRole('button', { name: /^Viewing as/ }).click()
+  await page.getByRole('menuitem', { name: /Jordan/ }).click()
+  await page.goto('/operations/agents/med-rec?control=pause-agent')
+  const pause = page.getByRole('dialog', { name: 'Pause Med Rec Agent?' }).getByRole('button', { name: 'Pause agent' })
+  await expect(pause).toHaveAttribute('aria-disabled', 'true')
+  await expect(pause).toHaveAccessibleDescription('Read-only access')
+  await page.goto('/operations/agents/med-rec?control=shadow')
+  const fix = page.getByRole('dialog', { name: 'Fix one thing' }).getByRole('button', { name: 'Return to Shadow' }).last()
+  await expect(fix).toHaveAccessibleDescription('Read-only access')
+  await page.goto('/operations/agents/med-rec?control=retire')
+  await expect(page.getByRole('dialog', { name: /Disable or retire/ }).getByRole('button', { name: 'Retire agent' })).toHaveAccessibleDescription('Read-only access')
+})

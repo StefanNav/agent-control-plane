@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button, Field, Input, Modal, Notice, RadioCardGroup, Textarea } from '../../design-system'
 import { useDemo } from '../../store'
+import { can, lockReason } from '../../store/permissions'
 import { personName } from '../board/selectors'
 import { roleOn } from '../controls/selectors'
 import { selectRetirePreview } from './selectors'
@@ -25,6 +26,7 @@ export function RetireDialog({ agentId, initialMode, onClose }: RetireDialogProp
   const [refused, setRefused] = useState<string | null>(null)
   const nameMatches = typed.trim() === agent.name
   const ready = reason.trim().length > 0 && (mode === 'disable' || nameMatches)
+  const locked = can(state, state.personaId, mode, { agentId }) ? undefined : lockReason(mode, state.personaId)
   const confirm = () => {
     const result =
       mode === 'retire'
@@ -45,7 +47,7 @@ export function RetireDialog({ agentId, initialMode, onClose }: RetireDialogProp
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant={ready ? 'primary' : 'blocked'} aria-disabled={!ready} onClick={confirm}>
+          <Button variant={ready ? 'primary' : 'blocked'} aria-disabled={!ready || Boolean(locked)} locked={locked} onClick={confirm}>
             {mode === 'retire' ? 'Retire agent' : 'Disable agent'}
           </Button>
         </>
