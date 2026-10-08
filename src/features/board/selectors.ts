@@ -239,6 +239,8 @@ export function selectAgentOverview(s: DemoState, agentId: string) {
     division: division?.name ?? '',
     divisionId: a.divisionId,
     levelLine: pausedAt ? `Paused · since ${formatClock(pausedAt)}` : `${LEVEL_NAME[a.level]}${mainPrivilege?.grantedAt ? ` · since ${formatDate(mainPrivilege.grantedAt)}` : ''}`,
+    /** Retired for good (6f): the view says so in place of the controls. */
+    retired: a.retirement ? { code: a.retirement.code, at: formatDate(a.retirement.at), by: personName(s, a.retirement.by), reason: a.retirement.reason } : null,
     /** The paused state (6d): who, when, what happened to the work, and how long it has been. */
     paused:
       pausedAt && a.pause

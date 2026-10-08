@@ -4,7 +4,7 @@ import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type DemoState, type PersonaId, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
-import { applyPause, applyResume } from './mutations'
+import { applyPause, applyResume, nextArchiveCode } from './mutations'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
 
@@ -55,6 +55,10 @@ export interface DemoActions {
   approveResume: (agentId: string, reason: string) => ActionResult
   declineResume: (agentId: string, reason: string) => ActionResult
   withdrawResume: (agentId: string) => ActionResult
+  /** Revoke access now; the record stays live and on the boards (6f). */
+  disableAgent: (agentId: string, reason: string) => ActionResult
+  /** Archive for good after typing the agent's exact name; it leaves every board (6f). */
+  retireAgent: (agentId: string, input: { typedName: string; reason: string }) => ActionResult
 }
 
 export interface PauseInput {
@@ -67,6 +71,14 @@ export interface PauseInput {
 export type DemoStore = DemoState & DemoActions
 
 const DATA_KEYS = Object.keys(createSeed()) as Array<keyof DemoState>
+
+/** Every tool grant to none: the agent loses gateway access (disable, retire). */
+function revokeAll(draft: DemoState, agentId: string) {
+  for (const g of draft.grants) {
+    if (g.agentId !== agentId) continue
+    for (const verb of Object.keys(g.cells) as Array<keyof typeof g.cells>) if (g.cells[verb] === 'granted' || g.cells[verb] === 'changed') g.cells[verb] = 'none'
+  }
+}
 
 /** Add a line to the agent's open incident timeline, if it has one (7c). */
 function incidentEntry(draft: DemoState, agentId: string, title: string) {
@@ -319,6 +331,52 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Withdrew resume request', target: agent.code },
               mutate: (draft) => {
                 draft.resumeRequests = draft.resumeRequests.filter((r) => r.agentId !== agentId)
+              },
+            })
+          },
+          disableAgent: (agentId, reason) => {
+            const s = get()
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!agent) return { ok: false, reason: 'Not found' }
+            if (agent.lifecycle === 'retired') return { ok: false, reason: 'Already retired' }
+            if (agent.lifecycle === 'disabled') return { ok: false, reason: 'Already disabled' }
+            const why = reason.trim()
+            if (!why) return { ok: false, reason: 'A reason is required' }
+            return act({
+              action: 'disable',
+              ctx: { agentId },
+              audit: { action: 'Disabled', target: agent.code, reason: why },
+              mutate: (draft) => {
+                const target = draft.agents.find((a) => a.id === agentId)!
+                const name = draft.people.find((p) => p.id === draft.personaId)?.name ?? draft.personaId
+                target.lifecycle = 'disabled'
+                target.disabled = { at: draft.now, by: draft.personaId, reason: why }
+                target.judgment = { status: 'paused', label: `Disabled by ${name}` }
+                revokeAll(draft, agentId)
+              },
+            })
+          },
+          retireAgent: (agentId, { typedName, reason }) => {
+            const s = get()
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!agent) return { ok: false, reason: 'Not found' }
+            if (agent.lifecycle === 'retired') return { ok: false, reason: 'Already retired' }
+            if (typedName.trim() !== agent.name) return { ok: false, reason: 'Type the agent’s name exactly' }
+            const why = reason.trim()
+            if (!why) return { ok: false, reason: 'A reason is required' }
+            return act({
+              action: 'retire',
+              ctx: { agentId },
+              audit: { action: 'Retired', target: agent.code, reason: why },
+              mutate: (draft) => {
+                const target = draft.agents.find((a) => a.id === agentId)!
+                target.retirement = { at: draft.now, by: draft.personaId, code: nextArchiveCode(draft), reason: why }
+                target.lifecycle = 'retired'
+                revokeAll(draft, agentId)
+                for (const p of draft.privileges) if (p.agentId === agentId) p.state = 'closed'
+                for (const e of draft.exceptions)
+                  if (e.agentId === agentId && e.state !== 'resolved' && e.state !== 'dismissed')
+                    Object.assign(e, { state: 'resolved', outcome: 'Closed: agent retired', closedAt: draft.now, closedBy: draft.personaId })
               },
             })
           },

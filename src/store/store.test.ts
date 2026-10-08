@@ -400,3 +400,46 @@ describe('two-person resume (6d, 6e) — Review focus 1', () => {
     expect(priya.getState().audit.at(-1)).toMatchObject({ action: 'Declined resume', reason: 'Wait for the new case set.' })
   })
 })
+
+describe('disable or retire (6f) — Review focus 2, 3, 4', () => {
+  const asDana = () => {
+    const store = fresh()
+    store.getState().setPersona('dana')
+    return store
+  }
+  const input = { typedName: 'IV-to-Oral Agent', reason: 'Shadow agreement 82 % against a 90 % target after 42 days.' }
+
+  test('Dana retires IV-to-Oral: archived as RET-07, access revoked, privileges closed', () => {
+    const store = asDana()
+    expect(store.getState().retireAgent('iv-to-oral', input)).toEqual({ ok: true })
+    const st = store.getState()
+    const agent = st.agents.find((a) => a.id === 'iv-to-oral')!
+    expect(agent.lifecycle).toBe('retired')
+    expect(agent.retirement).toMatchObject({ code: 'RET-07', by: 'dana', at: DEMO_NOW, reason: input.reason })
+    expect(st.privileges.filter((p) => p.agentId === 'iv-to-oral').every((p) => p.state === 'closed')).toBe(true)
+    expect(st.audit.at(-1)).toMatchObject({ who: 'dana', action: 'Retired', target: 'AGT-0141' })
+  })
+
+  test('a near-miss name, Marcus, or a second retire are refused and change nothing', () => {
+    const store = asDana()
+    const before = dataOf(store.getState())
+    for (const typedName of ['iv-to-oral agent', 'IV to Oral Agent', 'IV-to-Oral']) {
+      expect(store.getState().retireAgent('iv-to-oral', { ...input, typedName })).toEqual({ ok: false, reason: 'Type the agent’s name exactly' })
+    }
+    expect(store.getState().retireAgent('iv-to-oral', { ...input, reason: ' ' })).toEqual({ ok: false, reason: 'A reason is required' })
+    expect(dataOf(store.getState())).toEqual(before)
+    expect(store.getState().retireAgent('iv-to-oral', { ...input, typedName: '  IV-to-Oral Agent ' })).toEqual({ ok: true })
+    expect(store.getState().retireAgent('iv-to-oral', input)).toEqual({ ok: false, reason: 'Already retired' })
+    const marcus = fresh()
+    expect(marcus.getState().retireAgent('iv-to-oral', input)).toMatchObject({ ok: false })
+  })
+
+  test('disabling revokes access but keeps the record on the board', () => {
+    const store = asDana()
+    expect(store.getState().disableAgent('med-rec', 'Pending vendor review.')).toEqual({ ok: true })
+    const agent = store.getState().agents.find((a) => a.id === 'med-rec')!
+    expect(agent).toMatchObject({ lifecycle: 'disabled', judgment: { status: 'paused', label: 'Disabled by Dana' } })
+    expect(store.getState().grants.filter((g) => g.agentId === 'med-rec').every((g) => Object.values(g.cells).every((c) => c !== 'granted' && c !== 'changed'))).toBe(true)
+    expect(store.getState().audit.at(-1)).toMatchObject({ action: 'Disabled', target: 'AGT-0123' })
+  })
+})

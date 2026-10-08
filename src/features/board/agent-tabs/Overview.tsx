@@ -12,9 +12,14 @@ export function Overview({ view, resume = null }: { view: AgentOverview; resume?
   return (
     <div className={styles.split}>
       <div className={styles.main}>
+        {view.retired ? (
+          <Notice mark="lock" lead={`Retired by ${view.retired.by} on ${view.retired.at} · ${view.retired.code}.`}>
+            {view.retired.reason} The record stays searchable in audit and exports.
+          </Notice>
+        ) : null}
         {view.paused ? <Notice lead={view.paused.lead}>{view.paused.text}</Notice> : null}
         {view.paused ? resume : null}
-        {!view.paused && view.banner ? (
+        {!view.paused && !view.retired && view.banner ? (
           <Notice
             mark={noticeMark(view.banner.status)}
             lead={view.banner.headline}

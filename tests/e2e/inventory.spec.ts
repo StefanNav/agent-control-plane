@@ -1,0 +1,38 @@
+import { expect, test } from '@playwright/test'
+import { collectErrors } from './console'
+
+test('inventory (8c) and retire (6f): typed confirmation, then the agent leaves every board', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/inventory')
+  await page.getByRole('button', { name: /^Viewing as/ }).click()
+  await page.getByRole('menuitem', { name: /Dana/ }).click()
+  await page.goto('/inventory')
+  await expect(page.getByRole('navigation', { name: 'Inventory' }).getByRole('link', { name: 'Agents · 41' })).toBeVisible()
+  await page.getByRole('table', { name: 'Agents' }).getByText('IV-to-Oral Agent').click()
+  const record = page.getByRole('complementary', { name: 'Selected record' })
+  await expect(record).toContainText('One record: governance and operations')
+  await record.getByRole('button', { name: 'Disable or retire…' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Disable or retire IV-to-Oral Agent' })
+  await dialog.getByRole('radio', { name: /Retire for good/ }).check()
+  const confirm = dialog.getByRole('button', { name: 'Retire agent' })
+  await dialog.getByRole('textbox', { name: /Type the agent’s name/ }).fill('iv-to-oral agent')
+  await dialog.getByRole('textbox', { name: /Reason/ }).fill('Replaced by order-set logic in Epic.')
+  await expect(confirm).toHaveAttribute('aria-disabled', 'true')
+  await dialog.getByRole('textbox', { name: /Type the agent’s name/ }).fill('IV-to-Oral Agent')
+  await expect(confirm).not.toHaveAttribute('aria-disabled', 'true')
+  await confirm.click()
+  await expect(dialog).toBeHidden()
+  await page.getByRole('navigation', { name: 'Inventory' }).getByRole('link', { name: 'Retired · 7' }).click()
+  await expect(page.getByRole('table', { name: 'Retired' })).toContainText('IV-to-Oral Agent')
+  await page.goto('/operations/divisions/medications')
+  await expect(page.getByText('19 agents', { exact: false }).first()).toBeVisible()
+  expect(errors).toEqual([])
+})
+
+test('as Marcus, Disable or retire is locked with the reason', async ({ page }) => {
+  await page.goto('/inventory')
+  await page.getByRole('table', { name: 'Agents' }).getByText('Med Rec Agent').click()
+  const button = page.getByRole('complementary', { name: 'Selected record' }).getByRole('button', { name: /Disable or retire/ })
+  await expect(button).toHaveAttribute('aria-disabled', 'true')
+  await expect(button).toHaveAccessibleDescription('Program lead or sponsor only')
+})

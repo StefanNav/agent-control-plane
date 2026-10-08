@@ -5,6 +5,7 @@ import { DivisionView } from '../features/board/DivisionView'
 import { HospitalBoard } from '../features/board/HospitalBoard'
 import { WallDisplay } from '../features/board/WallDisplay'
 import { InboxPage } from '../features/inbox/InboxPage'
+import { InventoryPage } from '../features/inventory/InventoryPage'
 import { NotFound } from '../layout/NotFound'
 import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
 import { AppShell } from './AppShell'
@@ -21,6 +22,7 @@ const PAGES: Record<string, ReactNode> = {
   '/operations/agents/:agentId': <AgentView />,
   '/operations/inbox': <InboxPage />,
   '/operations/inbox/:exceptionId': <InboxPage />,
+  '/inventory': <InventoryPage />,
   '/wall': <WallDisplay />,
 }
 

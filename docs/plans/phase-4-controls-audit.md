@@ -398,7 +398,7 @@ These are the failure modes the spec implies that no screen test naturally cover
   - The agent view's "Disable…" and "Retire…" open the same dialog.
 - **Retired agent view:** when an agent is retired, its view shows "Retired · RET-07 · <date>" in place of the controls.
 
-- [ ] **Step 1: Failing tests (Review focus 2, 3, 4)**
+- [x] **Step 1: Failing tests (Review focus 2, 3, 4)**
   - **Store:**
     - Retire IV-to-Oral as Dana with "IV-to-Oral Agent" → retired, RET-07, grants none, privileges closed.
     - Trying "iv-to-oral agent" is refused.
@@ -410,10 +410,10 @@ These are the failure modes the spec implies that no screen test naturally cover
   - **e2e:**
     - As Dana on `/inventory`, select IV-to-Oral → Disable or retire… → Retire for good. Retire agent stays blocked until the exact name and a reason are given. After confirming, the Retired tab lists it and `/operations/divisions/medications` shows 19 agents.
     - As Marcus, the button is locked with the reason.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 8c and 6f.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(inventory): inventory and disable or retire"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 8c and 6f.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(inventory): inventory and disable or retire"`.
 
 ### Task 4.7: Action list (7a) and action trace (7b)
 

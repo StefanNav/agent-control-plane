@@ -9,6 +9,7 @@ import { controlMenu, parseControl, type ControlId } from '../controls/controlMe
 import { FixOneThing } from '../controls/FixOneThing'
 import { PauseFlow } from '../controls/PauseFlow'
 import { ResumePanel } from '../controls/ResumePanel'
+import { RetireDialog } from '../inventory/RetireDialog'
 import type { PauseScope } from '../controls/selectors'
 import {
   ActionsTab,
@@ -143,7 +144,14 @@ export function AgentView() {
         />
       ) : (control === 'shadow' || control === 'revoke') && !stopped ? (
         <FixOneThing agentId={agentId} initialMode={control} onClose={() => setControl(null)} />
-      ) : control && !PAUSE_SCOPE[control] && control !== 'shadow' && control !== 'revoke' ? (
+      ) : (control === 'disable' || control === 'retire') && agent?.lifecycle !== 'retired' ? (
+        <RetireDialog agentId={agentId} initialMode={control} onClose={() => setControl(null)} />
+      ) : control &&
+        !PAUSE_SCOPE[control] &&
+        control !== 'shadow' &&
+        control !== 'revoke' &&
+        control !== 'disable' &&
+        control !== 'retire' ? (
         <section aria-label="Pending control" className={styles.pending}>
           <Notice
             lead={`${CONTROL_LEAD[control]} ${view.name}`}
