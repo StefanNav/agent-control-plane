@@ -1,6 +1,6 @@
 import type { DemoState } from '../../data/types'
 import { addDays, formatClock, formatDate, minutesBetween } from '../../lib/clock'
-import { latestPrivilege } from '../../store/onboarding'
+import { latestByCode, latestPrivilege } from '../../store/onboarding'
 import { criteriaStatus, onboardingContext, personName, recordOfActivity, shadowProgress, templateFor } from '../../store/onboardingRules'
 
 const pct = (n: number | null) => (n === null ? '—' : `${n.toFixed(1)} %`)
@@ -191,8 +191,7 @@ export function selectMyPrivileges(s: DemoState, personaId: string, tab: 'all' |
 
 /** Sign the privilege (3c): what is being signed, the evidence, and what the signature records. */
 export function selectSignature(s: DemoState, code: string) {
-  const versions = s.privileges.filter((p) => p.code.toLowerCase() === code.toLowerCase()).sort((a, b) => b.version - a.version)
-  const p = versions[0]
+  const p = latestByCode(s, code)
   if (!p) return null
   const agent = s.agents.find((a) => a.id === p.agentId)
   const activity = s.activities.find((a) => a.id === p.activityId)
@@ -263,6 +262,6 @@ export function selectSignature(s: DemoState, code: string) {
     conditions: decision
       ? { head: `Conditions · ${personName(s, decision.by)} · ${formatDate(decision.at)}`, rows: decision.conditions.filter((c) => p.conditions.includes(c.id)).map((c) => ({ id: c.id, text: c.text.split(/;| until /)[0]! })) }
       : null,
-    signed: mode === 'signed' || mode === 'closed' ? { line: `Signed by ${personName(s, p.grantedBy)} · ${p.grantedAt ? `${formatDate(p.grantedAt)} ${p.grantedAt.slice(0, 4)} ${p.grantedAt.slice(11, 16)}` : ''}`, reason: p.signReason ?? null } : null,
+    signed: (mode === 'signed' || mode === 'closed') && p.grantedBy && p.grantedAt ? { line: `Signed by ${personName(s, p.grantedBy)} · ${formatDate(p.grantedAt)} ${p.grantedAt.slice(0, 4)} ${p.grantedAt.slice(11, 16)}`, reason: p.signReason ?? null } : null,
   }
 }

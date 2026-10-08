@@ -1,6 +1,6 @@
 import { buildScenario } from '../../data/scenarios'
 import { createSeed } from '../../data/seed'
-import { reviewRail, selectRiskTier } from './selectors'
+import { reviewRail, selectPacket, selectRiskTier } from './selectors'
 
 test('2b: the AIMS Review rail before the tier is set', () => {
   const s = buildScenario('review-risk-tier')
@@ -49,4 +49,26 @@ test('2c: the packet reads the record for the board', async () => {
   expect(selectPacket(buildScenario('review-risk-tier'), 'med-rec')!.state).toBe('notBuilt')
   expect(selectPacket(createSeed(), 'med-rec')!.state).toBe('decided')
   expect(selectPacket(createSeed(), 'nope')).toBeNull()
+})
+
+test('I1 (review): Tier 1 needs no board — the packet says so and the record header stops waiting', async () => {
+  const { createDemoStore } = await import('../../store')
+  const { createMemoryStorage } = await import('../../store/storage')
+  const { selectOnboardingHeader } = await import('../onboarding/selectors')
+  const store = createDemoStore(createMemoryStorage())
+  store.getState().loadScenario('review-risk-tier')
+  store.getState().setPersona('dana')
+  store.getState().setRiskTier('med-rec', { tier: 1, reason: 'Pharmacist signs every line.' })
+  const s = store.getState()
+  expect(selectPacket(s, 'med-rec')!.state).toBe('notNeeded')
+  expect(selectOnboardingHeader(s, 'med-rec')).toMatchObject({ status: 'Approved · Tier 1, no board', chip: null })
+})
+
+test('I5 (review): the export reads the record as it stood, not December’s facts', async () => {
+  const { selectExportContents } = await import('../audit/selectors')
+  const rows = Object.fromEntries(selectExportContents(buildScenario('onboarding-ready'), ['med-rec']))
+  expect(rows['Committee decisions and conditions']).toBe('—')
+  expect(rows['Job description versions']).toBe('1 · v1.0')
+  expect(rows['Actions and traces']).not.toMatch(/Dec/)
+  expect(Object.fromEntries(selectExportContents(buildScenario('review-decided'), ['med-rec']))['Committee decisions and conditions']).toBe('1 · approved with C1 to C3')
 })

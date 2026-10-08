@@ -159,7 +159,15 @@ export function PacketPage() {
           </section>
         }
         side={
-          view.state === 'notBuilt' ? (
+          view.state === 'notNeeded' ? (
+            <SideCard label="Your decision" title="No board for Tier 1" sub={`${view.lead} set Tier 1 · Low, so no committee decides.`}>
+              <div className={onboarding.form}>
+                <Notice mark="none" lead={`Shadow started ${view.shadowFrom ?? ''}.`}>
+                  The sponsor’s approval and the tier were enough. The packet stays on the record.
+                </Notice>
+              </div>
+            </SideCard>
+          ) : view.state === 'notBuilt' ? (
             <SideCard label="Your decision" title="Your decision" sub="Not on the agenda yet">
               <div className={onboarding.form}>
                 <Notice mark="lock" lead="No packet yet.">

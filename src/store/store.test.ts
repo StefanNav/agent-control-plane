@@ -1,3 +1,4 @@
+import type { ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
 import { DEMO_NOW } from '../lib/clock'
 import { createDemoStore, dataOf } from './index'
@@ -1047,4 +1048,63 @@ test('conditions bind to the job’s own activities, whatever ids they were give
     ['C2', ['med-rec-a1']],
     ['C3', []],
   ])
+})
+
+describe('final review fixes (Phase 5)', () => {
+  const at = (scenario: ScenarioId, persona: 'priya' | 'marcus' | 'dana' | 'drlee') => {
+    const store = fresh()
+    store.getState().loadScenario(scenario)
+    store.getState().setPersona(persona)
+    return store
+  }
+
+  test('C1: send the go-live request back, ask again, and the new request can be signed; versions stay unique', () => {
+    const store = at('awaiting-signature', 'priya')
+    expect(store.getState().returnPrivilegeRequest('prv-0142', 'Fix the brand-name mapping first.')).toEqual({ ok: true })
+    store.getState().setPersona('marcus')
+    expect(store.getState().requestGoLive('med-rec-admission')).toEqual({ ok: true })
+    const ids = store.getState().privileges.map((p) => p.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(store.getState().privileges.filter((p) => p.code === 'PRV-0142').map((p) => [p.version, p.state])).toEqual([
+      [1, 'closed'],
+      [2, 'active'],
+      [3, 'closed'],
+      [4, 'awaiting'],
+    ])
+    store.getState().setPersona('priya')
+    expect(store.getState().signPrivilege('prv-0142', { reason: 'Mapping fixed in SOP v1.3.1.', accepted: true })).toEqual({ ok: true })
+    expect(store.getState().privileges.find((p) => p.code === 'PRV-0142' && p.version === 4)).toMatchObject({ state: 'active', level: 'draft' })
+  })
+
+  test('I2: re-review → Dana re-sets the tier → the board’s item closes; the old agenda item is cleared', () => {
+    const store = at('review-committee', 'drlee')
+    store.getState().recordDecision('med-rec', { kind: 'reReview', conditions: [], reason: 'Show allergy-flag evidence first.' })
+    expect(store.getState().onboardings.find((r) => r.agentId === 'med-rec')!.review!.agendaItem).toBeUndefined()
+    store.getState().setPersona('dana')
+    expect(store.getState().setRiskTier('med-rec', { tier: 2 })).toEqual({ ok: true })
+    expect(store.getState().exceptions.find((e) => e.type === 'Re-review: questions from the board')!.state).toBe('resolved')
+  })
+
+  test('I3: sending the set back to the technical owner needs the hard stop it is about', () => {
+    const store = at('onboarding-sponsor-review', 'priya')
+    const before = dataOf(store.getState())
+    expect(store.getState().requestSponsorChanges('med-rec', { to: 'sam', note: 'Please look again.' })).toEqual({ ok: false, reason: 'Choose the hard stop to re-test' })
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+
+  test('I6: Dana’s risk-tier hand-off is due the day before the meeting and never escalates to the sponsor', async () => {
+    const { isEscalated } = await import('../features/inbox/selectors')
+    const s = at('review-risk-tier', 'dana').getState()
+    const item = s.exceptions.find((e) => e.type === 'Review: risk tier')!
+    expect(item.deadline).toBe('2026-10-13T17:00:00')
+    expect(isEscalated(item, '2026-10-14T09:00:00')).toBe(false)
+  })
+
+  test('I7: a new version’s id comes from the code, not the previous id', () => {
+    const store = at('baseline', 'priya')
+    store.getState().signPrivilege('prv-0098', { accepted: true })
+    store.getState().setPersona('marcus')
+    expect(store.getState().returnToShadow('duplicate-rx', 'Edits climbing; back to Shadow while we look.')).toEqual({ ok: true })
+    expect(store.getState().privileges.filter((p) => p.code === 'PRV-0098').map((p) => p.id)).toEqual(['prv-0098', 'prv-0098-v5', 'prv-0098-v6'])
+  })
 })

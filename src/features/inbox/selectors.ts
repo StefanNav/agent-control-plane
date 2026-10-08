@@ -12,8 +12,9 @@ import { onBoard, personName } from '../board/selectors'
 export const isOpen = (e: AgentException) => e.state !== 'resolved' && e.state !== 'dismissed'
 export const isOverdue = (e: AgentException, now: string) => isOpen(e) && e.deadline < now
 /** Past its deadline with nobody on it: it goes to the division's sponsor until someone claims or reassigns it. */
+/** Hand-offs with a link (onboarding, signatures) are done on their step; they never escalate to the sponsor. */
 export const isEscalated = (e: AgentException, now: string) =>
-  isOverdue(e, now) && !e.claimedAt && !e.assignedAt && e.kind !== 'incident'
+  isOverdue(e, now) && !e.claimedAt && !e.assignedAt && e.kind !== 'incident' && !e.link
 const isSnoozed = (e: AgentException, now: string) =>
   Boolean(e.snoozedUntil && e.snoozedUntil > now)
 

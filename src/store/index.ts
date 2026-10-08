@@ -4,7 +4,7 @@ import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type Condition, type DemoState, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
-import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
+import { applyPause, applyResume, nextArchiveCode, nextIncidentCode, nextVersion } from './mutations'
 import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, signMode, testResult, type SystemsChange } from './onboarding'
 import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems, shadowProgress } from './onboardingRules'
 import { can, lockReason } from './permissions'
@@ -285,10 +285,11 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                 const current = draft.privileges.find((p) => p.activityId === activityId && p.state !== 'closed')
                 if (!current) return
                 current.state = 'closed'
+                const version = nextVersion(draft, current.code)
                 draft.privileges.push({
                   ...current,
-                  id: `${current.id}-v${current.version + 1}`,
-                  version: current.version + 1,
+                  id: `${current.code.toLowerCase()}-v${version}`,
+                  version,
                   level: 'shadow',
                   proposedLevel: was,
                   state: 'awaiting',
@@ -665,6 +666,9 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
             const why = note.trim()
             if (!why) return { ok: false, reason: 'A note is required' }
             if (about && !record.limits.some((l) => l.code === about)) return { ok: false, reason: 'Not found' }
+            // Back to the technical owner means one hard stop to re-test (1f); back to the owner means the job and reach.
+            if (to === agent.techOwnerId && !about) return { ok: false, reason: 'Choose the hard stop to re-test' }
+            if (to !== agent.techOwnerId && to !== agent.ownerId) return { ok: false, reason: 'Send it back to the owner or the technical owner' }
             return act({
               action: 'approveTools',
               ctx: { agentId },

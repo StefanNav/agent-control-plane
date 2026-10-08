@@ -2,7 +2,7 @@ import { BOARD_MEETINGS, HARD_STOP_LIBRARY, resolveConditions, RETEST_CASES, TIE
 import { agentFromIntake } from '../data/seed/onboarding'
 import type { AgentException, Condition, DemoState, GrantCell, JobDraft, Limit, LimitTest, Onboarding, ReviewDecision, Tier, Verb } from '../data/types'
 import { addDays, formatDate, tomorrowAt } from '../lib/clock'
-import { nextArchiveCode, nextExceptionCode, nextHardStopCode, nextPrivilegeCode } from './mutations'
+import { nextArchiveCode, nextExceptionCode, nextHardStopCode, nextPrivilegeCode, nextVersion } from './mutations'
 import { conditionRange, criteriaStatus, jobFields, onboardingContext, personName, recordItems, recordOfActivity, riskFactors, systemsProgress, templateFor } from './onboardingRules'
 
 /**
@@ -336,6 +336,8 @@ export function applySponsorSign(s: DemoState, agentId: string, by: string, at: 
     copied: [people.sponsor],
     link: { label: 'Open risk tier', to: `/inventory/agents/${agentId}/risk-tier` },
     at,
+    // Due the day before the board meets, so the packet is ready in time.
+    deadline: `${addDays(meeting, -1).slice(0, 10)}T17:00:00`,
   })
   const last = rounds.at(-1)
   record.history.push({
@@ -362,6 +364,7 @@ export function applySetTier(s: DemoState, agentId: string, input: { tier: Tier;
   if (input.reason) review.tierReason = input.reason
   agent.riskTier = input.tier
   resolveItems(s, agentId, 'Review: risk tier', by, at, `Set Tier ${input.tier}`)
+  resolveItems(s, agentId, 'Re-review: questions from the board', by, at, `Set Tier ${input.tier} again`)
   record.history.push({
     at,
     by,
@@ -484,6 +487,7 @@ export function applyDecision(s: DemoState, agentId: string, input: { kind: Revi
     delete review.tierBy
     delete review.tierReason
     delete review.packetAt
+    delete review.agendaItem
     review.meeting = BOARD_MEETINGS.find((m) => m > review.meeting) ?? review.meeting
     raiseItem(s, {
       agentId,
@@ -518,7 +522,7 @@ export function applyGoLiveRequest(s: DemoState, activityId: string, by: string,
   const current = latestPrivilege(s, activityId)
   if (!activity || !current) return s
   const agent = s.agents.find((a) => a.id === activity.agentId)!
-  const version = current.version + 1
+  const version = nextVersion(s, current.code)
   const proposal = { ...current, id: `${current.code.toLowerCase()}-v${version}`, version, state: 'awaiting' as const, level: 'shadow' as const, proposedLevel: 'draft' as const, movedBy: by }
   delete proposal.grantedBy
   delete proposal.grantedAt
@@ -569,8 +573,11 @@ export function applyFlagLine(s: DemoState, caseId: string, line: number, by: st
   return s
 }
 
-/** The latest version of a privilege by its code ("prv-0142"). */
-export const latestByCode = (s: DemoState, code: string) => s.privileges.filter((p) => p.code.toLowerCase() === code.toLowerCase()).sort((a, b) => b.version - a.version)[0]
+/** The latest version of a privilege by its code ("prv-0142"): the highest one still in force, else the highest. */
+export const latestByCode = (s: DemoState, code: string) => {
+  const versions = s.privileges.filter((p) => p.code.toLowerCase() === code.toLowerCase()).sort((a, b) => b.version - a.version)
+  return versions.find((p) => p.state !== 'closed') ?? versions[0]
+}
 
 /** What signing this privilege would do now: sign a proposal, renew a due one, or nothing. */
 export function signMode(s: DemoState, code: string): 'sign' | 'renew' | null {
@@ -620,7 +627,7 @@ export function applySignPrivilege(s: DemoState, code: string, input: { reason?:
     return s
   }
   // Renewal: a new version at the same level, reviewed again a full cycle from now.
-  const version = latest.version + 1
+  const version = nextVersion(s, latest.code)
   latest.state = 'closed'
   s.privileges.push({ ...latest, id: `${latest.code.toLowerCase()}-v${version}`, version, state: 'active', grantedBy: by, grantedAt: at, reviewDate, ...(input.reason ? { signReason: input.reason } : {}) })
   if (agent.level === latest.level) agent.reviewDate = reviewDate

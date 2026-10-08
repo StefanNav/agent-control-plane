@@ -1,4 +1,5 @@
-import { addMinutes } from '../../lib/clock'
+import { addDays, addMinutes } from '../../lib/clock'
+import { TIER_RULES } from '../seed/catalogue'
 import type { DemoState } from '../types'
 
 const later = (at: string) => (t: string | undefined) => Boolean(t && t > at)
@@ -72,6 +73,16 @@ export function rewindTo(s: DemoState, at: string): DemoState {
     division.exceptionsByDay = division.exceptionsByDay.map(() => 0)
   }
 
+  // A privilege signed after `at` stands for its previous signing: roll it back one review cycle at a time.
+  for (const privilege of s.privileges) {
+    const tier = s.agents.find((a) => a.id === privilege.agentId)?.riskTier ?? 2
+    const cycle = TIER_RULES[tier].reviewDays + 1
+    while (privilege.grantedAt && privilege.grantedAt > at) {
+      privilege.grantedAt = addDays(privilege.grantedAt, -cycle)
+      if (privilege.reviewDate) privilege.reviewDate = addDays(privilege.reviewDate, -cycle)
+      if (privilege.version > 1) privilege.version -= 1
+    }
+  }
   for (const privilege of s.privileges) if (privilege.state === 'due' && privilege.reviewDate && privilege.reviewDate > at) privilege.state = 'active'
   s.stats24h = { ...s.stats24h, lastHour: { hardStops: 0, pauses: 0, pages: 0 } }
   return s

@@ -126,3 +126,6 @@ export function raiseOverdueReviews(s: DemoState): DemoState {
   }
   return s
 }
+
+/** The next version number of a privilege code: one past the highest ever used, closed versions included. */
+export const nextVersion = (s: DemoState, code: string) => Math.max(0, ...s.privileges.filter((p) => p.code === code).map((p) => p.version)) + 1

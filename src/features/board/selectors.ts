@@ -17,6 +17,12 @@ import { conditionRange, shadowProgress } from '../../store/onboardingRules'
 /** Statuses that need a human. */
 export const ATTENTION: Status[] = ['crit', 'warn', 'review', 'stale']
 
+/** The privilege in force for an activity: the highest open version that isn't a pending proposal (Phase 5 keeps every version). */
+export function currentPrivilege(s: DemoState, activityId: string) {
+  const open = s.privileges.filter((p) => p.activityId === activityId && p.state !== 'closed').sort((a, b) => b.version - a.version)
+  return open.find((p) => !(p.state === 'awaiting' && p.proposedLevel)) ?? open[0]
+}
+
 /**
  * Retired agents are archived and drafts can't act yet: neither is on any board, division,
  * tile or wall count. not retired, and not still being onboarded or in AIMS Review.
@@ -210,7 +216,7 @@ function activitiesOf(s: DemoState, agentId: string) {
   return s.activities
     .filter((act) => act.agentId === agentId)
     .map((act) => {
-      const prv = s.privileges.find((p) => p.activityId === act.id && p.state !== 'closed')
+      const prv = currentPrivilege(s, act.id)
       const agentPaused = s.agents.find((a) => a.id === agentId)?.lifecycle === 'paused'
       return {
         id: act.id,

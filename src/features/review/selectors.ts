@@ -91,7 +91,8 @@ export function selectPacket(s: DemoState, agentId: string) {
     title: `${agent.name} · review packet`,
     status: `Tier ${tier} · ${TIER_RULES[tier].label}`,
     idLine: `${agent.code} v1.0${intake ? ` · ${intake.code}` : ''}`,
-    state: review.decision ? ('decided' as const) : review.packetAt ? ('open' as const) : ('notBuilt' as const),
+    state: review.decision ? ('decided' as const) : review.tier === 1 ? ('notNeeded' as const) : review.packetAt ? ('open' as const) : ('notBuilt' as const),
+    shadowFrom: review.shadowFrom ? formatDate(review.shadowFrom) : null,
     people: [
       ['Division', s.divisions.find((d) => d.id === agent.divisionId)?.name ?? ''],
       ['Sponsor', personName(s, people.sponsor)],

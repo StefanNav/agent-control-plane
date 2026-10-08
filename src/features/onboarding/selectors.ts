@@ -117,14 +117,15 @@ export function selectOnboardingHeader(s: DemoState, agentId: string) {
   const frozen = Boolean(record.frozenAt)
   const review = record.sponsor.state
   const decision = record.review?.decision
-  const status = frozen ? (decision ? DECISION_LABEL[decision.kind] : 'In review') : review === 'waiting' ? 'Onboarding · waiting for sponsor' : review === 'returned' ? 'Onboarding · returned' : 'Onboarding · draft'
+  // Tier 1 starts shadow with no board (R7), so a frozen record is either decided, in shadow without a board, or in review.
+  const status = frozen ? (decision ? DECISION_LABEL[decision.kind] : record.review?.shadowFrom ? 'Approved · Tier 1, no board' : 'In review') : review === 'waiting' ? 'Onboarding · waiting for sponsor' : review === 'returned' ? 'Onboarding · returned' : 'Onboarding · draft'
   const decided = Boolean(decision)
   return {
     breadcrumb: `Inventory / Agents / ${name}`,
     title: name,
     status,
     idLine: frozen ? `${agent.code} · v1.0 · frozen` : `${agent.code} · ${versionLabel(record.version, false)}${intake ? ` · from ${intake.code}` : ''}`,
-    chip: review === 'waiting' ? 'Review: final set' : frozen && !decided ? 'Review: AIMS committee' : null,
+    chip: review === 'waiting' ? 'Review: final set' : frozen && !decided && agent.lifecycle === 'inReview' ? 'Review: AIMS committee' : null,
     people: [
       { role: 'Program lead', name: personName(s, people.lead) },
       { role: 'Owner', name: personName(s, agent.ownerId) },

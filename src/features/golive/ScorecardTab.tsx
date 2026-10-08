@@ -28,6 +28,7 @@ export function ScorecardTab({ agentId }: { agentId: string }) {
   }
   const allowed = can(state, state.personaId, 'requestGoLive', { agentId })
   const g = view.golive
+  const code = state.privileges.find((p) => p.activityId === activityId)?.code.toLowerCase()
   const pick = (id: string) =>
     setParams(
       (prev) => {
@@ -142,12 +143,12 @@ export function ScorecardTab({ agentId }: { agentId: string }) {
           {g.state === 'signed' ? (
             <>
               <strong>{g.signed}.</strong>
-              <LinkButton to={`/inventory/privileges/${state.privileges.find((p) => p.activityId === activityId)?.code.toLowerCase()}/sign`}>Open the privilege</LinkButton>
+              <LinkButton to={`/inventory/privileges/${code}/sign`}>Open the privilege</LinkButton>
             </>
           ) : g.state === 'requested' ? (
             <>
               <StatusChip status="review" label={g.requested ?? ''} />
-              <LinkButton to={`/inventory/privileges/${state.privileges.find((p) => p.activityId === activityId)?.code.toLowerCase()}/sign`}>Open the signature</LinkButton>
+              <LinkButton to={`/inventory/privileges/${code}/sign`}>Open the signature</LinkButton>
             </>
           ) : (
             <>

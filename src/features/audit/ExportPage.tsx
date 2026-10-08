@@ -33,12 +33,14 @@ export function ExportPage() {
   const [params] = useSearchParams()
   const state = useDemo((s) => s)
   const buildExport = useDemo((s) => s.buildExport)
-  const agents = useMemo(
-    () => state.agents.filter((a) => onBoard(a) || a.lifecycle === 'retired'),
-    [state.agents],
-  )
+  // Every agent with a record: on the boards, retired, or still in onboarding and AIMS Review (1h, 2c link here).
+  const agents = useMemo(() => state.agents, [state.agents])
   const [agentId, setAgentId] = useState(
-    agents.some((a) => a.id === params.get('agent')) ? params.get('agent')! : 'med-rec',
+    agents.some((a) => a.id === params.get('agent'))
+      ? params.get('agent')!
+      : agents.some((a) => a.id === 'med-rec')
+        ? 'med-rec'
+        : (agents.find(onBoard)?.id ?? agents[0]?.id ?? ''),
   )
   const [period, setPeriod] = useState<(typeof PERIODS)[number]['value']>('since-live')
   const [format, setFormat] = useState<'packet' | 'csv'>('packet')

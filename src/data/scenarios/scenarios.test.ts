@@ -196,3 +196,12 @@ test('review-committee (2c) and review-decided (2d)', () => {
   expect(decided.onboardings.find((r) => r.agentId === 'med-rec')!.review!.decision).toMatchObject({ kind: 'approveWithConditions', at: '2026-10-14T16:20:00' })
   expect(decided.agents.find((a) => a.id === 'med-rec')!.lifecycle).toBe('live')
 })
+
+test('I4 (review): in every scenario, nothing is signed after now and privilege ids are unique', () => {
+  for (const id of ['baseline', 'onboarding-intake', 'onboarding-at-5-of-7', 'onboarding-systems', 'onboarding-tools-tested', 'onboarding-sponsor-review', 'onboarding-returned-hs11', 'onboarding-ready', 'review-risk-tier', 'review-committee', 'review-decided', 'shadow-day-21', 'awaiting-signature'] as const) {
+    const s = buildScenario(id)
+    const ids = s.privileges.map((p) => p.id)
+    expect(new Set(ids).size, id).toBe(ids.length)
+    expect(s.privileges.filter((p) => p.grantedAt && p.grantedAt > s.now).map((p) => p.code), id).toEqual([])
+  }
+})

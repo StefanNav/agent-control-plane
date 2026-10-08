@@ -181,3 +181,9 @@ test('drafts being onboarded or in review are on no board (Phase 5)', async () =
   expect(onBoard({ ...draft, lifecycle: 'inReview' })).toBe(false)
   expect(selectDivisionSummaries(s).reduce((n, d) => n + d.agentCount, 0)).toBe(41)
 })
+
+test('I7 (review): the Activities tab reads the privilege in force, not a closed earlier version', async () => {
+  const { currentPrivilege } = await import('./selectors')
+  const s = buildScenario('review-decided')
+  expect(currentPrivilege(s, 'med-rec-admission')).toMatchObject({ code: 'PRV-0142', version: 2, state: 'active' })
+})

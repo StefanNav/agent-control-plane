@@ -3,7 +3,7 @@ import { AutonomyLadder, PrivilegeCard } from '../../../components'
 import { LogRow, Table, Card } from '../../../design-system'
 import { formatDate } from '../../../lib/clock'
 import { useDemo } from '../../../store'
-import { selectAgentHistory, selectAgentOverview, selectPrivilegeCards } from '../selectors'
+import { currentPrivilege, selectAgentHistory, selectAgentOverview, selectPrivilegeCards } from '../selectors'
 import { RECENT_COLUMNS } from './columns'
 import styles from './agent.module.css'
 
@@ -16,7 +16,7 @@ export function ActivitiesTab({ agentId }: { agentId: string }) {
   return (
     <div className={styles.body}>
       {activities.map((act) => {
-        const prv = state.privileges.find((p) => p.activityId === act.id)
+        const prv = currentPrivilege(state, act.id)
         const current = LEVELS.indexOf(act.level)
         return (
           <section key={act.id} className={styles.section}>

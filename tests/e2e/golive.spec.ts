@@ -70,3 +70,27 @@ test('my privileges (3d): the overdue review, renewed in place', async ({ page }
   await expect(page.getByRole('button', { name: 'Review now' })).toHaveCount(0)
   expect(errors).toEqual([])
 })
+
+test('review fix C1: Priya sends the request back, Marcus asks again, Priya signs the new version', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/inventory')
+  await viewAs(page, 'Priya')
+  await page.goto('/inventory/privileges/prv-0142/sign?scenario=awaiting-signature')
+  await page.getByRole('button', { name: 'Request changes' }).click()
+  await page.getByRole('textbox', { name: 'Note for the owner' }).fill('Fix the brand-name mapping first.')
+  await page.getByRole('button', { name: 'Send back' }).click()
+  await expect(page).toHaveURL(/tab=scorecard/)
+
+  await viewAs(page, 'Marcus')
+  await page.goto('/operations/agents/med-rec?tab=scorecard')
+  await page.getByRole('button', { name: 'Ask Priya to sign' }).click()
+
+  await viewAs(page, 'Priya')
+  await page.goto('/inventory/privileges/prv-0142/sign')
+  await expect(page.getByText('PRV-0142 · v4 draft')).toBeVisible()
+  await page.getByRole('textbox', { name: 'Reason for signing below target' }).fill('Mapping fixed in SOP v1.3.1.')
+  await page.getByRole('checkbox', { name: /I accept accountability/ }).click()
+  await page.getByRole('button', { name: 'Sign and move to Draft' }).click()
+  await expect(page.getByText(/^Signed by Priya · 06 Nov 2026 09:52\./)).toBeVisible()
+  expect(errors).toEqual([])
+})

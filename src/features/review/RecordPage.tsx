@@ -32,13 +32,23 @@ export function RecordPage() {
     const chair = personName(state, state.roles.find((r) => r.role === 'committee')?.personId)
     return (
       <>
-        <ReviewHeader agentId={agentId} current={review.decision ? 'decision' : review.tier ? 'decision' : 'tier'} chip={review.decision ? null : review.tier ? 'Review: committee decision' : 'Review: risk tier'} />
+        <ReviewHeader
+          agentId={agentId}
+          current={review.decision || review.tier ? (review.tier === 1 ? 'shadow' : 'decision') : 'tier'}
+          chip={review.decision || review.tier === 1 ? null : review.tier ? 'Review: committee decision' : 'Review: risk tier'}
+        />
         {review.decision ? (
           <DecisionLogged agentId={agentId} />
         ) : (
           <Split
             main={
-              review.tier ? (
+              review.tier === 1 ? (
+                <StepCard number="05" title="Shadow" meta={`${personName(state, review.tierBy)} · Tier 1`}>
+                  <Notice mark="none" lead="Tier 1 · Low: no board decides." actions={<LinkButton to={`/operations/agents/${agentId}?tab=scorecard`}>Open the scorecard</LinkButton>}>
+                    Shadow started {review.shadowFrom ? formatDate(review.shadowFrom) : 'the next day'} on the sponsor’s approval and the tier.
+                  </Notice>
+                </StepCard>
+              ) : review.tier ? (
                 <StepCard number="04" title="Committee decision" meta={`${chair} · ${formatDate(review.meeting)}`}>
                   <Notice mark="review" lead={`Waiting on the committee · ${formatDate(review.meeting)}.`} actions={<LinkButton to={`/portfolio/reviews/${agentId}`}>Open the packet</LinkButton>}>
                     {chair} decides from the packet {personName(state, review.tierBy)} built on {formatDate(review.packetAt ?? review.tierAt!)}.
