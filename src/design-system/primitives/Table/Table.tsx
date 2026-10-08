@@ -72,7 +72,9 @@ export function Table<Row>({
       all[index + (event.key === 'ArrowDown' ? 1 : -1)]?.focus()
     } else if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
-      onOpen?.(id)
+      // Without an open action, the keyboard selects, as a click does.
+      const activate = onOpen ?? onSelect
+      activate?.(id)
     }
   }
 
@@ -141,7 +143,10 @@ export function Table<Row>({
               </span>
             ) : null}
           </div>
-          {group.rowIds.map((id) => byId.get(id)).filter((row): row is Row => row !== undefined).map(renderRow)}
+          {group.rowIds
+            .map((id) => byId.get(id))
+            .filter((row): row is Row => row !== undefined)
+            .map(renderRow)}
         </div>
       ))}
       {rows.filter((row) => !grouped.has(getRowId(row))).map(renderRow)}

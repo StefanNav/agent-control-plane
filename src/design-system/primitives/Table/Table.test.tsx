@@ -73,6 +73,15 @@ test('Enter and Space open the focused row', async () => {
   expect(onOpen).toHaveBeenCalledTimes(2)
 })
 
+test('without onOpen, Enter and Space select the focused row (keyboard parity with click)', async () => {
+  const { onSelect } = setup({ onOpen: undefined })
+  bodyRows()[1]!.focus()
+  await userEvent.keyboard('{Enter}')
+  expect(onSelect).toHaveBeenCalledWith('r2')
+  await userEvent.keyboard(' ')
+  expect(onSelect).toHaveBeenCalledTimes(2)
+})
+
 test('group header renders before its rows', () => {
   setup({ groups: [{ id: 'overdue', label: 'Overdue', count: 2, rowIds: ['r2', 'r3'] }] })
   const rows = screen.getAllByRole('row')

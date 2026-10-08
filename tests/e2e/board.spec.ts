@@ -134,3 +134,15 @@ test('wall display (4e): dark, read only, no product chrome', async ({ page }) =
   await expect(page.getByRole('link', { name: 'Exit wall display' })).toHaveAttribute('href', '/operations')
   expect(errors).toEqual([])
 })
+
+test('keyboard: Enter on a division row selects it, and on an exception row opens it', async ({ page }) => {
+  await page.goto('/operations')
+  const row = page.getByRole('table', { name: 'Divisions' }).locator('[data-row-id="medications"]')
+  await row.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('complementary', { name: 'Selected division' })).toContainText('Marcus · 20 agents · 4 need a human')
+  await page.goto('/operations?view=exceptions')
+  await page.getByRole('table', { name: 'Open exceptions' }).locator('[data-row-id]').first().focus()
+  await page.keyboard.press('Enter')
+  await expect(page).toHaveURL(/\/operations\/agents\/prior-auth/)
+})
