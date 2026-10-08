@@ -65,7 +65,9 @@ test('every reference resolves', () => {
     expect(agents.has(p.agentId), p.id).toBe(true)
   }
   for (const e of seed.exceptions) {
-    expect(agents.has(e.agentId), e.id).toBe(true)
+    // 9b: an unregistered caller has no agent yet; its item points at the caller instead.
+    if (e.type === 'Unregistered caller') expect(seed.callers.some((c) => e.link?.to === `/inventory/unregistered/${c.id}`), e.id).toBe(true)
+    else expect(agents.has(e.agentId), e.id).toBe(true)
     expect(people.has(e.ownerId), e.id).toBe(true)
   }
   for (const r of seed.roles) {
@@ -238,8 +240,8 @@ describe('Phase 4: controls and audit data', () => {
     expect(byId('med-rec').queue).toEqual({ inProgress: 12, awaitingReview: 4, perHour: 6 })
   })
 
-  test('inventory records: 2 approved intakes not started, 3 past exports', () => {
-    expect(s.intakeRequests.filter((r) => !r.startedAt).map((r) => r.code)).toEqual(['REQ-0106', 'REQ-0108'])
+  test('inventory records: 3 approved intakes not started (REQ-0081 from 9b, R16), 3 past exports', () => {
+    expect(s.intakeRequests.filter((r) => !r.startedAt).map((r) => r.code)).toEqual(['REQ-0106', 'REQ-0108', 'REQ-0081'])
     expect(s.exports).toHaveLength(3)
   })
 })
