@@ -270,16 +270,17 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 
 **Goal:** Stop easy, resume deliberate; any action can be reconstructed (E6, E7, 8c).
 
-- [ ] 4.0 Write `docs/plans/phase-4-controls-audit.md`; commit
-- [ ] 4.1 Control menu 6a (scope first, narrow fixes, program-lead actions locked for others)
-- [ ] 4.2 Pause with impact preview 6b; store `pause(scope, reason?)` routes queued drafts; board, division and agent views agree
-- [ ] 4.3 Return one activity to Shadow 6c; revoke a tool
-- [ ] 4.4 Resume request 6d and sponsor approval 6e (two-person rule; stays paused until both; each reason logged)
-- [ ] 4.5 Inventory 8c (tabs Agents / Drafts / Intake / Retired; Intake and Retired composed) and Disable or retire 6f (typed confirmation)
-- [ ] 4.6 Action list 7a (read only, filters) and action trace 7b (ACT-88213, ms timestamps, policy blocked step expanded)
-- [ ] 4.7 Incidents list (composed) and incident record 7c
-- [ ] 4.8 Export for a surveyor 7d
-- [ ] 4.9 E2E: pause → board shows Paused → request resume → approve as Priya → resumed; checkpoint
+- [x] 4.0 Write `docs/plans/phase-4-controls-audit.md`; commit
+- [ ] 4.1 Data: incidents, pause detail, inventory records, ACT-88171, tiers; `resume-requested` at 11:58 (`SEED_VERSION` 5)
+- [ ] 4.2 Locked buttons (designed locked state) and the control menu 6a
+- [ ] 4.3 Pause with impact preview 6b; board, division and agent views agree
+- [ ] 4.4 Fix one thing 6c: return an activity to Shadow, revoke a tool
+- [ ] 4.5 Two-person resume 6d, 6e (stays paused until both; each reason logged)
+- [ ] 4.6 Inventory 8c (Drafts rows from 1i; Intake and Retired composed); disable or retire 6f (typed confirmation)
+- [ ] 4.7 Action list 7a and action trace 7b; open an incident
+- [ ] 4.8 Incidents list (composed) and incident record 7c
+- [ ] 4.9 Export for a surveyor 7d
+- [ ] 4.10 E2E journey "stop easy, resume deliberate"; checkpoint
 
 **Done when:** frames 6a–6f, 7a–7d, 8c built and visually checked.
 **Handoff notes:** _written at the end of the phase._
