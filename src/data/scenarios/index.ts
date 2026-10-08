@@ -15,6 +15,7 @@ export type ScenarioId =
   | 'onboarding-intake'
   | 'onboarding-at-5-of-7'
   | 'onboarding-systems'
+  | 'onboarding-tools-tested'
 
 /** Every scenario id, for validating a `?scenario=` param. */
 export const SCENARIO_IDS: readonly ScenarioId[] = [
@@ -27,6 +28,7 @@ export const SCENARIO_IDS: readonly ScenarioId[] = [
   'onboarding-intake',
   'onboarding-at-5-of-7',
   'onboarding-systems',
+  'onboarding-tools-tested',
 ]
 
 /** The seed's live heartbeat (one minute before DEMO_NOW). */
@@ -156,6 +158,9 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
 
   // E1 1c: 05 Oct 11:09, Marcus has ticked the grid; Teams · write still needs its activity.
   'onboarding-systems': medRecAt('systems-3-of-4'),
+
+  // E1 1d: 06 Oct 14:21, Sam has tested all three hard stops; Send to Priya unlocks.
+  'onboarding-tools-tested': medRecAt('tools-tested'),
 }
 
 /** A fresh state for the scenario. */

@@ -25,3 +25,12 @@ test('an instruction is editable guidance', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Edit' }))
   expect(onEdit).toHaveBeenCalled()
 })
+
+test('a hard stop card can carry its test result under the facts (1d)', () => {
+  render(
+    <HardStopCard code="HS-04 v1" title="Never change a dose" description="Keeps the home dose." rows={[{ key: 'Library rule', value: 'DOSE-CHANGE-01' }]}>
+      <p>Would have blocked 7 of 1,204 drafts</p>
+    </HardStopCard>,
+  )
+  expect(screen.getByText('Would have blocked 7 of 1,204 drafts')).toBeInTheDocument()
+})

@@ -137,3 +137,19 @@ test('onboarding-systems (1c): 05 Oct 11:09, systems 3 of 4 while Teams · write
   expect(record.done.job?.at).toBe('2026-10-04T09:05:00')
   expect(systemsProgress(s, 'med-rec')).toMatchObject({ done: 3, total: 4, complete: false })
 })
+
+test('onboarding-tools-tested (1d): 06 Oct 14:21, all three hard stops tested, v0.9, ready to send', async () => {
+  const { stepStates, readyToSend } = await import('../../store/onboardingRules')
+  const s = buildScenario('onboarding-tools-tested')
+  expect(s.now).toBe('2026-10-06T14:21:00')
+  const record = s.onboardings.find((r) => r.agentId === 'med-rec')!
+  expect(record.version).toBe(9)
+  expect(record.limits.map((l) => [l.code, l.test?.blocked, l.test?.at])).toEqual([
+    ['HS-04', 7, '2026-10-06T14:20:00'],
+    ['HS-07', 2, '2026-10-06T14:20:00'],
+    ['HS-11', 0, '2026-10-06T14:21:00'],
+  ])
+  expect(readyToSend(s, 'med-rec')).toBe(true)
+  expect(stepStates(s, 'med-rec').slice(3, 5).map((st) => st.sub)).toEqual(['Sam · 3 of 3 tested', 'Priya · opens when you send'])
+  expect(s.exceptions.filter((e) => e.agentId === 'med-rec' && e.state === 'new').map((e) => [e.type, e.ownerId])).toEqual([['Tools: hard stops to test', 'sam']])
+})

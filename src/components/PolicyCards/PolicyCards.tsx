@@ -14,10 +14,12 @@ export interface HardStopCardProps {
   description: string
   rows: Row[]
   footer?: ReactNode
+  /** Extra content under the facts, e.g. its test on the last 30 days (1d). */
+  children?: ReactNode
 }
 
 /** An enforced rule: solid ink border, filled, locked (component 06). */
-export function HardStopCard({ code, title, description, rows, footer }: HardStopCardProps) {
+export function HardStopCard({ code, title, description, rows, footer, children }: HardStopCardProps) {
   return (
     <div className={styles.hardStop}>
       <div className={styles.bar}>
@@ -31,6 +33,7 @@ export function HardStopCard({ code, title, description, rows, footer }: HardSto
         <h3 className={styles.title}>{title}</h3>
         <p className={styles.description}>{description}</p>
         <Facts rows={rows} />
+        {children}
       </div>
       {footer ? (
         <div className={styles.footer}>

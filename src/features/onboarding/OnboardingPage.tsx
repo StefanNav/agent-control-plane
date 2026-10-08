@@ -11,6 +11,7 @@ import { onboardingContext, personName, STEP_NAMES, STEP_ORDER, type StepId } fr
 import { IntakeStep } from './IntakeStep'
 import { JobStep } from './JobStep'
 import { SystemsStep } from './SystemsStep'
+import { ToolsStep } from './ToolsStep'
 import { Rail } from './Rail'
 import { selectOnboardingHeader } from './selectors'
 import { StepCard } from './StepCard'
@@ -32,6 +33,7 @@ export function OnboardingPage() {
   if (step === 'intake') content = <IntakeStep agentId={agentId} />
   else if (record && step === 'job') content = <JobStep agentId={agentId} />
   else if (record && step === 'systems') content = <SystemsStep agentId={agentId} />
+  else if (record && step === 'tools') content = <ToolsStep agentId={agentId} />
   else if (!record) {
     content = (
       <Split

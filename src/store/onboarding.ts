@@ -1,9 +1,9 @@
-import { HARD_STOP_LIBRARY } from '../data/seed/catalogue'
+import { HARD_STOP_LIBRARY, RETEST_CASES } from '../data/seed/catalogue'
 import { agentFromIntake } from '../data/seed/onboarding'
-import type { AgentException, DemoState, JobDraft, Limit, Onboarding, Verb } from '../data/types'
+import type { AgentException, DemoState, JobDraft, Limit, LimitTest, Onboarding, Verb } from '../data/types'
 import { addMinutes } from '../lib/clock'
 import { nextExceptionCode, nextHardStopCode } from './mutations'
-import { jobFields, onboardingContext, personName, systemsProgress, templateFor } from './onboardingRules'
+import { jobFields, onboardingContext, personName, recordItems, systemsProgress, templateFor } from './onboardingRules'
 
 /**
  * Onboarding state changes, shared by store actions and scenarios so a scenario builds exactly
@@ -182,5 +182,68 @@ export function applySystemsEdit(s: DemoState, agentId: string, change: SystemsC
         })
     }
   } else delete record.done.systems
+  return s
+}
+
+/** A small, stable number from text: plain-language results are derived, not random (ruling R10). */
+const derived = (text: string, max: number) => [...text].reduce((n, c) => (n * 31 + c.charCodeAt(0)) % 9973, 7) % (max + 1)
+
+/** What a test would find: recorded library results for this agent, otherwise derived; scaled to a case set. */
+export function testResult(s: DemoState, agentId: string, code: string, casesId?: string): Pick<LimitTest, 'blocked' | 'of' | 'examples'> {
+  const record = s.onboardings.find((r) => r.agentId === agentId)
+  const limit = record?.limits.find((l) => l.code === code)
+  if (!record || !limit) return { blocked: 0, of: 0, examples: [] }
+  const sample = templateFor(s.intakeRequests.find((r) => r.id === record.intakeId)).testSample
+  const recorded = HARD_STOP_LIBRARY.find((r) => r.rule === limit.library)?.results[agentId]
+  const base = recorded ?? { blocked: derived(`${agentId}${limit.from}`, 4), examples: [] }
+  const set = casesId ? RETEST_CASES.sets[casesId] : undefined
+  const of = set?.of ?? sample
+  const blocked = set ? Math.round((base.blocked * of) / sample) : base.blocked
+  return { blocked, of, examples: base.examples.slice(0, blocked) }
+}
+
+/** Test a hard stop on the last 30 days, or on a named case set (1d, 1g). The previous result is kept. */
+export function applyTest(s: DemoState, agentId: string, code: string, casesId: string | undefined, by: string, at: string): DemoState {
+  const record = s.onboardings.find((r) => r.agentId === agentId)
+  const limit = record?.limits.find((l) => l.code === code)
+  if (!record || !limit) return s
+  const { blocked, of, examples } = testResult(s, agentId, code, casesId)
+  const set = casesId ? RETEST_CASES.sets[casesId] : undefined
+  if (limit.test) limit.previousTest = limit.test
+  limit.test = { at, by, blocked, of, ...(casesId ? { casesId } : {}), examples }
+  delete limit.reopened
+  record.history.push({ at, by, text: `${personName(s, by)} · ${set ? 're-tested' : 'tested'} ${code}`, sub: `${blocked} of ${of.toLocaleString('en-US')} would have been blocked` })
+  return s
+}
+
+/** Send the finished set to the sponsor (1d): their review opens; any open hand-offs for the set close. */
+export function applySend(s: DemoState, agentId: string, by: string, at: string): DemoState {
+  const record = s.onboardings.find((r) => r.agentId === agentId)
+  const agent = s.agents.find((a) => a.id === agentId)
+  if (!record || !agent) return s
+  const { people } = onboardingContext(s, agentId)
+  const sponsor = record.sponsor
+  if (sponsor.returned) {
+    sponsor.earlier.push({ at: sponsor.returned.at, kind: 'returned', to: sponsor.returned.to, about: sponsor.returned.about, note: sponsor.returned.note, casesId: record.limits.find((l) => l.code === sponsor.returned?.about)?.test?.casesId })
+    delete sponsor.returned
+  }
+  sponsor.round += 1
+  Object.assign(sponsor, { state: 'waiting', sentAt: at, sentBy: by })
+  record.done.tools = { at, by }
+  record.history.push({ at, by, text: `${personName(s, by)} · sent to ${personName(s, people.sponsor)}${sponsor.round > 1 ? ' again' : ''}` })
+  resolveItems(s, agentId, 'Tools: hard stops to test', by, at, 'Sent to the sponsor')
+  for (const e of s.exceptions) if (e.agentId === agentId && e.type.startsWith('Returned:') && e.state !== 'resolved') Object.assign(e, { state: 'resolved', outcome: 'Sent back to the sponsor', closedAt: at, closedBy: by })
+  const items = recordItems(s, agentId)
+  raiseItem(s, {
+    agentId,
+    type: 'Review: final set',
+    reason: `${agent.name}: job, reach and limits, as the committee will read them`,
+    action: 'approve the set or send it back',
+    actionSub: `${items.done} of ${items.total} items done · ${agent.code} v0.${record.version}`,
+    ownerId: people.sponsor,
+    copied: [people.owner, people.tech],
+    link: { label: 'Open the final set', to: `/inventory/agents/${agentId}/onboarding/approval` },
+    at,
+  })
   return s
 }

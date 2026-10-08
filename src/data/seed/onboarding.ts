@@ -144,9 +144,9 @@ const medRecRecord: Onboarding = {
         blocked: 7,
         of: 1204,
         examples: [
-          { date: '2026-09-28', unit: '7 West', text: 'Metoprolol tartrate 25 mg → 50 mg twice daily', trace: 'TR-4471' },
-          { date: '2026-09-22', unit: '8 East', text: 'Lisinopril 10 mg → 20 mg daily', trace: 'TR-4219' },
-          { date: '2026-09-15', unit: '7 West', text: 'Insulin glargine 18 → 20 units at night', trace: 'TR-3982' },
+          { date: '2026-09-28T00:00:00', unit: '7 West', text: 'Metoprolol tartrate 25 mg → 50 mg twice daily', trace: 'TR-4471' },
+          { date: '2026-09-22T00:00:00', unit: '8 East', text: 'Lisinopril 10 mg → 20 mg daily', trace: 'TR-4219' },
+          { date: '2026-09-15T00:00:00', unit: '7 West', text: 'Insulin glargine 18 → 20 units at night', trace: 'TR-3982' },
         ],
       },
     },
@@ -164,8 +164,8 @@ const medRecRecord: Onboarding = {
         blocked: 2,
         of: 1204,
         examples: [
-          { date: '2026-09-26', unit: '8 East', text: 'Penicillin allergy left off the draft list', trace: 'TR-4402' },
-          { date: '2026-09-11', unit: '7 West', text: 'Sulfonamide allergy left off the draft list', trace: 'TR-3874' },
+          { date: '2026-09-26T00:00:00', unit: '8 East', text: 'Penicillin allergy left off the draft list', trace: 'TR-4402' },
+          { date: '2026-09-11T00:00:00', unit: '7 West', text: 'Sulfonamide allergy left off the draft list', trace: 'TR-3874' },
         ],
       },
     },

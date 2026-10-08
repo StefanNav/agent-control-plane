@@ -636,3 +636,98 @@ a.check:hover {
   font-weight: 600;
   color: var(--cs-ink);
 }
+
+/* Tools and hard stops (1d). */
+.monoStrong {
+  font-family: var(--cs-font-mono);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-strong);
+}
+
+.testBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 16px 20px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+}
+
+.testResult {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.examples {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.examples li {
+  display: grid;
+  grid-template-columns: 56px 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 36px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.exampleUnit {
+  color: var(--cs-text2);
+}
+
+.exampleText {
+  color: var(--cs-ink);
+}
+
+.limitRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+}
+
+.limitMain {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.limitMain .listName {
+  font-weight: 600;
+}
+
+.limitResult {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+  white-space: nowrap;
+}
+
+.limitResult strong {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}

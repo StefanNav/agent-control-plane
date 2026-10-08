@@ -1,8 +1,8 @@
-import { ORG_NEVER, ORG_POL_02 } from '../../data/seed/catalogue'
+import { gatewayTool, ORG_NEVER, ORG_POL_02, RETEST_CASES } from '../../data/seed/catalogue'
 import type { DemoState, Domain, GrantCell, Verb } from '../../data/types'
 import { formatClock, formatDate } from '../../lib/clock'
 import { purposeText } from '../../store/onboarding'
-import { FIELD_NAMES, firstMissingField, jobFields, limitsProgress, needsReason, onboardingContext, openStep, personName, reachLine, recordItems, systemsProgress, type JobFieldId } from '../../store/onboardingRules'
+import { FIELD_NAMES, firstMissingField, jobFields, limitsProgress, needsReason, onboardingContext, openStep, personName, reachLine, readyToSend, recordItems, systemsProgress, type JobFieldId } from '../../store/onboardingRules'
 import { onBoard } from '../board/selectors'
 
 /** The span-of-control guideline: past this many directly supervised activities, exceptions wait (2a). */
@@ -246,5 +246,61 @@ export function selectSystemsStep(s: DemoState, agentId: string) {
     items,
     alsoNeeded: limits.total && limits.tested === limits.total ? [] : [`${limits.total ? `${limits.total} hard stops` : 'Hard stops'} · ${tech}`],
     next: why.filter((w) => w.isNew).map((w) => `${w.label} needs its activity`),
+  }
+}
+
+const n = (value: number) => value.toLocaleString('en-US')
+
+/** "tested just now" in the same minute, otherwise "tested 06 Oct". */
+const testedWhen = (at: string, now: string) => (at.slice(0, 16) === now.slice(0, 16) ? 'tested just now' : `tested ${formatDate(at)}`)
+
+/** Step 4, tools and hard stops (1d, 1g): the catalogue tools for the grants, and each limit with its test. */
+export function selectToolsStep(s: DemoState, agentId: string) {
+  const { record, people } = onboardingContext(s, agentId)
+  if (!record) return null
+  const owner = personName(s, people.owner)
+  const tech = personName(s, people.tech)
+  const sponsor = personName(s, people.sponsor)
+  const tools = record.grants
+    .filter((g) => needsReason(g, record.grants))
+    .map((g) => ({ id: `${g.system}·${g.verb}`, tool: gatewayTool(g.system, g.verb), grants: `${WHY_NAME[g.system] ?? g.system} · ${g.verb}`, for: g.activity ? purposeText(record, g.activity).replace(/^Escalation: .*/, 'Escalation') : 'Activity not named' }))
+  const limits = record.limits.map((l) => ({
+    code: l.code,
+    label: `${l.code} v${l.version}`,
+    title: l.title,
+    text: l.text,
+    from: l.from,
+    library: l.library ?? null,
+    owner: `${personName(s, l.ownerId)} · technical owner`,
+    tested: Boolean(l.test && !l.reopened),
+    reopened: Boolean(l.reopened),
+    test: l.test
+      ? {
+          head: `Tested on the last 30 days · ${formatDate(l.test.at)} ${formatClock(l.test.at)}`,
+          result: `Would have blocked ${n(l.test.blocked)} of ${n(l.test.of)}`,
+          resultLong: `Would have blocked ${n(l.test.blocked)} of ${n(l.test.of)} drafts`,
+          when: l.test.casesId ? `re-tested ${formatDate(l.test.at)} · ${RETEST_CASES.sets[l.test.casesId]?.label ?? ''}` : `${testedWhen(l.test.at, s.now)}${l.test.examples.length ? ` · ${l.test.examples.length} examples` : l.test.blocked === 0 ? ' · nothing would have been blocked' : ''}`,
+          blocks: `${l.test.blocked} ${l.test.blocked === 1 ? 'block' : 'blocks'}`,
+          examples: l.test.examples.map((e) => ({ ...e, date: formatDate(e.date) })),
+        }
+      : null,
+    last: l.previousTest && l.reopened ? `Last result: would have blocked ${n(l.test?.blocked ?? 0)} of ${n(l.test?.of ?? 0)} · last 30 days · ${formatDate(l.test!.at)}` : null,
+  }))
+  const progress = limitsProgress(record)
+  const items = recordItems(s, agentId)
+  return {
+    frozen: Boolean(record.frozenAt),
+    owner,
+    tech,
+    sponsor,
+    meta: `${tech} · ${progress.tested} of ${progress.total}`,
+    tools,
+    limits,
+    progress,
+    items,
+    ready: readyToSend(s, agentId),
+    state: record.sponsor.state,
+    sentAt: record.sponsor.sentAt,
+    returned: record.sponsor.returned ?? null,
   }
 }

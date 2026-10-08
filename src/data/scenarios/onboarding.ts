@@ -1,4 +1,4 @@
-import { applyJobEdit, applyStart, applySystemsEdit } from '../../store/onboarding'
+import { applyJobEdit, applyStart, applySystemsEdit, applyTest } from '../../store/onboarding'
 import type { DemoState, Verb } from '../types'
 import { dropAgents, rewindTo } from './rewind'
 
@@ -8,15 +8,16 @@ import { dropAgents, rewindTo } from './rewind'
  * store's own mutations, so a frame's state is exactly what the UI would produce.
  */
 
-export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4'
+export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4' | 'tools-tested'
 
-const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4']
+const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4', 'tools-tested']
 
 /** "Now" in each stage's frame. */
 const NOW: Record<MedRecStage, string> = {
   intake: '2026-10-01T09:05:00',
   'job-5-of-7': '2026-10-04T08:41:00',
   'systems-3-of-4': '2026-10-05T11:09:00',
+  'tools-tested': '2026-10-06T14:21:00',
 }
 
 /** A dated step and the first stage at which it has happened. */
@@ -64,6 +65,14 @@ const TIMELINE: Step[] = [
   },
   // 1c: on 05 Oct Marcus ticks the grid and explains every grant but Teams · write (v0.6).
   { stage: 'systems-3-of-4', run: (s) => grantMedRecSystems(s, '2026-10-05T11:08:00') },
+  // 1c → 1d: Teams · write serves escalation; the grid is done on 05 Oct (v0.7), and Sam gets the hard stops.
+  { stage: 'tools-tested', run: (s) => applySystemsEdit(s, 'med-rec', { kind: 'reason', system: 'Microsoft Teams', verb: 'write', activity: 'escalation' }, 'marcus', '2026-10-05T11:12:00') },
+  // 1d: Sam tests all three on the last 30 days.
+  { stage: 'tools-tested', run: (s) => applyTest(s, 'med-rec', 'HS-04', undefined, 'sam', '2026-10-06T14:20:00') },
+  { stage: 'tools-tested', run: (s) => applyTest(s, 'med-rec', 'HS-07', undefined, 'sam', '2026-10-06T14:20:00') },
+  { stage: 'tools-tested', run: (s) => applyTest(s, 'med-rec', 'HS-11', undefined, 'sam', '2026-10-06T14:21:00') },
+  // Pin: the frames number Sam's autosaves v0.9 from here on (ruling R8: tests don't bump the version).
+  { stage: 'tools-tested', run: (s) => void (s.onboardings.find((r) => r.agentId === 'med-rec')!.version = 9) },
 ]
 
 /** 1c's grid in one autosave: Epic read and draft, worklist read and write, Pyxis read, Teams write (unexplained). */

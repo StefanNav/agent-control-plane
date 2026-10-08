@@ -86,3 +86,22 @@ test('systems and verbs (1c): naming Teams · write’s activity finishes the gr
   await expect(page.getByRole('button', { name: 'Epic · sign' })).toHaveCount(0)
   expect(errors).toEqual([])
 })
+
+test('tools and hard stops (1d): Sam sends the tested set; Priya finds it in the inbox', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/inventory')
+  await viewAs(page, 'Sam')
+  await page.goto('/inventory/agents/med-rec/onboarding/tools?scenario=onboarding-tools-tested')
+  await expect(page.getByText('Would have blocked 7 of 1,204 drafts')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Tools and hard stops · done' })).toBeVisible()
+  await expect(page.getByRole('table', { name: 'Tools' }).locator('[data-row-id]')).toHaveCount(5)
+  await page.getByRole('button', { name: 'Send to Priya for approval' }).click()
+  await expect(page.getByRole('button', { name: /^5 · Sponsor approval Priya · waiting since 06 Oct/ })).toBeVisible()
+
+  await viewAs(page, 'Priya')
+  await page.goto('/operations/inbox')
+  await page.getByRole('link', { name: /Review: final set/ }).click()
+  await page.getByRole('link', { name: 'Open the final set' }).click()
+  await expect(page).toHaveURL(/\/inventory\/agents\/med-rec\/onboarding\/approval$/)
+  expect(errors).toEqual([])
+})

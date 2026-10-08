@@ -713,3 +713,50 @@ describe('updateSystems (1c)', () => {
     expect(at('jordan').getState().updateSystems('med-rec', { kind: 'grant', system: 'Pyxis', verb: 'draft', on: true }).ok).toBe(false)
   })
 })
+
+describe('tools and hard stops (1d) — Review focus 2', () => {
+  const at = (scenario: 'onboarding-systems' | 'onboarding-tools-tested' | 'onboarding-at-5-of-7', persona: 'sam' | 'marcus' | 'priya') => {
+    const store = fresh()
+    store.getState().loadScenario(scenario)
+    store.getState().setPersona(persona)
+    return store
+  }
+
+  test('Sam tests HS-04 on the last 30 days: 7 of 1,204 with the three examples', async () => {
+    const { recordItems } = await import('./onboardingRules')
+    const store = at('onboarding-at-5-of-7', 'sam')
+    expect(store.getState().testHardStop('med-rec', 'HS-04')).toEqual({ ok: true })
+    const s = store.getState()
+    const limit = s.onboardings.find((r) => r.agentId === 'med-rec')!.limits.find((l) => l.code === 'HS-04')!
+    expect(limit.test).toMatchObject({ at: s.now, by: 'sam', blocked: 7, of: 1204 })
+    expect(limit.test!.examples.map((e) => e.trace)).toEqual(['TR-4471', 'TR-4219', 'TR-3982'])
+    expect(recordItems(s, 'med-rec')).toEqual({ done: 7, total: 13 })
+    expect(s.audit.at(-1)).toMatchObject({ action: 'Tested hard stop', reason: 'HS-04 · would have blocked 7 of 1,204' })
+  })
+
+  test('only the technical owner tests; unknown codes are refused', () => {
+    const marcus = at('onboarding-at-5-of-7', 'marcus')
+    expect(marcus.getState().testHardStop('med-rec', 'HS-04').ok).toBe(false)
+    expect(at('onboarding-at-5-of-7', 'sam').getState().testHardStop('med-rec', 'HS-99')).toEqual({ ok: false, reason: 'Not found' })
+  })
+
+  test('the set can’t go to Priya with items open', () => {
+    const store = at('onboarding-systems', 'sam')
+    const before = dataOf(store.getState())
+    expect(store.getState().sendToSponsor('med-rec')).toEqual({ ok: false, reason: '4 items left' })
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+
+  test('Sam sends the tested set: Priya gets “Review: final set”, Sam’s tools item closes', () => {
+    const store = at('onboarding-tools-tested', 'sam')
+    expect(store.getState().sendToSponsor('med-rec')).toEqual({ ok: true })
+    const s = store.getState()
+    const record = s.onboardings.find((r) => r.agentId === 'med-rec')!
+    expect(record.sponsor).toMatchObject({ state: 'waiting', round: 1, sentAt: s.now, sentBy: 'sam' })
+    expect(record.done.tools).toEqual({ at: s.now, by: 'sam' })
+    const review = s.exceptions.find((e) => e.type === 'Review: final set')!
+    expect(review).toMatchObject({ ownerId: 'priya', state: 'new', link: { label: 'Open the final set', to: '/inventory/agents/med-rec/onboarding/approval' } })
+    expect(s.exceptions.find((e) => e.type === 'Tools: hard stops to test')!.state).toBe('resolved')
+    expect(store.getState().sendToSponsor('med-rec')).toEqual({ ok: false, reason: 'Already with the sponsor' })
+  })
+})

@@ -5,8 +5,8 @@ import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type DemoState, type Incident, type JobDraft, type PersonaId, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
-import { applyJobEdit, applyStart, applySystemsEdit, type SystemsChange } from './onboarding'
-import { FIELD_NAMES, JOB_KEY_FIELD } from './onboardingRules'
+import { applyJobEdit, applySend, applyStart, applySystemsEdit, applyTest, testResult, type SystemsChange } from './onboarding'
+import { FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems } from './onboardingRules'
 import { can, lockReason } from './permissions'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
@@ -78,6 +78,10 @@ export interface DemoActions {
   updateJob: (agentId: string, patch: Partial<JobDraft>) => ActionResult
   /** Tick a systems × verbs cell, or name the activity a grant serves (1c). Sign and Order stay locked. */
   updateSystems: (agentId: string, change: SystemsChange) => ActionResult
+  /** Test a hard stop on the last 30 days, or on a named case set (1d, 1g); the technical owner's step. */
+  testHardStop: (agentId: string, code: string, casesId?: string) => ActionResult
+  /** Send the finished set to the sponsor for "Review: final set" (1d). */
+  sendToSponsor: (agentId: string) => ActionResult
 }
 
 export interface PauseInput {
@@ -588,6 +592,45 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Edited systems and verbs', target: agent.code, reason: `${change.system} · ${change.verb}${change.kind === 'grant' ? (change.on ? ' granted' : ' removed') : ' activity named'}` },
               mutate: (draft) => {
                 applySystemsEdit(draft, agentId, change, draft.personaId, draft.now)
+              },
+            })
+          },
+          testHardStop: (agentId, code, casesId) => {
+            const s = get()
+            const record = s.onboardings.find((r) => r.agentId === agentId)
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!record || !agent) return { ok: false, reason: 'Not onboarding' }
+            if (record.frozenAt) return { ok: false, reason: 'Frozen at v1.0 · with AIMS Review' }
+            if (!record.limits.some((l) => l.code === code)) return { ok: false, reason: 'Not found' }
+            const result = testResult(s, agentId, code, casesId)
+            return act({
+              action: 'configureTools',
+              ctx: { agentId },
+              audit: { action: 'Tested hard stop', target: agent.code, reason: `${code} · would have blocked ${result.blocked} of ${result.of.toLocaleString('en-US')}` },
+              mutate: (draft) => {
+                applyTest(draft, agentId, code, casesId, draft.personaId, draft.now)
+              },
+            })
+          },
+          sendToSponsor: (agentId) => {
+            const s = get()
+            const record = s.onboardings.find((r) => r.agentId === agentId)
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!record || !agent) return { ok: false, reason: 'Not onboarding' }
+            if (record.sponsor.state === 'waiting') return { ok: false, reason: 'Already with the sponsor' }
+            if (record.sponsor.state === 'signed') return { ok: false, reason: 'Already signed' }
+            const builder = can(s, s.personaId, 'editJobDescription', { agentId })
+            if (!builder && !can(s, s.personaId, 'configureTools', { agentId })) return { ok: false, reason: lockReason('configureTools', s.personaId) }
+            if (!readyToSend(s, agentId)) {
+              const items = recordItems(s, agentId)
+              return { ok: false, reason: `${items.total - items.done - 1} items left` }
+            }
+            return act({
+              action: builder ? 'editJobDescription' : 'configureTools',
+              ctx: { agentId },
+              audit: { action: 'Sent to sponsor', target: agent.code, reason: `Review: final set · v0.${record.version}` },
+              mutate: (draft) => {
+                applySend(draft, agentId, draft.personaId, draft.now)
               },
             })
           },
