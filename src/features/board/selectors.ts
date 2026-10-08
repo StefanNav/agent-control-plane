@@ -424,7 +424,8 @@ export type AgentPanel = NonNullable<ReturnType<typeof selectAgentPanel>>
 export function selectOpenExceptions(s: DemoState) {
   const nextByDivision = new Map(selectDivisionSummaries(s).map((d) => [d.id, d]))
   return s.exceptions
-    .filter((e) => isOpen(e) && ATTENTION.includes(e.status))
+    // Items about a caller rather than an agent (9b) live in the inbox, not on the agent boards.
+    .filter((e) => isOpen(e) && ATTENTION.includes(e.status) && s.agents.some((a) => a.id === e.agentId))
     .sort(
       (a, b) =>
         Number(b.status === 'crit') - Number(a.status === 'crit') ||

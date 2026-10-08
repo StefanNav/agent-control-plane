@@ -25,6 +25,8 @@ export type PermAction =
   | 'flagDraft'
   /** The owner re-validates a held build: replay, sign-off, accept (9a). */
   | 'revalidateChange'
+  /** Decide what an unregistered caller is: block it, or say it isn't an agent (9b). */
+  | 'decideCaller'
 
 /** How far a role reaches for an action: everywhere, its own divisions, or its own agents. */
 type Scope = 'all' | 'own' | 'ownAgents'
@@ -61,6 +63,7 @@ const MATRIX: Record<PermAction, Partial<Record<Role, Scope>>> = {
   // 10a: only frontline pharmacists flag drafts, from Epic.
   flagDraft: { frontline: 'own' },
   revalidateChange: { owner: 'own' },
+  decideCaller: { programLead: 'all' },
 }
 
 export interface PermContext {
@@ -102,6 +105,7 @@ const REASONS: Partial<Record<PermAction, string>> = {
   manageDivisions: 'Program lead only',
   flagDraft: 'Pharmacists flag drafts from Epic',
   revalidateChange: 'Agent owner only',
+  decideCaller: 'Program lead only',
   prepareGoLive: 'Program lead only',
   retire: 'Program lead or sponsor only',
   disable: 'Program lead or sponsor only',

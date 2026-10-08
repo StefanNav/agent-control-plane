@@ -7,6 +7,7 @@ import { divisions } from './divisions'
 import { changeEvents, logEvents } from './events'
 import { exceptions } from './exceptions'
 import { epicDrafts, flags } from './feedback'
+import { callers, gatewayItems } from './gateway'
 import { incidents } from './incidents'
 import { exportRecords, retiredAgents } from './inventory'
 import { draftAgents, intakeRequests, onboardings } from './onboarding'
@@ -34,7 +35,7 @@ const SEED: DemoState = {
   hardStops,
   instructions,
   grants,
-  exceptions,
+  exceptions: [...exceptions, ...gatewayItems],
   actions,
   resumeRequests: [],
   logEvents,
@@ -48,6 +49,7 @@ const SEED: DemoState = {
   epicDrafts,
   flags,
   changes: [],
+  callers,
   stats24h: { closedEarlier: 5, medianCloseMin: 41, lastHour: { hardStops: 3, pauses: 1, pages: 0 }, actionsToday: 1912 },
   audit: [],
 }

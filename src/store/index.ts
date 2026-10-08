@@ -9,6 +9,7 @@ import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, appl
 import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems, shadowProgress } from './onboardingRules'
 import { applyAccept, applyHardStopApproval, applyReplay, applySystemsSignOff, pendingChecks } from './changes'
 import { applyFlag, applyFlagAnswer, applySeenFix, type FlagAnswer } from './feedback'
+import { applyBlockCaller, applyDismissCaller, applyMessageOwner } from './gateway'
 import { can, lockReason } from './permissions'
 import { applyAddRole, applyCreateDivision, applyDivisionSettings, applyInvite, applyRemoveRole, applyReturnToShadow, diffDivision, divisionSlug, ROLE_LABEL, roleDivision, type DivisionPatch, type NewDivisionInput, type RoleInput } from './settings'
 import { runAction, type ActionResult } from './runAction'
@@ -99,6 +100,12 @@ export interface DemoActions {
   acceptChange: (changeId: string) => ActionResult
   /** Dismiss "Your flag led to a fix" (10b). The flag's own pharmacist only. */
   dismissFixNotice: (flagId: string) => ActionResult
+  /** Block an unregistered caller at the gateway, with a reason (9b). Program lead. */
+  blockCaller: (callerId: string, reason: string) => ActionResult
+  /** Say an unregistered caller isn't an agent, with a reason (9b). Program lead. */
+  dismissCaller: (callerId: string, reason: string) => ActionResult
+  /** Message a caller's likely owner; logged on the caller (9b). Program lead. */
+  messageCallerOwner: (callerId: string, text: string) => ActionResult
   /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
   startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
   /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
@@ -208,6 +215,26 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
           if (!exception) return { error: { ok: false, reason: 'Not found' } as ActionResult }
           if (exception.state === 'resolved' || exception.state === 'dismissed') return { error: { ok: false, reason: 'Already resolved' } as ActionResult }
           return { exception }
+        }
+        /** Block a caller or dismiss it (9b): once, with a reason, by the program lead. */
+        const decideCaller = (
+          callerId: string,
+          reason: string,
+          audit: string,
+          apply: (s: DemoState, id: string, reason: string, by: string, at: string) => DemoState,
+        ): ActionResult => {
+          const caller = get().callers.find((c) => c.id === callerId)
+          if (!caller) return { ok: false, reason: 'Not found' }
+          if (caller.decision) return { ok: false, reason: 'Already decided' }
+          const why = reason.trim()
+          if (!why) return { ok: false, reason: 'Give a reason. Every choice is logged with a reason.' }
+          return act({
+            action: 'decideCaller',
+            audit: { action: audit, target: caller.name, reason: why },
+            mutate: (draft) => {
+              apply(draft, callerId, why, draft.personaId, draft.now)
+            },
+          })
         }
         /** One of a held build's checks (9a): its person, once, while the build is held. */
         const changeStep = (
@@ -750,6 +777,23 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Dismissed fix notice', target: flag.code },
               mutate: (draft) => {
                 applySeenFix(draft, flagId, draft.now)
+              },
+            })
+          },
+          blockCaller: (callerId, reason) => decideCaller(callerId, reason, 'Blocked at the gateway', applyBlockCaller),
+          dismissCaller: (callerId, reason) => decideCaller(callerId, reason, 'Not an agent', applyDismissCaller),
+          messageCallerOwner: (callerId, text) => {
+            const s = get()
+            const caller = s.callers.find((c) => c.id === callerId)
+            if (!caller) return { ok: false, reason: 'Not found' }
+            if (!caller.likelyOwner) return { ok: false, reason: 'No owner to message' }
+            const body = text.trim()
+            if (!body) return { ok: false, reason: 'Write the message' }
+            return act({
+              action: 'decideCaller',
+              audit: { action: 'Messaged owner', target: caller.name, reason: `${caller.likelyOwner.name} · ${body}` },
+              mutate: (draft) => {
+                applyMessageOwner(draft, callerId, body, draft.personaId, draft.now)
               },
             })
           },

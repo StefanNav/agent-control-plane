@@ -174,6 +174,25 @@ export const JOB_TEMPLATES: Record<string, JobTemplate> = {
     testSample: 640,
     expectedActivities: 1,
     conditions: [],
+  },  // R16 (Phase 6): the intake 9b's bot looks like; approved 06 Nov, never onboarded.
+  'req-0081': {
+    build: { version: 'v0.4.1', platform: 'Microsoft Teams' },
+    actingForOptions: ['The 5 South charge nurse', 'The discharging clinician'],
+    suggestionsLabel: 'Common for discharge summaries:',
+    escalationSuggestions: ['A medication changed at discharge', 'Follow-up not booked', 'Patient goes to another facility'],
+    criteria: [
+      { id: 'agreement', label: 'Agreement with the discharging clinician’s summary', short: 'agreement', brief: 'Agreement', direction: 'atLeast' },
+      { id: 'missed', label: 'Summaries missing a follow-up', short: 'miss', brief: 'Missed follow-ups', direction: 'atMost' },
+    ],
+    systems: [
+      { system: 'Epic', detail: 'Discharge notes, 5 South' },
+      { system: 'Microsoft Teams', detail: '5 South team channel' },
+    ],
+    caseNoun: 'discharges',
+    compareLine: 'each summary compared with the clinician’s',
+    testSample: 210,
+    expectedActivities: 1,
+    conditions: [],
   },
 }
 

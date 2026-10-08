@@ -870,7 +870,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - With no intake match (R19): "No intake matches this caller. Ask the owner to file one, or block it."
 - **Inventory header action:** "Seen at the gateway · 3" → `/inventory/unregistered`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **Store:**
     - `blockCaller` without a reason is refused.
     - With one, the caller is `blocked`, still listed, and Dana's item resolves.
@@ -881,10 +881,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - **e2e:**
     - As Dana, `/inventory` → "Seen at the gateway · 3" → the bot's detail → "Start onboarding from REQ-0081" lands on the intake step for "Discharge Huddle Summary Agent".
     - `/inventory/unregistered/nope` shows Not found.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 9b.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(gateway): unregistered callers flagged to Dana"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 9b.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(gateway): unregistered callers flagged to Dana"`.
 
 ### Task 6.8: Reviewer behaviour (11a) and drill into 6 North (11b)
 

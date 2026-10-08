@@ -2,6 +2,7 @@ import { BOARD_MEETINGS, HARD_STOP_LIBRARY, resolveConditions, RETEST_CASES, TIE
 import { agentFromIntake } from '../data/seed/onboarding'
 import type { AgentException, Condition, DemoState, GrantCell, JobDraft, Limit, LimitTest, Onboarding, Privilege, ReviewDecision, Tier, Verb } from '../data/types'
 import { addDays, formatDate, tomorrowAt } from '../lib/clock'
+import { markCallerOnboarding } from './gateway'
 import { nextArchiveCode, nextExceptionCode, nextHardStopCode, nextPrivilegeCode, nextVersion } from './mutations'
 import { conditionRange, criteriaStatus, jobFields, onboardingContext, personName, recordItems, recordOfActivity, riskFactors, systemsProgress, templateFor } from './onboardingRules'
 
@@ -39,6 +40,7 @@ export function applyStart(s: DemoState, intakeId: string, people: { ownerId: st
     history: [{ at, by, text: `${personName(s, by)} · started onboarding`, sub: `From ${intake.code}` }],
   })
   intake.startedAt = at
+  markCallerOnboarding(s, intakeId, intake.agentId, by, at)
   return s
 }
 

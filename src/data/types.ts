@@ -400,6 +400,30 @@ export interface Flag {
   exceptionId?: string
 }
 
+/** A caller seen at the gateway using hospital credentials with no registry record (E9.2, 9b). */
+export interface GatewayCaller {
+  id: string
+  name: string
+  /** "Entra app · client 7f3a…c21", "API key · issued to Emergency". */
+  credential: string
+  firstSeen: string
+  lastCall: string
+  calls7d: number
+  reaches: string[]
+  likelyOwner: { name: string; sub: string } | null
+  /** What it does, read from its traffic. */
+  does?: string
+  patientData?: { flag: string; note: string }
+  registeredBy?: string
+  /** An approved intake it looks like. */
+  intakeId?: string
+  /** Who may rely on it, for the caution next to "Block at the gateway". */
+  reliance?: string
+  group: 'unregistered' | 'lowVolume' | 'dismissed'
+  decision?: { kind: 'blocked' | 'notAgent' | 'onboarding'; reason?: string; by: string; at: string; agentId?: string }
+  messages: { by: string; text: string; at: string }[]
+}
+
 /** An informational event: kept in the log, never sent to anyone. */
 export interface LogEvent {
   id: string
@@ -731,6 +755,8 @@ export interface DemoState {
   flags: Flag[]
   /** New builds held at the gateway, and their outcome (E9.1). */
   changes: Change[]
+  /** Callers seen at the gateway without a registry record (E9.2). */
+  callers: GatewayCaller[]
   /** Hospital-wide counts before today's activity (4f "Last 24 hours"); `actionsToday` for 7a. */
   stats24h: {
     closedEarlier: number

@@ -20,6 +20,7 @@ import { RecordPage } from '../features/review/RecordPage'
 import { RiskTierPage } from '../features/review/RiskTierPage'
 import { DivisionSettingsPage } from '../features/settings/DivisionSettingsPage'
 import { EpicPage } from '../features/epic/EpicPage'
+import { GatewayPage } from '../features/gateway/GatewayPage'
 import { PeoplePage } from '../features/settings/PeoplePage'
 import { NotFound } from '../layout/NotFound'
 import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
@@ -54,6 +55,8 @@ const PAGES: Record<string, ReactNode> = {
   '/settings/divisions/:divisionId': <DivisionSettingsPage />,
   '/settings/people': <PeoplePage />,
   '/epic': <EpicPage />,
+  '/inventory/unregistered': <GatewayPage />,
+  '/inventory/unregistered/:callerId': <GatewayPage />,
 }
 
 function childrenFor(shell: ShellKind): RouteObject[] {

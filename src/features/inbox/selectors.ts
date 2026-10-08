@@ -66,7 +66,7 @@ function itemView(s: DemoState, e: AgentException, viewer: PersonaId): InboxItem
     source: escalated
       ? `${agent?.name} · escalated`
       : e.from
-        ? `${personName(s, e.from)} · ${agent?.name}`
+        ? [personName(s, e.from), agent?.name].filter(Boolean).join(' · ')
         : `${agent?.name}${e.ruleTag ? ` · ${e.ruleTag}` : ''}`,
     due: formatDue(e.deadline, s.now),
     dueSoon: minutesBetween(s.now, e.deadline) <= 120,
