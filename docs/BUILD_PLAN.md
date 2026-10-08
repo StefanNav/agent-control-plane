@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 2: Components and data (⏸ at checkpoint, awaiting Stefan's review of PR #12) |
-| **Branch** | `phase-2-components-data` |
-| **Last completed** | Phase 2 Tasks 2.0–2.10, fresh review fixes applied (2026-10-08) |
-| **Next task** | After Stefan approves: squash-merge [PR #12](https://github.com/StefanNav/agent-control-plane/pull/12), close #3, set Phase 2 ☑ Merged, then Phase 3 Task 3.0 (write `docs/plans/phase-3-board-inbox.md`) |
-| **Blockers** | Stefan reviewing Phase 2 |
+| **Current phase** | Phase 3: Command Board and inbox (◐ in progress) |
+| **Branch** | `phase-3-board-inbox` |
+| **Last completed** | Phase 2 approved and squash-merged (PR #12) (2026-10-08) |
+| **Next task** | Phase 3 Task 3.0: write `docs/plans/phase-3-board-inbox.md` |
+| **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | PR #12 → Vercel preview (behind Vercel login) |
+| **Latest preview** | none open |
 
 ### How to resume in a new session
 
@@ -90,8 +90,8 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 |---|---|---|---|---|---|---|
 | 0 | Setup | ☑ Merged | `main` | [#1](https://github.com/StefanNav/agent-control-plane/issues/1) | no PR (docs on `main`) | [phase-0-setup.md](plans/phase-0-setup.md) |
 | 1 | Foundation | ☑ Merged | `phase-1-foundation` | [#2](https://github.com/StefanNav/agent-control-plane/issues/2) | [#11](https://github.com/StefanNav/agent-control-plane/pull/11) | [phase-1-foundation.md](plans/phase-1-foundation.md) |
-| 2 | Components and data | ⏸ At checkpoint | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | [#12](https://github.com/StefanNav/agent-control-plane/pull/12) | [phase-2-components-data.md](plans/phase-2-components-data.md) |
-| 3 | Command Board and inbox | ☐ Not started | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | – | to write (Task 3.0) |
+| 2 | Components and data | ☑ Merged | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | [#12](https://github.com/StefanNav/agent-control-plane/pull/12) | [phase-2-components-data.md](plans/phase-2-components-data.md) |
+| 3 | Command Board and inbox | ◐ In progress | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | – | to write (Task 3.0) |
 | 4 | Controls and audit | ☐ Not started | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | – | to write (Task 4.0) |
 | 5 | Onboarding and go-live | ☐ Not started | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | – | to write (Task 5.0) |
 | 6 | Governance and fast follows | ☐ Not started | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | – | to write (Task 6.0) |
@@ -448,3 +448,4 @@ One row per working session. Newest last.
 | 2026-10-08 | 1 | Built Phase 1 (scaffold, tokens, icons, 24 primitives, layout, route table, gallery, CI, Vercel). Fresh review: 4 Important + 3 re-graded fixed test-first; 3 minors deferred (menu hover-on-focus look, row Tab stops, dark checkbox fill). PR #11 open | Stefan reviews Phase 1 → merge → Phase 2 Task 2.0 |
 | 2026-10-08 | 1 | Stefan approved; PR #11 squash-merged; #2 closed | Phase 2 Task 2.0 |
 | 2026-10-08 | 2 | Built Phase 2 (types, clock, seed, permissions, store, scenarios, 10 product components, gallery light + dark, persona switcher, reset). Visual pass vs component sheet. Fresh review: 3 Important + 3 re-graded fixed test-first; 4 minors deferred. PR #12 open | Stefan reviews Phase 2 → merge → Phase 3 Task 3.0 |
+| 2026-10-08 | 2 | Stefan approved; PR #12 squash-merged; #3 closed | Phase 3 Task 3.0 |

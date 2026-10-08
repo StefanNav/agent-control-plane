@@ -490,7 +490,7 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
 - [x] **Step 3: Implement.**
 - [x] **Step 4: Run** `pnpm check` and `pnpm e2e`. Expected: PASS.
 - [x] **Step 5: Commit** with `git commit -m "feat(prototype): persona switcher and reset demo"`.
-- [ ] **Step 6: Checkpoint** per the `docs/BUILD_PLAN.md` checkpoint protocol:
+- [x] **Step 6: Checkpoint** per the `docs/BUILD_PLAN.md` checkpoint protocol:
   - Push, then open the PR "Phase 2: Components and data" with `Closes #3`.
   - Run the fresh whole-branch review and apply its fixes test-first.
   - Do the visual check on the deployed build.
