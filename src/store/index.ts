@@ -717,6 +717,11 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
             const possessive = (name: string) => (name.endsWith('s') ? `${name}’` : `${name}’s`)
             if (division && input.role === 'owner' && division.ownerId === personId)
               return { ok: false, reason: `${person.name} is ${possessive(division.name)} division owner. Choose another owner in Division settings first.` }
+            if (division && input.role === 'techOwner') {
+              // Review fix I2: the named technical owner keeps access to their agents, so the role can't go first.
+              const named = s.agents.filter((a) => a.divisionId === division.id && a.techOwnerId === personId && a.lifecycle !== 'retired').length
+              if (named) return { ok: false, reason: `${person.name} is technical owner of ${named} ${division.name} ${named === 1 ? 'agent' : 'agents'}. Name another technical owner for them first.` }
+            }
             if (division && input.role === 'sponsor' && division.sponsorId === personId)
               return { ok: false, reason: `${person.name} is ${possessive(division.name)} clinical sponsor. Choose another sponsor in Division settings first.` }
             return act({

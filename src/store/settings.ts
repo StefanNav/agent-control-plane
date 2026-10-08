@@ -48,35 +48,49 @@ export function applyReturnToShadow(s: DemoState, activityId: string, by: string
 const divisionOf = (s: DemoState, agentId: string) =>
   s.divisions.find((d) => d.id === s.agents.find((a) => a.id === agentId)?.divisionId)
 
-/** When the division's lapse policy acts on this privilege, or null if it never does (8a). */
+/** When the review overdue item is due: the review date plus the division's grace period, at 17:00 (3d, 8a). */
+export function reviewDeadline(s: DemoState, p: Privilege): string | null {
+  const division = divisionOf(s, p.agentId)
+  return p.reviewDate ? `${addDays(p.reviewDate, division?.graceDays ?? 14).slice(0, 10)}T17:00:00` : null
+}
+
+/**
+ * When the division's lapse policy acts on this privilege, or null if it never does (8a). After a
+ * grace period it acts when the overdue item falls due (review fix I1); "at once" and "pause" act on
+ * the review date.
+ */
 export function lapseDate(s: DemoState, p: Privilege): string | null {
   const division = divisionOf(s, p.agentId)
   if (!division || !p.reviewDate || division.lapsePolicy === 'nothing') return null
-  return division.lapsePolicy === 'shadow' ? addDays(p.reviewDate, division.graceDays) : p.reviewDate
+  return division.lapsePolicy === 'shadow' ? reviewDeadline(s, p) : p.reviewDate
 }
 
 /**
  * Apply each division's lapse policy to its overdue privileges (8a, R4). Back to Shadow marks the
  * privilege lapsed (it is re-signed, not re-proposed); a pause stops the activity like 6b. Idempotent.
  */
-export function applyLapses(s: DemoState): DemoState {
+export function applyLapses(s: DemoState, from: string = s.now): DemoState {
   for (const p of s.privileges) {
-    if (p.state !== 'due' || p.level === 'shadow') continue
+    // `lapsedAt` marks that the policy already acted, so a resume or a later save doesn't act again (I4).
+    if (p.state !== 'due' || p.level === 'shadow' || p.lapsedAt) continue
     const agent = s.agents.find((a) => a.id === p.agentId)
     const activity = s.activities.find((a) => a.id === p.activityId)
     if (!agent || !activity || agent.lifecycle === 'retired') continue
     const when = lapseDate(s, p)
     if (!when || when > s.now) continue
+    // It acted when it fell due, or when the clock or the policy reached it, whichever is later.
+    const at = when > from ? when : from
     const why = `Review date passed ${formatDate(p.reviewDate!)}`
+    p.lapsedAt = at
     if (divisionOf(s, p.agentId)!.lapsePolicy === 'pause') {
       if (activity.paused || agent.lifecycle === 'paused') continue
-      applyPause(s, [agent.id], { scope: 'activity', activityId: activity.id, reason: `${why} · ${LAPSE_RULE}` }, LAPSE_RULE, s.now)
+      applyPause(s, [agent.id], { scope: 'activity', activityId: activity.id, reason: `${why} · ${LAPSE_RULE}` }, LAPSE_RULE, at)
       continue
     }
     Object.assign(p, { state: 'lapsed', movedBy: LAPSE_RULE, trigger: why })
     activity.level = 'shadow'
     relevel(s, agent.id)
-    s.logEvents.push({ id: `log-lapse-${s.logEvents.length + 1}`, at: s.now, agentId: agent.id, text: `${activity.name} returned to Shadow`, sub: `${LAPSE_RULE} · ${why.toLowerCase()}` })
+    s.logEvents.push({ id: `log-lapse-${s.logEvents.length + 1}`, at, agentId: agent.id, text: `${activity.name} returned to Shadow`, sub: `${LAPSE_RULE} · ${why.toLowerCase()}` })
   }
   return s
 }
@@ -103,7 +117,8 @@ function handOver(s: DemoState, d: Division, role: Extract<Role, 'owner' | 'spon
   const agentIds = new Set(s.agents.filter((a) => a.divisionId === d.id).map((a) => a.id))
   for (const agent of s.agents) if (agentIds.has(agent.id) && agent[field] === from) agent[field] = to
   for (const e of s.exceptions) {
-    if (!agentIds.has(e.agentId) || e.ownerId !== from || e.state === 'resolved' || e.state === 'dismissed') continue
+    const here = agentIds.has(e.agentId) || e.divisionId === d.id
+    if (!here || e.ownerId !== from || e.state === 'resolved' || e.state === 'dismissed') continue
     e.ownerId = to
     e.copied = [...e.copied.filter((p) => p !== to), ...(e.copied.includes(from) ? [] : [from])]
   }
@@ -128,7 +143,15 @@ export function applyDivisionSettings(s: DemoState, divisionId: string, patch: D
   if (patch.ownerId && patch.ownerId !== d.ownerId) handOver(s, d, 'owner', d.ownerId, patch.ownerId, at)
   if (patch.sponsorId && patch.sponsorId !== d.sponsorId) handOver(s, d, 'sponsor', d.sponsorId, patch.sponsorId, at)
   if (patch.lapsePolicy) d.lapsePolicy = patch.lapsePolicy
-  if (patch.graceDays) d.graceDays = patch.graceDays
+  if (patch.graceDays) {
+    d.graceDays = patch.graceDays
+    // The overdue items are due when the new grace period ends (I1).
+    for (const e of s.exceptions) {
+      if (e.type !== 'Review overdue' || e.state === 'resolved' || e.state === 'dismissed') continue
+      const p = s.privileges.find((x) => x.code === e.ruleTag && x.state === 'due')
+      if (p && s.agents.find((a) => a.id === p.agentId)?.divisionId === d.id) e.deadline = reviewDeadline(s, p) ?? e.deadline
+    }
+  }
   if (patch.escalation) d.escalation = { ...patch.escalation }
   s.logEvents.push({
     id: `log-settings-${s.logEvents.length + 1}`,
@@ -183,12 +206,15 @@ export function applyCreateDivision(s: DemoState, input: NewDivisionInput, from:
   for (const techOwner of new Set(moved.map((a) => a.techOwnerId))) grant(s, techOwner, id, 'techOwner', at)
   if (from) for (const r of s.roles.filter((x) => x.divisionId === from && x.role === 'frontline')) grant(s, r.personId, id, 'frontline', at)
   for (const agent of moved) {
-    const oldOwner = agent.ownerId
+    const handed: Record<string, string> = { [agent.ownerId]: input.ownerId, [agent.sponsorId]: input.sponsorId }
     Object.assign(agent, { divisionId: id, ownerId: input.ownerId, sponsorId: input.sponsorId })
+    // The moved agents' open items go to whoever now answers for them: owner's to the owner, sponsor's to the sponsor (I5).
     for (const e of s.exceptions) {
-      if (e.agentId !== agent.id || e.ownerId !== oldOwner || e.state === 'resolved' || e.state === 'dismissed') continue
-      e.ownerId = input.ownerId
-      e.copied = [...e.copied.filter((p) => p !== input.ownerId), ...(e.copied.includes(oldOwner) ? [] : [oldOwner])]
+      const to = handed[e.ownerId]
+      if (e.agentId !== agent.id || !to || to === e.ownerId || e.state === 'resolved' || e.state === 'dismissed') continue
+      const was = e.ownerId
+      e.ownerId = to
+      e.copied = [...e.copied.filter((p) => p !== to), ...(e.copied.includes(was) ? [] : [was])]
     }
   }
   s.logEvents.push({

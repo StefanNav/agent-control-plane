@@ -106,12 +106,14 @@ describe('re-validation through the store', () => {
   })
 })
 
-test('change-detected-v150 (9a): 15 Dec 09:52, v1.5.0 held, Duplicate Rx lapsed, Ana’s flag answered, last week’s items handled', () => {
+test('change-detected-v150 (9a): 15 Dec 09:52, v1.5.0 held, Duplicate Rx due to lapse at 17:00, Ana’s flag answered, last week’s items handled', () => {
   const s = buildScenario('change-detected-v150')
   expect(s.now).toBe('2026-12-15T09:52:00')
   expect(s.changes).toHaveLength(1)
   expect(s.changes[0]!.status).toBe('held')
-  expect(s.privileges.filter((p) => p.code === 'PRV-0098').at(-1)!.state).toBe('lapsed')
+  // Review fix I1: the lapse acts when the overdue item falls due, at 17:00 today.
+  expect(s.privileges.filter((p) => p.code === 'PRV-0098').at(-1)!.state).toBe('due')
+  expect(s.exceptions.find((e) => e.id === 'exc-5497')!.deadline).toBe('2026-12-15T17:00:00')
   expect(s.flags.find((f) => f.code === 'FB-2291')).toMatchObject({ status: 'inProgress', note: 'Frequency split into two lines' })
   expect(s.agents.find((a) => a.id === 'med-rec')!.monitor.lastSeen).toBe('2026-12-15T09:51:00')
   // The week between is settled: 08 Dec's items were handled; what stays open belongs to 15 Dec (or is an incident or the lapse).

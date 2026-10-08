@@ -634,6 +634,7 @@ export function applySignPrivilege(s: DemoState, code: string, input: { reason?:
   const lapsed = latest.state === 'lapsed'
   latest.state = 'closed'
   const renewed: Privilege = { ...latest, id: `${latest.code.toLowerCase()}-v${version}`, version, state: 'active', grantedBy: by, grantedAt: at, reviewDate, ...(input.reason ? { signReason: input.reason } : {}) }
+  delete renewed.lapsedAt
   if (lapsed) {
     delete renewed.movedBy
     delete renewed.trigger

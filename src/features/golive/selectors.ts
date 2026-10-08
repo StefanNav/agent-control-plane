@@ -1,4 +1,4 @@
-import type { DemoState } from '../../data/types'
+import type { DemoState, Privilege } from '../../data/types'
 import { addDays, formatClock, formatDate, minutesBetween } from '../../lib/clock'
 import { latestByCode, latestPrivilege } from '../../store/onboarding'
 import { criteriaStatus, onboardingContext, personName, recordOfActivity, shadowProgress, templateFor } from '../../store/onboardingRules'
@@ -183,10 +183,25 @@ export function selectMyPrivileges(s: DemoState, personaId: string, tab: 'all' |
       first && exception
         ? {
             code: first.code.toLowerCase(),
-            text: `${first.agent} passed its review date on ${formatDate(firstPrivilege!.reviewDate!)}. If you don’t review it by ${formatDate(exception.deadline)}, ${first.activity.charAt(0).toLowerCase()}${first.activity.slice(1)} returns to Shadow and its ${/^flag/i.test(first.activity) ? 'flags' : 'drafts'} stop reaching pharmacists.${copied.length ? ` ${copied.join(' and ')} ${copied.length === 1 ? 'is' : 'are'} copied.` : ''}`,
+            text: `${first.agent} passed its review date on ${formatDate(firstPrivilege!.reviewDate!)}. ${lapseConsequence(s, firstPrivilege!, first.activity, exception.deadline)}${copied.length ? ` ${copied.join(' and ')} ${copied.length === 1 ? 'is' : 'are'} copied.` : ''}`,
           }
         : null,
   }
+}
+
+/**
+ * What the division's lapse policy does, or did, to an overdue privilege (3d, review fix I1):
+ * the notice never threatens a return to Shadow the policy won't make.
+ */
+function lapseConsequence(s: DemoState, p: Privilege, activity: string, deadline: string): string {
+  const Act = activity.charAt(0).toUpperCase() + activity.slice(1)
+  const act = activity.charAt(0).toLowerCase() + activity.slice(1)
+  const policy = s.divisions.find((d) => d.id === s.agents.find((a) => a.id === p.agentId)?.divisionId)?.lapsePolicy
+  if (p.state === 'lapsed') return `${Act} returned to Shadow on ${formatDate(p.lapsedAt ?? s.now)}; re-sign it to bring it back.`
+  if (p.lapsedAt) return `${Act} was paused on ${formatDate(p.lapsedAt)}; pending work went to pharmacists.`
+  if (policy === 'nothing') return `${Act} keeps its level until someone acts.`
+  const by = deadline.slice(0, 10) === s.now.slice(0, 10) ? `${formatDate(deadline)} ${formatClock(deadline)}` : formatDate(deadline)
+  return `If you don’t review it by ${by}, ${act} ${policy === 'pause' ? 'is paused' : 'returns to Shadow'} and its ${/^flag/i.test(activity) ? 'flags' : 'drafts'} stop reaching pharmacists.`
 }
 
 /** Sign the privilege (3c): what is being signed, the evidence, and what the signature records. */

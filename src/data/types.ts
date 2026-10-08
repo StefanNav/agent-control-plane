@@ -203,6 +203,8 @@ export interface Privilege {
   trigger?: string
   /** The sponsor's written reason when signing below target (3c). */
   signReason?: string
+  /** When the division's lapse policy acted on it (8a): back to Shadow, or the activity paused. */
+  lapsedAt?: string
 }
 
 /** A rule enforced at the gateway, outside the model. */
@@ -307,6 +309,8 @@ export interface AgentException {
   closedBy?: string
   dismissReason?: string
   escalatedTo?: string
+  /** For items about a unit rather than an agent (11b): the division whose roles they follow. */
+  divisionId?: string
 }
 
 /** Kinds of step on an action trace. */

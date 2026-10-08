@@ -14,9 +14,10 @@ export function advanceClock(s: DemoState, to: string): DemoState {
   const heartbeat = addMinutes(to, -1)
   for (const agent of s.agents) if (agent.monitor.lastSeen === live) agent.monitor.lastSeen = heartbeat
   for (const division of s.divisions) if (division.monitor.state === 'live') division.monitor.lastAt = heartbeat
+  const from = s.now
   s.now = to
   raiseOverdueReviews(s)
-  applyLapses(s)
+  applyLapses(s, from)
   withdrawExpiredChanges(s)
   return s
 }

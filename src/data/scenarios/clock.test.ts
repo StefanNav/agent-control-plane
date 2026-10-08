@@ -5,9 +5,11 @@ const privilege = (s: ReturnType<typeof createSeed>, code: string) =>
   s.privileges.filter((p) => p.code === code).at(-1)!
 const activity = (s: ReturnType<typeof createSeed>, id: string) => s.activities.find((a) => a.id === id)!
 
-test('Duplicate Rx lapses to Shadow when the 14-day grace ends on 15 Dec (8a), and only once', () => {
-  const s = advanceClock(createSeed(), '2026-12-15T09:52:00')
-  expect(privilege(s, 'PRV-0098')).toMatchObject({ state: 'lapsed', movedBy: 'ORG-LAPSE-01', trigger: 'Review date passed 01 Dec' })
+test('Duplicate Rx lapses to Shadow when the 14-day grace ends at 17:00 on 15 Dec (8a), and only once', () => {
+  const morning = advanceClock(createSeed(), '2026-12-15T09:52:00')
+  expect(privilege(morning, 'PRV-0098').state).toBe('due')
+  const s = advanceClock(createSeed(), '2026-12-15T17:00:00')
+  expect(privilege(s, 'PRV-0098')).toMatchObject({ state: 'lapsed', movedBy: 'ORG-LAPSE-01', trigger: 'Review date passed 01 Dec', lapsedAt: '2026-12-15T17:00:00' })
   expect(activity(s, 'duplicate-rx').level).toBe('shadow')
   expect(s.agents.find((a) => a.id === 'duplicate-rx')!.level).toBe('shadow')
   const overdue = s.exceptions.filter((e) => e.type === 'Review overdue' && e.ruleTag === 'PRV-0098')

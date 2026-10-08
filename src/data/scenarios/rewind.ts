@@ -46,6 +46,12 @@ export function rewindTo(s: DemoState, at: string): DemoState {
   s.resumeRequests = s.resumeRequests.filter((r) => !after(r.requestedAt))
   s.audit = s.audit.filter((e) => !after(e.at))
   s.intakeRequests = s.intakeRequests.filter((r) => !after(r.approvedAt))
+  // Phase 6 data (review fix M9): callers first seen or decided later, flags, Epic drafts and changes.
+  s.callers = s.callers.filter((c) => !after(c.firstSeen) && !after(c.decision?.at))
+  s.flags = s.flags.filter((f) => !after(f.at))
+  s.epicDrafts = s.epicDrafts.filter((d) => !after(d.draftedAt))
+  s.changes = s.changes.filter((c) => !after(c.deployedAt))
+  s.reviewChanges = s.reviewChanges.filter((c) => !after(c.at))
   dropAgents(s, new Set(s.onboardings.filter((r) => after(r.startedAt)).map((r) => r.agentId)))
   for (const intake of s.intakeRequests) if (after(intake.startedAt)) delete intake.startedAt
 

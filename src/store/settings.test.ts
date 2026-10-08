@@ -14,7 +14,7 @@ const dupRx = (s: DemoState) => s.activities.find((a) => a.id === 'duplicate-rx'
 describe('the lapse policy acts when it is saved', () => {
   test('lapseDate follows the policy: review date + grace, the review date, or never', () => {
     const s = createSeed()
-    expect(lapseDate(s, prv0098(s))).toBe('2026-12-15T00:00:00')
+    expect(lapseDate(s, prv0098(s))).toBe('2026-12-15T17:00:00')
     medications(s).lapsePolicy = 'shadowNow'
     expect(lapseDate(s, prv0098(s))).toBe('2026-12-01T00:00:00')
     medications(s).lapsePolicy = 'nothing'
@@ -199,5 +199,50 @@ describe('people and roles (8b)', () => {
     expect(store.getState().addRole('sam', { role: 'techOwner', divisionId: 'discharge' }).ok).toBe(false)
     expect(store.getState().removeRole('ana', { role: 'frontline', divisionId: 'medications' }).ok).toBe(false)
     expect(dataOf(store.getState())).toEqual(before)
+  })
+})
+
+describe('review fixes', () => {
+  test('I1: the overdue item is due when the lapse acts, and follows a grace change', () => {
+    const s = applyDivisionSettings(createSeed(), 'medications', { graceDays: 7 }, 'dana', AT)
+    expect(s.exceptions.find((e) => e.id === 'exc-5497')!.deadline).toBe('2026-12-08T17:00:00')
+    expect(prv0098(s).state).toBe('due')
+  })
+
+  test('I4: "Pause the activity" acts once, even after a resume', async () => {
+    const { applyResume } = await import('./mutations')
+    const s = applyDivisionSettings(createSeed(), 'medications', { lapsePolicy: 'pause' }, 'dana', AT)
+    expect(prv0098(s).lapsedAt).toBe(AT)
+    applyResume(s, 'duplicate-rx', 'priya')
+    expect(s.activities.find((a) => a.id === 'duplicate-rx')!.paused).toBeFalsy()
+    const logs = s.logEvents.length
+    applyDivisionSettings(s, 'medications', { graceDays: 30 }, 'dana', AT)
+    expect(s.activities.find((a) => a.id === 'duplicate-rx')!.paused).toBeFalsy()
+    expect(s.logEvents.length).toBe(logs + 1)
+  })
+
+  test('I2: a technical-owner role can’t be removed while the person is named on agents there', () => {
+    const store = fresh()
+    store.getState().setPersona('dana')
+    store.getState().addRole('sam', { role: 'techOwner', divisionId: 'discharge' })
+    expect(store.getState().removeRole('sam', { role: 'techOwner', divisionId: 'medications' })).toEqual({
+      ok: false,
+      reason: 'Sam is technical owner of 21 Medications agents. Name another technical owner for them first.',
+    })
+    expect(store.getState().removeRole('sam', { role: 'techOwner', divisionId: 'discharge' })).toEqual({ ok: true })
+  })
+
+  test('I5: a unit’s sampling item follows a sponsor change; a split hands the moved agents’ sponsor items over', () => {
+    const store = fresh()
+    store.getState().setPersona('marcus')
+    store.getState().proposeReviewChange('6-north', 'sampling')
+    store.getState().setPersona('dana')
+    store.getState().updateDivisionSettings('medications', { sponsorId: 'hana' })
+    const item = store.getState().exceptions.find((e) => e.type === 'Review: sampling change · 6 North')!
+    expect(item.ownerId).toBe('hana')
+    expect(item.copied).toContain('priya')
+
+    const split = applyCreateDivision(createSeed(), { name: 'Medications · reviews', ownerId: 'tom', sponsorId: 'nina', agentIds: ['duplicate-rx'] }, 'medications', 'dana', AT)
+    expect(split.exceptions.find((e) => e.id === 'exc-5497')).toMatchObject({ ownerId: 'nina' })
   })
 })

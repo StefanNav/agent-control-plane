@@ -60,7 +60,7 @@ export function applyFlag(s: DemoState, input: { draftId: string; reason: FlagRe
     short: 'flag from Epic',
     agentId: agent.id,
     ruleTag: code,
-    from: byName,
+    from: byId,
     raisedAt: at,
     action: `answer ${byName}’s flag`,
     actionSub: `${draft.id} · ${draft.patient.unit}`,

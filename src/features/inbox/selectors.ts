@@ -35,6 +35,9 @@ export interface InboxItemView {
   escalated: boolean
 }
 
+/** Who an item is from: a person by name, or a caller named as itself (9b, review fix I3). */
+const fromName = (s: DemoState, e: AgentException) => (e.from ? (s.people.find((p) => p.id === e.from)?.name ?? e.from) : undefined)
+
 /** The division's escalation chain for an item (8a). */
 function chainOf(s: DemoState, e: AgentException) {
   const agent = s.agents.find((a) => a.id === e.agentId)
@@ -66,7 +69,7 @@ function itemView(s: DemoState, e: AgentException, viewer: PersonaId): InboxItem
     source: escalated
       ? `${agent?.name} · escalated`
       : e.from
-        ? [personName(s, e.from), agent?.name].filter(Boolean).join(' · ')
+        ? [fromName(s, e), agent?.name].filter(Boolean).join(' · ')
         : `${agent?.name}${e.ruleTag ? ` · ${e.ruleTag}` : ''}`,
     due: formatDue(e.deadline, s.now),
     dueSoon: minutesBetween(s.now, e.deadline) <= 120,
@@ -161,7 +164,9 @@ export function selectExceptionDetail(s: DemoState, id: string, viewer: PersonaI
           ? `Claimed by ${owner} at ${formatClock(e.claimedAt)}`
           : e.assignedAt
             ? `Assigned to ${owner} at ${formatClock(e.assignedAt)}`
-            : `Not handled by ${clockWithDay(e.deadline, s.now)} → goes to ${sponsor}`
+            : e.link
+              ? null
+              : `Not handled by ${clockWithDay(e.deadline, s.now)} → goes to ${sponsor}`
   const lastSeen = agent?.monitor.lastSeen
   const silentFor =
     e.status === 'stale' && lastSeen ? formatAgo(lastSeen, s.now).replace(' ago', '') : null
@@ -248,8 +253,10 @@ export function selectInboxHeader(
   const roles = s.roles.filter((r) => r.personId === personaId)
   const divisionId = roles.some((r) => r.divisionId === 'all') ? undefined : roles[0]?.divisionId
   const division = s.divisions.find((d) => d.id === divisionId)
+  // Review fix M6: someone left with no role (after an owner change, 8a) isn't hospital-wide.
+  const scope = !roles.length ? 'No division' : (division?.name ?? 'All divisions')
   return {
-    status: `${personName(s, personaId)} · ${division?.name ?? 'All divisions'}`,
+    status: `${personName(s, personaId)} · ${scope}`,
     divisionId,
   }
 }
@@ -284,7 +291,7 @@ export function selectDigest(s: DemoState, personaId: PersonaId) {
         id: e.id,
         status: e.status,
         label: question && e.from ? `Question from ${personName(s, e.from)}` : e.type,
-        text: question ? (e.short ?? e.reason) : `${agent?.name} · ${e.short ?? e.reason}`,
+        text: question ? (e.short ?? e.reason) : `${agent?.name ?? fromName(s, e) ?? ''} · ${e.short ?? e.reason}`,
         due: dueWithDay(e.deadline, s.now),
         link: question ? 'Answer' : 'Open',
       }

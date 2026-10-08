@@ -151,3 +151,21 @@ describe('what the detail says depends on the item and on who is looking', () =>
     expect(d.escalationLine).toBeNull()
   })
 })
+
+describe('review fixes I3 and M6', () => {
+  test('I3: items without an agent, or from a non-persona, name their source; no "goes to" line on hand-offs', async () => {
+    const { applyFlag } = await import('../../store/feedback')
+    const flagged = applyFlag(createSeed(), { draftId: 'DR-88412', reason: 'frequency' }, 'ana', '2026-12-08T09:52:00')
+    expect(selectInbox(flagged, 'marcus').needsMe.find((i) => i.type === 'Flag from Epic')!.source).toBe('Ana R., PharmD · Med Rec Agent')
+    const dana = selectInbox(createSeed(), 'dana')
+    expect(dana.needsMe.filter((i) => i.type === 'Unregistered caller').map((i) => i.source)).toEqual(['svc-dc-summary-bot', 'ed-triage-helper', 'rx-price-check'])
+    expect(JSON.stringify(selectDigest(createSeed(), 'dana'))).not.toMatch(/undefined|—/)
+    expect(selectExceptionDetail(createSeed(), 'exc-5482', 'dana')!.escalationLine).toBeNull()
+  })
+
+  test('M6: someone left with no role reads "No division", not "All divisions"', async () => {
+    const { applyDivisionSettings } = await import('../../store/settings')
+    const s = applyDivisionSettings(createSeed(), 'medications', { ownerId: 'elena' }, 'dana', '2026-12-08T09:52:00')
+    expect(selectInboxHeader(s, 'marcus').status).toBe('Marcus · No division')
+  })
+})

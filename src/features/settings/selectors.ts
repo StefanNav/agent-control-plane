@@ -43,7 +43,8 @@ function lapsePreview(s: DemoState, d: Division, policy: LapsePolicy, graceDays:
     .sort((a, b) => a.reviewDate!.localeCompare(b.reviewDate!))[0]
   if (overdue) {
     const days = Math.floor(minutesBetween(overdue.reviewDate!, s.now) / (24 * 60))
-    const at = addDays(overdue.reviewDate!, graceDays)
+    // After a grace period the policy acts when the overdue item falls due, at 17:00 (review fix I1).
+    const at = `${addDays(overdue.reviewDate!, graceDays).slice(0, 10)}T17:00:00`
     const effect =
       policy === 'nothing'
         ? 'it keeps its level until someone acts'
@@ -51,7 +52,9 @@ function lapsePreview(s: DemoState, d: Division, policy: LapsePolicy, graceDays:
           ? 'its activity is paused when you save'
           : policy === 'shadowNow' || at <= s.now
             ? 'it returns to Shadow when you save'
-            : `it returns to Shadow on ${formatDate(at)}`
+            : at.slice(0, 10) === s.now.slice(0, 10)
+              ? 'it returns to Shadow today at 17:00'
+              : `it returns to Shadow on ${formatDate(at)}`
     return `${agentName(overdue.agentId)} is ${days} ${days === 1 ? 'day' : 'days'} past its review date. With this setting ${effect}.`
   }
   const lapsed = mine.find((p) => p.state === 'lapsed')

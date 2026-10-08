@@ -48,6 +48,8 @@ export function applyProposeReviewChange(s: DemoState, unitId: string, option: R
     at,
   })
   item.from = by
+  // Review fix I5: an item about a unit follows the division's roles when they change hands.
+  item.divisionId = unit.divisionId
   return s
 }
 

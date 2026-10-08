@@ -29,7 +29,7 @@ test('the preview and the footer follow the draft', () => {
     'Duplicate Rx Agent is 7 days past its review date. With this setting its activity is paused when you save.',
   )
   expect(selectDivisionSettings(s, 'medications', { lapsePolicy: 'shadow', graceDays: 7 }, 'dana')!.lapse.preview).toBe(
-    'Duplicate Rx Agent is 7 days past its review date. With this setting it returns to Shadow when you save.',
+    'Duplicate Rx Agent is 7 days past its review date. With this setting it returns to Shadow today at 17:00.',
   )
   expect(selectDivisionSettings(s, 'medications', { lapsePolicy: 'shadowNow' }, 'dana')!.footer).toEqual({ changes: 1, line: '1 change · logged as Dana · Priya told' })
 })
