@@ -404,7 +404,7 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
   - delayed: "Delayed 6 min · last 09:36" in stronger words, no colour
   - stale: `StatusChip status="stale"` with "No data for 3h · last 06:41"
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - HardStopCard renders the uppercase header text and the rule ID. InstructionCard's Edit button calls `onEdit`.
   - SystemsVerbsGrid:
     - Sign and Order cells have `data-cell="locked"` and contain no button.
@@ -415,10 +415,10 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
   - ResumeDialog: **Request resume** is `aria-disabled` with an empty or whitespace reason and doesn't call `onSubmit`. With a reason it calls `onSubmit`.
   - ActionTrace: renders `ACT-88213` and step timestamps in order. The blocked step shows its detail. **Export for surveyor** calls `onExport`.
   - MonitorHealth: `live` shows "Live · 09:42:17" with no status chip, and `stale` renders a chip with `data-status="stale"`.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** the full suite. Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(components): policy cards, systems grid, pause/resume dialogs, action trace, monitor health"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** the full suite. Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(components): policy cards, systems grid, pause/resume dialogs, action trace, monitor health"`.
 
 ### Task 2.9: Gallery: product components, light and dark
 
