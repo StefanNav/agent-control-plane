@@ -12,6 +12,7 @@ import { IncidentPage } from '../features/audit/IncidentPage'
 import { IncidentsPage } from '../features/audit/IncidentsPage'
 import { ExportPage } from '../features/audit/ExportPage'
 import { OnboardingPage } from '../features/onboarding/OnboardingPage'
+import { CasePage } from '../features/golive/CasePage'
 import { PacketPage } from '../features/review/PacketPage'
 import { RecordPage } from '../features/review/RecordPage'
 import { RiskTierPage } from '../features/review/RiskTierPage'
@@ -41,6 +42,7 @@ const PAGES: Record<string, ReactNode> = {
   '/inventory/agents/:agentId': <RecordPage />,
   '/inventory/agents/:agentId/risk-tier': <RiskTierPage />,
   '/portfolio/reviews/:reviewId': <PacketPage />,
+  '/operations/agents/:agentId/cases/:caseId': <CasePage />,
   '/wall': <WallDisplay />,
 }
 

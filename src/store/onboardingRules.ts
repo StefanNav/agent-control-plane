@@ -52,6 +52,8 @@ const EMPTY_TEMPLATE: JobTemplate = {
   suggestionsLabel: '',
   escalationSuggestions: [],
   criteria: [],
+  caseNoun: 'cases',
+  compareLine: 'each draft compared with the reviewer’s final work',
   systems: [],
   testSample: 1000,
   expectedActivities: 1,
@@ -323,4 +325,41 @@ export function conditionRange(ids: string[]): string {
   const nums = ids.map((id) => Number(id.slice(1)))
   const contiguous = ids.length > 2 && ids.every((id) => /^C\d+$/.test(id)) && nums.every((n, i) => i === 0 || n === nums[i - 1]! + 1)
   return contiguous ? `${ids[0]}–${ids.at(-1)}` : ids.join(', ')
+}
+
+/** Whole calendar days from a's date to b's date. */
+const calendarDays = (a: string, b: string) => Math.round((Date.UTC(+b.slice(0, 4), +b.slice(5, 7) - 1, +b.slice(8, 10)) - Date.UTC(+a.slice(0, 4), +a.slice(5, 7) - 1, +a.slice(8, 10))) / 86400000)
+
+/** The onboarding record an activity belongs to. */
+export const recordOfActivity = (s: DemoState, activityId: string) => s.onboardings.find((r) => r.job.activities.some((a) => a.id === activityId))
+
+/** Shadow so far for an activity (3a "day 21 of 21"): completed days against the minimum (plus any extension). */
+export function shadowProgress(s: DemoState, activityId: string): { day: number; minimum: number; label: string; done: boolean; endsOn: string } | null {
+  const review = recordOfActivity(s, activityId)?.review
+  if (!review?.shadowFrom) return null
+  const extended = s.scorecards.find((c) => c.activityId === activityId)?.extendedDays ?? 0
+  const minimum = review.shadowDays + extended
+  const day = Math.max(0, calendarDays(review.shadowFrom, s.now))
+  const endDate = new Date(`${review.shadowFrom.slice(0, 10)}T12:00:00`)
+  endDate.setDate(endDate.getDate() + minimum - 1)
+  return {
+    day,
+    minimum,
+    label: day > minimum ? `day ${day} · ${minimum}-day minimum met` : `day ${day} of ${minimum}`,
+    done: day >= minimum,
+    endsOn: formatDate(`${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}T12:00:00`),
+  }
+}
+
+/** Each success criterion against the activity's shadow results (3a, 3c): target, result and whether it's met. */
+export function criteriaStatus(s: DemoState, activityId: string) {
+  const record = recordOfActivity(s, activityId)
+  const template = templateFor(s.intakeRequests.find((i) => i.id === record?.intakeId))
+  const card = s.scorecards.find((c) => c.activityId === activityId)
+  return template.criteria.map((c) => {
+    const target = record?.job.targets[c.id] ?? null
+    const result = card?.results[c.id]?.value ?? null
+    const met = target !== null && result !== null && (c.direction === 'atLeast' ? result >= target : result <= target)
+    return { ...c, target, result, trend: card?.results[c.id]?.trend ?? [], met }
+  })
 }

@@ -932,3 +932,36 @@ describe('committee decision (2c, 2d) — Review focus 2, 3', () => {
     expect(again.getState().exceptions.find((e) => e.type === 'Re-review: questions from the board')).toMatchObject({ ownerId: 'dana', reason: 'Show allergy-flag evidence first.' })
   })
 })
+
+describe('go-live request (3a)', () => {
+  const at = (scenario: 'shadow-day-21' | 'review-decided', persona: 'marcus' | 'priya') => {
+    const store = fresh()
+    store.getState().loadScenario(scenario)
+    store.getState().setPersona(persona)
+    return store
+  }
+
+  test('Marcus asks Priya to sign: PRV-0142 v3 proposes Draft and Priya has “Review: your signature”', () => {
+    const store = at('shadow-day-21', 'marcus')
+    expect(store.getState().requestGoLive('med-rec-admission')).toEqual({ ok: true })
+    const s = store.getState()
+    const v3 = s.privileges.find((p) => p.code === 'PRV-0142' && p.version === 3)!
+    expect(v3).toMatchObject({ state: 'awaiting', level: 'shadow', proposedLevel: 'draft', movedBy: 'marcus' })
+    expect(s.exceptions.find((e) => e.type === 'Review: your signature')).toMatchObject({ ownerId: 'priya', link: { to: '/inventory/privileges/prv-0142/sign' } })
+    expect(store.getState().requestGoLive('med-rec-admission')).toEqual({ ok: false, reason: 'Already requested' })
+    expect(store.getState().extendShadow('med-rec-admission')).toEqual({ ok: false, reason: 'A go-live request is open' })
+  })
+
+  test('only the owner asks, and only once shadow has run its minimum', () => {
+    expect(at('shadow-day-21', 'priya').getState().requestGoLive('med-rec-admission').ok).toBe(false)
+    expect(at('review-decided', 'marcus').getState().requestGoLive('med-rec-admission')).toEqual({ ok: false, reason: 'Shadow isn’t finished' })
+  })
+
+  test('extend shadow by 7 days; flag a case line for the SOP', () => {
+    const store = at('shadow-day-21', 'marcus')
+    expect(store.getState().extendShadow('med-rec-admission')).toEqual({ ok: true })
+    expect(store.getState().scorecards.find((c) => c.activityId === 'med-rec-admission')!.extendedDays).toBe(7)
+    expect(store.getState().flagCaseLine('enc-4105', 4)).toEqual({ ok: true })
+    expect(store.getState().logEvents.at(-1)).toMatchObject({ text: 'Flagged for SOP: line 4 · Lasix → furosemide', agentId: 'med-rec' })
+  })
+})

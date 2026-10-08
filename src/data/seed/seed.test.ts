@@ -172,7 +172,7 @@ describe('E4 and E5 refinements', () => {
     ])
   })
 
-  test('Med Rec has its five recent actions (4c) plus ACT-88171 (7a); ACT-88213 keeps its trace', () => {
+  test('Med Rec has its five recent actions (4c) plus ACT-88171 (7a) and the shadow case ACT-61840 (3b); ACT-88213 keeps its trace', () => {
     expect(seed.actions.filter((a) => a.agentId === 'med-rec').map((a) => a.code)).toEqual([
       'ACT-88240',
       'ACT-88213',
@@ -180,6 +180,7 @@ describe('E4 and E5 refinements', () => {
       'ACT-88199',
       'ACT-88188',
       'ACT-88171',
+      'ACT-61840',
     ])
     expect(seed.actions.find((a) => a.code === 'ACT-88213')!.steps).toHaveLength(8)
   })
@@ -304,5 +305,37 @@ describe('Phase 5: onboarding data (seed v6)', () => {
 
   test('3d: the overdue Duplicate Rx review copies Marcus and Dana', () => {
     expect(s.exceptions.find((e) => e.id === 'exc-5497')!.copied).toEqual(['marcus', 'dana'])
+  })
+})
+
+describe('Phase 5: shadow scorecards and sample cases (3a, 3b)', () => {
+  const s = createSeed()
+
+  test('admission scorecard: 21 days, 1,118 admissions, 91.2 / 2.1 / 2.6, 29 inaccurate lines by cause, 12 cases', () => {
+    const card = s.scorecards.find((c) => c.activityId === 'med-rec-admission')!
+    expect(card).toMatchObject({ from: '2026-10-15T00:00:00', to: '2026-11-04T00:00:00', cases: 1118, hardStopNote: 'HS-04 would have fired 9 times' })
+    expect(Object.fromEntries(Object.entries(card.results).map(([k, v]) => [k, [v.value, v.trend.length, v.trend.at(-1)]]))).toEqual({
+      agreement: [91.2, 21, 91.2],
+      omitted: [2.1, 21, 2.1],
+      inaccurate: [2.6, 21, 2.6],
+    })
+    expect(card.causes.reduce((n, c) => n + c.count, 0)).toBe(29)
+    expect(card.sampleCaseIds.slice(0, 4)).toEqual(['enc-4022', 'enc-4105', 'enc-4231', 'enc-4310'])
+    expect(card.sampleCaseIds).toHaveLength(12)
+  })
+
+  test('case 4105 is 3b verbatim: 7 lines, 5 agree, Lasix → furosemide, vitamin D omitted, trace ACT-61840', () => {
+    const c = s.sampleCases.find((x) => x.id === 'enc-4105')!
+    expect(c).toMatchObject({ encounter: '4105', unit: '7 West', mrn: '••3307', age: 81, finalBy: 'Ana R.', traceId: 'act-61840' })
+    expect(c.lines.map((l) => l.result)).toEqual(['agrees', 'agrees', 'agrees', 'inaccurate', 'omitted', 'agrees', 'agrees'])
+    expect(c.lines[3]).toMatchObject({ agent: 'Lasix 40 mg daily', pharmacist: 'Furosemide 40 mg daily', note: 'name', source: 'Home list · brand name' })
+    expect(s.actions.find((a) => a.id === 'act-61840')).toMatchObject({ at: '2026-10-28T14:13:00', agentId: 'med-rec' })
+    for (const id of s.scorecards.flatMap((x) => x.sampleCaseIds)) expect(s.sampleCases.some((x) => x.id === id), id).toBe(true)
+  })
+
+  test('the allergy activity is still in shadow at baseline, every target met', () => {
+    const card = s.scorecards.find((c) => c.activityId === 'med-rec-allergy')!
+    expect(card.to).toBe('2026-12-07T00:00:00')
+    expect(Object.values(card.results).map((r) => r.value)).toEqual([94.6, 1.2, 1.1])
   })
 })

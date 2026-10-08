@@ -3,7 +3,7 @@ import { agentFromIntake } from '../data/seed/onboarding'
 import type { AgentException, Condition, DemoState, GrantCell, JobDraft, Limit, LimitTest, Onboarding, ReviewDecision, Tier, Verb } from '../data/types'
 import { addDays, formatDate, tomorrowAt } from '../lib/clock'
 import { nextArchiveCode, nextExceptionCode, nextHardStopCode, nextPrivilegeCode } from './mutations'
-import { conditionRange, jobFields, onboardingContext, personName, recordItems, riskFactors, systemsProgress, templateFor } from './onboardingRules'
+import { conditionRange, criteriaStatus, jobFields, onboardingContext, personName, recordItems, recordOfActivity, riskFactors, systemsProgress, templateFor } from './onboardingRules'
 
 /**
  * Onboarding state changes, shared by store actions and scenarios so a scenario builds exactly
@@ -507,4 +507,64 @@ export function applyDecision(s: DemoState, agentId: string, input: { kind: Revi
     return s
   }
   return applyShadowStart(s, agentId, by, at)
+}
+
+/** The latest version of an activity's privilege record. */
+export const latestPrivilege = (s: DemoState, activityId: string) => s.privileges.filter((p) => p.activityId === activityId && p.state !== 'closed').sort((a, b) => b.version - a.version)[0]
+
+/** The owner asks the sponsor to sign the move out of Shadow (3a): the next privilege version proposes Draft. */
+export function applyGoLiveRequest(s: DemoState, activityId: string, by: string, at: string): DemoState {
+  const activity = s.activities.find((a) => a.id === activityId)
+  const current = latestPrivilege(s, activityId)
+  if (!activity || !current) return s
+  const agent = s.agents.find((a) => a.id === activity.agentId)!
+  const version = current.version + 1
+  const proposal = { ...current, id: `${current.code.toLowerCase()}-v${version}`, version, state: 'awaiting' as const, level: 'shadow' as const, proposedLevel: 'draft' as const, movedBy: by }
+  delete proposal.grantedBy
+  delete proposal.grantedAt
+  delete proposal.reviewDate
+  delete proposal.trigger
+  s.privileges.push(proposal)
+  const criteria = criteriaStatus(s, activityId)
+  raiseItem(s, {
+    agentId: agent.id,
+    type: 'Review: your signature',
+    reason: `${agent.name}: ${activity.name}, Shadow → Draft`,
+    action: 'sign or send back',
+    actionSub: `${criteria.filter((c) => c.met).length} of ${criteria.length} targets met · ${current.code} v${version}`,
+    ownerId: agent.sponsorId,
+    copied: [by],
+    link: { label: 'Open the signature', to: `/inventory/privileges/${current.code.toLowerCase()}/sign` },
+    at,
+  })
+  recordOfActivity(s, activityId)?.history.push({ at, by, text: `${personName(s, by)} · asked ${personName(s, agent.sponsorId)} to sign`, sub: `${current.code} v${version} · Shadow → Draft`, decision: true })
+  return s
+}
+
+/** Run shadow longer before asking (3a "Extend shadow by 7 days"). */
+export function applyExtendShadow(s: DemoState, activityId: string, days: number, by: string, at: string): DemoState {
+  const card = s.scorecards.find((c) => c.activityId === activityId)
+  const activity = s.activities.find((a) => a.id === activityId)
+  if (!card || !activity) return s
+  card.extendedDays = (card.extendedDays ?? 0) + days
+  s.logEvents.push({ id: `log-extend-${s.logEvents.length + 1}`, at, agentId: activity.agentId, text: `Shadow extended by ${days} days`, sub: `${activity.name} · ${personName(s, by)}` })
+  return s
+}
+
+/** Flag a sample-case line for the SOP (3b): the technical owner is asked to check the mapping. */
+export function applyFlagLine(s: DemoState, caseId: string, line: number, by: string, at: string): DemoState {
+  const c = s.sampleCases.find((x) => x.id === caseId)
+  const l = c?.lines[line - 1]
+  if (!c || !l) return s
+  const agent = s.agents.find((a) => a.id === c.agentId)
+  const word = (text: string | null) => (text ?? '').split(' ')[0] ?? ''
+  const theirs = word(l.pharmacist)
+  s.logEvents.push({
+    id: `log-flag-${s.logEvents.length + 1}`,
+    at,
+    agentId: c.agentId,
+    text: `Flagged for SOP: line ${line} · ${l.agent ? word(l.agent) : 'missing'} → ${theirs.charAt(0).toLowerCase()}${theirs.slice(1)}`,
+    sub: `${personName(s, agent?.techOwnerId)} is asked to check the SOP mapping · ${personName(s, by)}`,
+  })
+  return s
 }

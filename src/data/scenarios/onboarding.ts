@@ -1,4 +1,5 @@
 import { applyDecision, applyJobEdit, applyRequestChanges, applySend, applySetTier, applySponsorSign, applyStart, applySystemsEdit, applyTest } from '../../store/onboarding'
+import { createSeed } from '../seed'
 import { JOB_TEMPLATES } from '../seed/catalogue'
 import type { DemoState, Verb } from '../types'
 import { dropAgents, rewindTo } from './rewind'
@@ -9,9 +10,9 @@ import { dropAgents, rewindTo } from './rewind'
  * store's own mutations, so a frame's state is exactly what the UI would produce.
  */
 
-export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4' | 'tools-tested' | 'sponsor-review' | 'returned-hs11' | 'ready' | 'risk-tier' | 'committee' | 'decided'
+export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4' | 'tools-tested' | 'sponsor-review' | 'returned-hs11' | 'ready' | 'risk-tier' | 'committee' | 'decided' | 'shadow-day-21'
 
-const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4', 'tools-tested', 'sponsor-review', 'returned-hs11', 'ready', 'risk-tier', 'committee', 'decided']
+const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4', 'tools-tested', 'sponsor-review', 'returned-hs11', 'ready', 'risk-tier', 'committee', 'decided', 'shadow-day-21']
 
 /** "Now" in each stage's frame. */
 const NOW: Record<MedRecStage, string> = {
@@ -25,6 +26,7 @@ const NOW: Record<MedRecStage, string> = {
   'risk-tier': '2026-10-13T10:15:00',
   committee: '2026-10-14T16:12:00',
   decided: '2026-10-14T16:25:00',
+  'shadow-day-21': '2026-11-05T09:30:00',
 }
 
 /** A dated step and the first stage at which it has happened. */
@@ -98,7 +100,20 @@ const TIMELINE: Step[] = [
     stage: 'decided',
     run: (s) => applyDecision(s, 'med-rec', { kind: 'approveWithConditions', conditions: JOB_TEMPLATES['req-0093']!.conditions, reason: DECISION_REASON }, 'drlee', '2026-10-14T16:20:00'),
   },
+  // 2d → 3a: 21 days of shadow, 15 Oct to 04 Nov; Marcus compared 12 cases.
+  { stage: 'shadow-day-21', run: (s) => shadowEvidence(s) },
 ]
+
+/** Shadow evidence as of 05 Nov (3a, 3b): the seed's scorecards, cases and trace, cut to 04 Nov. */
+function shadowEvidence(s: DemoState) {
+  const seed = createSeed()
+  s.scorecards = [...s.scorecards.filter((c) => !c.activityId.startsWith('med-rec-')), ...structuredClone(seed.scorecards)]
+  Object.assign(s.scorecards.find((c) => c.activityId === 'med-rec-allergy')!, { to: '2026-11-04T00:00:00', cases: 861 })
+  s.sampleCases = [...s.sampleCases.filter((c) => c.agentId !== 'med-rec'), ...structuredClone(seed.sampleCases)]
+  if (!s.actions.some((a) => a.id === 'act-61840')) s.actions.push(structuredClone(seed.actions.find((a) => a.id === 'act-61840')!))
+  const agent = s.agents.find((a) => a.id === 'med-rec')!
+  agent.metrics = { ...agent.metrics, day: 53, trend: { end: 90, drift: 0.4 } }
+}
 
 /** Dana's reason for Tier 3 (2b) and Dr. Lee's for the decision (2c), verbatim. */
 const TIER_REASON = 'Med rec errors carry into every inpatient order. Pharmacist review catches most, not all. The board should see this at Tier 3 until shadow evidence is in.'

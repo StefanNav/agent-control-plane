@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { AutonomyLadder, PrivilegeCard } from '../../../components'
-import { LogRow, Notice, Table, Card } from '../../../design-system'
+import { LogRow, Table, Card } from '../../../design-system'
 import { formatDate } from '../../../lib/clock'
 import { useDemo } from '../../../store'
 import { selectAgentHistory, selectAgentOverview, selectPrivilegeCards } from '../selectors'
@@ -33,17 +33,6 @@ export function ActivitiesTab({ agentId }: { agentId: string }) {
           </section>
         )
       })}
-    </div>
-  )
-}
-
-/** Scorecard tab: the shadow scorecard arrives with onboarding (frame 3a). */
-export function ScorecardTab() {
-  return (
-    <div className={styles.body}>
-      <Notice mark="none" lead="Shadow scorecard.">
-        Agreement with pharmacist work against each success criterion arrives in Phase 5 (frame 3a).
-      </Notice>
     </div>
   )
 }

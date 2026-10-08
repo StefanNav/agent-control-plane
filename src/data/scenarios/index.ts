@@ -22,6 +22,7 @@ export type ScenarioId =
   | 'review-risk-tier'
   | 'review-committee'
   | 'review-decided'
+  | 'shadow-day-21'
 
 /** Every scenario id, for validating a `?scenario=` param. */
 export const SCENARIO_IDS: readonly ScenarioId[] = [
@@ -41,6 +42,7 @@ export const SCENARIO_IDS: readonly ScenarioId[] = [
   'review-risk-tier',
   'review-committee',
   'review-decided',
+  'shadow-day-21',
 ]
 
 /** The seed's live heartbeat (one minute before DEMO_NOW). */
@@ -191,6 +193,9 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
 
   // E2 2d: 14 Oct 16:25, approved with conditions C1–C3 at 16:20; shadow starts 15 Oct.
   'review-decided': medRecAt('decided'),
+
+  // E3 3a / 3b: 05 Nov 09:30, shadow ran 15 Oct to 04 Nov; 2 of 3 targets met.
+  'shadow-day-21': medRecAt('shadow-day-21'),
 }
 
 /** A fresh state for the scenario. */

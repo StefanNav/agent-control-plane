@@ -11,13 +11,8 @@ import { PauseFlow } from '../controls/PauseFlow'
 import { ResumePanel } from '../controls/ResumePanel'
 import { RetireDialog } from '../inventory/RetireDialog'
 import type { PauseScope } from '../controls/selectors'
-import {
-  ActionsTab,
-  ActivitiesTab,
-  HistoryTab,
-  PrivilegesTab,
-  ScorecardTab,
-} from './agent-tabs/Tabs'
+import { ScorecardTab } from '../golive/ScorecardTab'
+import { ActionsTab, ActivitiesTab, HistoryTab, PrivilegesTab } from './agent-tabs/Tabs'
 import { Overview } from './agent-tabs/Overview'
 import { DraftAgentView } from './DraftAgentView'
 import { selectAgentOverview } from './selectors'
@@ -71,7 +66,7 @@ export function AgentView() {
   const content: Record<Tab, ReactNode> = {
     overview: <Overview view={view} resume={<ResumePanel agentId={agentId} />} />,
     activities: <ActivitiesTab agentId={agentId} />,
-    scorecard: <ScorecardTab />,
+    scorecard: <ScorecardTab agentId={agentId} />,
     actions: <ActionsTab agentId={agentId} />,
     privileges: <PrivilegesTab agentId={agentId} />,
     history: <HistoryTab agentId={agentId} />,
@@ -110,6 +105,7 @@ export function AgentView() {
                 }))}
               />
             )}
+            {tab === 'scorecard' ? <LinkButton to={`/reports/export?agent=${agentId}`}>Export scorecard</LinkButton> : null}
             <LinkButton to={`/inventory/agents/${agentId}`}>Open in Inventory</LinkButton>
           </>
         }

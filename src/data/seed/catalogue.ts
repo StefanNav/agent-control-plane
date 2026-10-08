@@ -22,7 +22,10 @@ export interface JobTemplate {
   /** "Common for med rec:" */
   suggestionsLabel: string
   escalationSuggestions: string[]
-  criteria: { id: string; label: string; short: string; direction: 'atLeast' | 'atMost' }[]
+  criteria: { id: string; label: string; short: string; brief: string; direction: 'atLeast' | 'atMost' }[]
+  /** How the scorecard names a shadow case and what it was compared with (3a). */
+  caseNoun: string
+  compareLine: string
   systems: { system: string; detail: string }[]
   /** Drafts in the last 30 days that hard stops are tested on (1d "of 1,204"). */
   testSample: number
@@ -87,10 +90,12 @@ export const JOB_TEMPLATES: Record<string, JobTemplate> = {
       'Medication not on formulary',
     ],
     criteria: [
-      { id: 'agreement', label: 'Agreement with the pharmacist’s list', short: 'agreement', direction: 'atLeast' },
-      { id: 'omitted', label: 'Omitted home medications', short: 'omission', direction: 'atMost' },
-      { id: 'inaccurate', label: 'Inaccurate lines', short: 'inaccuracy', direction: 'atMost' },
+      { id: 'agreement', label: 'Agreement with the pharmacist’s list', short: 'agreement', brief: 'Agreement', direction: 'atLeast' },
+      { id: 'omitted', label: 'Omitted home medications', short: 'omission', brief: 'Omissions', direction: 'atMost' },
+      { id: 'inaccurate', label: 'Inaccurate lines', short: 'inaccuracy', brief: 'Inaccurate lines', direction: 'atMost' },
     ],
+    caseNoun: 'admissions',
+    compareLine: 'each draft compared with the admitting pharmacist’s final list',
     systems: [MEDICATIONS_SYSTEMS.epic, MEDICATIONS_SYSTEMS.worklist, MEDICATIONS_SYSTEMS.pyxis, MEDICATIONS_SYSTEMS.teams],
     testSample: 1204,
     expectedActivities: 2,
@@ -107,14 +112,16 @@ export const JOB_TEMPLATES: Record<string, JobTemplate> = {
       'Organism resistant to the discharge antibiotic',
     ],
     criteria: [
-      { id: 'agreement', label: 'Agreement with the pharmacist’s follow-up', short: 'agreement', direction: 'atLeast' },
-      { id: 'missed', label: 'Missed positive cultures', short: 'missed-culture', direction: 'atMost' },
+      { id: 'agreement', label: 'Agreement with the pharmacist’s follow-up', short: 'agreement', brief: 'Agreement', direction: 'atLeast' },
+      { id: 'missed', label: 'Missed positive cultures', short: 'missed-culture', brief: 'Missed cultures', direction: 'atMost' },
     ],
     systems: [
       { system: 'Epic', detail: 'Encounter, culture results, discharge medications' },
       { system: 'Pharmacy worklist', detail: 'Discharge follow-up queue' },
       { system: 'Microsoft Teams', detail: 'Messages to the discharging pharmacist' },
     ],
+    caseNoun: 'cultures',
+    compareLine: 'each draft compared with the pharmacist’s follow-up',
     testSample: 860,
     expectedActivities: 1,
     conditions: [PHARMACIST_SIGNS],
@@ -125,14 +132,16 @@ export const JOB_TEMPLATES: Record<string, JobTemplate> = {
     suggestionsLabel: 'Common for infusion checks:',
     escalationSuggestions: ['Rate outside the drug library limits', 'Pump not in the drug library', 'High-alert medication'],
     criteria: [
-      { id: 'agreement', label: 'Agreement with the pharmacist’s check', short: 'agreement', direction: 'atLeast' },
-      { id: 'missed', label: 'Missed programming errors', short: 'missed-error', direction: 'atMost' },
+      { id: 'agreement', label: 'Agreement with the pharmacist’s check', short: 'agreement', brief: 'Agreement', direction: 'atLeast' },
+      { id: 'missed', label: 'Missed programming errors', short: 'missed-error', brief: 'Missed errors', direction: 'atMost' },
     ],
     systems: [
       { system: 'Epic', detail: 'Infusion orders, weight, allergies' },
       { system: 'Pump gateway', detail: 'Programmed rates, read only' },
       { system: 'Microsoft Teams', detail: 'Messages to the infusion pharmacist' },
     ],
+    caseNoun: 'infusions',
+    compareLine: 'each check compared with the pharmacist’s',
     testSample: 2310,
     expectedActivities: 1,
     conditions: [PHARMACIST_SIGNS],
@@ -143,14 +152,16 @@ export const JOB_TEMPLATES: Record<string, JobTemplate> = {
     suggestionsLabel: 'Common for prior auth:',
     escalationSuggestions: ['Payer needs a peer-to-peer review', 'Order changed after submission', 'Contrast allergy on file'],
     criteria: [
-      { id: 'agreement', label: 'Agreement with the coordinator’s packet', short: 'agreement', direction: 'atLeast' },
-      { id: 'returned', label: 'Packets returned by the payer', short: 'return', direction: 'atMost' },
+      { id: 'agreement', label: 'Agreement with the coordinator’s packet', short: 'agreement', brief: 'Agreement', direction: 'atLeast' },
+      { id: 'returned', label: 'Packets returned by the payer', short: 'return', brief: 'Returned packets', direction: 'atMost' },
     ],
     systems: [
       { system: 'Epic', detail: 'Imaging orders, history, coverage' },
       { system: 'Payer portal', detail: 'Prior-auth submissions' },
       { system: 'Microsoft Teams', detail: 'Messages to the prior-auth coordinator' },
     ],
+    caseNoun: 'orders',
+    compareLine: 'each packet compared with the coordinator’s',
     testSample: 640,
     expectedActivities: 1,
     conditions: [],

@@ -12,6 +12,7 @@ import { draftAgents, intakeRequests, onboardings } from './onboarding'
 import { people, roles } from './people'
 import { grants, hardStops, instructions } from './policies'
 import { privileges } from './privileges'
+import { sampleCases, scorecards } from './scorecards'
 
 /**
  * Bump whenever seed data or the DemoState shape changes: saved state from an older
@@ -40,8 +41,8 @@ const SEED: DemoState = {
   incidents,
   intakeRequests,
   onboardings,
-  scorecards: [],
-  sampleCases: [],
+  scorecards,
+  sampleCases,
   exports: exportRecords,
   stats24h: { closedEarlier: 5, medianCloseMin: 41, lastHour: { hardStops: 3, pauses: 1, pages: 0 }, actionsToday: 1912 },
   audit: [],

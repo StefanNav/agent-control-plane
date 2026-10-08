@@ -540,7 +540,8 @@ export interface Scorecard {
   cases: number
   /** By criterion id: the result over the period and its daily values, oldest first. */
   results: Record<string, { value: number; trend: number[] }>
-  causes: { label: string; count: number; example: string }[]
+  /** `fix`: what extending shadow would fix first, e.g. "the name mapping" (3a). */
+  causes: { label: string; count: number; example: string; fix?: string }[]
   hardStopNote?: string
   sampleCaseIds: string[]
   extendedDays?: number

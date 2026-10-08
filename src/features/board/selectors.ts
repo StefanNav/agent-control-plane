@@ -12,7 +12,7 @@ import {
 } from '../../lib/clock'
 import { trendPoints } from '../../lib/trend'
 import { queueOf } from '../../store/mutations'
-import { conditionRange } from '../../store/onboardingRules'
+import { conditionRange, shadowProgress } from '../../store/onboardingRules'
 
 /** Statuses that need a human. */
 export const ATTENTION: Status[] = ['crit', 'warn', 'review', 'stale']
@@ -296,6 +296,8 @@ export function selectAgentOverview(s: DemoState, agentId: string) {
       : undefined
   const incident = s.incidents.find((i) => i.agentId === a.id && i.state !== 'closed')
   const pausedMinutes = pausedAt ? minutesBetween(pausedAt, s.now) : 0
+  // An agent in its first shadow says how far along it is (3a "Shadow · day 21 of 21").
+  const shadow = a.level === 'shadow' ? s.activities.filter((x) => x.agentId === a.id).map((x) => shadowProgress(s, x.id)).find(Boolean) : null
   return {
     id: a.id,
     name: a.name,
@@ -307,7 +309,9 @@ export function selectAgentOverview(s: DemoState, agentId: string) {
         ? pauseScope === 'activity'
           ? `${LEVEL_NAME[a.level]} · one activity paused since ${formatClock(pausedAt)}`
           : `Paused · since ${formatClock(pausedAt)}`
-        : `${LEVEL_NAME[a.level]}${mainPrivilege?.grantedAt ? ` · since ${formatDate(mainPrivilege.grantedAt)}` : ''}`,
+        : shadow
+          ? `Shadow · ${shadow.label}`
+          : `${LEVEL_NAME[a.level]}${mainPrivilege?.grantedAt ? ` · since ${formatDate(mainPrivilege.grantedAt)}` : ''}`,
     /** Retired for good (6f): the view says so in place of the controls. */
     retired: a.retirement
       ? {

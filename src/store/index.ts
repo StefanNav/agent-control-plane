@@ -5,8 +5,8 @@ import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type Condition, type DemoState, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
-import { applyDecision, applyJobEdit, applyReply, applyRequestChanges, applySend, applySetTier, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, testResult, type SystemsChange } from './onboarding'
-import { FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems } from './onboardingRules'
+import { applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applySend, applySetTier, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestPrivilege, testResult, type SystemsChange } from './onboarding'
+import { FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems, shadowProgress } from './onboardingRules'
 import { can, lockReason } from './permissions'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
@@ -92,6 +92,12 @@ export interface DemoActions {
   setRiskTier: (agentId: string, input: { tier: Tier; reason?: string }) => ActionResult
   /** The AI review board's decision from the packet, with a reason (2c); approval starts shadow (2d). */
   recordDecision: (agentId: string, input: { kind: ReviewDecision['kind']; conditions: Condition[]; reason: string }) => ActionResult
+  /** The owner asks the sponsor to sign Shadow → Draft once shadow has run its minimum (3a). */
+  requestGoLive: (activityId: string) => ActionResult
+  /** Run shadow longer before asking (3a). */
+  extendShadow: (activityId: string, days?: number) => ActionResult
+  /** Flag a sample-case line for the SOP (3b). */
+  flagCaseLine: (caseId: string, line: number) => ActionResult
 }
 
 export interface PauseInput {
@@ -731,6 +737,56 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Recorded committee decision', target: agent.code, reason: `${DECISION_WORDS[kind]} · ${why}` },
               mutate: (draft) => {
                 applyDecision(draft, agentId, { kind, conditions, reason: why }, draft.personaId, draft.now)
+              },
+            })
+          },
+          requestGoLive: (activityId) => {
+            const s = get()
+            const activity = s.activities.find((a) => a.id === activityId)
+            const agent = s.agents.find((a) => a.id === activity?.agentId)
+            if (!activity || !agent) return { ok: false, reason: 'Not found' }
+            if (activity.level !== 'shadow') return { ok: false, reason: 'Not in Shadow' }
+            const current = latestPrivilege(s, activityId)
+            if (current?.state === 'awaiting' && current.proposedLevel) return { ok: false, reason: 'Already requested' }
+            const progress = shadowProgress(s, activityId)
+            if (!progress || !current) return { ok: false, reason: 'No shadow evidence yet' }
+            if (!progress.done) return { ok: false, reason: 'Shadow isn’t finished' }
+            return act({
+              action: 'requestGoLive',
+              ctx: { agentId: agent.id },
+              audit: { action: 'Requested go-live', target: agent.code, reason: `${activity.name} · Shadow → Draft · ${current.code} v${current.version + 1}` },
+              mutate: (draft) => {
+                applyGoLiveRequest(draft, activityId, draft.personaId, draft.now)
+              },
+            })
+          },
+          extendShadow: (activityId, days = 7) => {
+            const s = get()
+            const activity = s.activities.find((a) => a.id === activityId)
+            const agent = s.agents.find((a) => a.id === activity?.agentId)
+            if (!activity || !agent || !s.scorecards.some((c) => c.activityId === activityId)) return { ok: false, reason: 'Not found' }
+            const current = latestPrivilege(s, activityId)
+            if (current?.state === 'awaiting' && current.proposedLevel) return { ok: false, reason: 'A go-live request is open' }
+            return act({
+              action: 'requestGoLive',
+              ctx: { agentId: agent.id },
+              audit: { action: 'Extended shadow', target: agent.code, reason: `${activity.name} · ${days} days` },
+              mutate: (draft) => {
+                applyExtendShadow(draft, activityId, days, draft.personaId, draft.now)
+              },
+            })
+          },
+          flagCaseLine: (caseId, line) => {
+            const s = get()
+            const c = s.sampleCases.find((x) => x.id === caseId)
+            const agent = s.agents.find((a) => a.id === c?.agentId)
+            if (!c || !agent || !c.lines[line - 1]) return { ok: false, reason: 'Not found' }
+            return act({
+              action: 'editJobDescription',
+              ctx: { agentId: agent.id },
+              audit: { action: 'Flagged for SOP', target: agent.code, reason: `Encounter ${c.encounter} · line ${line}` },
+              mutate: (draft) => {
+                applyFlagLine(draft, caseId, line, draft.personaId, draft.now)
               },
             })
           },
