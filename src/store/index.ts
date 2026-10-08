@@ -5,6 +5,7 @@ import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type DemoState, type Incident, type PersonaId, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
+import { can, lockReason } from './permissions'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
 
@@ -520,6 +521,9 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
           buildExport: (input) => {
             const s = get()
             if (!input.agentIds.length) return { ok: false, reason: 'Choose at least one agent' }
+            // Every agent in the export must be one whose audit trail this person may see.
+            const hidden = input.agentIds.find((agentId) => !can(s, s.personaId, 'viewAudit', { agentId }))
+            if (hidden) return { ok: false, reason: lockReason('viewAudit', s.personaId) }
             const code = `EXP-${String(s.exports.length + 1).padStart(4, '0')}`
             return act({
               action: 'viewAudit',

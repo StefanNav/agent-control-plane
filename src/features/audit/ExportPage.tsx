@@ -4,6 +4,7 @@ import { Button, Checkbox, Field, Menu, Notice, RadioCardGroup, Select } from '.
 import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { formatDate } from '../../lib/clock'
 import { useDemo } from '../../store'
+import { can, lockReason } from '../../store/permissions'
 import { onBoard, personName } from '../board/selectors'
 import { selectExportContents } from './selectors'
 import styles from './export.module.css'
@@ -43,13 +44,21 @@ export function ExportPage() {
   const [format, setFormat] = useState<'packet' | 'csv'>('packet')
   const [masked, setMasked] = useState(true)
   const [built, setBuilt] = useState<string | null>(null)
+  const [refused, setRefused] = useState<string | null>(null)
+  const locked = can(state, state.personaId, 'viewAudit', { agentId })
+    ? undefined
+    : lockReason('viewAudit', state.personaId)
   const contents = selectExportContents(state, [agentId])
   const [included, setIncluded] = useState<Record<string, boolean>>({})
   const viewer = personName(state, state.personaId)
   const build = () => {
     const from = PERIODS.find((p) => p.value === period)!.from
     const code = `EXP-${String(state.exports.length + 1).padStart(4, '0')}`
-    if (buildExport({ agentIds: [agentId], from, to: state.now, format, masked }).ok) setBuilt(code)
+    const result = buildExport({ agentIds: [agentId], from, to: state.now, format, masked })
+    if (result.ok) {
+      setBuilt(code)
+      setRefused(null)
+    } else setRefused(result.reason)
   }
   return (
     <>
@@ -144,6 +153,11 @@ export function ExportPage() {
             label="Mask patient identifiers"
             description="MRNs show as ••4821; encounter numbers stay"
           />
+          {refused ? (
+            <Notice mark="crit" lead="Not built.">
+              {refused}
+            </Notice>
+          ) : null}
           {built ? (
             <Notice lead={`${built} built · logged as ${viewer}.`}>
               Nothing is downloaded in this prototype; the export record is what an auditor would
@@ -151,7 +165,7 @@ export function ExportPage() {
             </Notice>
           ) : null}
           <div className={styles.foot}>
-            <Button variant="primary" onClick={build}>
+            <Button variant="primary" locked={locked} onClick={build}>
               Build export
             </Button>
             <span className={styles.mono}>About 2 min · logged as {viewer}</span>

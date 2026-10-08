@@ -564,3 +564,13 @@ describe('review fix: every pause can be resumed (Important #2, #3)', () => {
     expect(store.getState().incidents.at(-1)!.timeline.at(-1)).toMatchObject({ title: 'Marcus paused the agent', sub: '12 drafts to pharmacists' })
   })
 })
+
+test('Important #6: an export needs the audit right for every agent in it', () => {
+  const store = fresh()
+  const input = { from: '2026-11-06T00:00:00', to: '2026-12-08T00:00:00', format: 'csv' as const, masked: true }
+  const before = dataOf(store.getState())
+  expect(store.getState().buildExport({ ...input, agentIds: ['prior-auth'] })).toMatchObject({ ok: false })
+  expect(store.getState().buildExport({ ...input, agentIds: ['med-rec', 'prior-auth'] })).toMatchObject({ ok: false })
+  expect(dataOf(store.getState())).toEqual(before)
+  expect(store.getState().buildExport({ ...input, agentIds: ['med-rec'] })).toEqual({ ok: true })
+})

@@ -66,3 +66,10 @@ test('export for a surveyor (7d): built from the record and logged', async ({ pa
   await expect(page.getByRole('button', { name: 'Past exports · 4' })).toBeVisible()
   expect(errors).toEqual([])
 })
+
+test('Important #6: Marcus can’t export another division’s agent; the button says why', async ({ page }) => {
+  await page.goto('/reports/export?agent=prior-auth')
+  const build = page.getByRole('button', { name: 'Build export' })
+  await expect(build).toHaveAttribute('aria-disabled', 'true')
+  await expect(build).toHaveAccessibleDescription(/.+/)
+})
