@@ -265,17 +265,17 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
 - `buildScenario(id: ScenarioId): DemoState` = `scenarios[id](createSeed())`
 - The store's `loadScenario(id)` replaces state with `buildScenario(id)` and keeps the current `personaId`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - `baseline` deep-equals `createSeed()`.
   - `med-rec-paused`: Med Rec `lifecycle === 'paused'`, `pausedBy === 'marcus'`, and `judgment` is `{ status: 'paused', label: 'Paused by Marcus' }`.
   - `resume-requested`: as `med-rec-paused`, plus one `ResumeRequest` from Marcus with the sheet's reason and no approvals.
   - `awaiting-signature`: PRV-0142 has state `awaiting`, level `shadow` and proposed level `draft`.
   - `step-down-threshold`: Med Rec's "Reconcile home medications at admission" is at level `shadow`, and its privilege is `steppedDown` with `trigger` set.
   - `useDemo.getState().loadScenario('med-rec-paused')` keeps `personaId`.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(data): named scenarios"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(data): named scenarios"`.
 
 ### Task 2.7: Product components 01–05
 

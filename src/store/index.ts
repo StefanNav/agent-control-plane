@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
+import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
 import type { DemoState, PersonaId } from '../data/types'
 import { runAction, type ActionResult } from './runAction'
@@ -11,6 +12,8 @@ export interface DemoActions {
   setPersona: (id: PersonaId) => void
   /** Restore the seed: data, clock and persona. */
   reset: () => void
+  /** Replace the data with a named scenario, keeping who you are viewing as. */
+  loadScenario: (id: ScenarioId) => void
   /** Take ownership of an exception (state → claimed, stamped with the demo clock). */
   claimException: (id: string) => ActionResult
 }
@@ -38,6 +41,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
           ...createSeed(),
           setPersona: (id) => set({ personaId: id }),
           reset: () => set(createSeed()),
+          loadScenario: (id) => set({ ...buildScenario(id), personaId: get().personaId }),
           claimException: (id) => {
             const exception = get().exceptions.find((e) => e.id === id)
             if (!exception) return { ok: false, reason: 'Not found' }
