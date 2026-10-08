@@ -424,6 +424,21 @@ export interface GatewayCaller {
   messages: { by: string; text: string; at: string }[]
 }
 
+/** A sampling or review-level change for a unit, proposed by the owner and signed by the sponsor (11b). */
+export interface ReviewChange {
+  id: string
+  unitId: string
+  option: 'sampling' | 'tighten' | 'minTime'
+  by: string
+  at: string
+  state: 'waiting' | 'signed' | 'declined'
+  decidedBy?: string
+  decidedAt?: string
+  reason?: string
+  /** Signed changes run 14 days. */
+  until?: string
+}
+
 /** An informational event: kept in the log, never sent to anyone. */
 export interface LogEvent {
   id: string
@@ -757,6 +772,8 @@ export interface DemoState {
   changes: Change[]
   /** Callers seen at the gateway without a registry record (E9.2). */
   callers: GatewayCaller[]
+  /** Sampling and review-level changes proposed for units (11b). */
+  reviewChanges: ReviewChange[]
   /** Hospital-wide counts before today's activity (4f "Last 24 hours"); `actionsToday` for 7a. */
   stats24h: {
     closedEarlier: number

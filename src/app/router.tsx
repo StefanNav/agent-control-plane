@@ -21,6 +21,8 @@ import { RiskTierPage } from '../features/review/RiskTierPage'
 import { DivisionSettingsPage } from '../features/settings/DivisionSettingsPage'
 import { EpicPage } from '../features/epic/EpicPage'
 import { GatewayPage } from '../features/gateway/GatewayPage'
+import { ReviewersPage } from '../features/reviewers/ReviewersPage'
+import { UnitPage } from '../features/reviewers/UnitPage'
 import { PeoplePage } from '../features/settings/PeoplePage'
 import { NotFound } from '../layout/NotFound'
 import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
@@ -57,6 +59,8 @@ const PAGES: Record<string, ReactNode> = {
   '/epic': <EpicPage />,
   '/inventory/unregistered': <GatewayPage />,
   '/inventory/unregistered/:callerId': <GatewayPage />,
+  '/operations/reviewers': <ReviewersPage />,
+  '/operations/reviewers/:unitId': <UnitPage />,
 }
 
 function childrenFor(shell: ShellKind): RouteObject[] {

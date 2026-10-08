@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
-import { PERSONA_IDS, type Condition, type DemoState, type FlagReason, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
+import { PERSONA_IDS, type Condition, type DemoState, type FlagReason, type ReviewChange, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
 import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, signMode, testResult, type SystemsChange } from './onboarding'
@@ -10,6 +10,7 @@ import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems, s
 import { applyAccept, applyHardStopApproval, applyReplay, applySystemsSignOff, pendingChecks } from './changes'
 import { applyFlag, applyFlagAnswer, applySeenFix, type FlagAnswer } from './feedback'
 import { applyBlockCaller, applyDismissCaller, applyMessageOwner } from './gateway'
+import { applyDeclineReviewChange, applyProposeReviewChange, applyShareFinding, applySignReviewChange, unitById } from './reviewers'
 import { can, lockReason } from './permissions'
 import { applyAddRole, applyCreateDivision, applyDivisionSettings, applyInvite, applyRemoveRole, applyReturnToShadow, diffDivision, divisionSlug, ROLE_LABEL, roleDivision, type DivisionPatch, type NewDivisionInput, type RoleInput } from './settings'
 import { runAction, type ActionResult } from './runAction'
@@ -106,6 +107,14 @@ export interface DemoActions {
   dismissCaller: (callerId: string, reason: string) => ActionResult
   /** Message a caller's likely owner; logged on the caller (9b). Program lead. */
   messageCallerOwner: (callerId: string, text: string) => ActionResult
+  /** Send a unit's sampling or review-level change to the sponsor for sign-off (11b). */
+  proposeReviewChange: (unitId: string, option: ReviewChange['option']) => ActionResult
+  /** The sponsor signs it; it runs 14 days (11b). */
+  signReviewChange: (id: string) => ActionResult
+  /** The sponsor declines it, with a reason. */
+  declineReviewChange: (id: string, reason: string) => ActionResult
+  /** "Share with Priya" (11a): an FYI in the log. */
+  shareReviewerFinding: (unitId: string) => ActionResult
   /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
   startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
   /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
@@ -215,6 +224,24 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
           if (!exception) return { error: { ok: false, reason: 'Not found' } as ActionResult }
           if (exception.state === 'resolved' || exception.state === 'dismissed') return { error: { ok: false, reason: 'Already resolved' } as ActionResult }
           return { exception }
+        }
+        /** The sponsor signs (reason null) or declines a unit's review change, once (11b). */
+        const reviewDecision = (id: string, reason: string | null): ActionResult => {
+          const change = get().reviewChanges.find((c) => c.id === id)
+          const unit = change ? unitById(change.unitId) : undefined
+          if (!change || !unit) return { ok: false, reason: 'Not found' }
+          if (change.state !== 'waiting') return { ok: false, reason: 'Already decided' }
+          const why = reason?.trim() ?? ''
+          if (reason !== null && !why) return { ok: false, reason: 'Say why' }
+          return act({
+            action: 'signReviewChange',
+            ctx: { divisionId: unit.divisionId },
+            audit: { action: reason === null ? 'Signed review change' : 'Declined review change', target: unit.name, ...(why ? { reason: why } : {}) },
+            mutate: (draft) => {
+              if (reason === null) applySignReviewChange(draft, id, draft.personaId, draft.now)
+              else applyDeclineReviewChange(draft, id, why, draft.personaId, draft.now)
+            },
+          })
         }
         /** Block a caller or dismiss it (9b): once, with a reason, by the program lead. */
         const decideCaller = (
@@ -794,6 +821,35 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Messaged owner', target: caller.name, reason: `${caller.likelyOwner.name} · ${body}` },
               mutate: (draft) => {
                 applyMessageOwner(draft, callerId, body, draft.personaId, draft.now)
+              },
+            })
+          },
+          proposeReviewChange: (unitId, option) => {
+            const s = get()
+            const unit = unitById(unitId)
+            if (!unit) return { ok: false, reason: 'Not found' }
+            if (s.reviewChanges.some((c) => c.unitId === unitId && c.state === 'waiting'))
+              return { ok: false, reason: `A change for ${unit.name} is waiting for ${s.people.find((p) => p.id === s.divisions.find((d) => d.id === unit.divisionId)?.sponsorId)?.name ?? 'the sponsor'}` }
+            return act({
+              action: 'proposeReviewChange',
+              ctx: { divisionId: unit.divisionId },
+              audit: { action: 'Proposed review change', target: unit.name, reason: option },
+              mutate: (draft) => {
+                applyProposeReviewChange(draft, unitId, option, draft.personaId, draft.now)
+              },
+            })
+          },
+          signReviewChange: (id) => reviewDecision(id, null),
+          declineReviewChange: (id, reason) => reviewDecision(id, reason),
+          shareReviewerFinding: (unitId) => {
+            const unit = unitById(unitId)
+            if (!unit) return { ok: false, reason: 'Not found' }
+            return act({
+              action: 'proposeReviewChange',
+              ctx: { divisionId: unit.divisionId },
+              audit: { action: 'Shared finding', target: unit.name },
+              mutate: (draft) => {
+                applyShareFinding(draft, unitId, draft.personaId, draft.now)
               },
             })
           },

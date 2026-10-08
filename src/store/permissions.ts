@@ -27,6 +27,10 @@ export type PermAction =
   | 'revalidateChange'
   /** Decide what an unregistered caller is: block it, or say it isn't an agent (9b). */
   | 'decideCaller'
+  /** The owner proposes a sampling or review-level change for a unit (11b). */
+  | 'proposeReviewChange'
+  /** The sponsor signs or declines it (11b: "Priya signs sampling and review-level changes"). */
+  | 'signReviewChange'
 
 /** How far a role reaches for an action: everywhere, its own divisions, or its own agents. */
 type Scope = 'all' | 'own' | 'ownAgents'
@@ -64,6 +68,8 @@ const MATRIX: Record<PermAction, Partial<Record<Role, Scope>>> = {
   flagDraft: { frontline: 'own' },
   revalidateChange: { owner: 'own' },
   decideCaller: { programLead: 'all' },
+  proposeReviewChange: { owner: 'own', programLead: 'all' },
+  signReviewChange: { sponsor: 'own' },
 }
 
 export interface PermContext {
@@ -106,6 +112,8 @@ const REASONS: Partial<Record<PermAction, string>> = {
   flagDraft: 'Pharmacists flag drafts from Epic',
   revalidateChange: 'Agent owner only',
   decideCaller: 'Program lead only',
+  proposeReviewChange: 'Agent owner or program lead',
+  signReviewChange: 'Clinical sponsor only',
   prepareGoLive: 'Program lead only',
   retire: 'Program lead or sponsor only',
   disable: 'Program lead or sponsor only',

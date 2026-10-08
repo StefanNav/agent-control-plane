@@ -976,7 +976,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - **Signed:** "Signed by Priya · <time>. Sampling on 6 North is 20 % until 22 Dec."
 - An unknown unit → NotFound.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **`reviewers.test.ts`:**
     - `readUnit` gives the five reads for the five units as 11a shows.
     - Proposing twice is refused.
@@ -988,10 +988,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - As Marcus, `/operations/divisions/medications` → Reviewer behaviour → Open 6 North → Send to Priya for sign-off.
     - As Priya, the inbox "Review: sampling change · 6 North" → Sign. The page reads "Sampling on 6 North is 20 % until 22 Dec".
     - `/operations/reviewers/nope` shows Not found.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual checks against 11a and 11b, and 4b with its new tab strip.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(reviewers): reviewer behaviour by unit and shift"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual checks against 11a and 11b, and 4b with its new tab strip.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(reviewers): reviewer behaviour by unit and shift"`.
 
 ### Task 6.9: Journey test and checkpoint
 
