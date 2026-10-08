@@ -26,6 +26,8 @@ export interface RoleAssignment {
   personId: string
   divisionId: string | 'all'
   role: Role
+  /** When it was given (8b "since Mar 2026"). */
+  since: string
 }
 
 /** Status-chip states: colour + shape + word. */
@@ -72,13 +74,29 @@ export interface MonitorState {
   expectedIntervalMin: number
 }
 
+/**
+ * What happens when a privilege's review date passes (8a): the exception only; back to Shadow
+ * after the grace period; back to Shadow at once; or pause the activity.
+ */
+export type LapsePolicy = 'nothing' | 'shadow' | 'shadowNow' | 'pause'
+
+/** Who an unanswered exception reaches: `first` past its deadline, `then` too after `afterHours` more (8a). */
+export interface EscalationChain {
+  first: string
+  then: string
+  afterHours: number
+}
+
 /** A group of agents in one workflow, led by named humans. */
 export interface Division {
   id: string
   name: string
   ownerId: string
   sponsorId: string
-  lapsePolicy: 'nothing' | 'shadow' | 'pause'
+  lapsePolicy: LapsePolicy
+  /** Days after the review date before `shadow` acts (8a "Grace period"). */
+  graceDays: number
+  escalation: EscalationChain
   monitor: { state: 'live' | 'delayed' | 'stale'; lastAt: string }
   /** Open exceptions per day over the last 7 days, oldest first (the board's "7 days" column). */
   exceptionsByDay: number[]
@@ -252,7 +270,7 @@ export interface AgentException {
   code: string
   status: Status
   /** PRD exception types. */
-  kind: 'review' | 'question' | 'notify' | 'incident'
+  kind: 'review' | 'question' | 'notify' | 'incident' | 'flag'
   type: string
   reason: string
   /** Board phrasing, e.g. "3 drafts held by HS-04 v2". */
@@ -333,6 +351,8 @@ export interface LogEvent {
   agentId?: string
   text: string
   sub?: string
+  /** People this was sent to, for FYIs ("Priya told"). */
+  to?: string[]
 }
 
 /** A change from yesterday, summarised in the daily digest. */

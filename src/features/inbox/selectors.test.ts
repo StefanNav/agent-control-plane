@@ -1,6 +1,6 @@
 import { buildScenario } from '../../data/scenarios'
 import { createSeed } from '../../data/seed'
-import { selectDigest, selectExceptionDetail, selectInbox, selectInboxHeader, selectLog } from './selectors'
+import { escalationOf, selectDigest, selectExceptionDetail, selectInbox, selectInboxHeader, selectLog } from './selectors'
 
 const s = createSeed()
 
@@ -25,6 +25,32 @@ test('past its deadline and unclaimed, an item escalates to the sponsor', () => 
   expect(priya.needsMe[0]).toMatchObject({ type: 'Monitor stale', due: '1 h 14 min late', escalated: true, source: 'Formulary Swap Agent · escalated' })
   expect(priya.needsMe).toHaveLength(3)
   expect(priya.waiting).toHaveLength(1)
+})
+
+describe('the escalation chain comes from the division (8a)', () => {
+  const stale = (now: string) => ({ ...s, now })
+  const exc5508 = s.exceptions.find((e) => e.id === 'exc-5508')!
+
+  test('past its deadline it reaches the first person; after 4 h more, the second as well', () => {
+    expect(escalationOf(stale('2026-12-08T10:45:00'), exc5508)).toEqual([])
+    expect(escalationOf(stale('2026-12-08T12:00:00'), exc5508)).toEqual(['priya'])
+    expect(escalationOf(stale('2026-12-08T14:46:00'), exc5508)).toEqual(['priya', 'dana'])
+    expect(selectInbox(stale('2026-12-08T14:46:00'), 'dana').needsMe.map((i) => i.type)).toContain('Monitor stale')
+  })
+
+  test('changing "Escalate to" changes who it reaches', () => {
+    const changed = stale('2026-12-08T12:00:00')
+    changed.divisions = changed.divisions.map((d) => (d.id === 'medications' ? { ...d, escalation: { first: 'dana', then: 'priya', afterHours: 4 } } : d))
+    expect(escalationOf(changed, exc5508)).toEqual(['dana'])
+    expect(selectInbox(changed, 'priya').needsMe.map((i) => i.type)).not.toContain('Monitor stale')
+    expect(selectExceptionDetail(changed, 'exc-5508', 'marcus')!.escalationLine).toBe('Escalated to Dana at 10:46')
+  })
+
+  test('incidents and hand-offs with a link never escalate', () => {
+    const incident = s.exceptions.find((e) => e.kind === 'incident')!
+    expect(escalationOf(stale('2026-12-09T12:00:00'), incident)).toEqual([])
+    expect(escalationOf(stale('2026-12-09T12:00:00'), { ...exc5508, link: { label: 'Open', to: '/' } })).toEqual([])
+  })
 })
 
 test('a snoozed item leaves until its time', () => {

@@ -1,0 +1,150 @@
+/* Settings (E8): division settings 8a and people and roles 8b. Forms are 16 px with 44 px fields. */
+.layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  column-gap: 24px;
+  align-items: start;
+  padding: 24px 40px 48px;
+}
+
+.body {
+  padding: 24px 40px 48px;
+}
+
+.divisions {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+  background: var(--cs-raised);
+  overflow: hidden;
+}
+
+.listHead {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--cs-line);
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--cs-meta);
+}
+
+.division,
+.divisionCurrent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--cs-line);
+  color: var(--cs-ink);
+  text-decoration: none;
+}
+
+.division:hover {
+  background: var(--cs-hover);
+}
+
+.divisionCurrent {
+  background: var(--cs-sel);
+}
+
+.divisionName {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.divisionSub {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.listFoot {
+  padding: 12px 16px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+  background: var(--cs-raised);
+  padding: 8px 32px 32px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 0 28px;
+  border-bottom: 1px solid var(--cs-line);
+}
+
+.headingBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.heading {
+  margin: 0;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.lede {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-text2);
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.value {
+  display: block;
+  min-height: 44px;
+  padding: 10px 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-ink);
+}
+
+.grace {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+}
+
+.graceSelect {
+  width: 200px;
+}
+
+.preview {
+  margin: 0;
+  padding-bottom: 12px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 20px;
+}
+
+.meta {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  color: var(--cs-meta);
+}

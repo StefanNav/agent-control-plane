@@ -4,10 +4,11 @@ import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type Condition, type DemoState, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
-import { applyPause, applyResume, nextArchiveCode, nextIncidentCode, nextVersion } from './mutations'
+import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
 import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, signMode, testResult, type SystemsChange } from './onboarding'
 import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems, shadowProgress } from './onboardingRules'
 import { can, lockReason } from './permissions'
+import { applyDivisionSettings, applyReturnToShadow, diffDivision, type DivisionPatch } from './settings'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
 
@@ -72,6 +73,8 @@ export interface DemoActions {
   closeIncident: (incidentId: string, reason: string) => ActionResult
   /** Build a records export for a survey or audit; it is logged (7d). */
   buildExport: (input: { agentIds: string[]; from: string; to: string; format: 'packet' | 'csv'; masked: boolean }) => ActionResult
+  /** Who answers for a division, what a lapsed review does, who unanswered items reach (8a). Program lead only. */
+  updateDivisionSettings: (divisionId: string, patch: DivisionPatch) => ActionResult
   /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
   startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
   /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
@@ -276,28 +279,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               ctx: { agentId: agent.id },
               audit: { action: 'Returned to Shadow', target: agent.code, reason: `${activity.name} · ${why}` },
               mutate: (draft) => {
-                const target = draft.activities.find((a) => a.id === activityId)!
-                const was = target.level
-                target.level = 'shadow'
-                const owner = draft.agents.find((a) => a.id === agent.id)!
-                const main = draft.activities.filter((a) => a.agentId === agent.id).find((a) => a.level !== 'shadow')
-                owner.level = main?.level ?? 'shadow'
-                const current = draft.privileges.find((p) => p.activityId === activityId && p.state !== 'closed')
-                if (!current) return
-                current.state = 'closed'
-                const version = nextVersion(draft, current.code)
-                draft.privileges.push({
-                  ...current,
-                  id: `${current.code.toLowerCase()}-v${version}`,
-                  version,
-                  level: 'shadow',
-                  proposedLevel: was,
-                  state: 'awaiting',
-                  grantedBy: undefined,
-                  grantedAt: undefined,
-                  movedBy: draft.personaId,
-                  trigger: why,
-                })
+                applyReturnToShadow(draft, activityId, draft.personaId, why)
               },
             })
           },
@@ -566,6 +548,24 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Built export', target: code, reason: `${input.format === 'packet' ? 'PDF packet and CSV' : 'CSV'}${input.masked ? ' · identifiers masked' : ''}` },
               mutate: (draft) => {
                 draft.exports.push({ id: code.toLowerCase(), code, ...input, by: draft.personaId, at: draft.now })
+              },
+            })
+          },
+          updateDivisionSettings: (divisionId, patch) => {
+            const s = get()
+            const division = s.divisions.find((d) => d.id === divisionId)
+            if (!division) return { ok: false, reason: 'Division not found' }
+            const changes = diffDivision(division, patch)
+            if (!changes.length) return { ok: false, reason: 'Nothing to save' }
+            const known = (id?: string) => id === undefined || s.people.some((p) => p.id === id)
+            if (!known(patch.ownerId) || !known(patch.sponsorId) || !known(patch.escalation?.first) || !known(patch.escalation?.then)) return { ok: false, reason: 'Choose someone from People and roles' }
+            if (patch.graceDays !== undefined && patch.graceDays < 1) return { ok: false, reason: 'The grace period is at least a day' }
+            return act({
+              action: 'manageDivisions',
+              ctx: { divisionId },
+              audit: { action: 'Changed division settings', target: division.name, reason: changes.join(' · ') },
+              mutate: (draft) => {
+                applyDivisionSettings(draft, divisionId, patch, draft.personaId, draft.now)
               },
             })
           },

@@ -92,7 +92,7 @@ export const nextExceptionCode = (s: DemoState) => nextCode(['EXC-5400', ...s.ex
 
 /**
  * Every signed privilege past its review date raises one "Review overdue" for its sponsor (3d), copied
- * to the owner and the program lead, due when the division's lapse window closes (14 days). Idempotent.
+ * to the owner and the program lead, due when the division's grace period closes (8a). Idempotent.
  */
 export function raiseOverdueReviews(s: DemoState): DemoState {
   const lead = s.roles.find((r) => r.role === 'programLead')?.personId
@@ -119,7 +119,7 @@ export function raiseOverdueReviews(s: DemoState): DemoState {
       actionSub: p.evidence,
       ownerId: agent.sponsorId,
       copied: [agent.ownerId, ...(lead ? [lead] : [])],
-      deadline: `${addDays(p.reviewDate, 14).slice(0, 10)}T17:00:00`,
+      deadline: `${addDays(p.reviewDate, s.divisions.find((d) => d.id === agent.divisionId)?.graceDays ?? 14).slice(0, 10)}T17:00:00`,
       state: 'new',
       route: 'inbox',
     })

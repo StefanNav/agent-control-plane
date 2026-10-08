@@ -61,13 +61,14 @@ export interface PermContext {
 }
 
 /**
- * Can this persona take this action here? Roles are per division ('all' spans every one).
+ * Can this person take this action here? Roles are per division ('all' spans every one).
  * With an agent in context, its division applies, and "own agents" means agents the
- * persona is technical owner of. Without context, a role held anywhere counts.
+ * person is technical owner of. Without context, a role held anywhere counts. Any person
+ * with a role may be asked, not only the seven personas (8b).
  */
 export function can(
   state: Pick<DemoState, 'roles' | 'agents'>,
-  personaId: PersonaId,
+  personaId: string,
   action: PermAction,
   ctx: PermContext = {},
 ): boolean {

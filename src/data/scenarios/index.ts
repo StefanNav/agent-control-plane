@@ -1,6 +1,6 @@
 import { createSeed } from '../seed'
-import { addMinutes } from '../../lib/clock'
-import { applyPause, raiseOverdueReviews } from '../../store/mutations'
+import { applyPause } from '../../store/mutations'
+import { advanceClock } from './clock'
 import type { DemoState, Incident } from '../types'
 import { medRecAt } from './onboarding'
 
@@ -45,9 +45,6 @@ export const SCENARIO_IDS: readonly ScenarioId[] = [
   'shadow-day-21',
 ]
 
-/** The seed's live heartbeat (one minute before DEMO_NOW). */
-const LIVE = '2026-12-08T09:51:00'
-
 const medRec = (s: DemoState) => s.agents.find((a) => a.id === 'med-rec')!
 const admissionPrivilege = (s: DemoState) => s.privileges.find((p) => p.activityId === 'med-rec-admission')!
 
@@ -58,16 +55,6 @@ function pauseMedRec(s: DemoState): DemoState {
   return applyPause(s, ['med-rec'], { scope: 'agent', reason: 'HS-04 blocked 3 dose changes since 09:00. Pausing until we know why.' }, 'marcus', PAUSED_AT)
 }
 
-/** Move the demo clock; heartbeats that were live stay live at the new time. */
-function advanceClock(s: DemoState, to: string): DemoState {
-  const heartbeat = addMinutes(to, -1)
-  for (const agent of s.agents) if (agent.monitor.lastSeen === LIVE) agent.monitor.lastSeen = heartbeat
-  for (const division of s.divisions) if (division.monitor.state === 'live') division.monitor.lastAt = heartbeat
-  s.now = to
-  // A review date the clock moves past raises its overdue review (3d).
-  raiseOverdueReviews(s)
-  return s
-}
 
 /** E7 7c's incident, as it stands at 11:58 (before Priya approves at 13:10). */
 const INC_0031: Incident = {

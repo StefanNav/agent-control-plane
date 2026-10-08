@@ -141,8 +141,8 @@ test('agent owners, sponsors and tech owners hold those roles in the agent’s d
 describe('E4 and E5 refinements', () => {
   const open = (e: (typeof seed.exceptions)[number]) => e.state !== 'resolved' && e.state !== 'dismissed'
 
-  test('seed version 6 (Phase 5: onboarding records)', () => {
-    expect(SEED_VERSION).toBe(6)
+  test('seed version 6 or later (Phase 5: onboarding records)', () => {
+    expect(SEED_VERSION).toBeGreaterThanOrEqual(6)
   })
 
   test('Medications has exactly four agents needing a human', () => {
@@ -245,8 +245,8 @@ describe('Phase 4: controls and audit data', () => {
 describe('Phase 5: onboarding data (seed v6)', () => {
   const s = createSeed()
 
-  test('seed version 6', () => {
-    expect(SEED_VERSION).toBe(6)
+  test('seed version 7 (Phase 6: division settings and role dates)', () => {
+    expect(SEED_VERSION).toBe(7)
   })
 
   test('every intake reserves a unique agent id and code; only a started intake’s agent uses them', () => {
@@ -298,8 +298,8 @@ describe('Phase 5: onboarding data (seed v6)', () => {
 
   test('technical owners: Lena owns Discharge; Omar is clinical informatics', () => {
     expect(s.agents.filter((a) => a.divisionId === 'discharge').every((a) => a.techOwnerId === 'lena')).toBe(true)
-    expect(s.roles).toContainEqual({ personId: 'lena', divisionId: 'discharge', role: 'techOwner' })
-    expect(s.roles).not.toContainEqual({ personId: 'omar', divisionId: 'discharge', role: 'techOwner' })
+    expect(s.roles).toContainEqual(expect.objectContaining({ personId: 'lena', divisionId: 'discharge', role: 'techOwner' }))
+    expect(s.roles).not.toContainEqual(expect.objectContaining({ personId: 'omar', divisionId: 'discharge', role: 'techOwner' }))
     expect(s.people.find((p) => p.id === 'omar')!.title).toBe('Clinical informatics analyst')
   })
 

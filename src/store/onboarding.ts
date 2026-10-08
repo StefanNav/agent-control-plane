@@ -1,6 +1,6 @@
 import { BOARD_MEETINGS, HARD_STOP_LIBRARY, resolveConditions, RETEST_CASES, TIER_RULES } from '../data/seed/catalogue'
 import { agentFromIntake } from '../data/seed/onboarding'
-import type { AgentException, Condition, DemoState, GrantCell, JobDraft, Limit, LimitTest, Onboarding, ReviewDecision, Tier, Verb } from '../data/types'
+import type { AgentException, Condition, DemoState, GrantCell, JobDraft, Limit, LimitTest, Onboarding, Privilege, ReviewDecision, Tier, Verb } from '../data/types'
 import { addDays, formatDate, tomorrowAt } from '../lib/clock'
 import { nextArchiveCode, nextExceptionCode, nextHardStopCode, nextPrivilegeCode, nextVersion } from './mutations'
 import { conditionRange, criteriaStatus, jobFields, onboardingContext, personName, recordItems, recordOfActivity, riskFactors, systemsProgress, templateFor } from './onboardingRules'
@@ -584,7 +584,7 @@ export function signMode(s: DemoState, code: string): 'sign' | 'renew' | null {
   const p = latestByCode(s, code)
   if (!p) return null
   if (p.state === 'awaiting' && p.proposedLevel) return 'sign'
-  if (p.state === 'due' || (p.state === 'active' && p.reviewDate && p.reviewDate < s.now && p.level !== 'shadow')) return 'renew'
+  if (p.state === 'due' || p.state === 'lapsed' || (p.state === 'active' && p.reviewDate && p.reviewDate < s.now && p.level !== 'shadow')) return 'renew'
   return null
 }
 
@@ -626,10 +626,22 @@ export function applySignPrivilege(s: DemoState, code: string, input: { reason?:
     recordOfActivity(s, activity.id)?.history.push({ at, by, text: `${personName(s, by)} · signed ${latest.code} v${latest.version}`, sub: `Shadow → ${level.charAt(0).toUpperCase()}${level.slice(1)}${input.reason ? ' · below target, reason recorded' : ''}`, decision: true })
     return s
   }
-  // Renewal: a new version at the same level, reviewed again a full cycle from now.
+  // Renewal: a new version at the same level, reviewed again a full cycle from now. A lapsed
+  // privilege (8a) is re-signed the same way, and its activity returns to the signed level.
   const version = nextVersion(s, latest.code)
+  const lapsed = latest.state === 'lapsed'
   latest.state = 'closed'
-  s.privileges.push({ ...latest, id: `${latest.code.toLowerCase()}-v${version}`, version, state: 'active', grantedBy: by, grantedAt: at, reviewDate, ...(input.reason ? { signReason: input.reason } : {}) })
+  const renewed: Privilege = { ...latest, id: `${latest.code.toLowerCase()}-v${version}`, version, state: 'active', grantedBy: by, grantedAt: at, reviewDate, ...(input.reason ? { signReason: input.reason } : {}) }
+  if (lapsed) {
+    delete renewed.movedBy
+    delete renewed.trigger
+  }
+  s.privileges.push(renewed)
+  if (lapsed) {
+    activity.level = latest.level
+    const levels = s.activities.filter((a) => a.agentId === agent.id).map((a) => LEVELS.indexOf(a.level))
+    agent.level = LEVELS[Math.max(...levels)]!
+  }
   if (agent.level === latest.level) agent.reviewDate = reviewDate
   for (const e of s.exceptions)
     if (e.agentId === agent.id && e.type === 'Review overdue' && e.ruleTag === latest.code && e.state !== 'resolved' && e.state !== 'dismissed')

@@ -1,5 +1,6 @@
 import type { AgentException, DemoState, LogEvent, PersonaId, Status } from '../../data/types'
 import {
+  addMinutes,
   formatAgo,
   formatClock,
   formatDate,
@@ -33,9 +34,21 @@ export interface InboxItemView {
   escalated: boolean
 }
 
-function sponsorOf(s: DemoState, e: AgentException): string | undefined {
+/** The division's escalation chain for an item (8a). */
+function chainOf(s: DemoState, e: AgentException) {
   const agent = s.agents.find((a) => a.id === e.agentId)
-  return s.divisions.find((d) => d.id === agent?.divisionId)?.sponsorId
+  return s.divisions.find((d) => d.id === agent?.divisionId)?.escalation
+}
+
+/**
+ * Who an unanswered item has reached (8a): the chain's first person once it is past its deadline,
+ * and the second as well once `afterHours` more have passed. Empty while it isn't escalated.
+ */
+export function escalationOf(s: DemoState, e: AgentException): string[] {
+  const chain = chainOf(s, e)
+  if (!chain || !isEscalated(e, s.now)) return []
+  const second = addMinutes(e.deadline, chain.afterHours * 60)
+  return s.now >= second && chain.then !== chain.first ? [chain.first, chain.then] : [chain.first]
 }
 
 function itemView(s: DemoState, e: AgentException, viewer: PersonaId): InboxItemView {
@@ -70,7 +83,7 @@ export function selectInbox(
 ): { needsMe: InboxItemView[]; waiting: InboxItemView[]; log: LogEvent[]; logTotal: number } {
   const open = s.exceptions.filter((e) => isOpen(e) && !isSnoozed(e, s.now))
   const mine = open.filter(
-    (e) => e.ownerId === personaId || (isEscalated(e, s.now) && sponsorOf(s, e) === personaId),
+    (e) => e.ownerId === personaId || escalationOf(s, e).includes(personaId),
   )
   const waiting = open.filter(
     (e) => !mine.includes(e) && e.copied.includes(personaId) && e.ownerId !== personaId,
@@ -98,11 +111,15 @@ export function selectExceptionDetail(s: DemoState, id: string, viewer: PersonaI
   const e = s.exceptions.find((x) => x.id === id)
   if (!e) return null
   const agent = s.agents.find((a) => a.id === e.agentId)
-  const sponsor = personName(s, sponsorOf(s, e))
+  const chain = chainOf(s, e)
+  const sponsor = personName(s, chain?.first)
   const owner = personName(s, e.ownerId)
   const escalated = isEscalated(e, s.now)
-  const sponsorId = sponsorOf(s, e)
-  const escalatedToViewer = escalated && sponsorId === viewer
+  const reached = escalationOf(s, e)
+  const escalatedToViewer = reached.includes(viewer)
+  const reachedLine = reached
+    .map((id, i) => `${personName(s, id)} at ${formatClock(i === 0 ? e.deadline : addMinutes(e.deadline, (chain?.afterHours ?? 0) * 60))}`)
+    .join(', then ')
   const closedState = e.state === 'resolved' || e.state === 'dismissed'
   const closer = personName(s, e.closedBy ?? e.ownerId)
   const closed = closedState
@@ -121,7 +138,7 @@ export function selectExceptionDetail(s: DemoState, id: string, viewer: PersonaI
       : escalated
         ? escalatedToViewer
           ? null
-          : `Escalated to ${sponsor} at ${formatClock(e.deadline)}`
+          : `Escalated to ${reachedLine}`
         : e.claimedAt
           ? `Claimed by ${owner} at ${formatClock(e.claimedAt)}`
           : e.assignedAt
