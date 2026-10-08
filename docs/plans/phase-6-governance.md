@@ -726,7 +726,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   
   Duplicate Rx is at Shadow (R4).
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **`changes.test.ts`:**
     - **Deploy:** `applyDeploy` makes the change with 4 items and `fixes` holding FB-2291 and the five others. It raises the two items, and the allergy scorecard is `restartedOn`.
     - **Refusals:** accept before the checks is refused with "Waiting for: …". `approveChangeHardStop` as Marcus is refused; as Priya it passes.
@@ -744,10 +744,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - As Priya, approve HS-04 v3.
     - As Marcus, Accept v1.5.0. The header idLine reads "v1.5.0 · SOP v1.5 · AGT-0123".
     - `/operations/agents/prior-auth?tab=changes` shows Overview.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 9a.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(changes): new version held at the gateway"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 9a.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(changes): new version held at the gateway"`.
 
 ### Task 6.6: Fixed in v1.5.0 (10b)
 

@@ -7,6 +7,7 @@ import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
 import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, signMode, testResult, type SystemsChange } from './onboarding'
 import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems, shadowProgress } from './onboardingRules'
+import { applyAccept, applyHardStopApproval, applyReplay, applySystemsSignOff, pendingChecks } from './changes'
 import { applyFlag, applyFlagAnswer, type FlagAnswer } from './feedback'
 import { can, lockReason } from './permissions'
 import { applyAddRole, applyCreateDivision, applyDivisionSettings, applyInvite, applyRemoveRole, applyReturnToShadow, diffDivision, divisionSlug, ROLE_LABEL, roleDivision, type DivisionPatch, type NewDivisionInput, type RoleInput } from './settings'
@@ -88,6 +89,14 @@ export interface DemoActions {
   flagDraft: (draftId: string, input: { reason: FlagReason; note?: string }) => ActionResult
   /** Answer a pharmacist's flag (R14): a fix in progress, not a defect, or a reply. */
   answerFlag: (exceptionId: string, answer: FlagAnswer) => ActionResult
+  /** Replay the last 30 days on a held build (9a); it finishes at once. Agent owner. */
+  startReplay: (changeId: string) => ActionResult
+  /** Sign off a held build's systems change (9a). Agent owner. */
+  signOffSystems: (changeId: string) => ActionResult
+  /** Approve a held build's new hard-stop version (9a). Clinical sponsor. */
+  approveChangeHardStop: (changeId: string) => ActionResult
+  /** Accept a held build once its checks are done: it starts serving (9a). Agent owner. */
+  acceptChange: (changeId: string) => ActionResult
   /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
   startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
   /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
@@ -197,6 +206,29 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
           if (!exception) return { error: { ok: false, reason: 'Not found' } as ActionResult }
           if (exception.state === 'resolved' || exception.state === 'dismissed') return { error: { ok: false, reason: 'Already resolved' } as ActionResult }
           return { exception }
+        }
+        /** One of a held build's checks (9a): its person, once, while the build is held. */
+        const changeStep = (
+          changeId: string,
+          check: 'replay' | 'systems' | 'hardStop',
+          action: 'revalidateChange' | 'approveTools',
+          audit: string,
+          apply: (s: DemoState, id: string, by: string, at: string) => DemoState,
+        ): ActionResult => {
+          const s = get()
+          const change = s.changes.find((c) => c.id === changeId)
+          const agent = s.agents.find((a) => a.id === change?.agentId)
+          if (!change || !agent) return { ok: false, reason: 'Not found' }
+          if (change.status !== 'held') return { ok: false, reason: `${change.to.build} is no longer held` }
+          if (change.checks[check]) return { ok: false, reason: 'Already done' }
+          return act({
+            action,
+            ctx: { agentId: agent.id },
+            audit: { action: audit, target: `${agent.code} ${change.to.build}` },
+            mutate: (draft) => {
+              apply(draft, changeId, draft.personaId, draft.now)
+            },
+          })
         }
         return {
           ...createSeed(),
@@ -681,6 +713,26 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: answer.kind === 'reply' ? 'Replied to flag' : answer.kind === 'inProgress' ? 'Working on a fix' : 'Not a defect', target: flag.code, reason: text },
               mutate: (draft) => {
                 applyFlagAnswer(draft, exceptionId, answer, draft.personaId, draft.now)
+              },
+            })
+          },
+          startReplay: (changeId) => changeStep(changeId, 'replay', 'revalidateChange', 'Replayed build', applyReplay),
+          signOffSystems: (changeId) => changeStep(changeId, 'systems', 'revalidateChange', 'Signed off systems', applySystemsSignOff),
+          approveChangeHardStop: (changeId) => changeStep(changeId, 'hardStop', 'approveTools', 'Approved hard stop', applyHardStopApproval),
+          acceptChange: (changeId) => {
+            const s = get()
+            const change = s.changes.find((c) => c.id === changeId)
+            const agent = s.agents.find((a) => a.id === change?.agentId)
+            if (!change || !agent) return { ok: false, reason: 'Not found' }
+            if (change.status !== 'held') return { ok: false, reason: `${change.to.build} is no longer held` }
+            const pending = pendingChecks(s, change)
+            if (pending.length) return { ok: false, reason: `Waiting for: ${pending.join(', ')}` }
+            return act({
+              action: 'revalidateChange',
+              ctx: { agentId: agent.id },
+              audit: { action: 'Accepted build', target: `${agent.code} ${change.to.build}` },
+              mutate: (draft) => {
+                applyAccept(draft, changeId, draft.personaId, draft.now)
               },
             })
           },

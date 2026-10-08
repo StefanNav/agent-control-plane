@@ -1,4 +1,4 @@
-import type { DemoState, PersonaId, Role } from '../data/types'
+import type { DemoState, Role } from '../data/types'
 
 /** Everything a person might try to do in the console (spec §7). */
 export type PermAction =
@@ -23,6 +23,8 @@ export type PermAction =
   | 'manageDivisions'
   /** A frontline pharmacist flags a draft from Epic (10a). */
   | 'flagDraft'
+  /** The owner re-validates a held build: replay, sign-off, accept (9a). */
+  | 'revalidateChange'
 
 /** How far a role reaches for an action: everywhere, its own divisions, or its own agents. */
 type Scope = 'all' | 'own' | 'ownAgents'
@@ -58,6 +60,7 @@ const MATRIX: Record<PermAction, Partial<Record<Role, Scope>>> = {
   manageDivisions: { programLead: 'all' },
   // 10a: only frontline pharmacists flag drafts, from Epic.
   flagDraft: { frontline: 'own' },
+  revalidateChange: { owner: 'own' },
 }
 
 export interface PermContext {
@@ -98,6 +101,7 @@ export function can(
 const REASONS: Partial<Record<PermAction, string>> = {
   manageDivisions: 'Program lead only',
   flagDraft: 'Pharmacists flag drafts from Epic',
+  revalidateChange: 'Agent owner only',
   prepareGoLive: 'Program lead only',
   retire: 'Program lead or sponsor only',
   disable: 'Program lead or sponsor only',
@@ -110,7 +114,7 @@ const REASONS: Partial<Record<PermAction, string>> = {
 }
 
 /** Why a control is locked, for menus and tooltips. */
-export function lockReason(action: PermAction, personaId?: PersonaId): string {
+export function lockReason(action: PermAction, personaId?: string): string {
   if (personaId === 'jordan') return 'Read-only access'
   if (personaId === 'ana') return 'Works in Epic, not the console'
   return REASONS[action] ?? 'Not part of your role here'

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { StatusChip } from '../../components'
 import { Button, Icon, LinkButton, Notice, Segmented, Sparkline, Table } from '../../design-system'
+import { formatDate } from '../../lib/clock'
 import { useDemo } from '../../store'
 import { can, lockReason } from '../../store/permissions'
 import { selectScorecard } from './selectors'
@@ -27,6 +28,11 @@ export function ScorecardTab({ agentId }: { agentId: string }) {
     )
   }
   const allowed = can(state, state.personaId, 'requestGoLive', { agentId })
+  // 9a: a held build restarted this shadow scorecard (R10).
+  const card = state.scorecards.find((c) => c.activityId === activityId)
+  const restarted = card?.restartedOn
+    ? { ...card.restartedOn, from: state.changes.find((c) => c.agentId === agentId && c.to.build === card.restartedOn!.build)?.from.build ?? 'the previous build' }
+    : null
   const g = view.golive
   const code = state.privileges.find((p) => p.activityId === activityId)?.code.toLowerCase()
   const pick = (id: string) =>
@@ -42,6 +48,11 @@ export function ScorecardTab({ agentId }: { agentId: string }) {
     <div className={styles.layout}>
       <div className={styles.main}>
         {view.activities.length > 1 ? <Segmented aria-label="Activity" value={activityId} onChange={pick} options={view.activities.map((a) => ({ value: a.id, label: a.name }))} /> : null}
+        {restarted ? (
+          <Notice mark="none" lead={`Restarted on ${restarted.build} on ${formatDate(restarted.at)}.`}>
+            Results before it are from {restarted.from}.
+          </Notice>
+        ) : null}
         {!view.hasData ? (
           <Notice mark="none" lead="Shadow has just started.">
             {view.empty}

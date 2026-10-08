@@ -624,6 +624,39 @@ export interface Scorecard {
   hardStopNote?: string
   sampleCaseIds: string[]
   extendedDays?: number
+  /** A new build restarted this shadow scorecard (9a, R10). */
+  restartedOn?: { build: string; at: string }
+}
+
+/** What a change needs before it serves: a replay, the sponsor's hard-stop approval, the owner's systems sign-off. */
+export type ChangeCheck = 'replay' | 'hardStop' | 'systems'
+
+/** A new build held at the gateway until its owner re-validates it (E9.1, 9a). */
+export interface Change {
+  id: string
+  agentId: string
+  from: { build: string; builtAt: string; sop: string; sopAt: string }
+  to: { build: string; builtAt: string; builtBy: string; sop: string }
+  deployedAt: string
+  deployedBy: string
+  /** Withdrawn if not accepted by then (deploy + 7 days). */
+  deadline: string
+  items: { item: 'Agent build' | 'SOP' | 'Hard stop' | 'Systems'; live: string; liveSub: string; held: string; heldSub: string; needs: ChangeCheck }[]
+  sopDiff: { section: string; title: string; removed?: string; kept?: string; added: string }[]
+  hardStop?: { code: string; title: string; from: number; to: number; removed: string; added: string; blocked: string }
+  systems?: { system: string; detail: string; check: string }
+  /** The result lines are the build's; the demo clock doesn't run, so the replay finishes at once (R10). */
+  replay: { cases: number; estimate: string; lines: string[]; result?: { at: string; by: string; lines: string[] } }
+  checks: Partial<Record<ChangeCheck, { at: string; by: string }>>
+  releaseNote: { by: string; text: string }
+  /** Flag ids this build fixes. */
+  fixes: string[]
+  timeline: { at: string; title: string; sub: string }[]
+  /** Shadow activities whose scorecards restarted on the held build. */
+  restarted: string[]
+  status: 'held' | 'accepted' | 'withdrawn'
+  closedAt?: string
+  closedBy?: string
 }
 
 /** One shadow case compared line by line with the pharmacist's final list (3b). */
@@ -696,6 +729,8 @@ export interface DemoState {
   epicDrafts: EpicDraft[]
   /** Pharmacists' flags from Epic (E10). */
   flags: Flag[]
+  /** New builds held at the gateway, and their outcome (E9.1). */
+  changes: Change[]
   /** Hospital-wide counts before today's activity (4f "Last 24 hours"); `actionsToday` for 7a. */
   stats24h: {
     closedEarlier: number

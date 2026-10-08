@@ -276,3 +276,73 @@ export const UNITS = ['5 South', '6 North', '7 West', '8 East', 'ICU', 'Outpatie
 
 /** AI review board meetings: the second Wednesday of the month at 15:00. */
 export const BOARD_MEETINGS = ['2026-10-14T15:00:00', '2026-11-11T15:00:00', '2026-12-09T15:00:00', '2027-01-13T15:00:00']
+
+/** What a new build brings, before it is deployed (9a). The live side comes from the agent at deploy time. */
+export interface ChangeDef {
+  agentId: string
+  build: string
+  builtAt: string
+  builtBy: string
+  sop: string
+  /** When the live build was built and its SOP signed (not in the seed elsewhere). */
+  liveBuiltAt: string
+  liveSopAt: string
+  sopDiff: { section: string; title: string; removed?: string; kept?: string; added: string }[]
+  hardStop: { code: string; added: string; heldSub: string; blocked: string }
+  systems: { system: string; live: string; liveSub: string; held: string; heldSub: string; check: string; detail: string }
+  replay: { cases: number; estimate: string; lines: string[] }
+  releaseNote: string
+  /** Open flags with this reason are the ones the build fixes. */
+  fixesReason: 'frequency'
+}
+
+/**
+ * Med Rec Agent v1.5.0 (9a, R1, R9, R10): drawn on 24 Mar against v1.4.2; here it is built 14 Dec
+ * against the seed's v1.3.0 · SOP v1.3.1. Med Rec already reads Pyxis (1c), so the systems change
+ * is a wider Epic read. The replay result is invented.
+ */
+export const V150: ChangeDef = {
+  agentId: 'med-rec',
+  build: 'v1.5.0',
+  builtAt: '2026-12-14T00:00:00',
+  builtBy: 'sam',
+  sop: 'v1.5',
+  liveBuiltAt: '2026-10-12T00:00:00',
+  liveSopAt: '2026-11-05T00:00:00',
+  sopDiff: [
+    {
+      section: '§3.2',
+      title: 'Frequency',
+      removed: 'Read the frequency from the sig line as written.',
+      added: 'Read the frequency from the structured frequency field. Since the Epic upgrade on 05 Dec it can be split across two lines; join them before comparing.',
+    },
+    {
+      section: '§5.1',
+      title: 'Sources',
+      kept: 'Use outside pharmacy fills and the Epic home medication list.',
+      added: 'Also use Pyxis dispense history from the last 30 days.',
+    },
+  ],
+  hardStop: {
+    code: 'HS-04',
+    added: 'Applies to every Med Rec Agent activity. If a draft changes a dose or a frequency, the gateway keeps the original and flags the line for the pharmacist.',
+    heldSub: 'adds frequency',
+    blocked: 'would have blocked 0 of the last 2,104 cases',
+  },
+  systems: {
+    system: 'Epic',
+    live: 'Epic read',
+    liveSub: 'encounter, home med list, allergies',
+    held: 'Adds Epic sig read',
+    heldSub: 'structured frequency and timing',
+    check: 'Sign off Epic sig read',
+    detail: 'Encounter, home med list, allergies, structured sig',
+  },
+  replay: {
+    cases: 2104,
+    estimate: 'about 40 min',
+    lines: ['Replayed 2,104 cases on v1.5.0', 'Agreement 92.6 % (v1.3.0: 91.2 %)', 'Frequency mismatches 0 (v1.3.0: 31)'],
+  },
+  releaseNote: 'Fixes the frequency split pharmacists have flagged since the Epic upgrade.',
+  fixesReason: 'frequency',
+}

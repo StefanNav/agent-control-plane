@@ -47,6 +47,7 @@ const SEED: DemoState = {
   exports: exportRecords,
   epicDrafts,
   flags,
+  changes: [],
   stats24h: { closedEarlier: 5, medianCloseMin: 41, lastHour: { hardStops: 3, pauses: 1, pages: 0 }, actionsToday: 1912 },
   audit: [],
 }

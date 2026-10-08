@@ -1,6 +1,10 @@
 import { createSeed } from '../seed'
 import { applyPause } from '../../store/mutations'
-import { advanceClock } from './clock'
+import { DEMO_NOW } from '../../lib/clock'
+import { applyDeploy } from '../../store/changes'
+import { applyFlag, applyFlagAnswer } from '../../store/feedback'
+import { V150 } from '../seed/catalogue'
+import { advanceClock, settleBefore } from './clock'
 import type { DemoState, Incident } from '../types'
 import { medRecAt } from './onboarding'
 
@@ -23,6 +27,7 @@ export type ScenarioId =
   | 'review-committee'
   | 'review-decided'
   | 'shadow-day-21'
+  | 'change-detected-v150'
 
 /** Every scenario id, for validating a `?scenario=` param. */
 export const SCENARIO_IDS: readonly ScenarioId[] = [
@@ -43,6 +48,7 @@ export const SCENARIO_IDS: readonly ScenarioId[] = [
   'review-committee',
   'review-decided',
   'shadow-day-21',
+  'change-detected-v150',
 ]
 
 const medRec = (s: DemoState) => s.agents.find((a) => a.id === 'med-rec')!
@@ -55,6 +61,23 @@ function pauseMedRec(s: DemoState): DemoState {
   return applyPause(s, ['med-rec'], { scope: 'agent', reason: 'HS-04 blocked 3 dose changes since 09:00. Pausing until we know why.' }, 'marcus', PAUSED_AT)
 }
 
+
+/** 9a's deploy, re-dated from 24 Mar 09:12 (R1). */
+export const V150_DEPLOY = '2026-12-15T09:12:00'
+
+/**
+ * 9a (R1, R12): Ana flags the frequency split at baseline and Marcus answers it; a week passes, then
+ * Sam deploys v1.5.0 at 09:12 on 15 Dec and the gateway holds it. Duplicate Rx has lapsed by then.
+ */
+export function changeDetected(s: DemoState): DemoState {
+  applyFlag(s, { draftId: 'DR-88412', reason: 'frequency', note: 'Frequency split into two lines' }, 'ana', DEMO_NOW)
+  const item = s.flags.at(-1)!.exceptionId!
+  applyFlagAnswer(s, item, { kind: 'inProgress', text: 'Sam is changing how the frequency is read' }, 'marcus', '2026-12-08T10:30:00')
+  advanceClock(s, V150_DEPLOY)
+  settleBefore(s, '2026-12-15T00:00:00')
+  applyDeploy(s, V150, V150_DEPLOY, 'sam')
+  return advanceClock(s, '2026-12-15T09:52:00')
+}
 
 /** E7 7c's incident, as it stands at 11:58 (before Priya approves at 13:10). */
 const INC_0031: Incident = {
@@ -175,6 +198,7 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
 
   // E3 3a / 3b: 05 Nov 09:30, shadow ran 15 Oct to 04 Nov; 2 of 3 targets met.
   'shadow-day-21': medRecAt('shadow-day-21'),
+  'change-detected-v150': changeDetected,
 }
 
 /** A fresh state for the scenario. */
