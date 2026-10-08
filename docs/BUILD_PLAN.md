@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 1: Foundation (◐ in progress) |
+| **Current phase** | Phase 1: Foundation (⏸ at checkpoint, awaiting Stefan's review of PR #11) |
 | **Branch** | `phase-1-foundation` |
-| **Last completed** | Phase 0 approved and closed (#1), review minors fixed (2026-10-08) |
-| **Next task** | Phase 1, Task 1.1 in [`docs/plans/phase-1-foundation.md`](plans/phase-1-foundation.md) |
-| **Blockers** | None |
+| **Last completed** | Phase 1 Tasks 1.1–1.10 Step 7: foundation built, fresh review fixes applied, CI + Vercel wired (2026-10-08) |
+| **Next task** | After Stefan approves: Phase 1 Task 1.10 Step 8 (squash-merge [PR #11](https://github.com/StefanNav/agent-control-plane/pull/11), confirm production deploy, close #2), then Phase 2 Task 2.0 (write `docs/plans/phase-2-components-data.md`) |
+| **Blockers** | Stefan reviewing Phase 1 |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
-| **Live URL** | none yet (first deploy in Phase 1) |
-| **Latest preview** | none |
+| **Live URL** | https://agent-control-plane-mocha.vercel.app (public; currently the Phase 1 branch, `main` takes over on merge) |
+| **Latest preview** | PR #11 → Vercel preview (behind Vercel login); public build at the Live URL |
 
 ### How to resume in a new session
 
@@ -89,7 +89,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | # | Phase | Status | Branch | Issue | PR | Plan file |
 |---|---|---|---|---|---|---|
 | 0 | Setup | ☑ Merged | `main` | [#1](https://github.com/StefanNav/agent-control-plane/issues/1) | no PR (docs on `main`) | [phase-0-setup.md](plans/phase-0-setup.md) |
-| 1 | Foundation | ◐ In progress | `phase-1-foundation` | [#2](https://github.com/StefanNav/agent-control-plane/issues/2) | – | [phase-1-foundation.md](plans/phase-1-foundation.md) |
+| 1 | Foundation | ⏸ At checkpoint | `phase-1-foundation` | [#2](https://github.com/StefanNav/agent-control-plane/issues/2) | [#11](https://github.com/StefanNav/agent-control-plane/pull/11) | [phase-1-foundation.md](plans/phase-1-foundation.md) |
 | 2 | Components and data | ☐ Not started | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | – | to write (Task 2.0) |
 | 3 | Command Board and inbox | ☐ Not started | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | – | to write (Task 3.0) |
 | 4 | Controls and audit | ☐ Not started | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | – | to write (Task 4.0) |
@@ -129,19 +129,47 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 **Goal:** A deployed app shell where every designed route exists (as a placeholder naming its frames), built on the full Countersign token and primitive layer.
 **Detailed steps:** [`docs/plans/phase-1-foundation.md`](plans/phase-1-foundation.md)
 
-- [ ] 1.1 Scaffold Vite + React + TS with pnpm, ESLint, Prettier, Vitest; `pnpm check`
-- [ ] 1.2 Tokens, global styles, fonts, keyboard-only focus rings
-- [ ] 1.3 Icon set
-- [ ] 1.4 Form primitives: Button, Field, Input, Select, Textarea, Checkbox, RadioCardGroup, Segmented, FilterPill
-- [ ] 1.5 Display primitives: Card, Paper, DefinitionList, Notice, StatStrip, Sparkline, ProgressBar, RuleTag, LogRow, Avatar
-- [ ] 1.6 Interactive structures: Table, Tabs, WizardSteps, Menu, Modal
-- [ ] 1.7 Layout: TopNav, PageHeader, Split / SplitL / Body, AppShell with prototype bar shell, NotFound
-- [ ] 1.8 Route table + router + placeholder pages + Playwright route smoke
-- [ ] 1.9 Primitives gallery at `/about/components`
+- [x] 1.1 Scaffold Vite + React + TS with pnpm, ESLint, Prettier, Vitest; `pnpm check`
+- [x] 1.2 Tokens, global styles, fonts, keyboard-only focus rings
+- [x] 1.3 Icon set
+- [x] 1.4 Form primitives: Button, Field, Input, Select, Textarea, Checkbox, RadioCardGroup, Segmented, FilterPill
+- [x] 1.5 Display primitives: Card, Paper, DefinitionList, Notice, StatStrip, Sparkline, ProgressBar, RuleTag, LogRow, Avatar
+- [x] 1.6 Interactive structures: Table, Tabs, WizardSteps, Menu, Modal
+- [x] 1.7 Layout: TopNav, PageHeader, Split / SplitL / Body, AppShell with prototype bar shell, NotFound
+- [x] 1.8 Route table + router + placeholder pages + Playwright route smoke
+- [x] 1.9 Primitives gallery at `/about/components`
 - [ ] 1.10 CI, Vercel link and first deploy; checkpoint
 
 **Done when:** every route in spec §5.5 loads directly on the Vercel URL inside the shell; gallery shows every primitive; CI green.
-**Handoff notes:** _written at the end of the phase._
+**Handoff notes (2026-10-08):**
+- **What exists**
+  - `src/design-system/`: `tokens.css` (light + `[data-theme="dark"]`), `type.module.css` (type roles), `global.css`, `focus.ts` (keyboard-only rings), `icons/`, `primitives/<Name>/` (24 primitives), and the barrel `index.ts`. Import primitives from `src/design-system`.
+  - `src/layout/`: `TopNav`, `PageHeader` (breadcrumb, title, status, idLine, chips, people, sub, actions, tabs, steps), `layouts.tsx` (`Split`, `SplitL`, `Body`), `NotFound`.
+  - `src/app/`: `nav.ts` (`NAV_ITEMS`, `NavSection`, `ShellKind`, `RouteHandle`), `routes.ts` (`routeTable`, `redirects`: pure data, also read by Playwright), `router.tsx` (the `PAGES` map), `AppShell`, `Placeholder`.
+  - `src/prototype/`: `PrototypeBar` (static for now), `ComponentGallery` (`/about/components`).
+  - `tests/e2e/`: `routes.spec.ts` (every route loads directly with no console errors, plus not-found, redirect and current-nav checks), `gallery.spec.ts`, and the `console.ts` error collector.
+- **How to replace a placeholder with a real screen:** build the page under `src/features/<area>/`, then add `'<route path>': <Page />` to `PAGES` in `src/app/router.tsx`. The route smoke test covers it automatically.
+- **Versions:** React 19.2, React Router 8.4, Vite 8.3, Vitest 5, TypeScript 6.0, ESLint 10 (flat config via `defineConfig`), Playwright 1.6x, pnpm 11.5.1 (pinned in `packageManager`), Node 24.
+- **Gotchas**
+  - Vitest needs `css: true`; otherwise CSS imports are empty.
+  - React Hooks v7 lint rejects writing refs during render.
+  - React Refresh lint warns when a component file also exports functions, so put helpers in a sibling `.ts`.
+  - `tsconfig.e2e.json` type-checks `tests/` and `playwright.config.ts`.
+  - Playwright builds and previews on port 4173.
+  - `.claude/launch.json` starts `dev` (5173) and `designs` (4599) for the in-app browser.
+- **Behaviour decided in review:**
+  - `Modal` owns the keyboard while open: Escape closes it, Tab is trapped, and focus that escapes is pulled back. Clicking the scrim does **not** close it, so a typed reason can't be lost.
+  - Every route has an `errorElement` (`RouteError`), so a page that throws shows an in-app screen inside the shell.
+  - `Table` row keys ignore events from controls inside cells.
+  - `WizardSteps` has a `none` mark (not started: no icon, muted label). Mark sizes match E1.
+  - For Phase 3: every table row is a Tab stop (per the handoff), so consider roving tabindex for long boards.
+- **Design values not in the handoff:** dark `--cs-fill` = `oklch(0.25 0.005 90)`. The product page title has no letter-spacing (as in `cs-build.js`).
+- **Vercel:** project `stefannavs-projects/agent-control-plane`, production branch `main`, public URL https://agent-control-plane-mocha.vercel.app. PR previews sit behind Vercel login (default protection). The project's first deployment came from this branch and was auto-promoted to production; merging to `main` replaces it.
+- **What Phase 2 needs to know**
+  - `PrototypeBar` hardcodes "Viewing as Marcus", and `AppShell` passes `avatarInitial="M"`. Wire both to the store's persona.
+  - Add a "Product components" section (light + dark) to `ComponentGallery`.
+  - Product components should compose primitives (`Table` for agent rows, `Modal` for pause/resume, `Notice`, `RuleTag`, `Icon`).
+  - `Table` already supports `groups` (inbox), `density="board"`, `isMuted` and `textSize`.
 
 ## Phase 2: Components and data
 
@@ -340,7 +368,7 @@ Tick **Built** when the screen exists at its route; tick **QA'd** after the side
 | 14b | Board decides | `/portfolio/promotions/:id` | 7 | ☐ | ☐ |
 | 15a | Threshold breach | agent view | 7 | ☐ | ☐ |
 | 15b | Version change | `/portfolio/activities/:a/branches/:b` | 7 | ☐ | ☐ |
-| C | Component sheet (light + dark) | `/about/components` | 2 | ☐ | ☐ |
+| C | Component sheet (light + dark) | `/about/components` | 2 | ◐ primitives (Phase 1) | ☐ |
 
 ---
 
@@ -360,6 +388,10 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-08 | Brand is **Signal**, a stand-in for the real company (spec D7). Top-nav wordmark stays "AIMS" | Stefan's call; keeps the real name out while giving the prototype a brand |
 | 2026-10-08 | React Router **v8** instead of the spec's v7: v8.4 is current and still exports every API the plan uses (`createBrowserRouter`, `RouterProvider`, `matchPath`, `useMatches`, `Link`, `MemoryRouter`) | Start a new project on the current major |
 | 2026-10-08 | Phase 1 Task 1.1 updated for create-vite 9.2 (template now ships oxlint, no `eslint.config.js`, no `vite-env.d.ts`, `types: ["vite/client"]`): swap oxlint for the ESLint stack, keep `vite/client` in `types`, set `packageManager: pnpm@11.5.1` for CI | Found in the Phase 0 review |
+| 2026-10-08 | Stack versions at scaffold: React 19.2, React Router 8.4, Vite 8.3, Vitest 5, TypeScript 6.0, ESLint 10, Playwright 1.6x, pnpm 11.5.1 | Recorded per Phase 1 Task 1.1 |
+| 2026-10-08 | Dark `--cs-fill` = `oklch(0.25 0.005 90)` (not in the handoff); product page title has no letter-spacing (as in `cs-build.js`) | Gaps and conflicts in the design source |
+| 2026-10-08 | Modals don't close on scrim click; every route has an in-shell error screen | Phase 1 review: protect typed reasons; never show a raw error page to visitors |
+| 2026-10-08 | Vercel project linked to the repo; production branch `main`; PR previews behind Vercel login | Public link is the production domain |
 | 2026-10-08 | Forbidden-terms check: real company name lives only in local `.git/info/forbidden-terms`; Phase 0 history was rewritten (before any push) to remove a leaked mention | A plan step had quoted the name literally |
 
 ## Session log
@@ -371,3 +403,4 @@ One row per working session. Newest last.
 | 2026-10-08 | – | Brainstormed and approved design; wrote spec, this plan, Phase 0 and 1 step files, and `CLAUDE.md`; local git repo with design handoff | Stefan reviews plan → Phase 0 |
 | 2026-10-08 | 0 | Moved handoff to `docs/`, interim README, adopted Signal brand, created public repo, milestones, labels, issues #1–#10 | Stefan reviews Phase 0 → Phase 1 |
 | 2026-10-08 | 0 | Fresh review: 3 Important fixed (Phase 1 Task 1.1 vs create-vite 9.2, CI pnpm version, PR issue number) + 4 minors fixed; Stefan approved; #1 closed | Phase 1 Task 1.1 |
+| 2026-10-08 | 1 | Built Phase 1 (scaffold, tokens, icons, 24 primitives, layout, route table, gallery, CI, Vercel). Fresh review: 4 Important + 3 re-graded fixed test-first; 3 minors deferred (menu hover-on-focus look, row Tab stops, dark checkbox fill). PR #11 open | Stefan reviews Phase 1 → merge → Phase 2 Task 2.0 |

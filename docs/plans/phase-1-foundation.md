@@ -393,8 +393,8 @@ test('wall is kiosk; landing, about, epic are prototype; rest are app', () => { 
 - Create: `.github/workflows/ci.yml`
 - Modify: `docs/BUILD_PLAN.md`, this file (tick steps)
 
-- [ ] **Step 1: CI workflow** on `pull_request` and `push` to `main`: checkout → `pnpm/action-setup` → `actions/setup-node` (Node 24, cache pnpm) → `pnpm install --frozen-lockfile` → `pnpm check` → `pnpm exec playwright install --with-deps chromium` → `pnpm e2e` → upload `playwright-report/` on failure.
-- [ ] **Step 2: Commit and push the branch**
+- [x] **Step 1: CI workflow** on `pull_request` and `push` to `main`: checkout → `pnpm/action-setup` → `actions/setup-node` (Node 24, cache pnpm) → `pnpm install --frozen-lockfile` → `pnpm check` → `pnpm exec playwright install --with-deps chromium` → `pnpm e2e` → upload `playwright-report/` on failure.
+- [x] **Step 2: Commit and push the branch**
 
 ```bash
 git add .github
@@ -402,7 +402,7 @@ git commit -m "ci: check and e2e on PRs"
 git push -u origin phase-1-foundation
 ```
 
-- [ ] **Step 3: Link Vercel**
+- [x] **Step 3: Link Vercel**
 
 ```bash
 vercel link --yes --project agent-control-plane
@@ -410,11 +410,11 @@ vercel git connect https://github.com/StefanNav/agent-control-plane
 ```
 If `git connect` says the Vercel GitHub app lacks access to the repo, ask Stefan to grant it (Vercel dashboard → Add New Project → import `agent-control-plane`). This is the one step that may need him. Framework preset: Vite; install `pnpm install`; build `pnpm build`; output `dist`.
 
-- [ ] **Step 4: Open the PR**
+- [x] **Step 4: Open the PR**
 
 `gh pr create --title "Phase 1: Foundation" --body` with: the Phase 1 checklist, `Closes #2` (issue numbers are phase + 1), and a note that the Vercel preview link appears below. Verify CI is green and the Vercel bot posts a preview URL.
 
-- [ ] **Step 5: Visual check.** On the preview URL at 1440×900, screenshot `/operations` (shell + placeholder) and `/about/components`. Compare buttons, fields, table, tabs, wizard steps and modal against `designs/Countersign Components.dc.html` and the handoff specs (`pnpm designs` → `http://localhost:4599`). Fix differences; commit.
-- [ ] **Step 6: Deep-link check on the preview.** Open `<preview>/operations/agents/med-rec` directly and refresh; it must load (no Vercel 404).
-- [ ] **Step 7: Update `docs/BUILD_PLAN.md`**: tick 1.1–1.10; Phase 1 → ⏸ At checkpoint; PR link; Latest preview URL; Phase 1 handoff notes (what exists, where, versions, gotchas, what Phase 2 needs); decision log; session log; Start here → "Next task: Phase 2, Task 2.0 (after Stefan approves Phase 1)". Commit and push.
+- [x] **Step 5: Visual check.** On the preview URL at 1440×900, screenshot `/operations` (shell + placeholder) and `/about/components`. Compare buttons, fields, table, tabs, wizard steps and modal against `designs/Countersign Components.dc.html` and the handoff specs (`pnpm designs` → `http://localhost:4599`). Fix differences; commit.
+- [x] **Step 6: Deep-link check on the preview.** Open `<preview>/operations/agents/med-rec` directly and refresh; it must load (no Vercel 404).
+- [x] **Step 7: Update `docs/BUILD_PLAN.md`**: tick 1.1–1.10; Phase 1 → ⏸ At checkpoint; PR link; Latest preview URL; Phase 1 handoff notes (what exists, where, versions, gotchas, what Phase 2 needs); decision log; session log; Start here → "Next task: Phase 2, Task 2.0 (after Stefan approves Phase 1)". Commit and push.
 - [ ] **Step 8: STOP. Ask Stefan to review** the preview URL and the PR. After approval: squash-merge (`gh pr merge --squash --delete-branch`), confirm production deploy on the Vercel URL, record the **Live URL** in Start here, set Phase 1 → ☑ Merged, commit to `main`.
