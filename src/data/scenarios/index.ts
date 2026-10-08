@@ -1,13 +1,49 @@
 import { createSeed } from '../seed'
 import { addMinutes } from '../../lib/clock'
-import { applyPause } from '../../store/mutations'
+import { applyPause, raiseOverdueReviews } from '../../store/mutations'
 import type { DemoState, Incident } from '../types'
+import { medRecAt } from './onboarding'
 
 /** Named starting points for stories and demos (spec §6.3). Later phases add their own. */
-export type ScenarioId = 'baseline' | 'med-rec-paused' | 'resume-requested' | 'awaiting-signature' | 'step-down-threshold' | 'stale-escalated'
+export type ScenarioId =
+  | 'baseline'
+  | 'med-rec-paused'
+  | 'resume-requested'
+  | 'awaiting-signature'
+  | 'step-down-threshold'
+  | 'stale-escalated'
+  | 'onboarding-intake'
+  | 'onboarding-at-5-of-7'
+  | 'onboarding-systems'
+  | 'onboarding-tools-tested'
+  | 'onboarding-sponsor-review'
+  | 'onboarding-returned-hs11'
+  | 'onboarding-ready'
+  | 'review-risk-tier'
+  | 'review-committee'
+  | 'review-decided'
+  | 'shadow-day-21'
 
 /** Every scenario id, for validating a `?scenario=` param. */
-export const SCENARIO_IDS: readonly ScenarioId[] = ['baseline', 'med-rec-paused', 'resume-requested', 'awaiting-signature', 'step-down-threshold', 'stale-escalated']
+export const SCENARIO_IDS: readonly ScenarioId[] = [
+  'baseline',
+  'med-rec-paused',
+  'resume-requested',
+  'awaiting-signature',
+  'step-down-threshold',
+  'stale-escalated',
+  'onboarding-intake',
+  'onboarding-at-5-of-7',
+  'onboarding-systems',
+  'onboarding-tools-tested',
+  'onboarding-sponsor-review',
+  'onboarding-returned-hs11',
+  'onboarding-ready',
+  'review-risk-tier',
+  'review-committee',
+  'review-decided',
+  'shadow-day-21',
+]
 
 /** The seed's live heartbeat (one minute before DEMO_NOW). */
 const LIVE = '2026-12-08T09:51:00'
@@ -28,6 +64,8 @@ function advanceClock(s: DemoState, to: string): DemoState {
   for (const agent of s.agents) if (agent.monitor.lastSeen === LIVE) agent.monitor.lastSeen = heartbeat
   for (const division of s.divisions) if (division.monitor.state === 'live') division.monitor.lastAt = heartbeat
   s.now = to
+  // A review date the clock moves past raises its overdue review (3d).
+  raiseOverdueReviews(s)
   return s
 }
 
@@ -95,18 +133,8 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
     return s
   },
 
-  // E3 3c / Countersign Screens 1b: PRV-0142 v3 waits for Priya, Shadow → Draft.
-  'awaiting-signature': (s) => {
-    Object.assign(admissionPrivilege(s), {
-      state: 'awaiting',
-      level: 'shadow',
-      proposedLevel: 'draft',
-      grantedBy: undefined,
-      grantedAt: undefined,
-    })
-    s.activities.find((a) => a.id === 'med-rec-admission')!.level = 'shadow'
-    return s
-  },
+  // E3 3c / Countersign Screens 1b: 06 Nov 09:52, PRV-0142 v3 waits for Priya, Shadow → Draft (R17).
+  'awaiting-signature': medRecAt('awaiting-signature'),
 
   // E15 15a: a threshold breach drops admission med rec from Draft to Shadow.
   'step-down-threshold': (s) => {
@@ -127,6 +155,39 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
     Object.assign(s.exceptions.find((e) => e.id === 'exc-5530')!, { claimedAt: '2026-12-08T09:55:00', state: 'claimed' })
     return s
   },
+
+  // E1 1a / E2 2a: 01 Oct, REQ-0093 approved on 29 Sep and not started; Med Rec doesn't exist yet.
+  'onboarding-intake': medRecAt('intake'),
+
+  // E1 1b / 1i: 04 Oct 08:41, Marcus returns to the job description he left at 5 of 7.
+  'onboarding-at-5-of-7': medRecAt('job-5-of-7'),
+
+  // E1 1c: 05 Oct 11:09, Marcus has ticked the grid; Teams · write still needs its activity.
+  'onboarding-systems': medRecAt('systems-3-of-4'),
+
+  // E1 1d: 06 Oct 14:21, Sam has tested all three hard stops; Send to Priya unlocks.
+  'onboarding-tools-tested': medRecAt('tools-tested'),
+
+  // E1 1e / 1f: 07 Oct 09:05, the final set waits for Priya since 06 Oct 15:10.
+  'onboarding-sponsor-review': medRecAt('sponsor-review'),
+
+  // E1 1g: 07 Oct 09:31, Priya sent HS-11 back to Sam at 09:14; her review resets.
+  'onboarding-returned-hs11': medRecAt('returned-hs11'),
+
+  // E1 1h: 07 Oct 16:05, Priya signed at 16:02; the record is frozen at v1.0 and with AIMS Review.
+  'onboarding-ready': medRecAt('ready'),
+
+  // E2 2b: 13 Oct 10:15, Dana sets the risk tier; the suggestion is Tier 2.
+  'review-risk-tier': medRecAt('risk-tier'),
+
+  // E2 2c: 14 Oct 16:12, Dr. Lee has the Tier 3 packet (item 3 of 5).
+  'review-committee': medRecAt('committee'),
+
+  // E2 2d: 14 Oct 16:25, approved with conditions C1–C3 at 16:20; shadow starts 15 Oct.
+  'review-decided': medRecAt('decided'),
+
+  // E3 3a / 3b: 05 Nov 09:30, shadow ran 15 Oct to 04 Nov; 2 of 3 targets met.
+  'shadow-day-21': medRecAt('shadow-day-21'),
 }
 
 /** A fresh state for the scenario. */

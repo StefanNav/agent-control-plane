@@ -134,3 +134,47 @@
   display: flex;
   gap: 10px;
 }
+
+/* Drafts (1i). */
+.draftsTab {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tabHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.tabTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.tabName {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.pills {
+  display: flex;
+  gap: 8px;
+}
+
+.plain {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--cs-strong);
+}

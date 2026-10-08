@@ -77,3 +77,106 @@ test('stop easy, resume deliberate: Marcus pauses, Priya approves, Jordan recons
   await expect(page.getByRole('table', { name: 'Linked actions' })).toContainText('ACT-88213')
   expect(errors).toEqual([])
 })
+
+test('intake to signed privilege: Dana → Marcus → Sam → Priya → Dana → Dr. Lee → (21 days) → Marcus → Priya', async ({ page }) => {
+  test.setTimeout(60_000)
+  const errors = collectErrors(page)
+  const viewAs = async (name: string) => {
+    await page.getByRole('button', { name: /^Viewing as/ }).click()
+    await page.getByRole('menuitem', { name: new RegExp(name) }).click()
+  }
+  const onboarding = (step: string) => page.goto(`/inventory/agents/med-rec/onboarding/${step}`)
+
+  // Dana starts from the approved intake with all four humans named (1a, 2a).
+  await page.goto('/inventory')
+  await viewAs('Dana')
+  await page.goto('/inventory/agents/med-rec/onboarding/intake?scenario=onboarding-intake')
+  await page.getByLabel('Technical owner').selectOption('sam')
+  await page.getByRole('button', { name: 'Start onboarding' }).click()
+  await expect(page).toHaveURL(/onboarding\/job$/)
+
+  // Marcus writes the job description (1b).
+  await viewAs('Marcus')
+  await onboarding('job')
+  for (const name of ['Reconcile home medications at admission', 'Flag allergy conflicts']) {
+    await page.getByRole('button', { name: '+ Add activity' }).click()
+    await page.getByRole('textbox', { name: /What the activity does/ }).fill(name)
+    await page.getByRole('button', { name: 'Add', exact: true }).click()
+  }
+  for (const item of ['Change a dose', 'Remove an allergy', 'Draft for anyone but the encounter’s patient']) {
+    await page.getByRole('button', { name: '+ Add a never item' }).click()
+    await page.getByRole('textbox', { name: /In plain words/ }).fill(item)
+    await page.getByRole('button', { name: 'Add', exact: true }).click()
+  }
+  await page.getByRole('combobox', { name: 'Acting for' }).selectOption('The admitting pharmacist on the patient’s unit')
+  await page.getByRole('button', { name: '+ Patient on dialysis' }).click()
+  for (const [label, value] of [
+    ['Agreement with the pharmacist’s list target, %', '90'],
+    ['Omitted home medications target, %', '3'],
+    ['Inaccurate lines target, %', '2'],
+  ] as const) {
+    await page.getByRole('textbox', { name: label }).fill(value)
+    await page.getByRole('textbox', { name: label }).blur()
+  }
+  await expect(page.getByRole('heading', { name: 'Job description · 7 of 7' })).toBeVisible()
+
+  // Marcus grants only what the activities need, each with its reason (1c).
+  await onboarding('systems')
+  for (const cell of ['Epic · read', 'Epic · draft', 'Pharmacy worklist · read', 'Pharmacy worklist · write', 'Pyxis · read', 'Microsoft Teams · write']) {
+    await page.getByRole('button', { name: cell, exact: true }).click()
+  }
+  for (const [label, value] of [
+    ['Epic · read', 'all'],
+    ['Epic · draft', 'med-rec-a1'],
+    ['Pharmacy worklist · write', 'med-rec-a1'],
+    ['Pyxis · read', 'med-rec-a1'],
+    ['Teams · write', 'escalation'],
+  ] as const) {
+    await page.getByRole('combobox', { name: `${label}: the activity it serves` }).selectOption(value)
+  }
+  await expect(page.getByRole('heading', { name: 'Systems and verbs · done' })).toBeVisible()
+
+  // Sam tests the three hard stops and sends the set (1d).
+  await viewAs('Sam')
+  await onboarding('tools')
+  while ((await page.getByRole('button', { name: 'Run test' }).count()) > 0) await page.getByRole('button', { name: 'Run test' }).first().click()
+  await page.getByRole('button', { name: 'Send to Priya for approval' }).click()
+
+  // Priya finds it in her inbox and approves the set (1e).
+  await viewAs('Priya')
+  await page.goto('/operations/inbox')
+  await page.getByRole('link', { name: /Review: final set/ }).click()
+  await page.getByRole('link', { name: 'Open the final set' }).click()
+  await page.getByRole('button', { name: 'Approve and sign' }).click()
+  await expect(page.getByText('AGT-0123 · v1.0 · frozen')).toBeVisible()
+
+  // Dana sets Tier 3 with a reason and builds the packet (2b).
+  await viewAs('Dana')
+  await page.goto('/inventory/agents/med-rec/risk-tier')
+  await page.getByRole('radio', { name: /Tier 3 · High/ }).click()
+  await page.getByRole('textbox', { name: /Reason for changing the suggested tier/ }).fill('Med rec errors carry into every inpatient order.')
+  await page.getByRole('button', { name: 'Set Tier 3 and build the packet' }).click()
+
+  // Dr. Lee approves with conditions; shadow starts the next day (2c, 2d).
+  await viewAs('Dr. Lee')
+  await page.goto('/portfolio/reviews/med-rec')
+  await page.getByRole('textbox', { name: 'Reason' }).fill('Clear limits and good hard-stop evidence.')
+  await page.getByRole('button', { name: 'Record decision' }).click()
+  await expect(page.getByRole('table', { name: 'Privileges' })).toContainText('Shadow from 02 Oct')
+
+  // Shadow takes 21 days: skip ahead, as the Phase 8 story will (3a).
+  await viewAs('Marcus')
+  await page.goto('/operations/agents/med-rec?tab=scorecard&scenario=shadow-day-21')
+  await page.getByRole('button', { name: 'Ask Priya to sign' }).click()
+  await expect(page.getByText('Requested · waiting for Priya')).toBeVisible()
+
+  // Priya signs below target with a written reason (3c), and it shows in My privileges (3d).
+  await viewAs('Priya')
+  await page.goto('/inventory/privileges/prv-0142/sign')
+  await page.getByRole('textbox', { name: 'Reason for signing below target' }).fill('Name mismatches are fixed in SOP v1.3.1; a pharmacist signs every draft (C1).')
+  await page.getByRole('checkbox', { name: /I accept accountability/ }).click()
+  await page.getByRole('button', { name: 'Sign and move to Draft' }).click()
+  await page.goto('/portfolio/privileges')
+  await expect(page.locator('[data-row-id]').filter({ hasText: 'Med Rec Agent' })).toContainText('In 91 days')
+  expect(errors).toEqual([])
+})

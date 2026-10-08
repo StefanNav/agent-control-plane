@@ -1,0 +1,168 @@
+import { applyDecision, applyGoLiveRequest, applyJobEdit, applyRequestChanges, applySend, applySetTier, applySponsorSign, applyStart, applySystemsEdit, applyTest } from '../../store/onboarding'
+import { createSeed } from '../seed'
+import type { DemoState, Verb } from '../types'
+import { dropAgents, rewindTo } from './rewind'
+
+/**
+ * Med Rec Agent's onboarding, replayed (ruling R1). Each stage rewinds the hospital to the
+ * frame's moment, removes Med Rec, then replays the dated steps up to that stage through the
+ * store's own mutations, so a frame's state is exactly what the UI would produce.
+ */
+
+export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4' | 'tools-tested' | 'sponsor-review' | 'returned-hs11' | 'ready' | 'risk-tier' | 'committee' | 'decided' | 'shadow-day-21' | 'awaiting-signature'
+
+const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4', 'tools-tested', 'sponsor-review', 'returned-hs11', 'ready', 'risk-tier', 'committee', 'decided', 'shadow-day-21', 'awaiting-signature']
+
+/** "Now" in each stage's frame. */
+const NOW: Record<MedRecStage, string> = {
+  intake: '2026-10-01T09:05:00',
+  'job-5-of-7': '2026-10-04T08:41:00',
+  'systems-3-of-4': '2026-10-05T11:09:00',
+  'tools-tested': '2026-10-06T14:21:00',
+  'sponsor-review': '2026-10-07T09:05:00',
+  'returned-hs11': '2026-10-07T09:31:00',
+  ready: '2026-10-07T16:05:00',
+  'risk-tier': '2026-10-13T10:15:00',
+  committee: '2026-10-14T16:12:00',
+  decided: '2026-10-14T16:25:00',
+  'shadow-day-21': '2026-11-05T09:30:00',
+  'awaiting-signature': '2026-11-06T09:52:00',
+}
+
+/** A dated step and the first stage at which it has happened. */
+interface Step {
+  stage: MedRecStage
+  run: (s: DemoState) => void
+}
+
+const TIMELINE: Step[] = [
+  // 1a: Dana starts onboarding with Marcus and Sam.
+  { stage: 'job-5-of-7', run: (s) => applyStart(s, 'req-0093', { ownerId: 'marcus', techOwnerId: 'sam' }, 'dana', '2026-10-01T09:12:00') },
+  // 1b: Marcus writes 5 of the 7 fields over two days, then leaves it at 16:42 on 03 Oct (v0.4).
+  {
+    stage: 'job-5-of-7',
+    run: (s) =>
+      applyJobEdit(
+        s,
+        'med-rec',
+        {
+          activities: [
+            { id: 'med-rec-admission', name: 'Reconcile home medications at admission', branch: 'Adverse branch: stopping a home medication', short: 'admission med rec' },
+            { id: 'med-rec-allergy', name: 'Flag allergy conflicts', branch: 'No adverse branch: flags only', short: 'allergy flags' },
+          ],
+        },
+        'marcus',
+        '2026-10-02T10:30:00',
+      ),
+  },
+  { stage: 'job-5-of-7', run: (s) => applyJobEdit(s, 'med-rec', { never: ['Change a dose', 'Remove an allergy', 'Draft for anyone but the encounter’s patient'] }, 'marcus', '2026-10-02T15:05:00') },
+  {
+    stage: 'job-5-of-7',
+    run: (s) => applyJobEdit(s, 'med-rec', { actingFor: 'The admitting pharmacist on the patient’s unit', targets: { agreement: 90, omitted: 3 } }, 'marcus', '2026-10-03T16:42:00'),
+  },
+  // 1b → 1c: Marcus finishes the job on 04 Oct (v0.5).
+  {
+    stage: 'systems-3-of-4',
+    run: (s) =>
+      applyJobEdit(
+        s,
+        'med-rec',
+        { escalation: ['Home list and fill history disagree', 'Patient on dialysis', 'More than 15 home medications'], targets: { inaccurate: 2 } },
+        'marcus',
+        '2026-10-04T09:05:00',
+      ),
+  },
+  // 1c: on 05 Oct Marcus ticks the grid and explains every grant but Teams · write (v0.6).
+  { stage: 'systems-3-of-4', run: (s) => grantMedRecSystems(s, '2026-10-05T11:08:00') },
+  // 1c → 1d: Teams · write serves escalation; the grid is done on 05 Oct (v0.7), and Sam gets the hard stops.
+  { stage: 'tools-tested', run: (s) => applySystemsEdit(s, 'med-rec', { kind: 'reason', system: 'Microsoft Teams', verb: 'write', activity: 'escalation' }, 'marcus', '2026-10-05T11:12:00') },
+  // 1d: Sam tests all three on the last 30 days.
+  { stage: 'tools-tested', run: (s) => applyTest(s, 'med-rec', 'HS-04', undefined, 'sam', '2026-10-06T14:20:00') },
+  { stage: 'tools-tested', run: (s) => applyTest(s, 'med-rec', 'HS-07', undefined, 'sam', '2026-10-06T14:20:00') },
+  { stage: 'tools-tested', run: (s) => applyTest(s, 'med-rec', 'HS-11', undefined, 'sam', '2026-10-06T14:21:00') },
+  // Pin: the frames number Sam's autosaves v0.9 from here on (ruling R8: tests don't bump the version).
+  { stage: 'tools-tested', run: (s) => void (s.onboardings.find((r) => r.agentId === 'med-rec')!.version = 9) },
+  // 1d → 1e: Sam sends the set to Priya at 15:10.
+  { stage: 'sponsor-review', run: (s) => applySend(s, 'med-rec', 'sam', '2026-10-06T15:10:00') },
+  // 1f → 1g: Priya sends HS-11 back to Sam the next morning.
+  { stage: 'returned-hs11', run: (s) => applyRequestChanges(s, 'med-rec', { to: 'sam', about: 'HS-11', note: HS11_NOTE }, 'priya', '2026-10-07T09:14:00') },
+  // Pin: 1g reads "Autosaved 09:31" (Sam had the step open).
+  { stage: 'returned-hs11', run: (s) => void (s.onboardings.find((r) => r.agentId === 'med-rec')!.savedAt = '2026-10-07T09:31:00') },
+  // 1g → 1h: Sam re-tests HS-11 on the 212 transfers and sends again; Priya signs at 16:02.
+  { stage: 'ready', run: (s) => applyTest(s, 'med-rec', 'HS-11', 'sep-8east-transfers', 'sam', '2026-10-07T10:40:00') },
+  { stage: 'ready', run: (s) => applySend(s, 'med-rec', 'sam', '2026-10-07T10:45:00') },
+  { stage: 'ready', run: (s) => applySponsorSign(s, 'med-rec', 'priya', '2026-10-07T16:02:00') },
+  // 2b → 2c: Dana raises the tier to 3 and builds the packet; it is item 3 of 5 at the 14 Oct meeting.
+  { stage: 'committee', run: (s) => applySetTier(s, 'med-rec', { tier: 3, reason: TIER_REASON }, 'dana', '2026-10-13T10:20:00') },
+  { stage: 'committee', run: (s) => void (s.onboardings.find((r) => r.agentId === 'med-rec')!.review!.agendaItem = { item: 3, of: 5 }) },
+  // 2c → 2d: Dr. Lee approves with C1–C3 at 16:20.
+  {
+    stage: 'decided',
+    run: (s) => applyDecision(s, 'med-rec', { kind: 'approveWithConditions', conditions: s.onboardings.find((r) => r.agentId === 'med-rec')!.review!.proposedConditions, reason: DECISION_REASON }, 'drlee', '2026-10-14T16:20:00'),
+  },
+  // 2d → 3a: 21 days of shadow, 15 Oct to 04 Nov; Marcus compared 12 cases.
+  { stage: 'shadow-day-21', run: (s) => shadowEvidence(s) },
+  // 3a → 3c: Marcus asks Priya to sign at 11:00 on 05 Nov; SOP v1.3.1 (the name fix) deploys at 16:00.
+  { stage: 'awaiting-signature', run: (s) => applyGoLiveRequest(s, 'med-rec-admission', 'marcus', '2026-11-05T11:00:00') },
+  {
+    stage: 'awaiting-signature',
+    run: (s) => {
+      s.agents.find((a) => a.id === 'med-rec')!.sop = 'v1.3.1'
+      s.logEvents.push({ id: `log-sop-${s.logEvents.length + 1}`, at: '2026-11-05T16:00:00', agentId: 'med-rec', text: 'SOP v1.3 → v1.3.1', sub: 'Adds 186 brand names to the generic mapping · Sam' })
+    },
+  },
+]
+
+/** Shadow evidence as of 05 Nov (3a, 3b): the seed's scorecards, cases and trace, cut to 04 Nov. */
+function shadowEvidence(s: DemoState) {
+  const seed = createSeed()
+  s.scorecards = [...s.scorecards.filter((c) => !c.activityId.startsWith('med-rec-')), ...structuredClone(seed.scorecards)]
+  Object.assign(s.scorecards.find((c) => c.activityId === 'med-rec-allergy')!, { to: '2026-11-04T00:00:00', cases: 861 })
+  s.sampleCases = [...s.sampleCases.filter((c) => c.agentId !== 'med-rec'), ...structuredClone(seed.sampleCases)]
+  if (!s.actions.some((a) => a.id === 'act-61840')) s.actions.push(structuredClone(seed.actions.find((a) => a.id === 'act-61840')!))
+  const agent = s.agents.find((a) => a.id === 'med-rec')!
+  agent.metrics = { ...agent.metrics, day: 53, trend: { end: 90, drift: 0.4 } }
+}
+
+/** Dana's reason for Tier 3 (2b) and Dr. Lee's for the decision (2c), verbatim. */
+const TIER_REASON = 'Med rec errors carry into every inpatient order. Pharmacist review catches most, not all. The board should see this at Tier 3 until shadow evidence is in.'
+const DECISION_REASON = 'Clear limits and good hard-stop evidence. The conditions keep a pharmacist on every draft and keep dialysis patients out while renal dosing is unsettled.'
+
+/** Priya's note on HS-11 (1f, verbatim). */
+export const HS11_NOTE = 'HS-11 shows 0 blocks. Before I sign, please test it on September’s 8 East transfers. That’s where a wrong-patient draft would happen.'
+
+/** 1c's grid in one autosave: Epic read and draft, worklist read and write, Pyxis read, Teams write (unexplained). */
+function grantMedRecSystems(s: DemoState, at: string) {
+  const record = s.onboardings.find((r) => r.agentId === 'med-rec')!
+  const grants: Array<[string, Verb, string | null, string]> = [
+    ['Epic', 'read', 'all', 'Both activities: home list, allergies, fill history'],
+    ['Epic', 'draft', 'med-rec-admission', 'Reconcile home medications. The draft lands in Epic as pending, for the pharmacist to sign.'],
+    ['Pharmacy worklist', 'read', null, ''],
+    ['Pharmacy worklist', 'write', 'med-rec-admission', 'Puts the draft in the admitting pharmacist’s queue'],
+    ['Pyxis', 'read', 'med-rec-admission', 'Dispense history, to check the home list'],
+    ['Microsoft Teams', 'write', null, ''],
+  ]
+  record.grants = grants.map(([system, verb, activity, why]) => ({ system, verb, activity, why, added: at }))
+  // One autosave, counted through the store's own edit so version and done follow its rules.
+  applySystemsEdit(s, 'med-rec', { kind: 'grant', system: 'Microsoft Teams', verb: 'write', on: true }, 'marcus', at)
+}
+
+/** The hospital before Med Rec Agent existed, with REQ-0093 approved and waiting. */
+function beforeMedRec(s: DemoState, at: string): DemoState {
+  rewindTo(s, at)
+  dropAgents(s, new Set(['med-rec']))
+  const intake = s.intakeRequests.find((r) => r.id === 'req-0093')
+  if (intake) delete intake.startedAt
+  return s
+}
+
+/** Med Rec's onboarding as it stood at `stage`. */
+export const medRecAt =
+  (stage: MedRecStage) =>
+  (s: DemoState): DemoState => {
+    beforeMedRec(s, NOW[stage])
+    const upTo = STAGES.indexOf(stage)
+    for (const step of TIMELINE) if (STAGES.indexOf(step.stage) <= upTo) step.run(s)
+    s.now = NOW[stage]
+    return s
+  }

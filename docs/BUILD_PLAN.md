@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 5: Onboarding and go-live (☐ not started) |
-| **Branch** | `phase-5-onboarding` (create from `main`) |
-| **Last completed** | Phase 4 approved and squash-merged (PR #14) (2026-10-08) |
-| **Next task** | Phase 5 Task 5.0: write `docs/plans/phase-5-onboarding.md` (read Phase 4's handoff notes first) |
+| **Current phase** | Phase 5: Onboarding and go-live (⏸ at checkpoint, awaiting Stefan's review) |
+| **Branch** | `phase-5-onboarding` |
+| **Last completed** | Phase 5 built, fresh-reviewed and fixed; PR #15 open (2026-10-08) |
+| **Next task** | Stefan reviews PR #15 on the preview → squash-merge → Phase 6 Task 6.0 (write `docs/plans/phase-6-governance.md`; read Phase 5's handoff notes first) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none open |
+| **Latest preview** | https://agent-control-plane-git-phase-5-onboarding-stefannavs-projects.vercel.app (PR [#15](https://github.com/StefanNav/agent-control-plane/pull/15); behind Vercel login) |
 
 ### How to resume in a new session
 
@@ -92,8 +92,8 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 1 | Foundation | ☑ Merged | `phase-1-foundation` | [#2](https://github.com/StefanNav/agent-control-plane/issues/2) | [#11](https://github.com/StefanNav/agent-control-plane/pull/11) | [phase-1-foundation.md](plans/phase-1-foundation.md) |
 | 2 | Components and data | ☑ Merged | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | [#12](https://github.com/StefanNav/agent-control-plane/pull/12) | [phase-2-components-data.md](plans/phase-2-components-data.md) |
 | 3 | Command Board and inbox | ☑ Merged | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | [#13](https://github.com/StefanNav/agent-control-plane/pull/13) | [phase-3-board-inbox.md](plans/phase-3-board-inbox.md) |
-| 4 | Controls and audit | ☑ Merged | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | [#14](https://github.com/StefanNav/agent-control-plane/pull/14) | to write (Task 4.0) |
-| 5 | Onboarding and go-live | ☐ Not started | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | – | to write (Task 5.0) |
+| 4 | Controls and audit | ☑ Merged | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | [#14](https://github.com/StefanNav/agent-control-plane/pull/14) | [phase-4-controls-audit.md](plans/phase-4-controls-audit.md) |
+| 5 | Onboarding and go-live | ⏸ At checkpoint | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | [#15](https://github.com/StefanNav/agent-control-plane/pull/15) | [phase-5-onboarding.md](plans/phase-5-onboarding.md) |
 | 6 | Governance and fast follows | ☐ Not started | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | – | to write (Task 6.0) |
 | 7 | Earned autonomy | ☐ Not started | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | – | to write (Task 7.0) |
 | 8 | Stories and portfolio layer | ☐ Not started | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | – | to write (Task 8.0) |
@@ -326,21 +326,90 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 **Goal:** Intake to signed privilege (E1, E2, E3).
 **Note from the Phase 2 review:** the permission matrix needs three additions here. Add a `requestGoLive` action for owners. Make committee go-live approval tier-aware (medium and high only). Decide whether Sam's "technical only" exception scope differs from "own agents".
 
-- [ ] 5.0 Write `docs/plans/phase-5-onboarding.md`; commit
-- [ ] 5.1 Onboarding wizard shell (6 steps: Intake, Job description, Systems and verbs, Tools and hard stops, Sponsor approval, Ready for review; marks derived from the record) + intake 1a + name the humans 2a (all four required; span-of-control warning above 7 activities)
-- [ ] 5.2 Job description 1b (7 required fields, "5 of 7", missing fields listed, submit gated)
-- [ ] 5.3 Systems and verbs 1c (default read only; Sign and Order locked by `ORG-POL-02`; changed ring)
-- [ ] 5.4 Tools and hard stops 1d (library or plain language; "would have blocked" counts; Send to Priya unlocks when all tested)
-- [ ] 5.5 Sponsor approval 1e, request changes on HS-11 1f, returned to Sam 1g (only HS-11 reopens; Priya's review resets)
-- [ ] 5.6 Ready for review 1h (frozen) and Drafts in Inventory 1i (Continue opens the first missing field)
-- [ ] 5.7 Risk tier 2b (factors shown; changing it requires a reason)
-- [ ] 5.8 Committee packet 2c (Approve / Approve with conditions / Re-review / Deny) and decision logged 2d (conditions carry onto the privilege)
-- [ ] 5.9 Shadow scorecard 3a and sample case 3b (side by side, line by line)
-- [ ] 5.10 Sign the privilege 3c (missed target → written reason required) and My privileges 3d (overdue review raises an exception)
-- [ ] 5.11 E2E: intake → job → systems → tools → approval → committee → sign; checkpoint
+- [x] 5.0 Write `docs/plans/phase-5-onboarding.md`; commit
+- [x] 5.1 Data model, catalogue, progress and `rewindTo` (onboarding records replace static drafts; Lena; Tier 4; seed v6)
+- [x] 5.2 Wizard shell (6 steps, marks derived from the record), start from intake 1a + name the humans 2a (all four required; span warning above 7); `onboarding-intake`
+- [x] 5.3 Job description 1b (7 fields, "5 of 7", missing listed, welcome back, `?field=`) and Drafts 1i (Continue opens the first missing field); `onboarding-at-5-of-7`
+- [x] 5.4 Systems and verbs 1c (nothing granted until ticked; Sign and Order locked by `ORG-POL-02`; changed ring; reach line); `onboarding-systems`
+- [x] 5.5 Tools and hard stops 1d (library or plain language; "would have blocked" counts; Send to Priya unlocks at 12 of 13; inbox hand-off); `onboarding-tools-tested`
+- [x] 5.6 Sponsor approval 1e, request changes on HS-11 1f, returned to Sam 1g (only HS-11 reopens; any edit resets Priya's review); `onboarding-sponsor-review`, `onboarding-returned-hs11`
+- [x] 5.7 Ready for review 1h (frozen v1.0); `onboarding-ready`
+- [x] 5.8 Agent record and risk tier 2b (factors shown; changing it requires a reason; tier-aware committee); `review-risk-tier`
+- [x] 5.9 Committee packet 2c (Approve / with conditions / Re-review / Deny) and decision logged 2d (conditions carry onto the privilege); `review-committee`, `review-decided`
+- [x] 5.10 Shadow scorecard 3a and sample case 3b (side by side, line by line); `requestGoLive`; `shadow-day-21`
+- [x] 5.11 Sign the privilege 3c (missed target → written reason) and My privileges 3d (overdue review raises an exception; renewal); `awaiting-signature` at 06 Nov
+- [x] 5.12 E2E: intake → job → systems → tools → approval → committee → (skip 21 days) → sign; checkpoint (awaiting Stefan's approval)
 
 **Done when:** frames 1a–1i, 2a–2d, 3a–3d built and visually checked.
-**Handoff notes:** _written at the end of the phase._
+**Handoff notes (Phase 5 → Phase 6)**
+
+- **What exists**
+  - Onboarding (E1, 2a): `/inventory/agents/:id/onboarding/:step` (`intake | job | systems | tools | approval | review`). It's one record per agent in `state.onboardings`. The rail, side panels and Drafts read the pure rules in `src/store/onboardingRules.ts`:
+    - `stepStates`, `openStep`, `recordItems`, `jobFields`, `systemsProgress`, `reachLine`
+    - `riskFactors`, `shadowProgress`, `criteriaStatus`, `conditionRange`
+  - AIMS Review (E2):
+    - `/inventory/agents/:id`: the record. 2d once decided; composed for the 40 agents without a record.
+    - `/inventory/agents/:id/risk-tier` (2b)
+    - `/portfolio/reviews/:id` (2c)
+  - Go-live (E3):
+    - the agent view's Scorecard tab (3a, with `?activity=`)
+    - `/operations/agents/:id/cases/:caseId` (3b)
+    - `/inventory/privileges/:code/sign` (3c), which signs, renews, or shows a privilege read only
+    - `/portfolio/privileges` (3d, `?tab=all|overdue|due`)
+  - Store actions (all on `runAction`):
+    - `startOnboarding`, `updateJob`, `updateSystems`, `testHardStop`, `sendToSponsor`
+    - `requestSponsorChanges`, `replyToSponsor`, `approveAsSponsor`
+    - `setRiskTier`, `recordDecision`
+    - `requestGoLive`, `extendShadow`, `flagCaseLine`
+    - `signPrivilege`, `returnPrivilegeRequest`, `askForEvidence`
+  - Pure mutations live in `src/store/onboarding.ts`; scenarios replay them.
+  - Hand-offs raise inbox items with a `link` (R9). `raiseOverdueReviews` runs whenever a scenario moves the clock forward.
+- **Time model (R1).** `rewindTo(s, at)` in `src/data/scenarios/rewind.ts` turns the hospital back to how it stood at `at`. `medRecAt(stage)` in `src/data/scenarios/onboarding.ts` rewinds, removes Med Rec, then replays its dated timeline. The new scenarios are:
+  - `onboarding-intake`, `onboarding-at-5-of-7`, `onboarding-systems`, `onboarding-tools-tested`
+  - `onboarding-sponsor-review`, `onboarding-returned-hs11`, `onboarding-ready`
+  - `review-risk-tier`, `review-committee`, `review-decided`
+  - `shadow-day-21`, and `awaiting-signature` (now at 06 Nov 09:52)
+- **Seed v6:**
+  - Onboarding records: Med Rec's complete record, plus the live draft Culture Follow-up (REQ-0099)
+  - Intakes now reserve the agent's id and code
+  - The catalogue (`src/data/seed/catalogue.ts`): job templates, gateway tools, the hard-stop library, tier rules (Tier 4 added), board meetings
+  - Scorecards and 12 sample cases (4105 verbatim), and ACT-61840
+  - Lena (Discharge technical owner)
+  - Privilege codes count down from PRV-0141, so PRV-0142 comes next in October
+  - Privileges have versions: the latest by code wins; `latestByCode` / `latestPrivilege`
+- **Design system and components:** `RadioCardGroup columns`, `SystemsVerbsGrid selected/policyText`, `HardStopCard children`, and `addDays` in the clock (safe across daylight saving).
+- **What Phase 6 needs to know**
+  - The "Suggest a split" button on 2a links to `/settings/divisions/<id>` (8a).
+  - `onBoard()` now also excludes `onboarding` and `inReview` agents. New agent lists should use it.
+  - Moving the clock forward in a scenario raises overdue reviews. `epic-fixed-later` (+9 days) will raise them for anything due by 17 Dec. The lapse to Shadow 14 days later isn't built.
+  - Drafts can be started at baseline from REQ-0106 and REQ-0108 (Dana, Inventory → Intake → Open).
+- **Review fixes (fresh reviewer, all test-first):**
+  - A go-live request sent back and asked again can be signed. New versions number from the code's highest version, and the sign page resolves to the version in force.
+  - Tier 1 starts shadow with no board, and the packet, record and header say so.
+  - The re-review inbox item closes when the tier is set again.
+  - Sending the set back to the technical owner needs the hard stop it's about.
+  - Rewind rolls later signings back a review cycle, so nothing is signed after `now`.
+  - The export reads the record as it stood.
+  - Hand-offs with a link never escalate, and the tier hand-off is due the day before the board.
+  - The Activities tab reads the privilege in force, and new version ids come from the code.
+- **Deferred minors:**
+  - `signReason` is copied onto later versions.
+  - `startOnboarding` accepts any people, and an out-of-range tier would throw.
+  - Deny doesn't mark the intake closed.
+  - Some Med Rec copy shows on generic intakes ("21-day shadow", "pharmacist").
+  - Small duplication in `selectSignature`.
+  - Activities can't be removed or renamed.
+  - The tools hand-off is missed if the never list is filled after the grid.
+  - The send-back-to-Marcus copy overstates what reopens.
+  - Closed v1 cards read "Awaiting signature".
+  - A shadow agent's board review date shows the shadow end.
+  - A self-escalation line shows on the sponsor's own hand-offs.
+- **Gotchas**
+  - Privileges have several versions per code. Never `find` by activity; use `currentPrivilege` (board), `latestPrivilege` or `latestByCode` (store).
+  - Number new versions with `nextVersion(s, code)`.
+  - Scenario stages are cumulative: `medRecAt(stage)` replays every step up to the stage. Pins (versions, autosave times) are steps too.
+  - Adding minutes across 01 Nov shifts the local hour. Use `addDays` for day arithmetic.
+  - The persona switcher navigates to the persona's landing, so e2e tests switch first, then `goto`.
 
 ## Phase 6: Governance and fast follows
 
@@ -431,23 +500,23 @@ Tick **Built** when the screen exists at its route; tick **QA'd** after the side
 | 7c | Incident record | `/operations/incidents/:id` | 4 | ☑ | ☑ |
 | 7d | Export for a surveyor | `/reports/export` | 4 | ☑ | ☑ |
 | 8c | Inventory linked to ops | `/inventory` | 4 | ☑ | ☑ |
-| 1a | Start from intake | `…/onboarding/intake` | 5 | ☐ | ☐ |
-| 1b | Job description | `…/onboarding/job` | 5 | ☐ | ☐ |
-| 1c | Systems and verbs | `…/onboarding/systems` | 5 | ☐ | ☐ |
-| 1d | Tools and hard stops | `…/onboarding/tools` | 5 | ☐ | ☐ |
-| 1e | Sponsor approval | `…/onboarding/approval` | 5 | ☐ | ☐ |
-| 1f | Request changes | `…/onboarding/approval` | 5 | ☐ | ☐ |
-| 1g | Returned to Sam | `…/onboarding/tools` | 5 | ☐ | ☐ |
-| 1h | Ready for review | `…/onboarding/review` | 5 | ☐ | ☐ |
-| 1i | Drafts in Inventory | `/inventory?tab=drafts` | 5 | ☐ | ☐ |
-| 2a | Name the humans | `…/onboarding/intake` | 5 | ☐ | ☐ |
-| 2b | Risk tier | `/inventory/agents/med-rec/risk-tier` | 5 | ☐ | ☐ |
-| 2c | Committee packet | `/portfolio/reviews/med-rec` | 5 | ☐ | ☐ |
-| 2d | Decision logged | `/inventory/agents/med-rec` | 5 | ☐ | ☐ |
-| 3a | Shadow scorecard | `/operations/agents/med-rec?tab=scorecard` | 5 | ☐ | ☐ |
-| 3b | Sample case | `/operations/agents/med-rec/cases/:id` | 5 | ☐ | ☐ |
-| 3c | Sign the privilege | `/inventory/privileges/prv-0142/sign` | 5 | ☐ | ☐ |
-| 3d | My privileges | `/portfolio/privileges` | 5 | ☐ | ☐ |
+| 1a | Start from intake | `…/onboarding/intake` | 5 | ☑ | ☑ |
+| 1b | Job description | `…/onboarding/job` | 5 | ☑ | ☑ |
+| 1c | Systems and verbs | `…/onboarding/systems` | 5 | ☑ | ☑ |
+| 1d | Tools and hard stops | `…/onboarding/tools` | 5 | ☑ | ☑ |
+| 1e | Sponsor approval | `…/onboarding/approval` | 5 | ☑ | ☑ |
+| 1f | Request changes | `…/onboarding/approval` | 5 | ☑ | ☑ |
+| 1g | Returned to Sam | `…/onboarding/tools` | 5 | ☑ | ☑ |
+| 1h | Ready for review | `…/onboarding/review` | 5 | ☑ | ☑ |
+| 1i | Drafts in Inventory | `/inventory?tab=drafts` | 5 | ☑ | ☑ |
+| 2a | Name the humans | `…/onboarding/intake` | 5 | ☑ | ☑ |
+| 2b | Risk tier | `/inventory/agents/med-rec/risk-tier` | 5 | ☑ | ☑ |
+| 2c | Committee packet | `/portfolio/reviews/med-rec` | 5 | ☑ | ☑ |
+| 2d | Decision logged | `/inventory/agents/med-rec` | 5 | ☑ | ☑ |
+| 3a | Shadow scorecard | `/operations/agents/med-rec?tab=scorecard` | 5 | ☑ | ☑ |
+| 3b | Sample case | `/operations/agents/med-rec/cases/:id` | 5 | ☑ | ☑ |
+| 3c | Sign the privilege | `/inventory/privileges/prv-0142/sign` | 5 | ☑ | ☑ |
+| 3d | My privileges | `/portfolio/privileges` | 5 | ☑ | ☑ |
 | 8a | Division settings | `/settings/divisions/medications` | 6 | ☐ | ☐ |
 | 8b | People and roles | `/settings/people` | 6 | ☐ | ☐ |
 | 9a | Version held at gateway | agent view | 6 | ☐ | ☐ |
@@ -511,6 +580,21 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-08 | Retired agents stay in `state.agents` (lifecycle retired) and leave every board through `onBoard()`; retiring closes open exceptions | One record, one filter |
 | 2026-10-08 | Actions carry their own context (privilege, checks, conditions) so the audit never recomputes the past from today's state | "Any action can be reconstructed" |
 | 2026-10-08 | Counts come from data when a frame's number conflicts (7 tool grants, Drafts · 3, by-hand counts, hard-stop tests, export contents) | Realism over copying frame literals |
+| 2026-10-08 | Phase 5 split into 5.0–5.12: data and rewind first, then one task per wizard step and review screen. Onboarding frames happen 29 Sep–06 Nov, so scenarios `rewindTo` the hospital at that moment and replay Med Rec's onboarding through the store's own mutations; baseline keeps the completed record plus one live draft (Culture Follow-up, invented). Full rulings R1–R19 in the phase plan | Frames tell an October story; the demo clock is 08 Dec |
+| 2026-10-08 | Onboarding is one record per agent (`state.onboardings`); static `OnboardingDraft` rows removed. Drafts list real records only (1i's other rows are live by 08 Dec). Intakes reserve the agent's id and code | One model for the wizard, Drafts and inbox (R2) |
+| 2026-10-08 | Items across the record = 10 + one per hard stop (Med Rec 13; a draft with no never list "4 of 10") | Counts from data |
+| 2026-10-08 | 1a and 2a are one screen; candidates sort the intake's division first, then by name; span counts from data ("22 activities") | R3, R4 |
+| 2026-10-08 | Lena is Discharge's technical owner; Omar is "Clinical informatics analyst"; Tier 4 added and 8c's "Medium" fixed to "Moderate" | R5, R6 (2a, 2b) |
+| 2026-10-08 | The technical owner may edit the job description (spec §7); anyone who may edit or configure may send the set | Spec beats the plan's draft test |
+| 2026-10-08 | Never items become hard stops: library matches take the library's HS code and rule, others are plain language with the next code; a read on a system with write needs no reason or tool | R10; reproduces 1c's 5 reasons and 1d's 5 tools |
+| 2026-10-08 | Any edit or re-test while the sponsor reviews resets the review; after v1.0 the record is frozen and edits are refused | R8, Review focus 1 |
+| 2026-10-08 | Privilege versions: sponsor approval drafts v1 (awaiting the board), the decision makes v2 Shadow with conditions, the owner's request drafts v3; new versions number from the code's highest; seed auto codes count down from PRV-0141 | R11: lands on 3c's "PRV-0142 v3" without pinning |
+| 2026-10-08 | Tier 1 starts shadow with no board; the board decides Tier 2+ (`can()` tier-aware); re-review clears the tier for the next meeting; deny archives like a retirement | R7, 2c's four outcomes |
+| 2026-10-08 | Hand-offs raise inbox items with a link; they close by doing the step and never escalate; Claim and Dismiss are not offered on them | R9; dismissing would orphan the step |
+| 2026-10-08 | Review date = signing date + cycle + 1 days (06 Nov → 05 Feb); `addDays` added because minutes across 01 Nov shifted the local hour | R12, 3c/3d |
+| 2026-10-08 | `rewindTo` keeps other agents' privileges but rolls a later signing back one cycle at a time; boards calm; export facts hold only from 08 Dec | R1, review fixes I4/I5 |
+| 2026-10-08 | `awaiting-signature` now runs at 06 Nov 09:52 by replay | R17, replaces Phase 2's compromise |
+| 2026-10-08 | My privileges lists everything the sponsor signed (17); renewals re-sign at the same level and close the overdue exception; overdue reviews are raised when a scenario moves the clock | R13, 3d |
 
 ## Session log
 
@@ -529,3 +613,4 @@ One row per working session. Newest last.
 | 2026-10-08 | 3 | Stefan approved (frame departures for realism and UX welcomed); PR #13 squash-merged; #4 closed | Phase 4 Task 4.0 |
 | 2026-10-08 | 4 | Built Phase 4 (seed v5, control menu, pause, fix one thing, two-person resume, inventory, retire, action list and trace, incidents, export, journey e2e) with measured visual checks per frame. Fresh review: 7 Important + 4 re-graded fixed test-first; minors deferred (see handoff notes). PR #14 open | Stefan reviews Phase 4 → merge → Phase 5 Task 5.0 |
 | 2026-10-08 | 4 | Stefan approved; PR #14 squash-merged; #5 closed | Phase 5 Task 5.0 (new session) |
+| 2026-10-08 | 5 | Built Phase 5 (seed v6, onboarding records and rewind, 1a–1i, 2a–2d, 3a–3d, journey e2e) with side-by-side visual checks. Fresh review: 1 Critical + 7 Important fixed test-first, docs updated; 11 minors deferred (see handoff notes). PR #15 open | Stefan reviews Phase 5 → merge → Phase 6 Task 6.0 |

@@ -1,0 +1,952 @@
+/* Onboarding (E1): a 980 px step card beside a 340 px side panel, 16 px forms with 44 px fields. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 28px 32px 32px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 6px;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 720px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.num {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.sub {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-text2);
+}
+
+.meta {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+  white-space: nowrap;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sectionWide {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.caps {
+  margin: 0;
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cs-meta);
+}
+
+.note {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.table {
+  padding: 4px 20px;
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+}
+
+.value {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.monoMeta {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 20px;
+  border-top: 1px solid var(--cs-line);
+}
+
+.blocked {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.blocked strong {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+/* Side panel cards (340 px). */
+.side {
+  display: flex;
+  flex-direction: column;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+}
+
+.sideHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 20px;
+}
+
+.sideTitle {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.sideSub {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stepRow {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  column-gap: 10px;
+  padding: 8px 20px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.stepRow > :first-child {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  color: var(--cs-meta);
+}
+
+.sideFoot {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.sideFoot strong {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.spanRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 20px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.spanRow > :last-child {
+  font-size: 12px;
+  color: var(--cs-meta);
+  white-space: nowrap;
+}
+
+.spanNew {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.headRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.saved {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.history {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Job description (1b): field blocks, lists, chips and the criteria table. */
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scroll-margin-top: 120px;
+}
+
+.blockHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.blockLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.tag {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  color: var(--cs-text2);
+  background: var(--cs-fill);
+  border-radius: 2px;
+  padding: 1px 5px;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+  white-space: nowrap;
+}
+
+.missing {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.box {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  flex: none;
+  box-sizing: border-box;
+  border: 1.5px solid var(--cs-ink);
+  border-radius: 2px;
+}
+
+.help {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 64px;
+  box-sizing: border-box;
+  padding: 8px 16px;
+}
+
+.listRow + .listRow {
+  border-top: 1px solid var(--cs-line);
+}
+
+.listMain {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.listName {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-ink);
+}
+
+.listSub {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.listRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+  white-space: nowrap;
+}
+
+.listRightMeta {
+  composes: listRight;
+  color: var(--cs-meta);
+}
+
+.inline {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.inline > :first-child {
+  flex: 1;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  font-size: 14px;
+  color: var(--cs-ink);
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 3px;
+}
+
+.suggestion {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--cs-strong);
+  background: var(--cs-bg);
+  border: 1px solid var(--cs-line);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.suggestion:hover {
+  background: var(--cs-hover);
+}
+
+.welcome {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 16px 20px;
+  background: var(--cs-fill);
+  border-radius: 6px;
+}
+
+.welcome > .monoMeta {
+  white-space: nowrap;
+}
+
+.welcomeText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.welcomeText strong {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.criteria {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px 120px 160px;
+  align-items: center;
+  column-gap: 16px;
+}
+
+.criteriaHead {
+  composes: criteria;
+  height: 32px;
+  padding: 0 16px;
+  background: var(--cs-bg);
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cs-meta);
+  border-radius: 6px 6px 0 0;
+}
+
+.criteriaRow {
+  composes: criteria;
+  min-height: 56px;
+  padding: 0 16px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.direction {
+  color: var(--cs-text2);
+}
+
+.target {
+  width: 120px;
+}
+
+.target input {
+  font-weight: 600;
+}
+
+.domain {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px 16px;
+  font-size: 14px;
+  color: var(--cs-meta);
+}
+
+/* Side checklist (1b–1g). */
+.progress {
+  padding: 0 20px 12px;
+}
+
+.checks {
+  margin: 0;
+  padding: 0 0 8px;
+  list-style: none;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+  color: var(--cs-text2);
+  background: none;
+  border: 0;
+  text-decoration: none;
+}
+
+.checkIcon {
+  display: inline-flex;
+  width: 12px;
+  justify-content: center;
+}
+
+.checkLabel {
+  flex: 1;
+}
+
+.checkRight {
+  font-size: 12px;
+  color: var(--cs-meta);
+}
+
+.checkOpen {
+  color: var(--cs-ink);
+}
+
+.checkCurrent {
+  background: var(--cs-sel);
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+a.check:hover {
+  background: var(--cs-hover);
+}
+
+.also {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.sendFoot {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.sendFoot > button,
+.sendFoot > a {
+  width: 100%;
+  justify-content: center;
+}
+
+.sendFoot strong {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.textLink {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Systems and verbs (1c). */
+.whyRow {
+  min-height: 68px;
+}
+
+.whyLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 220px;
+  flex: none;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.whySelect {
+  flex: 1;
+}
+
+.rowAttention {
+  background: var(--cs-sel);
+  box-shadow: inset 2px 0 0 var(--cs-acc);
+}
+
+.reach {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 20px;
+  background: var(--cs-bg);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.reach .caps {
+  margin-bottom: 8px;
+}
+
+.reach strong {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+/* Tools and hard stops (1d). */
+.monoStrong {
+  font-family: var(--cs-font-mono);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-strong);
+}
+
+.testBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 16px 20px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+}
+
+.testResult {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.examples {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.examples li {
+  display: grid;
+  grid-template-columns: 56px 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 36px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.exampleUnit {
+  color: var(--cs-text2);
+}
+
+.exampleText {
+  color: var(--cs-ink);
+}
+
+.limitRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+}
+
+.limitMain {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.limitMain .listName {
+  font-weight: 600;
+}
+
+.limitResult {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+  white-space: nowrap;
+}
+
+.limitResult strong {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+/* Returned (1g) and sponsor approval (1e, 1f). */
+.quote {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px;
+  background: var(--cs-fill);
+  border-radius: 6px;
+}
+
+.quoteHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-ink);
+}
+
+.quoteHead strong {
+  font-weight: 600;
+}
+
+.quoteText,
+.reply {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-ink);
+}
+
+.reply {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.replyForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.retest {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 6px;
+}
+
+.retestTitle {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.selects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.setGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.setRow {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-top: 1px solid var(--cs-line);
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-ink);
+}
+
+.setRow:first-of-type {
+  border-top: 0;
+}
+
+.setKey {
+  font-size: 14px;
+  color: var(--cs-meta);
+}
+
+.setValue {
+  display: flex;
+  flex-direction: column;
+}
+
+.setRight {
+  font-size: 14px;
+  color: var(--cs-meta);
+  text-align: right;
+}
+
+.limitPick {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: left;
+  color: var(--cs-ink);
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--cs-line);
+  cursor: pointer;
+}
+
+.limitPick:hover {
+  background: var(--cs-hover);
+}
+
+.limitPicked {
+  background: var(--cs-sel);
+  box-shadow: inset 2px 0 0 var(--cs-acc);
+}
+
+.signBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--cs-line);
+}
+
+.signText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 560px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.signText strong {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.whoRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 20px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 20px 20px;
+}
+
+.doesLine {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.runRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Ready for review (1h). */
+.signature {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: var(--cs-bg);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+}
+
+.signatureGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+
+.signatureGrid dt {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.signatureGrid dd {
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}

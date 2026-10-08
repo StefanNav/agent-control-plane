@@ -1,8 +1,10 @@
+import type { ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
 import { DEMO_NOW } from '../lib/clock'
 import { createDemoStore, dataOf } from './index'
 import { runAction } from './runAction'
 import { createMemoryStorage, safeStorage } from './storage'
+import { onBoard } from '../features/board/selectors'
 
 const fresh = () => createDemoStore(createMemoryStorage())
 
@@ -290,7 +292,7 @@ describe('pauseAgent (6b)', () => {
   test('every agent in Medications: the 19 not already paused, one audit entry', () => {
     const store = fresh()
     expect(store.getState().pauseAgent('med-rec', { scope: 'division' })).toEqual({ ok: true })
-    const meds = store.getState().agents.filter((a) => a.divisionId === 'medications' && a.lifecycle !== 'retired')
+    const meds = store.getState().agents.filter((a) => a.divisionId === 'medications' && onBoard(a))
     expect(meds.every((a) => a.lifecycle === 'paused')).toBe(true)
     expect(meds.filter((a) => a.pause?.scope === 'division')).toHaveLength(19)
     expect(store.getState().audit.filter((a) => a.action === 'Paused')).toHaveLength(1)
@@ -573,4 +575,536 @@ test('Important #6: an export needs the audit right for every agent in it', () =
   expect(store.getState().buildExport({ ...input, agentIds: ['med-rec', 'prior-auth'] })).toMatchObject({ ok: false })
   expect(dataOf(store.getState())).toEqual(before)
   expect(store.getState().buildExport({ ...input, agentIds: ['med-rec'] })).toEqual({ ok: true })
+})
+
+describe('startOnboarding (1a, 2a) — Review focus 2, 3', () => {
+  const inIntake = (persona: 'dana' | 'jordan' | 'drlee' | 'marcus') => {
+    const store = fresh()
+    store.getState().loadScenario('onboarding-intake')
+    store.getState().setPersona(persona)
+    return store
+  }
+
+  test('Dana names Marcus and Sam and starts: AGT-0123 is a draft at v0.1', async () => {
+    const { recordItems } = await import('./onboardingRules')
+    const store = inIntake('dana')
+    expect(store.getState().startOnboarding('req-0093', { ownerId: 'marcus', techOwnerId: 'sam' })).toEqual({ ok: true })
+    const s = store.getState()
+    expect(s.agents.find((a) => a.id === 'med-rec')).toMatchObject({ code: 'AGT-0123', lifecycle: 'onboarding', ownerId: 'marcus', techOwnerId: 'sam', sponsorId: 'priya' })
+    const record = s.onboardings.find((r) => r.agentId === 'med-rec')!
+    expect(record).toMatchObject({ version: 1, startedBy: 'dana', startedAt: s.now, done: { intake: { at: s.now, by: 'dana' } } })
+    expect(record.job.purpose).toBe(s.intakeRequests.find((r) => r.id === 'req-0093')!.purpose)
+    expect(recordItems(s, 'med-rec')).toEqual({ done: 3, total: 10 })
+    expect(s.intakeRequests.find((r) => r.id === 'req-0093')!.startedAt).toBe(s.now)
+    expect(s.audit.at(-1)).toMatchObject({ who: 'dana', action: 'Started onboarding', target: 'AGT-0123' })
+  })
+
+  test('without a technical owner it is refused and nothing changes', () => {
+    const store = inIntake('dana')
+    const before = dataOf(store.getState())
+    expect(store.getState().startOnboarding('req-0093', { ownerId: 'marcus', techOwnerId: '' })).toEqual({ ok: false, reason: 'Choose a technical owner' })
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+
+  test('Jordan and Dr. Lee cannot start onboarding', () => {
+    for (const persona of ['jordan', 'drlee'] as const) {
+      const store = inIntake(persona)
+      const before = dataOf(store.getState())
+      expect(store.getState().startOnboarding('req-0093', { ownerId: 'marcus', techOwnerId: 'sam' }).ok).toBe(false)
+      expect(dataOf(store.getState())).toEqual(before)
+    }
+  })
+
+  test('a started intake cannot start again', () => {
+    const store = inIntake('dana')
+    store.getState().startOnboarding('req-0093', { ownerId: 'marcus', techOwnerId: 'sam' })
+    expect(store.getState().startOnboarding('req-0093', { ownerId: 'marcus', techOwnerId: 'sam' })).toEqual({ ok: false, reason: 'Already started' })
+  })
+})
+
+describe('updateJob (1b) — Review focus 3', () => {
+  const at = (scenario: 'onboarding-at-5-of-7' | 'baseline', persona: 'marcus' | 'jordan' | 'drlee' | 'sam') => {
+    const store = fresh()
+    store.getState().loadScenario(scenario)
+    store.getState().setPersona(persona)
+    return store
+  }
+
+  test('Marcus finishes the job description: three triggers and the inaccuracy target, done 04 Oct at v0.5', async () => {
+    const { stepStates, recordItems } = await import('./onboardingRules')
+    const store = at('onboarding-at-5-of-7', 'marcus')
+    const result = store.getState().updateJob('med-rec', {
+      escalation: ['Home list and fill history disagree', 'Patient on dialysis', 'More than 15 home medications'],
+      targets: { agreement: 90, omitted: 3, inaccurate: 2 },
+    })
+    expect(result).toEqual({ ok: true })
+    const s = store.getState()
+    const record = s.onboardings.find((r) => r.agentId === 'med-rec')!
+    expect(record.version).toBe(5)
+    expect(record.savedAt).toBe(s.now)
+    expect(record.done.job).toEqual({ at: s.now, by: 'marcus' })
+    expect(stepStates(s, 'med-rec')[1]!.sub).toBe('Marcus · done 04 Oct')
+    expect(recordItems(s, 'med-rec')).toEqual({ done: 8, total: 13 })
+    expect(s.audit.at(-1)).toMatchObject({ who: 'marcus', action: 'Edited job description', target: 'AGT-0123', reason: 'Escalation triggers, Success criteria' })
+  })
+
+  test('Jordan and Dr. Lee cannot edit; Sam can (spec §7: the technical owner edits the job too)', () => {
+    for (const persona of ['jordan', 'drlee'] as const) {
+      const store = at('onboarding-at-5-of-7', persona)
+      const before = dataOf(store.getState())
+      expect(store.getState().updateJob('med-rec', { purpose: 'Something else.' }).ok).toBe(false)
+      expect(dataOf(store.getState())).toEqual(before)
+    }
+    expect(at('onboarding-at-5-of-7', 'sam').getState().updateJob('med-rec', { escalation: ['Patient on dialysis'] })).toEqual({ ok: true })
+  })
+
+  test('a frozen record refuses edits', () => {
+    const store = at('baseline', 'marcus')
+    const before = dataOf(store.getState())
+    expect(store.getState().updateJob('med-rec', { purpose: 'Something else.' })).toEqual({ ok: false, reason: 'Frozen at v1.0 · with AIMS Review' })
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+
+  test('never items become hard stops (R10): library matches take the library code, others are plain language', () => {
+    const store = at('baseline', 'marcus')
+    store.getState().updateJob('culture-followup', { never: ['Change a dose', 'Discharge a patient'] })
+    const limits = () => store.getState().onboardings.find((r) => r.agentId === 'culture-followup')!.limits
+    expect(limits().map((l) => [l.code, l.library ?? 'plain', l.title, l.ownerId])).toEqual([
+      ['HS-04', 'DOSE-CHANGE-01', 'Never change a dose', 'sam'],
+      ['HS-12', 'plain', 'Never discharge a patient', 'sam'],
+    ])
+    store.getState().updateJob('culture-followup', { never: ['Discharge a patient'] })
+    expect(limits().map((l) => l.code)).toEqual(['HS-12'])
+  })
+})
+
+describe('updateSystems (1c)', () => {
+  const at = (persona: 'marcus' | 'jordan') => {
+    const store = fresh()
+    store.getState().loadScenario('onboarding-systems')
+    store.getState().setPersona(persona)
+    return store
+  }
+
+  test('Sign and Order are locked for every agent by ORG-POL-02', () => {
+    const store = at('marcus')
+    const before = dataOf(store.getState())
+    expect(store.getState().updateSystems('med-rec', { kind: 'grant', system: 'Epic', verb: 'sign', on: true })).toEqual({ ok: false, reason: 'Locked for every agent by ORG-POL-02' })
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+
+  test('naming Teams · write’s activity finishes the grid on 05 Oct at v0.7 and sends Sam the hard stops to test', async () => {
+    const { stepStates } = await import('./onboardingRules')
+    const store = at('marcus')
+    expect(store.getState().updateSystems('med-rec', { kind: 'reason', system: 'Microsoft Teams', verb: 'write', activity: 'escalation' })).toEqual({ ok: true })
+    const s = store.getState()
+    const record = s.onboardings.find((r) => r.agentId === 'med-rec')!
+    expect(record.version).toBe(7)
+    expect(record.done.systems).toEqual({ at: s.now, by: 'marcus' })
+    expect(stepStates(s, 'med-rec')[2]!.sub).toBe('Marcus · done 05 Oct')
+    const item = s.exceptions.find((e) => e.agentId === 'med-rec' && e.type === 'Tools: hard stops to test')!
+    expect(item).toMatchObject({ ownerId: 'sam', kind: 'review', status: 'review', state: 'new', link: { label: 'Open tools and hard stops', to: '/inventory/agents/med-rec/onboarding/tools' } })
+    expect(item.code).toMatch(/^EXC-54\d\d$/)
+    expect(s.audit.at(-1)).toMatchObject({ action: 'Edited systems and verbs', target: 'AGT-0123' })
+  })
+
+  test('a reason needs a granted cell; Jordan can’t edit', () => {
+    const store = at('marcus')
+    expect(store.getState().updateSystems('med-rec', { kind: 'reason', system: 'Pyxis', verb: 'write', activity: 'escalation' })).toEqual({ ok: false, reason: 'Not granted' })
+    expect(at('jordan').getState().updateSystems('med-rec', { kind: 'grant', system: 'Pyxis', verb: 'draft', on: true }).ok).toBe(false)
+  })
+})
+
+describe('tools and hard stops (1d) — Review focus 2', () => {
+  const at = (scenario: 'onboarding-systems' | 'onboarding-tools-tested' | 'onboarding-at-5-of-7', persona: 'sam' | 'marcus' | 'priya') => {
+    const store = fresh()
+    store.getState().loadScenario(scenario)
+    store.getState().setPersona(persona)
+    return store
+  }
+
+  test('Sam tests HS-04 on the last 30 days: 7 of 1,204 with the three examples', async () => {
+    const { recordItems } = await import('./onboardingRules')
+    const store = at('onboarding-at-5-of-7', 'sam')
+    expect(store.getState().testHardStop('med-rec', 'HS-04')).toEqual({ ok: true })
+    const s = store.getState()
+    const limit = s.onboardings.find((r) => r.agentId === 'med-rec')!.limits.find((l) => l.code === 'HS-04')!
+    expect(limit.test).toMatchObject({ at: s.now, by: 'sam', blocked: 7, of: 1204 })
+    expect(limit.test!.examples.map((e) => e.trace)).toEqual(['TR-4471', 'TR-4219', 'TR-3982'])
+    expect(recordItems(s, 'med-rec')).toEqual({ done: 7, total: 13 })
+    expect(s.audit.at(-1)).toMatchObject({ action: 'Tested hard stop', reason: 'HS-04 · would have blocked 7 of 1,204' })
+  })
+
+  test('only the technical owner tests; unknown codes are refused', () => {
+    const marcus = at('onboarding-at-5-of-7', 'marcus')
+    expect(marcus.getState().testHardStop('med-rec', 'HS-04').ok).toBe(false)
+    expect(at('onboarding-at-5-of-7', 'sam').getState().testHardStop('med-rec', 'HS-99')).toEqual({ ok: false, reason: 'Not found' })
+  })
+
+  test('the set can’t go to Priya with items open', () => {
+    const store = at('onboarding-systems', 'sam')
+    const before = dataOf(store.getState())
+    expect(store.getState().sendToSponsor('med-rec')).toEqual({ ok: false, reason: '4 items left' })
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+
+  test('Sam sends the tested set: Priya gets “Review: final set”, Sam’s tools item closes', () => {
+    const store = at('onboarding-tools-tested', 'sam')
+    expect(store.getState().sendToSponsor('med-rec')).toEqual({ ok: true })
+    const s = store.getState()
+    const record = s.onboardings.find((r) => r.agentId === 'med-rec')!
+    expect(record.sponsor).toMatchObject({ state: 'waiting', round: 1, sentAt: s.now, sentBy: 'sam' })
+    expect(record.done.tools).toEqual({ at: s.now, by: 'sam' })
+    const review = s.exceptions.find((e) => e.type === 'Review: final set')!
+    expect(review).toMatchObject({ ownerId: 'priya', state: 'new', link: { label: 'Open the final set', to: '/inventory/agents/med-rec/onboarding/approval' } })
+    expect(s.exceptions.find((e) => e.type === 'Tools: hard stops to test')!.state).toBe('resolved')
+    expect(store.getState().sendToSponsor('med-rec')).toEqual({ ok: false, reason: 'Already with the sponsor' })
+  })
+})
+
+describe('sponsor approval and the return loop (1e–1g) — Review focus 1, 2, 3', () => {
+  const at = (scenario: 'onboarding-sponsor-review' | 'onboarding-returned-hs11', persona: 'priya' | 'sam' | 'marcus') => {
+    const store = fresh()
+    store.getState().loadScenario(scenario)
+    store.getState().setPersona(persona)
+    return store
+  }
+  const NOTE = 'HS-11 shows 0 blocks. Before I sign, please test it on September’s 8 East transfers. That’s where a wrong-patient draft would happen.'
+  const record = (store: ReturnType<typeof fresh>) => store.getState().onboardings.find((r) => r.agentId === 'med-rec')!
+
+  test('Priya sends HS-11 back to Sam: only HS-11 reopens, 11 of 13, Sam has the item, Priya’s closes', async () => {
+    const { recordItems } = await import('./onboardingRules')
+    const store = at('onboarding-sponsor-review', 'priya')
+    expect(store.getState().requestSponsorChanges('med-rec', { to: 'sam', about: 'HS-11', note: NOTE })).toEqual({ ok: true })
+    const s = store.getState()
+    expect(record(store).sponsor).toMatchObject({ state: 'returned', returned: { to: 'sam', about: 'HS-11', note: NOTE, at: s.now } })
+    expect(record(store).limits.map((l) => Boolean(l.reopened))).toEqual([false, false, true])
+    expect(recordItems(s, 'med-rec')).toEqual({ done: 11, total: 13 })
+    expect(s.exceptions.find((e) => e.type === 'Returned: HS-11')).toMatchObject({ ownerId: 'sam', state: 'new', link: { to: '/inventory/agents/med-rec/onboarding/tools' } })
+    expect(s.exceptions.find((e) => e.type === 'Review: final set')!.state).toBe('resolved')
+  })
+
+  test('Sam re-tests on the 8 East transfers and sends again; Priya approves: v1.0, frozen, in review, v1 privileges, Dana asked for the tier', async () => {
+    const store = at('onboarding-returned-hs11', 'sam')
+    expect(store.getState().testHardStop('med-rec', 'HS-11', 'sep-8east-transfers')).toEqual({ ok: true })
+    expect(record(store).limits[2]!.test).toMatchObject({ blocked: 0, of: 212, casesId: 'sep-8east-transfers' })
+    expect(store.getState().sendToSponsor('med-rec')).toEqual({ ok: true })
+    expect(record(store).sponsor).toMatchObject({ state: 'waiting', round: 2 })
+    store.getState().setPersona('priya')
+    expect(store.getState().approveAsSponsor('med-rec')).toEqual({ ok: true })
+    const s = store.getState()
+    expect(record(store)).toMatchObject({ version: 10, frozenAt: s.now, sponsor: { state: 'signed', signedAt: s.now } })
+    expect(record(store).review).toMatchObject({ suggestedTier: 2, meeting: '2026-10-14T15:00:00', shadowDays: 21 })
+    expect(s.agents.find((a) => a.id === 'med-rec')!.lifecycle).toBe('inReview')
+    expect(s.activities.filter((a) => a.agentId === 'med-rec').map((a) => [a.id, a.level])).toEqual([
+      ['med-rec-admission', 'shadow'],
+      ['med-rec-allergy', 'shadow'],
+    ])
+    expect(s.privileges.filter((p) => p.agentId === 'med-rec').map((p) => [p.code, p.version, p.level, p.state])).toEqual([
+      ['PRV-0142', 1, 'shadow', 'awaiting'],
+      ['PRV-0143', 1, 'shadow', 'awaiting'],
+    ])
+    expect(s.exceptions.find((e) => e.type === 'Review: risk tier')).toMatchObject({ ownerId: 'dana', state: 'new', link: { to: '/inventory/agents/med-rec/risk-tier' } })
+    expect(s.exceptions.find((e) => e.type === 'Returned: HS-11')!.state).toBe('resolved')
+  })
+
+  test('Review focus 1: Marcus edits while Priya reviews — her review resets and her item closes', async () => {
+    const { stepStates } = await import('./onboardingRules')
+    const store = at('onboarding-sponsor-review', 'marcus')
+    expect(store.getState().updateJob('med-rec', { purpose: 'Prepare admission medication reconciliation drafts for pharmacist review.' })).toEqual({ ok: true })
+    const s = store.getState()
+    expect(record(store).sponsor.state).toBe('notSent')
+    expect(s.exceptions.find((e) => e.type === 'Review: final set')).toMatchObject({ state: 'resolved', outcome: 'Reset: record edited' })
+    expect(stepStates(s, 'med-rec')[4]!.sub).toBe('Priya · reset, opens when you send')
+  })
+
+  test('Review focus 2, 3: Marcus can’t approve; an empty note is refused; nothing to approve once returned', () => {
+    const marcus = at('onboarding-sponsor-review', 'marcus')
+    const before = dataOf(marcus.getState())
+    expect(marcus.getState().approveAsSponsor('med-rec').ok).toBe(false)
+    expect(dataOf(marcus.getState())).toEqual(before)
+    const priya = at('onboarding-sponsor-review', 'priya')
+    expect(priya.getState().requestSponsorChanges('med-rec', { to: 'sam', about: 'HS-11', note: '  ' })).toEqual({ ok: false, reason: 'A note is required' })
+    expect(at('onboarding-returned-hs11', 'priya').getState().approveAsSponsor('med-rec')).toEqual({ ok: false, reason: 'Not waiting for you' })
+  })
+
+  test('Sam may reply to Priya; Marcus may not reply for Sam', () => {
+    const sam = at('onboarding-returned-hs11', 'sam')
+    expect(sam.getState().replyToSponsor('med-rec', 'Running it on the 212 transfers now.')).toEqual({ ok: true })
+    expect(record(sam).sponsor.returned!.reply).toMatchObject({ text: 'Running it on the 212 transfers now.' })
+    expect(at('onboarding-returned-hs11', 'marcus').getState().replyToSponsor('med-rec', 'Hi').ok).toBe(false)
+  })
+})
+
+describe('risk tier (2b) — Review focus 2, 3', () => {
+  const at = (persona: 'dana' | 'priya') => {
+    const store = fresh()
+    store.getState().loadScenario('review-risk-tier')
+    store.getState().setPersona(persona)
+    return store
+  }
+  const REASON = 'Med rec errors carry into every inpatient order. Pharmacist review catches most, not all. The board should see this at Tier 3 until shadow evidence is in.'
+
+  test('Dana raises it to Tier 3 with a reason: the packet is built and Dr. Lee has it for 14 Oct', () => {
+    const store = at('dana')
+    expect(store.getState().setRiskTier('med-rec', { tier: 3, reason: REASON })).toEqual({ ok: true })
+    const s = store.getState()
+    const review = s.onboardings.find((r) => r.agentId === 'med-rec')!.review!
+    expect(review).toMatchObject({ suggestedTier: 2, tier: 3, tierReason: REASON, tierAt: s.now, tierBy: 'dana', packetAt: s.now, shadowDays: 21 })
+    expect(s.agents.find((a) => a.id === 'med-rec')!.riskTier).toBe(3)
+    expect(s.exceptions.find((e) => e.type === 'Review: your decision')).toMatchObject({ ownerId: 'drlee', deadline: '2026-10-14T17:00:00', link: { to: '/portfolio/reviews/med-rec' } })
+    expect(s.exceptions.find((e) => e.type === 'Review: risk tier')!.state).toBe('resolved')
+    expect(store.getState().setRiskTier('med-rec', { tier: 2 })).toEqual({ ok: false, reason: 'Not ready for a tier' })
+  })
+
+  test('a tier other than the suggestion needs a reason; the suggested one doesn’t', () => {
+    const store = at('dana')
+    const before = dataOf(store.getState())
+    expect(store.getState().setRiskTier('med-rec', { tier: 3, reason: ' ' })).toEqual({ ok: false, reason: 'A reason is required' })
+    expect(dataOf(store.getState())).toEqual(before)
+    expect(store.getState().setRiskTier('med-rec', { tier: 2 })).toEqual({ ok: true })
+  })
+
+  test('Priya can’t set the tier', () => {
+    const store = at('priya')
+    expect(store.getState().setRiskTier('med-rec', { tier: 2 }).ok).toBe(false)
+  })
+
+  test('Tier 1 starts shadow at once, with no board', () => {
+    const store = at('dana')
+    expect(store.getState().setRiskTier('med-rec', { tier: 1, reason: 'Pharmacist signs every line.' })).toEqual({ ok: true })
+    const s = store.getState()
+    expect(s.onboardings.find((r) => r.agentId === 'med-rec')!.review).toMatchObject({ tier: 1, shadowFrom: '2026-10-14T00:00:00' })
+    expect(s.onboardings.find((r) => r.agentId === 'med-rec')!.review!.packetAt).toBeUndefined()
+    expect(s.agents.find((a) => a.id === 'med-rec')).toMatchObject({ lifecycle: 'live', level: 'shadow', riskTier: 1 })
+    expect(s.exceptions.some((e) => e.type === 'Review: your decision')).toBe(false)
+  })
+})
+
+describe('committee decision (2c, 2d) — Review focus 2, 3', () => {
+  const at = (persona: 'drlee' | 'marcus') => {
+    const store = fresh()
+    store.getState().loadScenario('review-committee')
+    store.getState().setPersona(persona)
+    return store
+  }
+  const REASON = 'Clear limits and good hard-stop evidence. The conditions keep a pharmacist on every draft and keep dialysis patients out while renal dosing is unsettled.'
+  const proposed = (store: ReturnType<typeof fresh>) => store.getState().onboardings.find((r) => r.agentId === 'med-rec')!.review!.proposedConditions
+
+  test('Dr. Lee approves with C1–C3: Med Rec goes to Shadow from 15 Oct, the conditions sit on the v2 privileges', async () => {
+    const { onBoard, selectDivisionSummaries } = await import('../features/board/selectors')
+    const store = at('drlee')
+    expect(store.getState().recordDecision('med-rec', { kind: 'approveWithConditions', conditions: proposed(store), reason: REASON })).toEqual({ ok: true })
+    const s = store.getState()
+    expect(s.agents.find((a) => a.id === 'med-rec')).toMatchObject({ lifecycle: 'live', level: 'shadow', judgment: { status: 'shadow', label: 'Shadow' } })
+    expect(s.onboardings.find((r) => r.agentId === 'med-rec')!.review).toMatchObject({ shadowFrom: '2026-10-15T00:00:00', decision: { kind: 'approveWithConditions', by: 'drlee', present: '5 of 7 board members present' } })
+    const current = s.privileges.filter((p) => p.agentId === 'med-rec' && p.state !== 'closed')
+    expect(current.map((p) => [p.code, p.version, p.state, p.conditions])).toEqual([
+      ['PRV-0142', 2, 'active', ['C1', 'C2', 'C3']],
+      ['PRV-0143', 2, 'active', ['C1', 'C3']],
+    ])
+    expect(current[0]!.domain).toMatch(/excluding dialysis \(C3\)$/)
+    expect(s.grants.filter((g) => g.agentId === 'med-rec').map((g) => g.system)).toEqual(['Epic', 'Pharmacy worklist', 'Pyxis', 'Microsoft Teams'])
+    expect(s.hardStops.filter((h) => h.agentId === 'med-rec').map((h) => h.code)).toEqual(['HS-04', 'HS-07', 'HS-11'])
+    expect(s.exceptions.find((e) => e.type === 'Review: your decision')!.state).toBe('resolved')
+    expect(onBoard(s.agents.find((a) => a.id === 'med-rec')!)).toBe(true)
+    expect(selectDivisionSummaries(s).find((d) => d.id === 'medications')!.agentCount).toBe(20)
+  })
+
+  test('gates: conditions for “with conditions”, a reason always, the board only', () => {
+    const store = at('drlee')
+    const before = dataOf(store.getState())
+    expect(store.getState().recordDecision('med-rec', { kind: 'approveWithConditions', conditions: [], reason: REASON })).toEqual({ ok: false, reason: 'Add at least one condition' })
+    expect(store.getState().recordDecision('med-rec', { kind: 'approve', conditions: [], reason: '  ' })).toEqual({ ok: false, reason: 'A reason is required' })
+    expect(dataOf(store.getState())).toEqual(before)
+    expect(at('marcus').getState().recordDecision('med-rec', { kind: 'approve', conditions: [], reason: REASON }).ok).toBe(false)
+  })
+
+  test('deny archives the record under RET-07; re-review sends it back to Dana for the next meeting', () => {
+    const deny = at('drlee')
+    expect(deny.getState().recordDecision('med-rec', { kind: 'deny', conditions: [], reason: 'Not now.' })).toEqual({ ok: true })
+    expect(deny.getState().agents.find((a) => a.id === 'med-rec')).toMatchObject({ lifecycle: 'retired', retirement: { code: 'RET-07' } })
+    const again = at('drlee')
+    expect(again.getState().recordDecision('med-rec', { kind: 'reReview', conditions: [], reason: 'Show allergy-flag evidence first.' })).toEqual({ ok: true })
+    const review = again.getState().onboardings.find((r) => r.agentId === 'med-rec')!.review!
+    expect(review).toMatchObject({ meeting: '2026-11-11T15:00:00' })
+    expect(review.tier).toBeUndefined()
+    expect(review.packetAt).toBeUndefined()
+    expect(again.getState().exceptions.find((e) => e.type === 'Re-review: questions from the board')).toMatchObject({ ownerId: 'dana', reason: 'Show allergy-flag evidence first.' })
+  })
+})
+
+describe('go-live request (3a)', () => {
+  const at = (scenario: 'shadow-day-21' | 'review-decided', persona: 'marcus' | 'priya') => {
+    const store = fresh()
+    store.getState().loadScenario(scenario)
+    store.getState().setPersona(persona)
+    return store
+  }
+
+  test('Marcus asks Priya to sign: PRV-0142 v3 proposes Draft and Priya has “Review: your signature”', () => {
+    const store = at('shadow-day-21', 'marcus')
+    expect(store.getState().requestGoLive('med-rec-admission')).toEqual({ ok: true })
+    const s = store.getState()
+    const v3 = s.privileges.find((p) => p.code === 'PRV-0142' && p.version === 3)!
+    expect(v3).toMatchObject({ state: 'awaiting', level: 'shadow', proposedLevel: 'draft', movedBy: 'marcus' })
+    expect(s.exceptions.find((e) => e.type === 'Review: your signature')).toMatchObject({ ownerId: 'priya', link: { to: '/inventory/privileges/prv-0142/sign' } })
+    expect(store.getState().requestGoLive('med-rec-admission')).toEqual({ ok: false, reason: 'Already requested' })
+    expect(store.getState().extendShadow('med-rec-admission')).toEqual({ ok: false, reason: 'A go-live request is open' })
+  })
+
+  test('only the owner asks, and only once shadow has run its minimum', () => {
+    expect(at('shadow-day-21', 'priya').getState().requestGoLive('med-rec-admission').ok).toBe(false)
+    expect(at('review-decided', 'marcus').getState().requestGoLive('med-rec-admission')).toEqual({ ok: false, reason: 'Shadow isn’t finished' })
+  })
+
+  test('extend shadow by 7 days; flag a case line for the SOP', () => {
+    const store = at('shadow-day-21', 'marcus')
+    expect(store.getState().extendShadow('med-rec-admission')).toEqual({ ok: true })
+    expect(store.getState().scorecards.find((c) => c.activityId === 'med-rec-admission')!.extendedDays).toBe(7)
+    expect(store.getState().flagCaseLine('enc-4105', 4)).toEqual({ ok: true })
+    expect(store.getState().logEvents.at(-1)).toMatchObject({ text: 'Flagged for SOP: line 4 · Lasix → furosemide', agentId: 'med-rec' })
+  })
+})
+
+describe('sign the privilege (3c) and reviews (3d) — Review focus 2, 3', () => {
+  const at = (scenario: 'awaiting-signature' | 'baseline', persona: 'priya' | 'marcus') => {
+    const store = fresh()
+    store.getState().loadScenario(scenario)
+    store.getState().setPersona(persona)
+    return store
+  }
+  const REASON = '21 of the 29 inaccurate lines were brand and generic name mismatches. SOP v1.3.1 fixes the mapping, and a pharmacist signs every draft (C1).'
+
+  test('Priya signs PRV-0142 with a reason: Draft, review 05 Feb 2027, Med Rec at Draft', () => {
+    const store = at('awaiting-signature', 'priya')
+    expect(store.getState().signPrivilege('prv-0142', { reason: REASON, accepted: true })).toEqual({ ok: true })
+    const s = store.getState()
+    const v3 = s.privileges.find((p) => p.code === 'PRV-0142' && p.version === 3)!
+    expect(v3).toMatchObject({ state: 'active', level: 'draft', grantedBy: 'priya', grantedAt: '2026-11-06T09:52:00', reviewDate: '2027-02-05T00:00:00', signReason: REASON })
+    expect(v3.proposedLevel).toBeUndefined()
+    expect(s.privileges.find((p) => p.code === 'PRV-0142' && p.version === 2)!.state).toBe('closed')
+    expect(s.activities.find((a) => a.id === 'med-rec-admission')!.level).toBe('draft')
+    expect(s.agents.find((a) => a.id === 'med-rec')).toMatchObject({ level: 'draft', judgment: { status: 'normal', label: 'Within scope' } })
+    expect(s.exceptions.find((e) => e.type === 'Review: your signature')!.state).toBe('resolved')
+    expect(store.getState().signPrivilege('prv-0142', { reason: REASON, accepted: true })).toEqual({ ok: false, reason: 'Nothing to sign' })
+  })
+
+  test('below target needs a written reason; the accountability box must be ticked; only the sponsor signs', () => {
+    const store = at('awaiting-signature', 'priya')
+    const before = dataOf(store.getState())
+    expect(store.getState().signPrivilege('prv-0142', { reason: ' ', accepted: true })).toEqual({ ok: false, reason: 'A written reason is required' })
+    expect(store.getState().signPrivilege('prv-0142', { reason: REASON, accepted: false })).toEqual({ ok: false, reason: 'Tick the accountability statement' })
+    expect(dataOf(store.getState())).toEqual(before)
+    expect(at('awaiting-signature', 'marcus').getState().signPrivilege('prv-0142', { reason: REASON, accepted: true }).ok).toBe(false)
+  })
+
+  test('Priya sends the request back with a note: the proposal closes, Shadow stays, Marcus is told', () => {
+    const store = at('awaiting-signature', 'priya')
+    expect(store.getState().returnPrivilegeRequest('prv-0142', '')).toEqual({ ok: false, reason: 'A note is required' })
+    expect(store.getState().returnPrivilegeRequest('prv-0142', 'Fix the brand-name mapping first.')).toEqual({ ok: true })
+    const s = store.getState()
+    expect(s.privileges.filter((p) => p.code === 'PRV-0142' && p.state !== 'closed').map((p) => [p.version, p.level])).toEqual([[2, 'shadow']])
+    expect(s.exceptions.find((e) => e.type === 'Returned: go-live request')).toMatchObject({ ownerId: 'marcus', reason: 'Fix the brand-name mapping first.' })
+  })
+
+  test('3d: Priya renews the overdue Duplicate Rx privilege; EXC-5497 closes', () => {
+    const store = at('baseline', 'priya')
+    expect(store.getState().signPrivilege('prv-0098', { accepted: true })).toEqual({ ok: true })
+    const s = store.getState()
+    expect(s.privileges.find((p) => p.code === 'PRV-0098' && p.version === 5)).toMatchObject({ state: 'active', level: 'draft', reviewDate: '2027-03-09T00:00:00', grantedAt: s.now })
+    expect(s.privileges.find((p) => p.code === 'PRV-0098' && p.version === 4)!.state).toBe('closed')
+    expect(s.exceptions.find((e) => e.id === 'exc-5497')!.state).toBe('resolved')
+  })
+
+  test('3d: Priya asks Marcus for evidence once', () => {
+    const store = at('baseline', 'priya')
+    expect(store.getState().askForEvidence('prv-0098')).toEqual({ ok: true })
+    expect(store.getState().exceptions.find((e) => e.type === 'Evidence for the PRV-0098 review')).toMatchObject({ ownerId: 'marcus', link: { to: '/operations/agents/duplicate-rx?tab=privileges' } })
+    expect(store.getState().askForEvidence('prv-0098')).toEqual({ ok: false, reason: 'Already asked' })
+  })
+})
+
+describe('raiseOverdueReviews (3d: "one review overdue raises an exception")', () => {
+  test('the seed already holds its one overdue review; moving to 23 Dec raises Med Shortage’s, once', async () => {
+    const { raiseOverdueReviews } = await import('./mutations')
+    const s = createSeed()
+    const count = s.exceptions.length
+    raiseOverdueReviews(s)
+    expect(s.exceptions).toHaveLength(count)
+    s.now = '2026-12-23T09:00:00'
+    raiseOverdueReviews(s)
+    expect(s.exceptions.slice(count).map((e) => [e.type, e.agentId, e.ownerId, e.deadline])).toEqual([['Review overdue', 'med-shortage', 'priya', '2027-01-05T17:00:00']])
+    raiseOverdueReviews(s)
+    expect(s.exceptions).toHaveLength(count + 1)
+  })
+})
+
+test('conditions bind to the job’s own activities, whatever ids they were given (C2 → the first activity)', async () => {
+  const { resolveConditions, JOB_TEMPLATES } = await import('../data/seed/catalogue')
+  const resolved = resolveConditions(JOB_TEMPLATES['req-0093']!.conditions, ['med-rec-a1', 'med-rec-a2'])
+  expect(resolved.map((c) => [c.id, c.activityIds])).toEqual([
+    ['C1', []],
+    ['C2', ['med-rec-a1']],
+    ['C3', []],
+  ])
+})
+
+describe('final review fixes (Phase 5)', () => {
+  const at = (scenario: ScenarioId, persona: 'priya' | 'marcus' | 'dana' | 'drlee') => {
+    const store = fresh()
+    store.getState().loadScenario(scenario)
+    store.getState().setPersona(persona)
+    return store
+  }
+
+  test('C1: send the go-live request back, ask again, and the new request can be signed; versions stay unique', () => {
+    const store = at('awaiting-signature', 'priya')
+    expect(store.getState().returnPrivilegeRequest('prv-0142', 'Fix the brand-name mapping first.')).toEqual({ ok: true })
+    store.getState().setPersona('marcus')
+    expect(store.getState().requestGoLive('med-rec-admission')).toEqual({ ok: true })
+    const ids = store.getState().privileges.map((p) => p.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(store.getState().privileges.filter((p) => p.code === 'PRV-0142').map((p) => [p.version, p.state])).toEqual([
+      [1, 'closed'],
+      [2, 'active'],
+      [3, 'closed'],
+      [4, 'awaiting'],
+    ])
+    store.getState().setPersona('priya')
+    expect(store.getState().signPrivilege('prv-0142', { reason: 'Mapping fixed in SOP v1.3.1.', accepted: true })).toEqual({ ok: true })
+    expect(store.getState().privileges.find((p) => p.code === 'PRV-0142' && p.version === 4)).toMatchObject({ state: 'active', level: 'draft' })
+  })
+
+  test('I2: re-review → Dana re-sets the tier → the board’s item closes; the old agenda item is cleared', () => {
+    const store = at('review-committee', 'drlee')
+    store.getState().recordDecision('med-rec', { kind: 'reReview', conditions: [], reason: 'Show allergy-flag evidence first.' })
+    expect(store.getState().onboardings.find((r) => r.agentId === 'med-rec')!.review!.agendaItem).toBeUndefined()
+    store.getState().setPersona('dana')
+    expect(store.getState().setRiskTier('med-rec', { tier: 2 })).toEqual({ ok: true })
+    expect(store.getState().exceptions.find((e) => e.type === 'Re-review: questions from the board')!.state).toBe('resolved')
+  })
+
+  test('I3: sending the set back to the technical owner needs the hard stop it is about', () => {
+    const store = at('onboarding-sponsor-review', 'priya')
+    const before = dataOf(store.getState())
+    expect(store.getState().requestSponsorChanges('med-rec', { to: 'sam', note: 'Please look again.' })).toEqual({ ok: false, reason: 'Choose the hard stop to re-test' })
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+
+  test('I6: Dana’s risk-tier hand-off is due the day before the meeting and never escalates to the sponsor', async () => {
+    const { isEscalated } = await import('../features/inbox/selectors')
+    const s = at('review-risk-tier', 'dana').getState()
+    const item = s.exceptions.find((e) => e.type === 'Review: risk tier')!
+    expect(item.deadline).toBe('2026-10-13T17:00:00')
+    expect(isEscalated(item, '2026-10-14T09:00:00')).toBe(false)
+  })
+
+  test('I7: a new version’s id comes from the code, not the previous id', () => {
+    const store = at('baseline', 'priya')
+    store.getState().signPrivilege('prv-0098', { accepted: true })
+    store.getState().setPersona('marcus')
+    expect(store.getState().returnToShadow('duplicate-rx', 'Edits climbing; back to Shadow while we look.')).toEqual({ ok: true })
+    expect(store.getState().privileges.filter((p) => p.code === 'PRV-0098').map((p) => p.id)).toEqual(['prv-0098', 'prv-0098-v5', 'prv-0098-v6'])
+  })
 })

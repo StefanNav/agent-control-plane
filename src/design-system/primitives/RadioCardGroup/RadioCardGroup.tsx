@@ -15,6 +15,8 @@ export interface RadioCardGroupProps<T extends string> {
   onChange: (value: T) => void
   options: RadioCardOption<T>[]
   'aria-label'?: string
+  /** Lay the cards out side by side, e.g. 4 tiers in a row (2b). Default: stacked. */
+  columns?: number
 }
 
 export function RadioCardGroup<T extends string>({
@@ -23,6 +25,7 @@ export function RadioCardGroup<T extends string>({
   onChange,
   options,
   'aria-label': ariaLabel,
+  columns,
 }: RadioCardGroupProps<T>) {
   const refs = useRef<Array<HTMLDivElement | null>>([])
   const enabled = options.map((option, i) => (option.disabled ? -1 : i)).filter((i) => i >= 0)
@@ -51,7 +54,13 @@ export function RadioCardGroup<T extends string>({
   }
 
   return (
-    <div role="radiogroup" aria-label={ariaLabel} className={styles.group} data-name={name}>
+    <div
+      role="radiogroup"
+      aria-label={ariaLabel}
+      className={styles.group}
+      data-name={name}
+      style={columns ? { display: 'grid', gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` } : undefined}
+    >
       {options.map((option, index) => {
         const checked = option.value === value
         return (

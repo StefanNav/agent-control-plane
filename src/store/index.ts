@@ -2,9 +2,11 @@ import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
-import { PERSONA_IDS, type DemoState, type Incident, type PersonaId, type Verb } from '../data/types'
+import { PERSONA_IDS, type Condition, type DemoState, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
-import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
+import { applyPause, applyResume, nextArchiveCode, nextIncidentCode, nextVersion } from './mutations'
+import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, signMode, testResult, type SystemsChange } from './onboarding'
+import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems, shadowProgress } from './onboardingRules'
 import { can, lockReason } from './permissions'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
@@ -70,6 +72,38 @@ export interface DemoActions {
   closeIncident: (incidentId: string, reason: string) => ActionResult
   /** Build a records export for a survey or audit; it is logged (7d). */
   buildExport: (input: { agentIds: string[]; from: string; to: string; format: 'packet' | 'csv'; masked: boolean }) => ActionResult
+  /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
+  startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
+  /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
+  updateJob: (agentId: string, patch: Partial<JobDraft>) => ActionResult
+  /** Tick a systems × verbs cell, or name the activity a grant serves (1c). Sign and Order stay locked. */
+  updateSystems: (agentId: string, change: SystemsChange) => ActionResult
+  /** Test a hard stop on the last 30 days, or on a named case set (1d, 1g); the technical owner's step. */
+  testHardStop: (agentId: string, code: string, casesId?: string) => ActionResult
+  /** Send the finished set to the sponsor for "Review: final set" (1d). */
+  sendToSponsor: (agentId: string) => ActionResult
+  /** The sponsor sends the set back to one person with a note; only what it's about reopens (1f). */
+  requestSponsorChanges: (agentId: string, input: { to: string; about?: string; note: string }) => ActionResult
+  /** The person it went back to replies to the sponsor (1g); optional. */
+  replyToSponsor: (agentId: string, text: string) => ActionResult
+  /** The sponsor approves and signs the set: frozen at v1.0 and with AIMS Review (1e → 1h). */
+  approveAsSponsor: (agentId: string) => ActionResult
+  /** Set the risk tier (2b); a tier other than the suggested one needs a reason. Tier 2+ builds the packet. */
+  setRiskTier: (agentId: string, input: { tier: Tier; reason?: string }) => ActionResult
+  /** The AI review board's decision from the packet, with a reason (2c); approval starts shadow (2d). */
+  recordDecision: (agentId: string, input: { kind: ReviewDecision['kind']; conditions: Condition[]; reason: string }) => ActionResult
+  /** The owner asks the sponsor to sign Shadow → Draft once shadow has run its minimum (3a). */
+  requestGoLive: (activityId: string) => ActionResult
+  /** Run shadow longer before asking (3a). */
+  extendShadow: (activityId: string, days?: number) => ActionResult
+  /** Flag a sample-case line for the SOP (3b). */
+  flagCaseLine: (caseId: string, line: number) => ActionResult
+  /** The sponsor signs a go-live proposal, or renews a due privilege (3c, 3d). Below target needs a reason. */
+  signPrivilege: (code: string, input: { reason?: string; accepted: boolean }) => ActionResult
+  /** The sponsor sends a go-live request back to the owner with a note (3c). */
+  returnPrivilegeRequest: (code: string, note: string) => ActionResult
+  /** The sponsor asks the owner for evidence before a review (3d). */
+  askForEvidence: (code: string) => ActionResult
 }
 
 export interface PauseInput {
@@ -251,10 +285,11 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                 const current = draft.privileges.find((p) => p.activityId === activityId && p.state !== 'closed')
                 if (!current) return
                 current.state = 'closed'
+                const version = nextVersion(draft, current.code)
                 draft.privileges.push({
                   ...current,
-                  id: `${current.id}-v${current.version + 1}`,
-                  version: current.version + 1,
+                  id: `${current.code.toLowerCase()}-v${version}`,
+                  version,
                   level: 'shadow',
                   proposedLevel: was,
                   state: 'awaiting',
@@ -531,6 +566,288 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Built export', target: code, reason: `${input.format === 'packet' ? 'PDF packet and CSV' : 'CSV'}${input.masked ? ' · identifiers masked' : ''}` },
               mutate: (draft) => {
                 draft.exports.push({ id: code.toLowerCase(), code, ...input, by: draft.personaId, at: draft.now })
+              },
+            })
+          },
+          startOnboarding: (intakeId, { ownerId, techOwnerId }) => {
+            const s = get()
+            const intake = s.intakeRequests.find((r) => r.id === intakeId)
+            if (!intake) return { ok: false, reason: 'Not found' }
+            if (intake.startedAt || s.agents.some((a) => a.id === intake.agentId)) return { ok: false, reason: 'Already started' }
+            if (!ownerId) return { ok: false, reason: 'Choose an agent owner' }
+            if (!techOwnerId) return { ok: false, reason: 'Choose a technical owner' }
+            return act({
+              action: 'startOnboarding',
+              ctx: { divisionId: intake.divisionId },
+              audit: { action: 'Started onboarding', target: intake.agentCode, reason: `From ${intake.code}` },
+              mutate: (draft) => {
+                applyStart(draft, intakeId, { ownerId, techOwnerId }, draft.personaId, draft.now)
+              },
+            })
+          },
+          updateJob: (agentId, patch) => {
+            const s = get()
+            const record = s.onboardings.find((r) => r.agentId === agentId)
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!record || !agent) return { ok: false, reason: 'Not onboarding' }
+            if (record.frozenAt) return { ok: false, reason: 'Frozen at v1.0 · with AIMS Review' }
+            const fields = (Object.keys(FIELD_NAMES) as Array<keyof typeof FIELD_NAMES>).filter((f) => Object.keys(patch).some((k) => JOB_KEY_FIELD[k] === f))
+            return act({
+              action: 'editJobDescription',
+              ctx: { agentId },
+              audit: { action: 'Edited job description', target: agent.code, reason: fields.map((f) => FIELD_NAMES[f]).join(', ') },
+              mutate: (draft) => {
+                applyJobEdit(draft, agentId, patch, draft.personaId, draft.now)
+              },
+            })
+          },
+          updateSystems: (agentId, change) => {
+            const s = get()
+            const record = s.onboardings.find((r) => r.agentId === agentId)
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!record || !agent) return { ok: false, reason: 'Not onboarding' }
+            if (record.frozenAt) return { ok: false, reason: 'Frozen at v1.0 · with AIMS Review' }
+            if (change.verb === 'sign' || change.verb === 'order') return { ok: false, reason: 'Locked for every agent by ORG-POL-02' }
+            if (change.kind === 'reason' && !record.grants.some((g) => g.system === change.system && g.verb === change.verb)) return { ok: false, reason: 'Not granted' }
+            return act({
+              action: 'editJobDescription',
+              ctx: { agentId },
+              audit: { action: 'Edited systems and verbs', target: agent.code, reason: `${change.system} · ${change.verb}${change.kind === 'grant' ? (change.on ? ' granted' : ' removed') : ' activity named'}` },
+              mutate: (draft) => {
+                applySystemsEdit(draft, agentId, change, draft.personaId, draft.now)
+              },
+            })
+          },
+          testHardStop: (agentId, code, casesId) => {
+            const s = get()
+            const record = s.onboardings.find((r) => r.agentId === agentId)
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!record || !agent) return { ok: false, reason: 'Not onboarding' }
+            if (record.frozenAt) return { ok: false, reason: 'Frozen at v1.0 · with AIMS Review' }
+            if (!record.limits.some((l) => l.code === code)) return { ok: false, reason: 'Not found' }
+            const result = testResult(s, agentId, code, casesId)
+            return act({
+              action: 'configureTools',
+              ctx: { agentId },
+              audit: { action: 'Tested hard stop', target: agent.code, reason: `${code} · would have blocked ${result.blocked} of ${result.of.toLocaleString('en-US')}` },
+              mutate: (draft) => {
+                applyTest(draft, agentId, code, casesId, draft.personaId, draft.now)
+              },
+            })
+          },
+          sendToSponsor: (agentId) => {
+            const s = get()
+            const record = s.onboardings.find((r) => r.agentId === agentId)
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!record || !agent) return { ok: false, reason: 'Not onboarding' }
+            if (record.sponsor.state === 'waiting') return { ok: false, reason: 'Already with the sponsor' }
+            if (record.sponsor.state === 'signed') return { ok: false, reason: 'Already signed' }
+            const builder = can(s, s.personaId, 'editJobDescription', { agentId })
+            if (!builder && !can(s, s.personaId, 'configureTools', { agentId })) return { ok: false, reason: lockReason('configureTools', s.personaId) }
+            if (!readyToSend(s, agentId)) {
+              const items = recordItems(s, agentId)
+              return { ok: false, reason: `${items.total - items.done - 1} items left` }
+            }
+            return act({
+              action: builder ? 'editJobDescription' : 'configureTools',
+              ctx: { agentId },
+              audit: { action: 'Sent to sponsor', target: agent.code, reason: `Review: final set · v0.${record.version}` },
+              mutate: (draft) => {
+                applySend(draft, agentId, draft.personaId, draft.now)
+              },
+            })
+          },
+          requestSponsorChanges: (agentId, { to, about, note }) => {
+            const s = get()
+            const record = s.onboardings.find((r) => r.agentId === agentId)
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!record || !agent) return { ok: false, reason: 'Not onboarding' }
+            if (record.sponsor.state !== 'waiting') return { ok: false, reason: 'Not waiting for you' }
+            const why = note.trim()
+            if (!why) return { ok: false, reason: 'A note is required' }
+            if (about && !record.limits.some((l) => l.code === about)) return { ok: false, reason: 'Not found' }
+            // Back to the technical owner means one hard stop to re-test (1f); back to the owner means the job and reach.
+            if (to === agent.techOwnerId && !about) return { ok: false, reason: 'Choose the hard stop to re-test' }
+            if (to !== agent.techOwnerId && to !== agent.ownerId) return { ok: false, reason: 'Send it back to the owner or the technical owner' }
+            return act({
+              action: 'approveTools',
+              ctx: { agentId },
+              audit: { action: 'Requested changes', target: agent.code, reason: `${about ?? 'Job and reach'} · ${why}` },
+              mutate: (draft) => {
+                applyRequestChanges(draft, agentId, { to, ...(about ? { about } : {}), note: why }, draft.personaId, draft.now)
+              },
+            })
+          },
+          replyToSponsor: (agentId, text) => {
+            const s = get()
+            const record = s.onboardings.find((r) => r.agentId === agentId)
+            const agent = s.agents.find((a) => a.id === agentId)
+            const returned = record?.sponsor.returned
+            if (!record || !agent || record.sponsor.state !== 'returned' || !returned) return { ok: false, reason: 'Nothing to reply to' }
+            const what = text.trim()
+            if (!what) return { ok: false, reason: 'A reply needs text' }
+            if (s.personaId !== returned.to) return { ok: false, reason: `Only ${s.people.find((p) => p.id === returned.to)?.name ?? 'the person it went to'} can reply` }
+            return act({
+              action: returned.to === agent.techOwnerId ? 'configureTools' : 'editJobDescription',
+              ctx: { agentId },
+              audit: { action: 'Replied to sponsor', target: agent.code, reason: what },
+              mutate: (draft) => {
+                applyReply(draft, agentId, what, draft.personaId, draft.now)
+              },
+            })
+          },
+          approveAsSponsor: (agentId) => {
+            const s = get()
+            const record = s.onboardings.find((r) => r.agentId === agentId)
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!record || !agent) return { ok: false, reason: 'Not onboarding' }
+            if (record.sponsor.state !== 'waiting') return { ok: false, reason: 'Not waiting for you' }
+            if (!readyToSend(s, agentId)) {
+              const items = recordItems(s, agentId)
+              return { ok: false, reason: `${items.total - items.done - 1} items left` }
+            }
+            return act({
+              action: 'approveTools',
+              ctx: { agentId },
+              audit: { action: 'Approved as sponsor', target: agent.code, reason: `${agent.code} v1.0 · job, reach and limits` },
+              mutate: (draft) => {
+                applySponsorSign(draft, agentId, draft.personaId, draft.now)
+              },
+            })
+          },
+          setRiskTier: (agentId, { tier, reason }) => {
+            const s = get()
+            const record = s.onboardings.find((r) => r.agentId === agentId)
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!record || !agent) return { ok: false, reason: 'Not found' }
+            if (!record.frozenAt || !record.review || record.review.tier) return { ok: false, reason: 'Not ready for a tier' }
+            const why = reason?.trim() ?? ''
+            if (tier !== record.review.suggestedTier && !why) return { ok: false, reason: 'A reason is required' }
+            return act({
+              action: 'prepareGoLive',
+              ctx: { agentId },
+              audit: { action: 'Set risk tier', target: agent.code, reason: `Tier ${tier}${why ? ` · ${why}` : ''}` },
+              mutate: (draft) => {
+                applySetTier(draft, agentId, { tier, ...(why ? { reason: why } : {}) }, draft.personaId, draft.now)
+              },
+            })
+          },
+          recordDecision: (agentId, { kind, conditions, reason }) => {
+            const s = get()
+            const review = s.onboardings.find((r) => r.agentId === agentId)?.review
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!review || !agent) return { ok: false, reason: 'Not found' }
+            if (!review.packetAt || review.decision) return { ok: false, reason: 'No packet yet' }
+            const why = reason.trim()
+            if (!why) return { ok: false, reason: 'A reason is required' }
+            if (kind === 'approveWithConditions' && !conditions.length) return { ok: false, reason: 'Add at least one condition' }
+            return act({
+              action: 'approveGoLive',
+              ctx: { agentId },
+              audit: { action: 'Recorded committee decision', target: agent.code, reason: `${DECISION_WORDS[kind]} · ${why}` },
+              mutate: (draft) => {
+                applyDecision(draft, agentId, { kind, conditions, reason: why }, draft.personaId, draft.now)
+              },
+            })
+          },
+          requestGoLive: (activityId) => {
+            const s = get()
+            const activity = s.activities.find((a) => a.id === activityId)
+            const agent = s.agents.find((a) => a.id === activity?.agentId)
+            if (!activity || !agent) return { ok: false, reason: 'Not found' }
+            if (activity.level !== 'shadow') return { ok: false, reason: 'Not in Shadow' }
+            const current = latestPrivilege(s, activityId)
+            if (current?.state === 'awaiting' && current.proposedLevel) return { ok: false, reason: 'Already requested' }
+            const progress = shadowProgress(s, activityId)
+            if (!progress || !current) return { ok: false, reason: 'No shadow evidence yet' }
+            if (!progress.done) return { ok: false, reason: 'Shadow isn’t finished' }
+            return act({
+              action: 'requestGoLive',
+              ctx: { agentId: agent.id },
+              audit: { action: 'Requested go-live', target: agent.code, reason: `${activity.name} · Shadow → Draft · ${current.code} v${current.version + 1}` },
+              mutate: (draft) => {
+                applyGoLiveRequest(draft, activityId, draft.personaId, draft.now)
+              },
+            })
+          },
+          extendShadow: (activityId, days = 7) => {
+            const s = get()
+            const activity = s.activities.find((a) => a.id === activityId)
+            const agent = s.agents.find((a) => a.id === activity?.agentId)
+            if (!activity || !agent || !s.scorecards.some((c) => c.activityId === activityId)) return { ok: false, reason: 'Not found' }
+            const current = latestPrivilege(s, activityId)
+            if (current?.state === 'awaiting' && current.proposedLevel) return { ok: false, reason: 'A go-live request is open' }
+            return act({
+              action: 'requestGoLive',
+              ctx: { agentId: agent.id },
+              audit: { action: 'Extended shadow', target: agent.code, reason: `${activity.name} · ${days} days` },
+              mutate: (draft) => {
+                applyExtendShadow(draft, activityId, days, draft.personaId, draft.now)
+              },
+            })
+          },
+          flagCaseLine: (caseId, line) => {
+            const s = get()
+            const c = s.sampleCases.find((x) => x.id === caseId)
+            const agent = s.agents.find((a) => a.id === c?.agentId)
+            if (!c || !agent || !c.lines[line - 1]) return { ok: false, reason: 'Not found' }
+            return act({
+              action: 'editJobDescription',
+              ctx: { agentId: agent.id },
+              audit: { action: 'Flagged for SOP', target: agent.code, reason: `Encounter ${c.encounter} · line ${line}` },
+              mutate: (draft) => {
+                applyFlagLine(draft, caseId, line, draft.personaId, draft.now)
+              },
+            })
+          },
+          signPrivilege: (code, { reason, accepted }) => {
+            const s = get()
+            const latest = latestByCode(s, code)
+            const agent = s.agents.find((a) => a.id === latest?.agentId)
+            if (!latest || !agent) return { ok: false, reason: 'Not found' }
+            const mode = signMode(s, code)
+            if (!mode) return { ok: false, reason: 'Nothing to sign' }
+            if (!accepted) return { ok: false, reason: 'Tick the accountability statement' }
+            const why = reason?.trim() ?? ''
+            if (mode === 'sign' && criteriaStatus(s, latest.activityId).some((c) => !c.met) && !why) return { ok: false, reason: 'A written reason is required' }
+            return act({
+              action: 'signPrivilege',
+              ctx: { agentId: agent.id },
+              audit: { action: mode === 'sign' ? 'Signed privilege' : 'Renewed privilege', target: `${latest.code} v${mode === 'sign' ? latest.version : latest.version + 1}`, ...(why ? { reason: why } : {}) },
+              mutate: (draft) => {
+                applySignPrivilege(draft, code, why ? { reason: why } : {}, draft.personaId, draft.now)
+              },
+            })
+          },
+          returnPrivilegeRequest: (code, note) => {
+            const s = get()
+            const latest = latestByCode(s, code)
+            const agent = s.agents.find((a) => a.id === latest?.agentId)
+            if (!latest || !agent) return { ok: false, reason: 'Not found' }
+            if (signMode(s, code) !== 'sign') return { ok: false, reason: 'Nothing to send back' }
+            const why = note.trim()
+            if (!why) return { ok: false, reason: 'A note is required' }
+            return act({
+              action: 'signPrivilege',
+              ctx: { agentId: agent.id },
+              audit: { action: 'Returned go-live request', target: `${latest.code} v${latest.version}`, reason: why },
+              mutate: (draft) => {
+                applyReturnRequest(draft, code, why, draft.personaId, draft.now)
+              },
+            })
+          },
+          askForEvidence: (code) => {
+            const s = get()
+            const latest = latestByCode(s, code)
+            const agent = s.agents.find((a) => a.id === latest?.agentId)
+            if (!latest || !agent) return { ok: false, reason: 'Not found' }
+            if (s.exceptions.some((e) => e.type === `Evidence for the ${latest.code} review` && e.state !== 'resolved' && e.state !== 'dismissed')) return { ok: false, reason: 'Already asked' }
+            return act({
+              action: 'signPrivilege',
+              ctx: { agentId: agent.id },
+              audit: { action: 'Asked for evidence', target: latest.code },
+              mutate: (draft) => {
+                applyAskEvidence(draft, code, draft.personaId, draft.now)
               },
             })
           },

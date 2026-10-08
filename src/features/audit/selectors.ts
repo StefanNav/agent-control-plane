@@ -189,15 +189,29 @@ export function selectIncidents(s: DemoState) {
     }))
 }
 
-/** What 7d's packet holds for Med Rec that the prototype doesn't model yet (job descriptions, committee, action volume). */
-const EXPORT_FACTS: Record<string, { jobDescriptions: string; committee: string; actions: string }> = {
-  'med-rec': { jobDescriptions: '4 · v1 to v4', committee: '1 · approved with C1 to C3', actions: '2,961 · 06 Nov to 08 Dec' },
+/** What 7d's packet holds for Med Rec that the prototype doesn't model (job-description revisions, action volume), as of 08 Dec. */
+const EXPORT_FACTS: Record<string, { asOf: string; jobDescriptions: string; actions: string }> = {
+  'med-rec': { asOf: '2026-12-08T00:00:00', jobDescriptions: '4 · v1 to v4', actions: '2,961 · 06 Nov to 08 Dec' },
+}
+
+const DECISION_WORDS = { approve: 'approved', approveWithConditions: 'approved with', reReview: 'sent back for re-review', deny: 'denied' } as const
+
+/** The board's decision as the export lists it ("1 · approved with C1 to C3"), or "—" before one. */
+function committeeFact(s: DemoState, agentId: string): string {
+  const decision = s.onboardings.find((r) => r.agentId === agentId)?.review?.decision
+  if (!decision) return '—'
+  const ids = decision.conditions.map((c) => c.id)
+  const conditions = ids.length > 2 ? `${ids[0]} to ${ids.at(-1)}` : ids.join(' and ')
+  return `1 · ${DECISION_WORDS[decision.kind]}${decision.kind === 'approveWithConditions' ? ` ${conditions}` : ''}`
 }
 
 /** The export's contents (7d), counted from the record for the chosen agents. */
 export function selectExportContents(s: DemoState, agentIds: string[]): [string, string][] {
   const ids = new Set(agentIds)
-  const single = agentIds.length === 1 ? EXPORT_FACTS[agentIds[0]!] : undefined
+  const only = agentIds.length === 1 ? agentIds[0]! : undefined
+  // The 08 Dec facts hold only from 08 Dec; an earlier moment (an October scenario) reads the record as it stood.
+  const facts = only && EXPORT_FACTS[only] && s.now >= EXPORT_FACTS[only].asOf ? EXPORT_FACTS[only] : undefined
+  const record = only ? s.onboardings.find((r) => r.agentId === only) : undefined
   const privileges = s.privileges.filter((p) => ids.has(p.agentId) && p.level !== 'shadow' && p.state !== 'closed')
   const signatures = privileges.reduce((n, p) => n + Math.max(0, p.version - 1), 0)
   const stops = s.hardStops.filter((h) => ids.has(h.agentId)).length
@@ -209,11 +223,11 @@ export function selectExportContents(s: DemoState, agentIds: string[]): [string,
   const resumes = s.audit.filter((a) => a.action === 'Resumed' && codes.includes(a.target)).length
   const actions = s.actions.filter((a) => ids.has(a.agentId)).length
   return [
-    ['Job description versions', single?.jobDescriptions ?? '—'],
+    ['Job description versions', facts?.jobDescriptions ?? (record ? `1 · ${record.frozenAt ? 'v1.0' : `v0.${record.version}`}` : '—')],
     ['Privileges and signatures', privileges.length ? `${privileges.map((p) => `${p.code} v1 to v${p.version}`).join(', ')} · ${signatures} ${signatures === 1 ? 'signature' : 'signatures'}` : 'None'],
-    ['Committee decisions and conditions', single?.committee ?? '—'],
+    ['Committee decisions and conditions', only ? committeeFact(s, only) : '—'],
     ['Hard-stop tests', stops ? `${stops} · with examples` : 'None'],
-    ['Actions and traces', single?.actions ?? `${actions} seeded`],
+    ['Actions and traces', facts?.actions ?? `${actions} seeded`],
     ['Exceptions and how each closed', String(exceptions)],
     ['Incidents', incidents.length ? `${incidents.length} · ${incidents.map((i) => i.code).join(', ')}` : 'None'],
     ['Pauses and resumes', pauses ? `${pauses} · ${resumes >= pauses ? 'with both reasons' : 'still paused'}` : 'None'],

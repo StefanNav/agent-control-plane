@@ -6,27 +6,39 @@ import { agents } from './agents'
  * Baseline privileges as of 08 Dec, one per Medications activity, taken from the division
  * view (level, grantor, review date). Codes from the frames where they exist; the component
  * sheet's lapsed / stepped-down examples live in the gallery fixtures and in scenarios.
+ * Conditions are the committee's condition ids; the cards format them ("C1–C3 · Dr. Lee").
  */
 const KNOWN: Record<string, Partial<Privilege>> = {
-  'med-rec-allergy': { domain: '7 West, 8 East · adults 18+', evidence: 'Shadow validation in progress', grantedAt: '2026-10-14T10:00:00', grantedBy: 'drlee', reviewDate: undefined },
-  'discharge-meds-interactions': { domain: '7 West · adults', evidence: 'Shadow validation in progress', grantedBy: 'drlee', grantedAt: '2026-09-02T10:00:00', reviewDate: '2026-12-02T00:00:00' },
+  // Med Rec's two activities: v2 when the committee's conditions applied (14 Oct), v3 when Priya signed Draft (06 Nov).
   'med-rec-admission': {
     code: 'PRV-0142',
     version: 3,
-    domain: '7 West, 8 East · adults 18+',
-    evidence: '21-day shadow · 1,204 cases · 2 of 3 targets met',
-    conditions: ['C1–C3 · Dr. Lee'],
-    grantedAt: '2026-11-06T10:05:00',
+    domain: '7 West, 8 East · adults 18+ · excluding dialysis (C3)',
+    evidence: '21-day shadow · 1,118 cases · 2 of 3 targets met',
+    conditions: ['C1', 'C2', 'C3'],
+    grantedAt: '2026-11-06T09:52:00',
     reviewDate: '2027-02-05T00:00:00',
     stepDownTriggers: ['Edit rate above 15% for 3 days', 'New version', 'Incident'],
+    signReason: '21 of the 29 inaccurate lines were brand and generic name mismatches. SOP v1.3.1 fixes the mapping, and a pharmacist signs every draft (C1).',
   },
+  'med-rec-allergy': {
+    code: 'PRV-0143',
+    version: 2,
+    domain: '7 West, 8 East · adults 18+ · excluding dialysis (C3)',
+    evidence: 'Shadow validation in progress',
+    conditions: ['C1', 'C3'],
+    grantedBy: 'drlee',
+    grantedAt: '2026-10-14T16:20:00',
+    reviewDate: undefined,
+  },
+  'discharge-meds-interactions': { domain: '7 West · adults', evidence: 'Shadow validation in progress', grantedBy: 'drlee', grantedAt: '2026-09-02T10:00:00', reviewDate: '2026-12-02T00:00:00' },
   'discharge-meds': {
     code: 'PRV-0127',
     version: 2,
     domain: '7 West, 8 East · adults 18+',
     evidence: '28-day shadow · 2,310 cases · 3 of 3 targets met',
-    conditions: ['C1 · Dr. Lee'],
-    grantedAt: '2026-08-14T10:05:00',
+    conditions: ['C1'],
+    grantedAt: '2026-11-14T10:05:00',
   },
   'duplicate-rx': {
     code: 'PRV-0098',
@@ -34,29 +46,48 @@ const KNOWN: Record<string, Partial<Privilege>> = {
     domain: 'Adult inpatient units',
     evidence: '96 days at Draft · 95.3% signed as is',
     state: 'due',
-    grantedAt: '2026-07-02T16:40:00',
+    grantedAt: '2026-09-01T16:40:00',
   },
   'renal-dosing': {
     code: 'PRV-0131',
     version: 3,
     domain: '7 West, 8 East · adults 18+',
     evidence: '28-day shadow · 3 of 3 targets met',
-    conditions: ['C1–C2 · Dr. Lee'],
-    grantedAt: '2026-08-19T09:12:00',
+    conditions: ['C1', 'C2'],
+    grantedAt: '2026-10-30T09:12:00',
     stepDownTriggers: ['Edit rate above 15% for 3 days'],
   },
+  // Sign dates from 3d.
+  'med-shortage': { grantedAt: '2026-09-23T10:00:00' },
+  'controlled-drug': { grantedAt: '2026-10-10T10:00:00' },
+  'allergy-recon': { grantedAt: '2026-10-16T10:00:00' },
 }
 
-let next = 150
+/** Codes the frames name; the rest count down from PRV-0141 so Med Rec's PRV-0142 comes next (ruling R11). */
+const TAKEN = new Set([98, 127, 131, 142, 143])
+let next = 141
+const autoCode = () => {
+  while (TAKEN.has(next)) next--
+  return `PRV-0${next--}`
+}
+
+/** Signed 91 days before the review date (a 90-day cycle counted from the day after signing). */
+const signedBefore = (review: string) => {
+  const d = new Date(review)
+  d.setDate(d.getDate() - 91)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T10:00:00`
+}
 
 export const privileges: Privilege[] = activities
   .filter((act) => agents.find((a) => a.id === act.agentId)?.divisionId === 'medications')
   .map((act) => {
     const agent = agents.find((a) => a.id === act.agentId)!
     const known = KNOWN[act.id] ?? {}
+    const code = known.code ?? autoCode()
+    const reviewDate = 'reviewDate' in known ? known.reviewDate : agent.reviewDate
     return {
-      id: (known.code ?? `PRV-0${next++}`).toLowerCase(),
-      code: known.code ?? `PRV-0${next - 1}`,
+      id: code.toLowerCase(),
+      code,
       version: known.version ?? 1,
       activityId: act.id,
       agentId: agent.id,
@@ -65,9 +96,10 @@ export const privileges: Privilege[] = activities
       conditions: known.conditions ?? [],
       evidence: known.evidence ?? 'Shadow validation · targets met',
       grantedBy: known.grantedBy ?? (act.level === 'shadow' ? 'drlee' : agent.grantorId),
-      grantedAt: known.grantedAt ?? '2026-09-01T10:00:00',
-      reviewDate: 'reviewDate' in known ? known.reviewDate : agent.reviewDate,
+      grantedAt: known.grantedAt ?? (reviewDate ? signedBefore(reviewDate) : '2026-09-01T10:00:00'),
+      reviewDate,
       state: known.state ?? 'active',
       stepDownTriggers: known.stepDownTriggers ?? ['Edit rate above 15% for 3 days'],
+      ...(known.signReason ? { signReason: known.signReason } : {}),
     }
   })

@@ -48,6 +48,12 @@ export function addMinutes(iso: string, minutes: number): string {
   return toIso(new Date(at(iso).getTime() + minutes * 60000))
 }
 
+/** iso + n calendar days, same wall-clock time (daylight-saving safe). */
+export function addDays(iso: string, days: number): string {
+  const d = at(iso)
+  return toIso(new Date(d.getFullYear(), d.getMonth(), d.getDate() + days, d.getHours(), d.getMinutes(), d.getSeconds()))
+}
+
 /** The next day at 'hh:mm', e.g. tomorrowAt(now, '07:00') for "until tomorrow 07:00". */
 export function tomorrowAt(iso: string, hhmm: string): string {
   const d = at(iso)

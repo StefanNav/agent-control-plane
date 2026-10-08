@@ -11,6 +11,13 @@ import { ActionTracePage } from '../features/audit/ActionTracePage'
 import { IncidentPage } from '../features/audit/IncidentPage'
 import { IncidentsPage } from '../features/audit/IncidentsPage'
 import { ExportPage } from '../features/audit/ExportPage'
+import { OnboardingPage } from '../features/onboarding/OnboardingPage'
+import { CasePage } from '../features/golive/CasePage'
+import { MyPrivilegesPage } from '../features/golive/MyPrivilegesPage'
+import { SignPage } from '../features/golive/SignPage'
+import { PacketPage } from '../features/review/PacketPage'
+import { RecordPage } from '../features/review/RecordPage'
+import { RiskTierPage } from '../features/review/RiskTierPage'
 import { NotFound } from '../layout/NotFound'
 import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
 import { AppShell } from './AppShell'
@@ -33,6 +40,13 @@ const PAGES: Record<string, ReactNode> = {
   '/operations/incidents': <IncidentsPage />,
   '/operations/incidents/:incidentId': <IncidentPage />,
   '/reports/export': <ExportPage />,
+  '/inventory/agents/:agentId/onboarding/:step': <OnboardingPage />,
+  '/inventory/agents/:agentId': <RecordPage />,
+  '/inventory/agents/:agentId/risk-tier': <RiskTierPage />,
+  '/portfolio/reviews/:reviewId': <PacketPage />,
+  '/operations/agents/:agentId/cases/:caseId': <CasePage />,
+  '/inventory/privileges/:privilegeId/sign': <SignPage />,
+  '/portfolio/privileges': <MyPrivilegesPage />,
   '/wall': <WallDisplay />,
 }
 

@@ -11,14 +11,10 @@ import { PauseFlow } from '../controls/PauseFlow'
 import { ResumePanel } from '../controls/ResumePanel'
 import { RetireDialog } from '../inventory/RetireDialog'
 import type { PauseScope } from '../controls/selectors'
-import {
-  ActionsTab,
-  ActivitiesTab,
-  HistoryTab,
-  PrivilegesTab,
-  ScorecardTab,
-} from './agent-tabs/Tabs'
+import { ScorecardTab } from '../golive/ScorecardTab'
+import { ActionsTab, ActivitiesTab, HistoryTab, PrivilegesTab } from './agent-tabs/Tabs'
 import { Overview } from './agent-tabs/Overview'
+import { DraftAgentView } from './DraftAgentView'
 import { selectAgentOverview } from './selectors'
 
 const TABS = ['overview', 'activities', 'scorecard', 'actions', 'privileges', 'history'] as const
@@ -45,6 +41,8 @@ export function AgentView() {
   const [params, setParams] = useSearchParams()
   const state = useDemo((s) => s)
   const view = useMemo(() => selectAgentOverview(state, agentId), [state, agentId])
+  const draft = state.agents.find((a) => a.id === agentId && (a.lifecycle === 'onboarding' || a.lifecycle === 'inReview'))
+  if (draft) return <DraftAgentView agentId={draft.id} />
   if (!view) return <NotFound />
 
   const tab = (TABS.find((t) => t === params.get('tab')) ?? 'overview') as Tab
@@ -68,7 +66,7 @@ export function AgentView() {
   const content: Record<Tab, ReactNode> = {
     overview: <Overview view={view} resume={<ResumePanel agentId={agentId} />} />,
     activities: <ActivitiesTab agentId={agentId} />,
-    scorecard: <ScorecardTab />,
+    scorecard: <ScorecardTab agentId={agentId} />,
     actions: <ActionsTab agentId={agentId} />,
     privileges: <PrivilegesTab agentId={agentId} />,
     history: <HistoryTab agentId={agentId} />,
@@ -107,6 +105,7 @@ export function AgentView() {
                 }))}
               />
             )}
+            {tab === 'scorecard' ? <LinkButton to={`/reports/export?agent=${agentId}`}>Export scorecard</LinkButton> : null}
             <LinkButton to={`/inventory/agents/${agentId}`}>Open in Inventory</LinkButton>
           </>
         }

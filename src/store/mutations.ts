@@ -1,4 +1,5 @@
 import type { Agent, DemoState, PauseDetail } from '../data/types'
+import { addDays, formatDate } from '../lib/clock'
 
 /**
  * State changes shared by store actions and scenarios, so a scenario builds exactly the state
@@ -78,3 +79,53 @@ export const nextIncidentCode = (s: DemoState) => nextCode(s.incidents.map((i) =
 /** "RET-07" after RET-06. */
 export const nextArchiveCode = (s: DemoState) =>
   nextCode(s.agents.flatMap((a) => (a.retirement ? [a.retirement.code] : [])), 'RET-', 2)
+
+/** "PRV-0144" after PRV-0143: the next privilege record (ruling R11). */
+export const nextPrivilegeCode = (s: DemoState) => nextCode(s.privileges.map((p) => p.code), 'PRV-', 4)
+
+/** "HS-12": the next hard-stop code after the library's, every agent's and every record's (ruling R10). */
+export const nextHardStopCode = (s: DemoState, extra: string[] = [], library: string[] = []) =>
+  nextCode([...s.hardStops.map((h) => h.code), ...s.onboardings.flatMap((r) => r.limits.map((l) => l.code)), ...library, ...extra], 'HS-', 2)
+
+/** The next inbox code; codes before the demo's own start at EXC-5401, so a rewound October never restarts at EXC-0001. */
+export const nextExceptionCode = (s: DemoState) => nextCode(['EXC-5400', ...s.exceptions.map((e) => e.code)], 'EXC-', 4)
+
+/**
+ * Every signed privilege past its review date raises one "Review overdue" for its sponsor (3d), copied
+ * to the owner and the program lead, due when the division's lapse window closes (14 days). Idempotent.
+ */
+export function raiseOverdueReviews(s: DemoState): DemoState {
+  const lead = s.roles.find((r) => r.role === 'programLead')?.personId
+  for (const p of s.privileges) {
+    if (p.level === 'shadow' || (p.state !== 'active' && p.state !== 'due') || !p.reviewDate || p.reviewDate >= s.now) continue
+    const agent = s.agents.find((a) => a.id === p.agentId)
+    if (!agent || agent.lifecycle === 'retired') continue
+    p.state = 'due'
+    const open = s.exceptions.some((e) => e.agentId === p.agentId && e.type === 'Review overdue' && e.ruleTag === p.code && e.state !== 'resolved' && e.state !== 'dismissed')
+    if (open) continue
+    const code = nextExceptionCode(s)
+    s.exceptions.push({
+      id: code.toLowerCase(),
+      code,
+      status: 'warn',
+      kind: 'review',
+      type: 'Review overdue',
+      reason: `Privilege review date passed on ${formatDate(p.reviewDate)}`,
+      short: 'privilege review overdue',
+      agentId: p.agentId,
+      ruleTag: p.code,
+      raisedAt: s.now,
+      action: 'review the privilege',
+      actionSub: p.evidence,
+      ownerId: agent.sponsorId,
+      copied: [agent.ownerId, ...(lead ? [lead] : [])],
+      deadline: `${addDays(p.reviewDate, 14).slice(0, 10)}T17:00:00`,
+      state: 'new',
+      route: 'inbox',
+    })
+  }
+  return s
+}
+
+/** The next version number of a privilege code: one past the highest ever used, closed versions included. */
+export const nextVersion = (s: DemoState, code: string) => Math.max(0, ...s.privileges.filter((p) => p.code === code).map((p) => p.version)) + 1

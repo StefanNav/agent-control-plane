@@ -28,6 +28,8 @@ const MATRIX: Array<[PermAction, [boolean, boolean, boolean, boolean, boolean, b
   // 7a: opening an incident is the one thing read-only Jordan can create.
   ['openIncident', [true, true, true, true, true, true]],
   ['manageDivisions', [true, false, false, false, false, false]],
+  // Phase 5: the owner asks the sponsor to sign the move out of Shadow (3a).
+  ['requestGoLive', [false, false, true, false, false, false]],
 ]
 
 test.each(MATRIX)('%s follows the permission matrix', (action, expected) => {
@@ -85,4 +87,12 @@ test('Dana keeps the program lead column of §7 everywhere', () => {
 test('Sam returns activities to Shadow on agents Sam owns technically, nobody else\'s (6c)', () => {
   expect(can(s, 'sam', 'returnToShadow', { agentId: 'med-rec' })).toBe(true)
   expect(can(s, 'sam', 'returnToShadow', { agentId: 'prior-auth' })).toBe(false)
+})
+
+test('Phase 5: the board decides go-live only for Tier 2 and above (R7)', () => {
+  const tier1 = { ...s, agents: s.agents.map((a) => (a.id === 'claim-scrubber' ? { ...a, riskTier: 1 as const } : a)) }
+  expect(can(tier1, 'drlee', 'approveGoLive', { agentId: 'claim-scrubber' })).toBe(false)
+  expect(can(s, 'drlee', 'approveGoLive', { agentId: 'med-rec' })).toBe(true)
+  expect(can(s, 'marcus', 'requestGoLive', { agentId: 'med-rec' })).toBe(true)
+  expect(can(s, 'priya', 'requestGoLive', { agentId: 'med-rec' })).toBe(false)
 })

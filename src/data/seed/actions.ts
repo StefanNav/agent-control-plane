@@ -65,4 +65,25 @@ export const actions: AgentAction[] = [
   recent('ACT-88171', '2026-12-08T09:02:17', 'med-rec', 'Draft med list · enc 4403', 'Ana R., PharmD · 7 West', 'Edited 1 line, signed', 'HS-04 v2'),
   recent('ACT-88236', '2026-12-08T09:41:07', 'discharge-meds', 'Draft med list · enc 5120', 'Ana R., PharmD · 7 West', 'Signed as is'),
   recent('ACT-88231', '2026-12-08T09:36:52', 'discharge-meds', 'Draft med list · enc 5117', 'Ana R., PharmD · 7 West', 'Edited'),
+  // 3b's case 4105 in shadow: the draft compared with Ana R.'s final list (28 Oct).
+  {
+    id: 'act-61840',
+    code: 'ACT-61840',
+    at: '2026-10-28T14:13:00',
+    title: 'Shadow med list · enc 4105',
+    agentId: 'med-rec',
+    agentVersion: 'v1.3.0',
+    sop: 'v1.3',
+    actingFor: 'Ana R., PharmD · 7 West',
+    reviewerOutcome: 'Shadow · compared with Ana R.’s list',
+    context: { privilege: 'PRV-0142 v2 · Shadow', checks: 3, conditions: ['C1 · pharmacist signs', 'C3 · dialysis excluded'] },
+    steps: [
+      { at: '2026-10-28T14:12:41.208', kind: 'input', title: 'Admission · enc 4105 · 7 West', meta: 'Epic ADT' },
+      { at: '2026-10-28T14:12:43.517', kind: 'tool', title: 'epic.medlist.read', detail: '6 home medications' },
+      { at: '2026-10-28T14:12:44.902', kind: 'tool', title: 'pyxis.dispense.read', detail: '90 days of fills' },
+      { at: '2026-10-28T14:12:52.330', kind: 'policyPassed', title: 'Patient matches the encounter', ruleTag: 'HS-11 v1' },
+      { at: '2026-10-28T14:13:02.114', kind: 'output', title: 'Shadow draft · 6 lines', detail: 'Not sent to the worklist (Shadow)' },
+      { at: '2026-10-28T15:02:00.000', kind: 'reviewer', title: 'Compared with Ana R.’s final list', detail: '5 agree · 1 inaccurate · 1 omitted' },
+    ],
+  },
 ]

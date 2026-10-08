@@ -122,3 +122,9 @@
   display: flex;
   gap: 8px;
 }
+
+/* The row that needs attention: selection tint and an indigo edge, as 1c draws it. */
+.selected {
+  background: var(--cs-sel);
+  box-shadow: inset 2px 0 0 var(--cs-acc);
+}

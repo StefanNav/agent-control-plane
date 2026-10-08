@@ -6,8 +6,8 @@ import { selectInventory, selectRecord, selectRetirePreview } from './selectors'
 
 const s = createSeed()
 
-test('inventory tabs count from data: 41 agents, 3 drafts, 2 intakes, 6 retired', () => {
-  expect(selectInventory(s).counts).toEqual({ agents: 41, drafts: 3, intake: 2, retired: 6 })
+test('inventory tabs count from data: 41 agents, 1 draft, 2 intakes, 6 retired', () => {
+  expect(selectInventory(s).counts).toEqual({ agents: 41, drafts: 1, intake: 2, retired: 6 })
   expect(selectInventory(s).agents).toHaveLength(41)
   const medRec = selectInventory(s).agents.find((r) => r.id === 'med-rec')!
   expect(medRec).toMatchObject({ name: 'Med Rec Agent', division: 'Medications', level: 'Draft', status: 'review', label: 'Review: 3 drafts', sponsor: 'Priya', tier: 'Tier 3', review: '05 Feb' })
@@ -57,4 +57,25 @@ test('Important #5: a newly retired agent\'s header agrees with the Retired noti
     levelLine: 'Retired · RET-07 · 08 Dec',
     judgment: { status: 'normal', label: 'Retired' },
   })
+})
+
+test('Drafts (1i) are the records being onboarded: Culture Follow-up waits on Marcus at the job description', () => {
+  expect(selectInventory(s).drafts).toEqual([
+    {
+      id: 'culture-followup',
+      agentId: 'culture-followup',
+      name: 'Culture Follow-up Agent',
+      division: 'Medications',
+      request: 'REQ-0099',
+      step: '2 · Job description',
+      stepSub: 'Never list, Acting for, Escalation triggers, Success criteria',
+      waitingOn: 'Marcus',
+      waitingOnId: 'marcus',
+      progress: '4 of 10',
+      items: { done: 4, total: 10 },
+      lastChange: '07 Dec 15:30',
+      field: 'never',
+      stepId: 'job',
+    },
+  ])
 })
