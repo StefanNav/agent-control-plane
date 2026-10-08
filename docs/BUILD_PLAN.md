@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 1: Foundation (⏸ at checkpoint, awaiting Stefan's review of PR #11) |
-| **Branch** | `phase-1-foundation` |
-| **Last completed** | Phase 1 Tasks 1.1–1.10 Step 7: foundation built, fresh review fixes applied, CI + Vercel wired (2026-10-08) |
-| **Next task** | After Stefan approves: Phase 1 Task 1.10 Step 8 (squash-merge [PR #11](https://github.com/StefanNav/agent-control-plane/pull/11), confirm production deploy, close #2), then Phase 2 Task 2.0 (write `docs/plans/phase-2-components-data.md`) |
-| **Blockers** | Stefan reviewing Phase 1 |
+| **Current phase** | Phase 2: Components and data (◐ in progress) |
+| **Branch** | `phase-2-components-data` |
+| **Last completed** | Phase 1 approved and squash-merged (PR #11), production deploys from `main` (2026-10-08) |
+| **Next task** | Phase 2 Task 2.0: write `docs/plans/phase-2-components-data.md` |
+| **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
-| **Live URL** | https://agent-control-plane-mocha.vercel.app (public; currently the Phase 1 branch, `main` takes over on merge) |
-| **Latest preview** | PR #11 → Vercel preview (behind Vercel login); public build at the Live URL |
+| **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
+| **Latest preview** | none open |
 
 ### How to resume in a new session
 
@@ -89,8 +89,8 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | # | Phase | Status | Branch | Issue | PR | Plan file |
 |---|---|---|---|---|---|---|
 | 0 | Setup | ☑ Merged | `main` | [#1](https://github.com/StefanNav/agent-control-plane/issues/1) | no PR (docs on `main`) | [phase-0-setup.md](plans/phase-0-setup.md) |
-| 1 | Foundation | ⏸ At checkpoint | `phase-1-foundation` | [#2](https://github.com/StefanNav/agent-control-plane/issues/2) | [#11](https://github.com/StefanNav/agent-control-plane/pull/11) | [phase-1-foundation.md](plans/phase-1-foundation.md) |
-| 2 | Components and data | ☐ Not started | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | – | to write (Task 2.0) |
+| 1 | Foundation | ☑ Merged | `phase-1-foundation` | [#2](https://github.com/StefanNav/agent-control-plane/issues/2) | [#11](https://github.com/StefanNav/agent-control-plane/pull/11) | [phase-1-foundation.md](plans/phase-1-foundation.md) |
+| 2 | Components and data | ◐ In progress | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | – | to write (Task 2.0) |
 | 3 | Command Board and inbox | ☐ Not started | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | – | to write (Task 3.0) |
 | 4 | Controls and audit | ☐ Not started | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | – | to write (Task 4.0) |
 | 5 | Onboarding and go-live | ☐ Not started | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | – | to write (Task 5.0) |
@@ -138,7 +138,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 - [x] 1.7 Layout: TopNav, PageHeader, Split / SplitL / Body, AppShell with prototype bar shell, NotFound
 - [x] 1.8 Route table + router + placeholder pages + Playwright route smoke
 - [x] 1.9 Primitives gallery at `/about/components`
-- [ ] 1.10 CI, Vercel link and first deploy; checkpoint
+- [x] 1.10 CI, Vercel link and first deploy; checkpoint (approved and merged 2026-10-08)
 
 **Done when:** every route in spec §5.5 loads directly on the Vercel URL inside the shell; gallery shows every primitive; CI green.
 **Handoff notes (2026-10-08):**
@@ -404,3 +404,4 @@ One row per working session. Newest last.
 | 2026-10-08 | 0 | Moved handoff to `docs/`, interim README, adopted Signal brand, created public repo, milestones, labels, issues #1–#10 | Stefan reviews Phase 0 → Phase 1 |
 | 2026-10-08 | 0 | Fresh review: 3 Important fixed (Phase 1 Task 1.1 vs create-vite 9.2, CI pnpm version, PR issue number) + 4 minors fixed; Stefan approved; #1 closed | Phase 1 Task 1.1 |
 | 2026-10-08 | 1 | Built Phase 1 (scaffold, tokens, icons, 24 primitives, layout, route table, gallery, CI, Vercel). Fresh review: 4 Important + 3 re-graded fixed test-first; 3 minors deferred (menu hover-on-focus look, row Tab stops, dark checkbox fill). PR #11 open | Stefan reviews Phase 1 → merge → Phase 2 Task 2.0 |
+| 2026-10-08 | 1 | Stefan approved; PR #11 squash-merged; #2 closed | Phase 2 Task 2.0 |
