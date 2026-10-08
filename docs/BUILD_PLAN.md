@@ -21,7 +21,7 @@ Update this block every time a session stops, even mid-phase.
 | **Current phase** | Phase 2: Components and data (◐ in progress) |
 | **Branch** | `phase-2-components-data` |
 | **Last completed** | Phase 1 approved and squash-merged (PR #11), production deploys from `main` (2026-10-08) |
-| **Next task** | Phase 2 Task 2.0: write `docs/plans/phase-2-components-data.md` |
+| **Next task** | Phase 2 Task 2.1 in [`docs/plans/phase-2-components-data.md`](plans/phase-2-components-data.md) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -90,7 +90,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 |---|---|---|---|---|---|---|
 | 0 | Setup | ☑ Merged | `main` | [#1](https://github.com/StefanNav/agent-control-plane/issues/1) | no PR (docs on `main`) | [phase-0-setup.md](plans/phase-0-setup.md) |
 | 1 | Foundation | ☑ Merged | `phase-1-foundation` | [#2](https://github.com/StefanNav/agent-control-plane/issues/2) | [#11](https://github.com/StefanNav/agent-control-plane/pull/11) | [phase-1-foundation.md](plans/phase-1-foundation.md) |
-| 2 | Components and data | ◐ In progress | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | – | to write (Task 2.0) |
+| 2 | Components and data | ◐ In progress | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | – | [phase-2-components-data.md](plans/phase-2-components-data.md) |
 | 3 | Command Board and inbox | ☐ Not started | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | – | to write (Task 3.0) |
 | 4 | Controls and audit | ☐ Not started | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | – | to write (Task 4.0) |
 | 5 | Onboarding and go-live | ☐ Not started | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | – | to write (Task 5.0) |
@@ -175,7 +175,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 
 **Goal:** The 10 Countersign product components and the whole mock data layer, with persona switching working.
 
-- [ ] 2.0 Write `docs/plans/phase-2-components-data.md`; commit
+- [x] 2.0 Write `docs/plans/phase-2-components-data.md`; commit
 - [ ] 2.1 Domain types `src/data/types.ts` (spec §6.1; settle field shapes by reading the frames; log choices)
 - [ ] 2.2 Clock and formatters `src/lib/clock.ts`, `src/lib/format.ts`: `DEMO_NOW`, `formatClock`, `formatDay`, `formatRelative` ("in 48 min", "Overdue 12 min"), `formatMs` (`09:38:04.512`); tests use frame values
 - [ ] 2.3 Seed `src/data/seed/*`: people, role assignments, 5 divisions, 41 agents (Medications fully detailed), activities, privileges, hard stops, grants, exceptions, actions, incidents; invariant tests (counts 6/20/8/4/3, referential integrity, unique IDs)
