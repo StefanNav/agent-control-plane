@@ -356,7 +356,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
 - People Lena (R5) and Omar's title. Discharge agents' `techOwnerId` becomes `lena`. Lena gets the discharge `techOwner` role, and Omar loses it.
 - Tiers: `riskTier` unchanged except where 8c says otherwise. `TIER` labels come from `TIER_RULES`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **Seed:**
     - `SEED_VERSION` is 6.
     - Every intake reserves a unique agent id and code. No reserved code collides with an existing agent's code, except a started intake's own agent.
@@ -379,12 +379,12 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - Duplicate Rx's privilege `active`
   - **Board:** `onBoard` is false for an `onboarding` agent. Baseline `selectDivisionSummaries` still totals 41 agents, with Culture Follow-up excluded.
   - **Inventory:** baseline drafts is one row: Culture Follow-up, "2 · Job description", waiting on "Marcus", "4 of 13". `counts.drafts` is 1.
-- [ ] **Step 2: Run** `pnpm test`. Expected: FAIL.
-- [ ] **Step 3: Implement.**
+- [x] **Step 2: Run** `pnpm test`. Expected: FAIL.
+- [x] **Step 3: Implement.**
   - Update every Phase 2–4 test that pinned the seed facts changed here (Medium → Moderate, the drafts count, Omar's discharge role), and ledger each.
   - The Drafts tab renders the new rows. Its visual check is in Task 5.3.
-- [ ] **Step 4: Run** `pnpm check`. Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(data): onboarding records, catalogue, rewind and seed v6"`.
+- [x] **Step 4: Run** `pnpm check`. Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(data): onboarding records, catalogue, rewind and seed v6"`.
 
 ### Task 5.2: Wizard shell, start from intake and name the humans (1a, 2a)
 
@@ -454,7 +454,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - `SCENARIO_IDS` gains it.
 - **Timeline module.** `MED_REC_TIMELINE` is the dated list of Med Rec's onboarding steps, each a call into `src/store/onboarding.ts` with the frame's actor and time. `medRecAt(stage)` replays the timeline up to `stage` on a rewound seed. Later tasks append their steps and stages.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **Store:**
     - In `onboarding-intake`, Dana with Marcus and Sam creates AGT-0123 `onboarding`. The record is v0.1, and `recordItems` is 3 of 13 (intake, purpose, domain).
     - Without Sam it's refused 'Choose a technical owner', and nothing changes.
@@ -470,10 +470,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - `/inventory/agents/nope/onboarding/job` and `/inventory/agents/med-rec/onboarding/nope` are NotFound.
     - In `onboarding-intake`, `/inventory/agents/med-rec/onboarding/job` shows the step locked with "Starts when Dana starts onboarding" (Review focus 4).
     - The board in this scenario lists no Med Rec Agent and no paused agents (Review focus 5).
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 1a and 2a: rail cell widths and marks, the carried-over table, the field heights (44), and the side card.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(onboarding): wizard shell and start from intake"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 1a and 2a: rail cell widths and marks, the carried-over table, the field heights (44), and the side card.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(onboarding): wizard shell and start from intake"`.
 
 ### Task 5.3: Job description (1b) and the Drafts tab (1i)
 
@@ -529,7 +529,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - 03 Oct 16:42 (acting for, targets 90 and 3), which is v0.4
   - now 2026-10-04T08:41, persona unchanged
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **Store:**
     - In `onboarding-at-5-of-7`, Marcus adds three escalation triggers and sets inaccuracy 2. The job is done on 04 Oct, the version is v0.5, and the audit entry is written.
     - Sam's `updateJob` is refused (Review focus 3). Jordan's is refused.
@@ -538,10 +538,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - **e2e:**
     - As Marcus in `onboarding-at-5-of-7`, `/inventory?tab=drafts` shows "Waiting on me · 1" and the Med Rec row "Escalation triggers, inaccuracy target". Continue lands on `/onboarding/job?field=escalation`, with "Welcome back, Marcus" and the escalation input focused.
     - Add "Patient on dialysis" from the chips, then type 2 in Inaccurate lines. The side panel shows "Job description · 7 of 7".
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 1b (field blocks, chips, criteria table, side checklist) and 1i (with the at-5-of-7 scenario; compare the Med Rec row).
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(onboarding): job description and drafts"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 1b (field blocks, chips, criteria table, side checklist) and 1i (with the at-5-of-7 scenario; compare the Med Rec row).
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(onboarding): job description and drafts"`.
 
 ### Task 5.4: Systems and verbs (1c)
 
@@ -585,17 +585,17 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - grants with reasons for Epic r/d, worklist r/w and Pyxis r, plus Teams w without a reason, at 05 Oct 11:08 (v0.6)
   - now 2026-10-05T11:09
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **Store:**
     - Granting `Epic·sign` is refused with the ORG-POL-02 reason, and nothing changes.
     - In `onboarding-systems`, setting the Teams reason makes systems done on 05 Oct; the version is v0.7; Sam has the "Tools: hard stops to test" item.
     - A reason on an ungranted cell is refused.
   - **Progress:** `reachLine` on Med Rec's grants is exactly 1c's two lines.
   - **e2e:** as Marcus in `onboarding-systems`, the Teams row shows "new". Choosing the Escalation reason turns the side panel to "Systems and verbs · done", and the rail to "Marcus · done 05 Oct".
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 1c.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(onboarding): systems and verbs"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 1c.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(onboarding): systems and verbs"`.
 
 ### Task 5.5: Tools and hard stops (1d), send to the sponsor
 
@@ -648,7 +648,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - the version pinned to 9 (R8)
   - now 2026-10-06T14:21
 
-- [ ] **Step 1: Failing tests (Review focus 2)**
+- [x] **Step 1: Failing tests (Review focus 2)**
   - **Store:**
     - In `onboarding-systems`, `sendToSponsor` as Sam is refused '4 items left'.
     - In `onboarding-tools-tested`, Sam sends. The sponsor state is waiting, Priya has the "Review: final set" item with a link to the approval step, and Sam's tools item is resolved.
@@ -657,10 +657,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - Testing an unknown code is refused.
   - **Limits:** adding the never item "Discharge a patient" to Culture Follow-up adds an HS-12 plain-language limit; removing it removes the limit.
   - **e2e:** as Sam in `onboarding-tools-tested`, "Send to Priya for approval" leads to the rail showing "Priya · waiting since 06 Oct". Switching to Priya, the inbox has "Review: final set", and its button opens the approval step.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 1d.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(onboarding): tools, hard stops and send to sponsor"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 1d.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(onboarding): tools, hard stops and send to sponsor"`.
 
 ### Task 5.6: Sponsor approval, request changes and the return loop (1e, 1f, 1g)
 
@@ -726,7 +726,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - `onboarding-sponsor-review`: Sam sent at 06 Oct 15:10; now 2026-10-07T09:05.
   - `onboarding-returned-hs11`: Priya requested changes at 07 Oct 09:14 with 1f's note; savedAt pinned to 09:31; now 2026-10-07T09:31.
 
-- [ ] **Step 1: Failing tests (Review focus 1, 2, 3)**
+- [x] **Step 1: Failing tests (Review focus 1, 2, 3)**
   - **Store:**
     - In `onboarding-sponsor-review`, Priya requests changes on HS-11 to Sam. HS-11 is reopened, `recordItems` is 11 of 13, Sam has "Returned: HS-11", and Priya's item is resolved.
     - Sam re-tests with the 8 East cases ("0 of 212") and sends again. Priya approves: the record is v1.0 and frozen, the lifecycle `inReview`, PRV-0142 v1 Shadow awaiting, and Dana has "Review: risk tier".
@@ -739,10 +739,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - type the note → Send back to Sam
     - as Sam: "Priya sent this back", Run test, then "Would have blocked 0 of 212" → Send to Priya again
     - as Priya: Approve and sign; the URL goes to `/onboarding/review`
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 1e, 1f and 1g.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(onboarding): sponsor approval and the return loop"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 1e, 1f and 1g.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(onboarding): sponsor approval and the return loop"`.
 
 ### Task 5.7: Ready for review (1h)
 
@@ -768,13 +768,13 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - Once the review moves on (a tier is set, a decision is made), the chip follows the AIMS Review step. The page itself stays the onboarding record.
 - **Scenario `onboarding-ready`:** HS-11 re-tested at 07 Oct 10:40, resent at 10:45, Priya approves at 16:02; now 2026-10-07T16:05.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **Selector:** `selectReviewStep(onboarding-ready)` has covers "Job, reach, 5 tools, 3 hard stops" and the rounds note text.
   - **e2e:** in `onboarding-ready` as Priya, `/onboarding/review` shows "Ready for review", "AGT-0123 v1.0" and "Onboarding · 13 of 13". Editing inputs aren't present on `/onboarding/job` (read only).
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 1h.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(onboarding): ready for review"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 1h.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(onboarding): ready for review"`.
 
 ### Task 5.8: Agent record and risk tier (2b; 2d's shell)
 
@@ -826,7 +826,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - 8c's Committee line comes from the record's decision ("Approved with C1–C3 · 14 Oct"), "—" otherwise.
 - **Scenario `review-risk-tier`:** `medRecAt('risk-tier')`, now 2026-10-13T10:15.
 
-- [ ] **Step 1: Failing tests (Review focus 2, 3)**
+- [x] **Step 1: Failing tests (Review focus 2, 3)**
   - **Selectors:** in `review-risk-tier`, `riskFactors` gives effects `['Raises', 'Held down', 'Lowers', 'Lowers', 'Neutral']` and suggested 2.
   - **Store:**
     - Dana sets Tier 3 with 2b's reason. `agent.riskTier` is 3, `packetAt` is set, and Dr. Lee has "Review: your decision" due 14 Oct 17:00.
@@ -839,10 +839,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - As Dana in `review-risk-tier`, choose Tier 3. The reason field appears, and the button reads "Set Tier 3 and build the packet". Fill it and set: the rail shows "Dana · 13 Oct" twice.
     - `/inventory/agents/claim-scrubber` shows the composed record.
     - `/inventory/agents/nope` is NotFound.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 2b.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(review): agent record and risk tier"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 2b.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(review): agent record and risk tier"`.
 
 ### Task 5.9: Committee packet and decision logged (2c, 2d)
 
@@ -895,7 +895,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - `review-committee`: Dana set Tier 3 at 13 Oct 10:20; now 2026-10-14T16:12.
   - `review-decided`: Dr. Lee decided at 16:20 with C1–C3 and 2c's reason ("5 of 7 board members present"); now 2026-10-14T16:25.
 
-- [ ] **Step 1: Failing tests (Review focus 2, 3, 4)**
+- [x] **Step 1: Failing tests (Review focus 2, 3, 4)**
   - **Store:**
     - In `review-committee`, Dr. Lee approves with C1–C3. Med Rec is `live` at Shadow from 15 Oct, PRV-0142 v2 is active with `['C1','C2','C3']` and its domain ends "excluding dialysis (C3)", PRV-0143 v2 has `['C1','C3']`, grants and hard stops exist, and the item is resolved.
     - With conditions [] and kind `approveWithConditions`, it's refused.
@@ -907,10 +907,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - As Dr. Lee in `review-committee`, `/portfolio/reviews/med-rec` shows "Review: your decision". Choose "Approve with conditions" and type the reason, then Record decision. The record page shows "Approved with conditions" and "Shadow from 15 Oct".
     - `/portfolio/reviews/nope` is NotFound.
     - At baseline, Dr. Lee's landing shows the decided packet, read only.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 2c and 2d.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(review): committee packet and decision"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 2c and 2d.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(review): committee packet and decision"`.
 
 ### Task 5.10: Shadow scorecard and sample case (3a, 3b)
 
@@ -989,7 +989,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - ACT-61840 kept
   - now 2026-11-05T09:30
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **Selectors:** in `shadow-day-21`, `selectScorecard` gives the statuses `['Met', 'Met', 'Below target']`, the causes total 29 ("Inaccurate lines by cause · 29 lines"), `shadowDay` "day 21 of 21", and case 4105's agreement "71 %".
   - **Store:**
     - Marcus `requestGoLive('med-rec-admission')` drafts PRV-0142 v3 (proposed Draft), and Priya has "Review: your signature".
@@ -1002,10 +1002,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - Back on the scorecard, "Ask Priya to sign" turns the panel to "Requested · waiting for Priya".
     - `/operations/agents/med-rec/cases/nope` is NotFound.
     - At baseline, the allergy activity shows "day 55 · 21-day minimum met" and Ask Priya to sign.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 3a and 3b.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(golive): shadow scorecard and sample case"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 3a and 3b.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(golive): shadow scorecard and sample case"`.
 
 ### Task 5.11: Sign the privilege (3c) and My privileges (3d)
 
@@ -1083,7 +1083,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - now 2026-11-06T09:52
   - Update the Phase 2 scenario test and ledger it.
 
-- [ ] **Step 1: Failing tests (Review focus 2, 3, 4)**
+- [x] **Step 1: Failing tests (Review focus 2, 3, 4)**
   - **Store:**
     - In `awaiting-signature`, Priya signs PRV-0142 with a reason and acceptance. It's active at Draft, with review date 2027-02-05, "Review: your signature" resolved, and Med Rec's level Draft.
     - Without a reason, it's refused.
@@ -1098,14 +1098,14 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - As Priya in `awaiting-signature`, `/inventory/privileges/prv-0142/sign` shows "in 91 days". Sign is locked; add the reason and tick, then Sign and move to Draft. The page shows "Signed by Priya".
     - `/inventory/privileges/nope/sign` is NotFound.
     - At baseline as Priya, `/portfolio/privileges` → "Review now" → "Renew for 90 days" → the overdue notice is gone.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 3c and 3d.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(golive): sign the privilege and my privileges"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 3c and 3d.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(golive): sign the privilege and my privileges"`.
 
 ### Task 5.12: Journey test and checkpoint
 
-- [ ] **Step 1: e2e journey** (`tests/e2e/journeys.spec.ts`), "intake to signed privilege":
+- [x] **Step 1: e2e journey** (`tests/e2e/journeys.spec.ts`), "intake to signed privilege":
   1. **Dana**, `?scenario=onboarding-intake`: choose Sam → Start onboarding.
   2. **Marcus**, filling the job description:
      - two activities
@@ -1120,8 +1120,8 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   7. **The time skip:** shadow takes 21 days, so the test loads `?scenario=shadow-day-21`, as the Phase 8 story will.
   8. **Marcus:** Ask Priya to sign.
   9. **Priya:** sign with a reason. My privileges shows Med Rec Agent at Draft, "In 91 days".
-- [ ] **Step 2:** `pnpm check` and `pnpm e2e` green.
-- [ ] **Step 3: Checkpoint** per the BUILD_PLAN protocol:
+- [x] **Step 2:** `pnpm check` and `pnpm e2e` green.
+- [x] **Step 3: Checkpoint** per the BUILD_PLAN protocol:
   - Push, then open the PR "Phase 5: Onboarding and go-live" with `Closes #6`.
   - Run the fresh whole-branch review and apply its fixes test-first.
   - Visual QA of 1a–1i, 2a–2d and 3a–3d against their scenarios; tick them in the frame tracker.
