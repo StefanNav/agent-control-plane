@@ -1,4 +1,4 @@
-import { BOARD_MEETINGS, HARD_STOP_LIBRARY, RETEST_CASES, TIER_RULES } from '../data/seed/catalogue'
+import { BOARD_MEETINGS, HARD_STOP_LIBRARY, resolveConditions, RETEST_CASES, TIER_RULES } from '../data/seed/catalogue'
 import { agentFromIntake } from '../data/seed/onboarding'
 import type { AgentException, Condition, DemoState, GrantCell, JobDraft, Limit, LimitTest, Onboarding, ReviewDecision, Tier, Verb } from '../data/types'
 import { addDays, formatDate, tomorrowAt } from '../lib/clock'
@@ -322,7 +322,7 @@ export function applySponsorSign(s: DemoState, agentId: string, by: string, at: 
   record.review = {
     suggestedTier: suggested,
     meeting,
-    proposedConditions: template.conditions,
+    proposedConditions: resolveConditions(template.conditions, record.job.activities.map((a) => a.id)),
     shadowDays: Math.max(TIER_RULES[suggested].shadowDays, intakeShadowDays(intake?.condition?.text)),
   }
   resolveItems(s, agentId, 'Review: final set', by, at, 'Approved and signed')

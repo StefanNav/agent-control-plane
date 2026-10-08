@@ -1038,3 +1038,13 @@ describe('raiseOverdueReviews (3d: "one review overdue raises an exception")', (
     expect(s.exceptions).toHaveLength(count + 1)
   })
 })
+
+test('conditions bind to the job’s own activities, whatever ids they were given (C2 → the first activity)', async () => {
+  const { resolveConditions, JOB_TEMPLATES } = await import('../data/seed/catalogue')
+  const resolved = resolveConditions(JOB_TEMPLATES['req-0093']!.conditions, ['med-rec-a1', 'med-rec-a2'])
+  expect(resolved.map((c) => [c.id, c.activityIds])).toEqual([
+    ['C1', []],
+    ['C2', ['med-rec-a1']],
+    ['C3', []],
+  ])
+})

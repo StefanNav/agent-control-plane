@@ -1,5 +1,5 @@
 import type { Agent, IntakeRequest, Onboarding } from '../types'
-import { JOB_TEMPLATES } from './catalogue'
+import { JOB_TEMPLATES, resolveConditions } from './catalogue'
 
 /** Approved intakes. Approval reserves the agent's id and code; REQ-0093 and REQ-0099 have started. */
 export const intakeRequests: IntakeRequest[] = [
@@ -97,6 +97,9 @@ export function agentFromIntake(intake: IntakeRequest, people: { ownerId: string
     gateway: 'gw-east-2',
   }
 }
+
+/** Med Rec's proposed conditions, bound to its two activities. */
+const MED_REC_CONDITIONS = resolveConditions(JOB_TEMPLATES['req-0093']!.conditions, ['med-rec-admission', 'med-rec-allergy'])
 
 const HS11_NOTE = 'HS-11 shows 0 blocks. Before I sign, please test it on September’s 8 East transfers. That’s where a wrong-patient draft would happen.'
 
@@ -198,10 +201,10 @@ const medRecRecord: Onboarding = {
     packetAt: '2026-10-13T10:20:00',
     meeting: '2026-10-14T15:00:00',
     agendaItem: { item: 3, of: 5 },
-    proposedConditions: JOB_TEMPLATES['req-0093']!.conditions,
+    proposedConditions: MED_REC_CONDITIONS,
     decision: {
       kind: 'approveWithConditions',
-      conditions: JOB_TEMPLATES['req-0093']!.conditions,
+      conditions: MED_REC_CONDITIONS,
       reason: 'Clear limits and good hard-stop evidence. The conditions keep a pharmacist on every draft and keep dialysis patients out while renal dosing is unsettled.',
       by: 'drlee',
       at: '2026-10-14T16:20:00',

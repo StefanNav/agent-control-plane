@@ -1,6 +1,5 @@
 import { applyDecision, applyGoLiveRequest, applyJobEdit, applyRequestChanges, applySend, applySetTier, applySponsorSign, applyStart, applySystemsEdit, applyTest } from '../../store/onboarding'
 import { createSeed } from '../seed'
-import { JOB_TEMPLATES } from '../seed/catalogue'
 import type { DemoState, Verb } from '../types'
 import { dropAgents, rewindTo } from './rewind'
 
@@ -99,7 +98,7 @@ const TIMELINE: Step[] = [
   // 2c → 2d: Dr. Lee approves with C1–C3 at 16:20.
   {
     stage: 'decided',
-    run: (s) => applyDecision(s, 'med-rec', { kind: 'approveWithConditions', conditions: JOB_TEMPLATES['req-0093']!.conditions, reason: DECISION_REASON }, 'drlee', '2026-10-14T16:20:00'),
+    run: (s) => applyDecision(s, 'med-rec', { kind: 'approveWithConditions', conditions: s.onboardings.find((r) => r.agentId === 'med-rec')!.review!.proposedConditions, reason: DECISION_REASON }, 'drlee', '2026-10-14T16:20:00'),
   },
   // 2d → 3a: 21 days of shadow, 15 Oct to 04 Nov; Marcus compared 12 cases.
   { stage: 'shadow-day-21', run: (s) => shadowEvidence(s) },

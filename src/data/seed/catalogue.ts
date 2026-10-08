@@ -35,30 +35,39 @@ export interface JobTemplate {
   conditions: Condition[]
 }
 
+/**
+ * Proposed conditions name activities by position ("@1" = the job's first activity) because the job
+ * is written after the template; `resolveConditions` turns them into the job's ids. Empty = every activity.
+ */
 const MED_REC_CONDITIONS: Condition[] = [
   {
     id: 'C1',
     text: 'A pharmacist signs every draft; nothing is released automatically',
     appliesTo: 'Every activity at Draft and above',
-    activityIds: ['med-rec-admission', 'med-rec-allergy'],
+    activityIds: [],
     checkedBy: 'Gateway · enforced',
   },
   {
     id: 'C2',
     text: 'Weekly edit-rate report to Priya for the first 4 weeks at Draft',
     appliesTo: 'Reconcile home medications',
-    activityIds: ['med-rec-admission'],
+    activityIds: ['@1'],
     checkedBy: 'Priya · weekly',
   },
   {
     id: 'C3',
     text: 'Exclude patients on dialysis until Renal Dosing Agent is back within scope',
     appliesTo: 'Both activities',
-    activityIds: ['med-rec-admission', 'med-rec-allergy'],
+    activityIds: [],
     checkedBy: 'Gateway · patient filter',
     domainNote: 'excluding dialysis (C3)',
   },
 ]
+
+/** Turn "@n" activity references into the job's own activity ids. */
+export function resolveConditions(conditions: Condition[], activityIds: string[]): Condition[] {
+  return conditions.map((c) => ({ ...c, activityIds: c.activityIds.flatMap((id) => (id.startsWith('@') ? (activityIds[Number(id.slice(1)) - 1] ?? []) : [id])) }))
+}
 
 /** The standing condition for any agent that drafts for a clinician; no activity ids = every activity. */
 const PHARMACIST_SIGNS: Condition = {
