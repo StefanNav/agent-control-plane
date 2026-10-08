@@ -8,7 +8,7 @@ import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mu
 import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, signMode, testResult, type SystemsChange } from './onboarding'
 import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems, shadowProgress } from './onboardingRules'
 import { can, lockReason } from './permissions'
-import { applyDivisionSettings, applyReturnToShadow, diffDivision, type DivisionPatch } from './settings'
+import { applyCreateDivision, applyDivisionSettings, applyReturnToShadow, diffDivision, divisionSlug, type DivisionPatch, type NewDivisionInput } from './settings'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
 
@@ -75,6 +75,8 @@ export interface DemoActions {
   buildExport: (input: { agentIds: string[]; from: string; to: string; format: 'packet' | 'csv'; masked: boolean }) => ActionResult
   /** Who answers for a division, what a lapsed review does, who unanswered items reach (8a). Program lead only. */
   updateDivisionSettings: (divisionId: string, patch: DivisionPatch) => ActionResult
+  /** A new division, or a split of `from` with the agents that move (8a, composed). Program lead only. */
+  createDivision: (input: NewDivisionInput, from?: string) => ActionResult
   /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
   startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
   /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
@@ -566,6 +568,25 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Changed division settings', target: division.name, reason: changes.join(' · ') },
               mutate: (draft) => {
                 applyDivisionSettings(draft, divisionId, patch, draft.personaId, draft.now)
+              },
+            })
+          },
+          createDivision: (input, from) => {
+            const s = get()
+            const name = input.name.trim()
+            const parent = from ? s.divisions.find((d) => d.id === from) : undefined
+            if (from && !parent) return { ok: false, reason: 'Division not found' }
+            if (!name) return { ok: false, reason: 'Name the division' }
+            if (s.divisions.some((d) => d.name.toLowerCase() === name.toLowerCase() || d.id === divisionSlug(name))) return { ok: false, reason: 'A division with that name exists' }
+            if (!s.people.some((p) => p.id === input.ownerId)) return { ok: false, reason: 'Choose an owner' }
+            if (!s.people.some((p) => p.id === input.sponsorId)) return { ok: false, reason: 'Choose a clinical sponsor' }
+            if (parent && !input.agentIds.length) return { ok: false, reason: 'Choose the agents to move' }
+            if (input.agentIds.some((id) => s.agents.find((a) => a.id === id)?.divisionId !== parent?.id)) return { ok: false, reason: 'Only agents in this division can move' }
+            return act({
+              action: 'manageDivisions',
+              audit: { action: 'Created division', target: name, ...(parent ? { reason: `Split from ${parent.name} · ${input.agentIds.length} ${input.agentIds.length === 1 ? 'agent' : 'agents'}` } : {}) },
+              mutate: (draft) => {
+                applyCreateDivision(draft, { ...input, name }, from ?? null, draft.personaId, draft.now)
               },
             })
           },

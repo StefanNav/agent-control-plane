@@ -1,5 +1,5 @@
 import type { DemoState, Division, Privilege, Role } from '../data/types'
-import { addDays, formatDate } from '../lib/clock'
+import { addDays, addMinutes, formatDate } from '../lib/clock'
 import { applyPause, nextVersion } from './mutations'
 import { personName } from './onboardingRules'
 
@@ -138,4 +138,65 @@ export function applyDivisionSettings(s: DemoState, divisionId: string, patch: D
     to: [d.sponsorId, ...(oldSponsor !== d.sponsorId ? [oldSponsor] : [])],
   })
   return applyLapses(s)
+}
+
+export interface NewDivisionInput {
+  name: string
+  ownerId: string
+  sponsorId: string
+  /** For a split: the agents that move from the parent division. */
+  agentIds: string[]
+}
+
+/** A division's id from its name: "Medications · surgical" → "medications-surgical". */
+export const divisionSlug = (name: string) =>
+  name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
+function grant(s: DemoState, personId: string, divisionId: string, role: Role, at: string) {
+  if (!s.roles.some((r) => r.personId === personId && r.divisionId === divisionId && r.role === role)) s.roles.push({ personId, divisionId, role, since: at })
+}
+
+/**
+ * A new division, or a split of `from` (R6, 8a "New division" / "Split this division"): it takes the
+ * parent's lapse policy, an escalation chain of {sponsor, program lead, 4 h}, and roles for the people
+ * who answer for it. Moved agents change owner, and their open items follow.
+ */
+export function applyCreateDivision(s: DemoState, input: NewDivisionInput, from: string | null, by: string, at: string): DemoState {
+  const parent = s.divisions.find((d) => d.id === from) ?? s.divisions.find((d) => d.id === 'medications')!
+  const id = divisionSlug(input.name)
+  const lead = s.roles.find((r) => r.role === 'programLead')?.personId ?? by
+  s.divisions.push({
+    id,
+    name: input.name.trim(),
+    ownerId: input.ownerId,
+    sponsorId: input.sponsorId,
+    lapsePolicy: parent.lapsePolicy,
+    graceDays: parent.graceDays,
+    escalation: { first: input.sponsorId, then: lead, afterHours: 4 },
+    monitor: { state: 'live', lastAt: addMinutes(at, -1) },
+    exceptionsByDay: [0, 0, 0, 0, 0, 0, 0],
+    resumeNeeds: [personName(s, input.ownerId), personName(s, input.sponsorId)],
+  })
+  grant(s, input.ownerId, id, 'owner', at)
+  grant(s, input.sponsorId, id, 'sponsor', at)
+  const moved = s.agents.filter((a) => input.agentIds.includes(a.id))
+  for (const techOwner of new Set(moved.map((a) => a.techOwnerId))) grant(s, techOwner, id, 'techOwner', at)
+  if (from) for (const r of s.roles.filter((x) => x.divisionId === from && x.role === 'frontline')) grant(s, r.personId, id, 'frontline', at)
+  for (const agent of moved) {
+    const oldOwner = agent.ownerId
+    Object.assign(agent, { divisionId: id, ownerId: input.ownerId, sponsorId: input.sponsorId })
+    for (const e of s.exceptions) {
+      if (e.agentId !== agent.id || e.ownerId !== oldOwner || e.state === 'resolved' || e.state === 'dismissed') continue
+      e.ownerId = input.ownerId
+      e.copied = [...e.copied.filter((p) => p !== input.ownerId), ...(e.copied.includes(oldOwner) ? [] : [oldOwner])]
+    }
+  }
+  s.logEvents.push({
+    id: `log-division-${s.logEvents.length + 1}`,
+    at,
+    text: `${personName(s, by)} created ${input.name.trim()}`,
+    sub: from ? `Split from ${parent.name} · ${moved.length} ${moved.length === 1 ? 'agent' : 'agents'}` : 'New division',
+    to: [input.sponsorId, input.ownerId],
+  })
+  return s
 }

@@ -2,7 +2,7 @@ import { createSeed } from '../data/seed'
 import type { DemoState } from '../data/types'
 import { createDemoStore, dataOf } from './index'
 import { can } from './permissions'
-import { applyDivisionSettings, applyLapses, diffDivision, lapseDate } from './settings'
+import { applyCreateDivision, applyDivisionSettings, applyLapses, diffDivision, lapseDate } from './settings'
 import { createMemoryStorage } from './storage'
 
 const AT = '2026-12-08T09:52:00'
@@ -114,5 +114,48 @@ describe('a lapsed privilege can be re-signed', () => {
     const s = store.getState()
     expect(prv0098(s).state).toBe('active')
     expect(dupRx(s).level).toBe('draft')
+  })
+})
+
+describe('a new division, or a split (R6)', () => {
+  const MOVE = ['tpn-draft', 'warfarin-check', 'infusion-rate']
+
+  test('splitting Medications moves three agents to Elena, with roles that follow', () => {
+    const s = applyCreateDivision(createSeed(), { name: 'Medications · surgical', ownerId: 'elena', sponsorId: 'priya', agentIds: MOVE }, 'medications', 'dana', AT)
+    expect(s.divisions).toHaveLength(6)
+    const d = s.divisions.at(-1)!
+    expect(d).toMatchObject({ id: 'medications-surgical', name: 'Medications · surgical', ownerId: 'elena', sponsorId: 'priya', lapsePolicy: 'shadow', graceDays: 14, escalation: { first: 'priya', then: 'dana', afterHours: 4 } })
+    expect(d.monitor.state).toBe('live')
+    expect(d.exceptionsByDay).toEqual([0, 0, 0, 0, 0, 0, 0])
+    for (const id of MOVE) expect(s.agents.find((a) => a.id === id)).toMatchObject({ divisionId: d.id, ownerId: 'elena' })
+    expect(s.roles).toContainEqual(expect.objectContaining({ personId: 'elena', divisionId: d.id, role: 'owner' }))
+    expect(s.roles).toContainEqual(expect.objectContaining({ personId: 'priya', divisionId: d.id, role: 'sponsor' }))
+    expect(s.roles).toContainEqual(expect.objectContaining({ personId: 'sam', divisionId: d.id, role: 'techOwner' }))
+    expect(s.roles).toContainEqual(expect.objectContaining({ personId: 'ana', divisionId: d.id, role: 'frontline' }))
+    expect(can(s, 'sam', 'revokeTool', { agentId: 'tpn-draft' })).toBe(true)
+    expect(can(s, 'elena', 'pause', { agentId: 'tpn-draft' })).toBe(true)
+    expect(can(s, 'marcus', 'pause', { agentId: 'tpn-draft' })).toBe(false)
+  })
+
+  test('a new division without agents is created empty', () => {
+    const s = applyCreateDivision(createSeed(), { name: 'Oncology', ownerId: 'tom', sponsorId: 'nina', agentIds: [] }, null, 'dana', AT)
+    expect(s.divisions.at(-1)).toMatchObject({ id: 'oncology', ownerId: 'tom', lapsePolicy: 'shadow' })
+    expect(s.agents.filter((a) => a.divisionId === 'oncology')).toHaveLength(0)
+  })
+
+  test('createDivision refuses a split with no agents, a used name, or no owner; Marcus may not', () => {
+    const store = fresh()
+    store.getState().setPersona('dana')
+    const before = dataOf(store.getState())
+    expect(store.getState().createDivision({ name: 'Surgical', ownerId: 'elena', sponsorId: 'priya', agentIds: [] }, 'medications')).toEqual({ ok: false, reason: 'Choose the agents to move' })
+    expect(store.getState().createDivision({ name: 'Discharge', ownerId: 'elena', sponsorId: 'priya', agentIds: [] })).toEqual({ ok: false, reason: 'A division with that name exists' })
+    expect(store.getState().createDivision({ name: ' ', ownerId: 'elena', sponsorId: 'priya', agentIds: [] })).toEqual({ ok: false, reason: 'Name the division' })
+    expect(store.getState().createDivision({ name: 'Surgical', ownerId: '', sponsorId: 'priya', agentIds: [] })).toEqual({ ok: false, reason: 'Choose an owner' })
+    store.getState().setPersona('marcus')
+    expect(store.getState().createDivision({ name: 'Surgical', ownerId: 'elena', sponsorId: 'priya', agentIds: MOVE }, 'medications').ok).toBe(false)
+    expect(dataOf(store.getState())).toEqual({ ...before, personaId: 'marcus' })
+    store.getState().setPersona('dana')
+    expect(store.getState().createDivision({ name: 'Surgical', ownerId: 'elena', sponsorId: 'priya', agentIds: MOVE }, 'medications')).toEqual({ ok: true })
+    expect(store.getState().audit.at(-1)).toMatchObject({ action: 'Created division', target: 'Surgical', reason: 'Split from Medications · 3 agents' })
   })
 })

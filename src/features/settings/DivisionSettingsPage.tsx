@@ -7,6 +7,7 @@ import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { useDemo } from '../../store'
 import { lockReason } from '../../store/permissions'
 import type { DivisionPatch } from '../../store/settings'
+import { NewDivisionModal } from './NewDivisionModal'
 import { GRACE_OPTIONS, LAPSE_OPTIONS, selectDivisionAgents, selectDivisionSettings } from './selectors'
 import styles from './settings.module.css'
 
@@ -18,7 +19,7 @@ export function DivisionSettingsPage() {
 }
 
 function DivisionSettings({ divisionId }: { divisionId: string }) {
-  const [params] = useSearchParams()
+  const [params, setParams] = useSearchParams()
   const state = useDemo((s) => s)
   const update = useDemo((s) => s.updateDivisionSettings)
   const [draft, setDraft] = useState<DivisionPatch>({})
@@ -36,6 +37,17 @@ function DivisionSettings({ divisionId }: { divisionId: string }) {
     else setError(result.reason)
   }
   const locked = view.editable ? null : lockReason('manageDivisions', state.personaId)
+  // ?split=1 opens the split modal (2a's "Suggest a split" lands here); ?new=1 a new, empty division.
+  const modal = !view.editable ? null : params.get('split') === '1' ? 'split' : params.get('new') === '1' ? 'new' : null
+  const closeModal = () =>
+    setParams(
+      (p) => {
+        p.delete('split')
+        p.delete('new')
+        return p
+      },
+      { replace: true },
+    )
 
   return (
     <>
@@ -59,6 +71,13 @@ function DivisionSettings({ divisionId }: { divisionId: string }) {
                 <span className={styles.divisionSub}>{d.sub}</span>
               </Link>
             ))}
+            <div className={styles.listFoot}>
+              {locked ? (
+                <Button locked={locked}>New division</Button>
+              ) : (
+                <Button onClick={() => setParams({ new: '1' })}>New division</Button>
+              )}
+            </div>
           </nav>
 
           <section className={styles.card} aria-label={`${view.title} settings`}>
@@ -168,6 +187,7 @@ function DivisionSettings({ divisionId }: { divisionId: string }) {
           </section>
         </div>
       )}
+      {modal ? <NewDivisionModal from={modal === 'split' ? divisionId : null} onClose={closeModal} /> : null}
     </>
   )
 }

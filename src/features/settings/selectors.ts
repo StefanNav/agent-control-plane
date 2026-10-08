@@ -140,3 +140,31 @@ export function selectDivisionAgents(s: DemoState, divisionId: string) {
     tier: `Tier ${a.riskTier} · ${TIER_RULES[a.riskTier].label}`,
   }))
 }
+
+/** The "New division" / "Split <division>" modal (8a, composed): agents to move and both owners' spans. */
+export function selectNewDivision(s: DemoState, from: string | null, draft: { ownerId: string; agentIds: string[] }) {
+  const parent = from ? s.divisions.find((d) => d.id === from) : undefined
+  const count = (id: string) => s.activities.filter((a) => a.agentId === id).length
+  const agents = parent
+    ? agentsIn(s, parent.id)
+        .map((a) => ({ id: a.id, name: a.name, activities: count(a.id), checked: draft.agentIds.includes(a.id) }))
+        .sort((a, b) => b.activities - a.activities)
+    : []
+  const moving = agents.filter((a) => a.checked).reduce((n, a) => n + a.activities, 0)
+  const holders = (role: 'owner' | 'sponsor') =>
+    [...new Set(s.roles.filter((r) => r.role === role).map((r) => r.personId))]
+      .sort((a, b) => personName(s, a).localeCompare(personName(s, b)))
+      .map((id) => ({ value: id, label: personName(s, id) }))
+  const picked = agents.filter((a) => a.checked).length
+  return {
+    title: parent ? `Split ${parent.name}` : 'New division',
+    agents,
+    ownerOptions: holders('owner'),
+    sponsorOptions: holders('sponsor'),
+    defaultSponsor: parent?.sponsorId ?? '',
+    line: parent
+      ? `${personName(s, parent.ownerId)} keeps ${spanOf(s, parent.ownerId) - moving} activities${draft.ownerId ? ` · ${personName(s, draft.ownerId)} takes ${moving}` : ''}`
+      : null,
+    button: parent ? `Create division and move ${picked} ${picked === 1 ? 'agent' : 'agents'}` : 'Create division',
+  }
+}

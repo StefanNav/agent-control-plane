@@ -1,5 +1,5 @@
 import { createSeed } from '../../data/seed'
-import { selectDivisionSettings } from './selectors'
+import { selectDivisionSettings, selectNewDivision } from './selectors'
 
 test('8a reads from data: counts, span and the lapse preview for the seed policy', () => {
   const view = selectDivisionSettings(createSeed(), 'medications', {}, 'dana')!
@@ -44,4 +44,14 @@ test('a division with nothing overdue names its next review; others read only', 
 
 test('an unknown division has no settings', () => {
   expect(selectDivisionSettings(createSeed(), 'nope', {}, 'dana')).toBeNull()
+})
+
+test('the split modal lists the division’s agents, most activities first, and counts both spans', () => {
+  const view = selectNewDivision(createSeed(), 'medications', { ownerId: 'elena', agentIds: ['tpn-draft', 'warfarin-check'] })
+  expect(view.title).toBe('Split Medications')
+  expect(view.agents[0]).toMatchObject({ id: 'med-rec', name: 'Med Rec Agent', activities: 2 })
+  expect(view.agents.filter((a) => a.checked).map((a) => a.id)).toEqual(['tpn-draft', 'warfarin-check'])
+  expect(view.line).toBe('Marcus keeps 20 activities · Elena takes 2')
+  expect(view.button).toBe('Create division and move 2 agents')
+  expect(selectNewDivision(createSeed(), null, { ownerId: 'elena', agentIds: [] })).toMatchObject({ title: 'New division', agents: [], line: null, button: 'Create division' })
 })

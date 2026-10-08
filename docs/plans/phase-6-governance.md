@@ -351,7 +351,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - `?tab=agents` renders `AgentsTab`, a read-only table (Agent, Level, Owner, Technical owner, Tier) whose rows link to `/inventory/agents/:id` (R19).
   - The "People and roles" tab links to `/settings/people`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **`clock.test.ts`:**
     - `advanceClock(seed, '2026-12-15T09:52:00')` sets PRV-0098 to `lapsed` and Duplicate Rx's activity to Shadow. A second `advanceClock` to 17 Dec changes nothing more.
     - Advancing to 14 Dec 23:59 leaves it `due`.
@@ -378,10 +378,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - As Dana, `/settings/divisions/medications`: choose "Back to Shadow at once" → the footer reads "1 change · logged as Dana · Priya told" → Save. `/operations/divisions/medications` shows Duplicate Rx at Shadow.
     - As Jordan, the same page has Save `aria-disabled`.
     - `/settings/divisions/nope` shows Not found.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 8a. Bump `SEED_VERSION` to 7. Update every `lapsePolicy` reader (`MyPrivilegesPage`, `board/selectors.ts`, `golive/selectors.ts`) for `shadowNow`.
-- [ ] **Step 4: Run.** Expected: PASS, and `pnpm check` green.
-- [ ] **Step 5: Commit** with `git commit -m "feat(settings): division settings, lapse policy and escalation chain"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 8a. Bump `SEED_VERSION` to 7. Update every `lapsePolicy` reader (`MyPrivilegesPage`, `board/selectors.ts`, `golive/selectors.ts`) for `shadowNow`.
+- [x] **Step 4: Run.** Expected: PASS, and `pnpm check` green.
+- [x] **Step 5: Commit** with `git commit -m "feat(settings): division settings, lapse policy and escalation chain"`.
 
 ### Task 6.2: New division and split (8a, composed)
 
@@ -413,7 +413,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - Focus and keyboard follow `Modal`'s rules.
   - "Suggest a split" on 2a (Phase 5) lands on 8a. `?split=1` opens the modal.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **`settings.test.ts`:**
     - **The split:** `applyCreateDivision({ name: 'Medications · surgical', ownerId: 'elena', sponsorId: 'priya', agentIds: [3 ids] }, 'medications')`:
       - makes 6 divisions
@@ -423,10 +423,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - **Refusals:** an empty agent list in split mode, and a duplicate name, are refused with state unchanged.
   - **Selector:** the modal's live line counts spans for the ticked agents.
   - **e2e:** as Dana on `/settings/divisions/medications?split=1`, name the division, choose Elena, tick two agents and create. `/operations` shows "All · 6", and the new division's tile lists 2 agents.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement.** Check that the board's tile grid and the wall display take a sixth division without breaking.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(settings): new division and split"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement.** Check that the board's tile grid and the wall display take a sixth division without breaking.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(settings): new division and split"`.
 
 ### Task 6.3: People and roles (8b); roles decide scope
 
