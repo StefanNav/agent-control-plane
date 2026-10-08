@@ -254,6 +254,8 @@ export interface AgentException {
   outcome?: string
   outcomeSub?: string
   closedAt?: string
+  /** Who resolved or dismissed it; absent on seed items, which the owner closed. */
+  closedBy?: string
   dismissReason?: string
   escalatedTo?: string
 }

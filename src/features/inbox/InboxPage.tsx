@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { LinkButton, Tabs } from '../../design-system'
 import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { addMinutes, formatDate } from '../../lib/clock'
@@ -32,12 +32,13 @@ export function InboxPage() {
   const dismissException = useDemo((s) => s.dismissException)
   const assignException = useDemo((s) => s.assignException)
   const claimException = useDemo((s) => s.claimException)
+  const answerQuestion = useDemo((s) => s.answerQuestion)
   const tab: Tab = TABS.find((t) => t === params.get('tab')) ?? 'needs'
   const inbox = useMemo(() => selectInbox(state, state.personaId), [state])
   const header = selectInboxHeader(state, state.personaId)
   const items = tab === 'waiting' ? inbox.waiting : inbox.needsMe
   const selectedId = exceptionId ?? items[0]?.id
-  const detail = selectedId ? selectExceptionDetail(state, selectedId) : null
+  const detail = selectedId ? selectExceptionDetail(state, selectedId, state.personaId) : null
   const search = tab === 'needs' ? '' : `?tab=${tab}`
   const days = (detail?.trend ?? []).map((_, i, all) =>
     formatDate(addMinutes(state.now, -(all.length - 1 - i) * 24 * 60)),
@@ -47,6 +48,8 @@ export function InboxPage() {
     ? null
     : lockReason('resolveException', state.personaId)
 
+  /** After acting on an item, show the list's first item; Back skips the closed one. */
+  const backToList = () => navigate(`/operations/inbox${search}`, { replace: true })
   const listLabel = tab === 'waiting' ? 'Waiting on others' : 'Needs me'
   const settingsTo = header.divisionId ? `/settings/divisions/${header.divisionId}` : '/settings'
   const view = params.get('view') === 'digest' ? 'digest' : 'inbox'
@@ -129,27 +132,38 @@ export function InboxPage() {
           </div>
           {detail ? (
             <ExceptionDetail
+              key={detail.id}
               detail={detail}
               now={state.now}
               days={days}
               locked={locked}
               onSnooze={(until) => {
-                if (snoozeException(detail.id, until).ok) navigate(`/operations/inbox${search}`)
+                if (snoozeException(detail.id, until).ok) backToList()
               }}
               actorName={personName(state, state.personaId)}
               onAssign={(personId) => {
-                if (assignException(detail.id, personId).ok) navigate(`/operations/inbox${search}`)
+                if (assignException(detail.id, personId).ok) backToList()
               }}
-              onAnswer={() => claimException(detail.id)}
+              onClaim={() => claimException(detail.id)}
+              onAnswer={(answer) => {
+                if (answerQuestion(detail.id, answer).ok) backToList()
+              }}
               onDismiss={(input) => {
-                const ok = dismissException(detail.id, input).ok
-                if (ok) navigate(`/operations/inbox${search}`)
-                return ok
+                const result = dismissException(detail.id, input)
+                if (result.ok) backToList()
+                return result
               }}
             />
           ) : (
             <section aria-label="Exception detail" className={styles.detailEmpty}>
-              Select an item to see what happened and what it needs.
+              {exceptionId ? (
+                <>
+                  No exception “{exceptionId}” here. It may be mistyped, or from another demo.{' '}
+                  <Link to={`/operations/inbox${search}`}>Back to the inbox</Link>
+                </>
+              ) : (
+                'Select an item to see what happened and what it needs.'
+              )}
             </section>
           )}
         </div>

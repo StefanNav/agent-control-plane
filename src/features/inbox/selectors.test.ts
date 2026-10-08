@@ -1,3 +1,4 @@
+import { buildScenario } from '../../data/scenarios'
 import { createSeed } from '../../data/seed'
 import { selectDigest, selectExceptionDetail, selectInbox, selectInboxHeader, selectLog } from './selectors'
 
@@ -33,11 +34,11 @@ test('a snoozed item leaves until its time', () => {
 })
 
 test('the detail of the edit-rate item reads like 5a', () => {
-  const d = selectExceptionDetail(s, 'exc-5512')!
+  const d = selectExceptionDetail(s, 'exc-5512', 'marcus')!
   expect(d.meta).toBe('EXC-5512 · MR-12 v1 · raised 07:15 · due today 15:00 · Marcus')
   expect(d.escalationLine).toBe('Not handled by 15:00 → goes to Priya')
   expect(d.breakdown).toHaveLength(3)
-  expect(selectExceptionDetail(s, 'nope')).toBeNull()
+  expect(selectExceptionDetail(s, 'nope', 'marcus')).toBeNull()
 })
 
 test('due within two hours (or late) is emphasised; later deadlines are not', () => {
@@ -83,4 +84,44 @@ test('the log lists every event newest first, with the agent named', () => {
   expect(rows).toHaveLength(42)
   expect(rows[0]).toEqual({ id: 'log-tune-42', time: '09:52', text: 'Raise the MR-12 threshold', sub: 'Renal Dosing Agent · Requested by Marcus' })
   expect(rows[1]!.time).toBe('09:50')
+})
+
+describe('what the detail says depends on the item and on who is looking', () => {
+  test('the escalation notice is for the sponsor it reached; the owner sees where it went', () => {
+    const at12 = buildScenario('stale-escalated')
+    const priya = selectExceptionDetail(at12, 'exc-5508', 'priya')!
+    expect(priya.escalatedToViewer).toBe(true)
+    expect(priya.escalationNotice).toMatch(/^Marcus is the owner/)
+    const marcus = selectExceptionDetail(at12, 'exc-5508', 'marcus')!
+    expect(marcus.escalatedToViewer).toBe(false)
+    expect(marcus.escalationNotice).toBeNull()
+    expect(marcus.escalationLine).toBe('Escalated to Priya at 10:46')
+  })
+
+  test('the deadline line never promises a time that has passed', () => {
+    const at12 = buildScenario('stale-escalated')
+    expect(selectExceptionDetail(at12, 'exc-5530', 'marcus')!.escalationLine).toBe('Claimed by Marcus at 09:55')
+    expect(selectExceptionDetail(s, 'exc-5514', 'marcus')!.escalationLine).toBe('Not handled by tomorrow 17:00 → goes to Priya')
+  })
+
+  test('a closed item says who closed it, when and how, and offers no line', () => {
+    const resolved = selectExceptionDetail(s, 'exc-5521', 'marcus')!
+    expect(resolved.closed).toEqual({ lead: 'Resolved by Marcus at 08:12.', text: '2 drafts signed as is · Ana R. · allergy kept on list' })
+    expect(resolved.escalationLine).toBeNull()
+    expect(resolved.meta).toBe('EXC-5521 · HS-07 v1 · raised 07:58 · due 08:45 · closed 08:12 · Marcus')
+    const dismissed = {
+      ...s,
+      exceptions: s.exceptions.map((e) =>
+        e.id === 'exc-5512' ? { ...e, state: 'dismissed' as const, closedAt: '2026-12-08T09:52:00', closedBy: 'marcus', dismissReason: 'F-112 explains it.' } : e,
+      ),
+    }
+    expect(selectExceptionDetail(dismissed, 'exc-5512', 'marcus')!.closed).toEqual({ lead: 'Dismissed by Marcus at 09:52.', text: 'F-112 explains it.' })
+  })
+
+  test('a critical incident points to its incident record and has no deadline line', () => {
+    const d = selectExceptionDetail(s, 'exc-5501', 'dana')!
+    expect(d.kind).toBe('incident')
+    expect(d.incidentId).toBe('inc-0029')
+    expect(d.escalationLine).toBeNull()
+  })
 })

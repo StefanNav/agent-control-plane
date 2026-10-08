@@ -1,12 +1,21 @@
 import type { AgentException, DemoState, LogEvent, PersonaId, Status } from '../../data/types'
-import { formatAgo, formatClock, formatDay, formatDue, minutesBetween } from '../../lib/clock'
+import {
+  formatAgo,
+  formatClock,
+  formatDate,
+  formatDay,
+  formatDue,
+  minutesBetween,
+} from '../../lib/clock'
 import { personName } from '../board/selectors'
 
 export const isOpen = (e: AgentException) => e.state !== 'resolved' && e.state !== 'dismissed'
 export const isOverdue = (e: AgentException, now: string) => isOpen(e) && e.deadline < now
 /** Past its deadline with nobody on it: it goes to the division's sponsor until someone claims or reassigns it. */
-export const isEscalated = (e: AgentException, now: string) => isOverdue(e, now) && !e.claimedAt && !e.assignedAt && e.kind !== 'incident'
-const isSnoozed = (e: AgentException, now: string) => Boolean(e.snoozedUntil && e.snoozedUntil > now)
+export const isEscalated = (e: AgentException, now: string) =>
+  isOverdue(e, now) && !e.claimedAt && !e.assignedAt && e.kind !== 'incident'
+const isSnoozed = (e: AgentException, now: string) =>
+  Boolean(e.snoozedUntil && e.snoozedUntil > now)
 
 export interface InboxItemView {
   id: string
@@ -54,10 +63,17 @@ function itemView(s: DemoState, e: AgentException, viewer: PersonaId): InboxItem
 }
 
 /** A persona's inbox: what they own (or what escalated to them), what they're copied on, and the log. */
-export function selectInbox(s: DemoState, personaId: PersonaId): { needsMe: InboxItemView[]; waiting: InboxItemView[]; log: LogEvent[]; logTotal: number } {
+export function selectInbox(
+  s: DemoState,
+  personaId: PersonaId,
+): { needsMe: InboxItemView[]; waiting: InboxItemView[]; log: LogEvent[]; logTotal: number } {
   const open = s.exceptions.filter((e) => isOpen(e) && !isSnoozed(e, s.now))
-  const mine = open.filter((e) => e.ownerId === personaId || (isEscalated(e, s.now) && sponsorOf(s, e) === personaId))
-  const waiting = open.filter((e) => !mine.includes(e) && e.copied.includes(personaId) && e.ownerId !== personaId)
+  const mine = open.filter(
+    (e) => e.ownerId === personaId || (isEscalated(e, s.now) && sponsorOf(s, e) === personaId),
+  )
+  const waiting = open.filter(
+    (e) => !mine.includes(e) && e.copied.includes(personaId) && e.ownerId !== personaId,
+  )
   const byDeadline = (a: AgentException, b: AgentException) => a.deadline.localeCompare(b.deadline)
   return {
     needsMe: [...mine].sort(byDeadline).map((e) => itemView(s, e, personaId)),
@@ -67,16 +83,52 @@ export function selectInbox(s: DemoState, personaId: PersonaId): { needsMe: Inbo
   }
 }
 
-/** Everything the inbox detail panel shows for one exception (5a, 5d). */
-export function selectExceptionDetail(s: DemoState, id: string) {
+/** "15:00" today, "tomorrow 17:00", or "11 Dec 17:00". */
+function clockWithDay(iso: string, now: string): string {
+  const days = Math.round(
+    minutesBetween(`${now.slice(0, 10)}T00:00:00`, `${iso.slice(0, 10)}T00:00:00`) / (24 * 60),
+  )
+  if (days === 0) return formatClock(iso)
+  return `${days === 1 ? 'tomorrow' : formatDate(iso)} ${formatClock(iso)}`
+}
+
+/** Everything the inbox detail panel shows for one exception, as `viewer` sees it (5a, 5b, 5d). */
+export function selectExceptionDetail(s: DemoState, id: string, viewer: PersonaId) {
   const e = s.exceptions.find((x) => x.id === id)
   if (!e) return null
   const agent = s.agents.find((a) => a.id === e.agentId)
   const sponsor = personName(s, sponsorOf(s, e))
   const owner = personName(s, e.ownerId)
   const escalated = isEscalated(e, s.now)
+  const sponsorId = sponsorOf(s, e)
+  const escalatedToViewer = escalated && sponsorId === viewer
+  const closedState = e.state === 'resolved' || e.state === 'dismissed'
+  const closer = personName(s, e.closedBy ?? e.ownerId)
+  const closed = closedState
+    ? {
+        lead: `${e.state === 'dismissed' ? 'Dismissed' : 'Resolved'} by ${closer}${e.closedAt ? ` at ${formatClock(e.closedAt)}` : ''}.`,
+        text:
+          e.state === 'dismissed'
+            ? (e.dismissReason ?? '')
+            : [e.outcome, e.outcomeSub].filter(Boolean).join(' · '),
+      }
+    : null
+  /** Where the item stands against its deadline; never a time that has already passed. */
+  const line =
+    closedState || e.kind === 'incident'
+      ? null
+      : escalated
+        ? escalatedToViewer
+          ? null
+          : `Escalated to ${sponsor} at ${formatClock(e.deadline)}`
+        : e.claimedAt
+          ? `Claimed by ${owner} at ${formatClock(e.claimedAt)}`
+          : e.assignedAt
+            ? `Assigned to ${owner} at ${formatClock(e.assignedAt)}`
+            : `Not handled by ${clockWithDay(e.deadline, s.now)} → goes to ${sponsor}`
   const lastSeen = agent?.monitor.lastSeen
-  const silentFor = e.status === 'stale' && lastSeen ? formatAgo(lastSeen, s.now).replace(' ago', '') : null
+  const silentFor =
+    e.status === 'stale' && lastSeen ? formatAgo(lastSeen, s.now).replace(' ago', '') : null
   const reminder = e.detail?.timeline?.find((t) => t.title.startsWith('Reminder') && t.at <= s.now)
   const techOwner = agent?.techOwnerId
   return {
@@ -89,20 +141,44 @@ export function selectExceptionDetail(s: DemoState, id: string) {
     agentId: e.agentId,
     agentName: agent?.name ?? '',
     headline: `${e.detail?.headline ?? e.reason}${silentFor ? ` for ${silentFor}` : ''}`,
-    meta: (escalated
-      ? [e.code, e.ruleTag, `raised ${formatClock(e.raisedAt)}`, `due ${formatClock(e.deadline)}`, `escalated ${formatClock(e.deadline)}`]
-      : [e.code, e.ruleTag, `raised ${formatClock(e.raisedAt)}`, dueWithDay(e.deadline, s.now).replace(/^Due/, 'due'), owner]
+    meta: (closedState
+      ? [
+          e.code,
+          e.ruleTag,
+          `raised ${formatClock(e.raisedAt)}`,
+          `due ${formatClock(e.deadline)}`,
+          e.closedAt ? `closed ${formatClock(e.closedAt)}` : '',
+          owner,
+        ]
+      : escalated
+        ? [
+            e.code,
+            e.ruleTag,
+            `raised ${formatClock(e.raisedAt)}`,
+            `due ${formatClock(e.deadline)}`,
+            `escalated ${formatClock(e.deadline)}`,
+          ]
+        : [
+            e.code,
+            e.ruleTag,
+            `raised ${formatClock(e.raisedAt)}`,
+            dueWithDay(e.deadline, s.now).replace(/^Due/, 'due'),
+            owner,
+          ]
     )
       .filter(Boolean)
       .join(' · '),
     /** Why it reached the sponsor (5d); no gendered pronouns in product copy. */
-    escalationNotice: escalated
+    escalationNotice: escalatedToViewer
       ? `${owner} is the owner. It reached their inbox at ${formatClock(e.raisedAt)}${reminder ? `, with a reminder at ${formatClock(reminder.at)}` : ''}, and they're still copied.`
       : null,
     techOwnerId: techOwner,
     techOwnerName: techOwner ? personName(s, techOwner) : undefined,
     escalated,
-    escalationLine: escalated ? `Escalated to ${sponsor} at ${formatClock(e.deadline)}` : `Not handled by ${formatClock(e.deadline)} → goes to ${sponsor}`,
+    escalatedToViewer,
+    escalationLine: line,
+    closed,
+    incidentId: e.incidentId,
     ownerName: owner,
     sponsorName: sponsor,
     trendLabel: e.detail?.trendLabel,
@@ -111,7 +187,9 @@ export function selectExceptionDetail(s: DemoState, id: string) {
     breakdownLabel: e.detail?.breakdownLabel,
     breakdown: e.detail?.breakdown ?? [],
     cause: e.detail?.cause,
-    timeline: (e.detail?.timeline ?? []).filter((t) => t.at <= s.now).map((t) => ({ at: formatClock(t.at), title: t.title, sub: t.sub })),
+    timeline: (e.detail?.timeline ?? [])
+      .filter((t) => t.at <= s.now)
+      .map((t) => ({ at: formatClock(t.at), title: t.title, sub: t.sub })),
     silence: e.detail?.silence,
     tune: e.detail?.tune,
     /** The rule without its version, e.g. 'MR-12'. */
@@ -124,11 +202,17 @@ export function selectExceptionDetail(s: DemoState, id: string) {
 export type ExceptionDetailView = NonNullable<ReturnType<typeof selectExceptionDetail>>
 
 /** "Marcus · Medications": who is viewing, and the division they work in (or all of them). */
-export function selectInboxHeader(s: DemoState, personaId: PersonaId): { status: string; divisionId: string | undefined } {
+export function selectInboxHeader(
+  s: DemoState,
+  personaId: PersonaId,
+): { status: string; divisionId: string | undefined } {
   const roles = s.roles.filter((r) => r.personId === personaId)
   const divisionId = roles.some((r) => r.divisionId === 'all') ? undefined : roles[0]?.divisionId
   const division = s.divisions.find((d) => d.id === divisionId)
-  return { status: `${personName(s, personaId)} · ${division?.name ?? 'All divisions'}`, divisionId }
+  return {
+    status: `${personName(s, personaId)} · ${division?.name ?? 'All divisions'}`,
+    divisionId,
+  }
 }
 
 /** "Due today 15:00" for a same-day deadline; otherwise formatDue's "Due tomorrow", "Due Friday"… */
@@ -184,6 +268,11 @@ export function selectLog(s: DemoState) {
     .sort((a, b) => b.at.localeCompare(a.at))
     .map((e) => {
       const agent = s.agents.find((a) => a.id === e.agentId)?.name
-      return { id: e.id, time: formatClock(e.at), text: e.text, sub: [agent, e.sub].filter(Boolean).join(' · ') }
+      return {
+        id: e.id,
+        time: formatClock(e.at),
+        text: e.text,
+        sub: [agent, e.sub].filter(Boolean).join(' · '),
+      }
     })
 }

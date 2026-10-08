@@ -40,6 +40,8 @@ export interface DemoActions {
   dismissException: (id: string, input: DismissInput) => ActionResult
   /** Hand an exception to someone else; the previous owner and you stay copied. */
   assignException: (id: string, personId: string) => ActionResult
+  /** Answer a question from a person (5a): closes it with the answer. */
+  answerQuestion: (id: string, answer: 'yes' | 'no') => ActionResult
 }
 
 export type DemoStore = DemoState & DemoActions
@@ -134,6 +136,20 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               },
             })
           },
+          answerQuestion: (id, answer) => {
+            const { exception, error } = openException(id)
+            if (!exception) return error
+            if (exception.kind !== 'question') return { ok: false, reason: 'Not a question' }
+            return act({
+              action: 'resolveException',
+              ctx: { agentId: exception.agentId },
+              audit: { action: 'Answered', target: exception.code, reason: answer === 'yes' ? 'Yes' : 'No' },
+              mutate: (draft) => {
+                const target = draft.exceptions.find((e) => e.id === id)!
+                Object.assign(target, { state: 'resolved', outcome: `Answered ${answer}`, closedAt: draft.now, closedBy: draft.personaId })
+              },
+            })
+          },
           dismissException: (id, { category, reason, tune }) => {
             const { exception, error } = openException(id)
             if (!exception) return error
@@ -148,6 +164,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                 target.state = 'dismissed'
                 target.dismissReason = why
                 target.closedAt = draft.now
+                target.closedBy = draft.personaId
                 if (!tune) return
                 const agent = draft.agents.find((a) => a.id === exception.agentId)
                 const name = (personId?: string) => draft.people.find((p) => p.id === personId)?.name ?? 'the technical owner'

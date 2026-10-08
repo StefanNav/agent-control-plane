@@ -140,8 +140,8 @@ test('agent owners, sponsors and tech owners hold those roles in the agent’s d
 describe('E4 and E5 refinements', () => {
   const open = (e: (typeof seed.exceptions)[number]) => e.state !== 'resolved' && e.state !== 'dismissed'
 
-  test('seed version 3', () => {
-    expect(SEED_VERSION).toBe(3)
+  test('seed version 4 (Phase 3 review round: closedBy on exceptions)', () => {
+    expect(SEED_VERSION).toBe(4)
   })
 
   test('Medications has exactly four agents needing a human', () => {

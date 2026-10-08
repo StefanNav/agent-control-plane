@@ -218,3 +218,42 @@ test('assignException hands the item to someone else, keeps the previous owner c
   expect(exc.copied).toEqual(expect.arrayContaining(['marcus', 'priya']))
   expect(store.getState().audit.at(-1)).toMatchObject({ who: 'priya', action: 'Assigned', target: 'EXC-5508', reason: 'to Sam' })
 })
+
+describe('answerQuestion', () => {
+  test('answering closes the question with the answer, logged', () => {
+    const store = fresh()
+    expect(store.getState().answerQuestion('exc-5514', 'yes')).toEqual({ ok: true })
+    expect(store.getState().exceptions.find((e) => e.id === 'exc-5514')).toMatchObject({
+      state: 'resolved',
+      outcome: 'Answered yes',
+      closedAt: DEMO_NOW,
+      closedBy: 'marcus',
+    })
+    expect(store.getState().audit.at(-1)).toMatchObject({ action: 'Answered', target: 'EXC-5514', reason: 'Yes' })
+  })
+
+  test('only questions take an answer; read-only is refused', () => {
+    const store = fresh()
+    expect(store.getState().answerQuestion('exc-5512', 'no')).toEqual({ ok: false, reason: 'Not a question' })
+    store.getState().setPersona('jordan')
+    expect(store.getState().answerQuestion('exc-5514', 'no')).toMatchObject({ ok: false })
+    expect(store.getState().exceptions.find((e) => e.id === 'exc-5514')!.state).toBe('new')
+  })
+})
+
+test('dismissing records who closed it', () => {
+  const store = fresh()
+  store.getState().dismissException('exc-5512', { category: 'expected', reason: 'F-112.' })
+  expect(store.getState().exceptions.find((e) => e.id === 'exc-5512')!.closedBy).toBe('marcus')
+})
+
+test('assignException as read-only or frontline changes nothing', () => {
+  for (const persona of ['jordan', 'ana'] as const) {
+    const store = fresh()
+    store.getState().loadScenario('stale-escalated')
+    store.getState().setPersona(persona)
+    const before = dataOf(store.getState())
+    expect(store.getState().assignException('exc-5508', 'sam')).toMatchObject({ ok: false })
+    expect(dataOf(store.getState())).toEqual(before)
+  }
+})

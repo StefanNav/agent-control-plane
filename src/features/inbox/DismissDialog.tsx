@@ -1,6 +1,19 @@
 import { useState } from 'react'
-import { Button, Checkbox, Field, Modal, RadioCardGroup, Textarea } from '../../design-system'
-import { DISMISS_LABELS, type DismissCategory, type DismissInput } from '../../store'
+import {
+  Button,
+  Checkbox,
+  Field,
+  Modal,
+  Notice,
+  RadioCardGroup,
+  Textarea,
+} from '../../design-system'
+import {
+  DISMISS_LABELS,
+  type ActionResult,
+  type DismissCategory,
+  type DismissInput,
+} from '../../store'
 import type { ExceptionDetailView } from './selectors'
 import styles from './inbox.module.css'
 
@@ -9,7 +22,8 @@ export interface DismissDialogProps {
   /** "Marcus": who the dismissal is logged as. */
   actorName: string
   onClose: () => void
-  onConfirm: (input: DismissInput) => void
+  /** The store's answer: the dialog closes on success and shows the reason otherwise. */
+  onConfirm: (input: DismissInput) => ActionResult
 }
 
 const DESCRIPTIONS: Record<DismissCategory, string | undefined> = {
@@ -24,6 +38,7 @@ export function DismissDialog({ detail, actorName, onClose, onConfirm }: Dismiss
   const [category, setCategory] = useState<DismissCategory>('expected')
   const [reason, setReason] = useState('')
   const [tune, setTune] = useState(false)
+  const [refused, setRefused] = useState<string | null>(null)
   const ready = reason.trim().length > 0
   return (
     <Modal
@@ -40,13 +55,15 @@ export function DismissDialog({ detail, actorName, onClose, onConfirm }: Dismiss
           <Button
             variant={ready ? 'primary' : 'blocked'}
             aria-disabled={!ready}
-            onClick={() =>
-              onConfirm({
+            onClick={() => {
+              const result = onConfirm({
                 category,
                 reason,
                 tune: tune && detail.tune ? detail.tune.label : undefined,
               })
-            }
+              if (result.ok) onClose()
+              else setRefused(result.reason)
+            }}
           >
             Dismiss with reason
           </Button>
@@ -75,6 +92,11 @@ export function DismissDialog({ detail, actorName, onClose, onConfirm }: Dismiss
             placeholder="What explains it? Name the change, ticket or person."
           />
         </Field>
+        {refused ? (
+          <Notice mark="crit" lead="Not dismissed.">
+            {refused}
+          </Notice>
+        ) : null}
         {detail.tune ? (
           <Checkbox
             checked={tune}

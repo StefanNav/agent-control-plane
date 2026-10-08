@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { Button, Icon, LinkButton, Menu, Notice } from '../../design-system'
+import { useState, type ReactNode } from 'react'
 import { noticeMark, StatusChip } from '../../components'
+import { Button, LinkButton, Menu, Notice } from '../../design-system'
 import { addMinutes, formatClock, tomorrowAt } from '../../lib/clock'
-import type { DismissInput } from '../../store'
+import type { ActionResult, DismissInput } from '../../store'
 import { DismissDialog } from './DismissDialog'
 import type { ExceptionDetailView } from './selectors'
 import { TrendChart } from './TrendChart'
@@ -15,14 +15,15 @@ export interface ExceptionDetailProps {
   days: string[]
   /** Null when the persona may act; otherwise why not. */
   locked: string | null
-  onSnooze: (until: string) => void
   /** Who a dismissal is logged as. */
   actorName: string
-  /** True when the dismissal went through, so the dialog can close. */
-  onDismiss: (input: DismissInput) => boolean
-  /** Escalated items (5d): hand it to someone, or take it yourself. */
+  onSnooze: (until: string) => void
+  onDismiss: (input: DismissInput) => ActionResult
+  /** Escalated to you (5d): hand it to someone, or take it yourself. */
   onAssign: (personId: string) => void
-  onAnswer: () => void
+  onClaim: () => void
+  /** Questions from a person. */
+  onAnswer: (answer: 'yes' | 'no') => void
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -37,23 +38,125 @@ export function ExceptionDetail({
   now,
   days,
   locked,
-  onSnooze,
   actorName,
+  onSnooze,
   onDismiss,
   onAssign,
+  onClaim,
   onAnswer,
 }: ExceptionDetailProps) {
   const [dismissing, setDismissing] = useState(false)
-  const hour = addMinutes(now, 60)
-  const morning = tomorrowAt(now, '07:00')
   const total = detail.breakdown.reduce((sum, row) => sum + row.count, 0)
+  const lockProps = { disabled: Boolean(locked), title: locked ?? undefined }
+  const agentLink = `/operations/agents/${detail.agentId}`
+
+  const snooze = (
+    <Menu
+      width={240}
+      trigger={({ toggle, ref, open }) => (
+        <Button
+          ref={ref}
+          variant="ghost"
+          onClick={toggle}
+          aria-expanded={open}
+          aria-haspopup="menu"
+        >
+          Snooze
+        </Button>
+      )}
+      groups={[
+        {
+          label: 'Snooze until',
+          items: [
+            {
+              id: 'hour',
+              label: '1 hour',
+              sub: locked ?? `Back at ${formatClock(addMinutes(now, 60))}`,
+              locked: Boolean(locked),
+              onSelect: () => onSnooze(addMinutes(now, 60)),
+            },
+            {
+              id: 'morning',
+              label: 'Tomorrow 07:00',
+              sub: locked ?? 'Back in the morning',
+              locked: Boolean(locked),
+              onSelect: () => onSnooze(tomorrowAt(now, '07:00')),
+            },
+          ],
+        },
+      ]}
+    />
+  )
+
+  let buttons: ReactNode
+  if (detail.closed) {
+    buttons = <LinkButton to={agentLink}>Open agent</LinkButton>
+  } else if (detail.kind === 'incident' && detail.incidentId) {
+    buttons = (
+      <>
+        <LinkButton to={`/operations/incidents/${detail.incidentId}`} variant="primary">
+          Open incident {detail.incidentId.toUpperCase()}
+        </LinkButton>
+        <LinkButton to={agentLink}>Investigate</LinkButton>
+      </>
+    )
+  } else if (detail.escalatedToViewer) {
+    buttons = (
+      <>
+        {detail.techOwnerId ? (
+          <Button variant="primary" onClick={() => onAssign(detail.techOwnerId!)} {...lockProps}>
+            Assign to {detail.techOwnerName}
+          </Button>
+        ) : null}
+        <Button onClick={onClaim} {...lockProps}>
+          Answer myself
+        </Button>
+        <LinkButton to={`${agentLink}?control=pause`} variant="ghost">
+          Pause {detail.agentName}
+        </LinkButton>
+      </>
+    )
+  } else if (detail.kind === 'question') {
+    buttons = (
+      <>
+        <Button variant="primary" onClick={() => onAnswer('yes')} {...lockProps}>
+          Answer yes
+        </Button>
+        <Button onClick={() => onAnswer('no')} {...lockProps}>
+          Answer no
+        </Button>
+        {snooze}
+      </>
+    )
+  } else {
+    buttons = (
+      <>
+        <LinkButton to={agentLink} variant="primary">
+          Investigate
+        </LinkButton>
+        <LinkButton to={`${agentLink}?control=shadow`}>Return to Shadow</LinkButton>
+        {snooze}
+        <Button variant="ghost" onClick={() => setDismissing(true)} {...lockProps}>
+          Dismiss…
+        </Button>
+      </>
+    )
+  }
+
   return (
     <section aria-label="Exception detail" className={styles.detail}>
       <div className={styles.detailHead}>
-        <StatusChip status={detail.status} label={detail.type} size="header" />
+        <StatusChip
+          status={detail.status}
+          label={detail.type}
+          size="header"
+          muted={Boolean(detail.closed)}
+        />
         <h2 className={styles.headline}>{detail.headline}</h2>
         <span className={styles.meta}>{detail.meta}</span>
       </div>
+
+      {detail.closed ? <Notice lead={detail.closed.lead}>{detail.closed.text}</Notice> : null}
 
       {detail.escalationNotice ? (
         <Notice mark="stale" lead="Escalated to you because nobody answered by the deadline.">
@@ -118,100 +221,25 @@ export function ExceptionDetail({
         </div>
       ) : null}
 
-      {detail.silence ? (
+      {detail.silence && !detail.closed ? (
         <Notice mark="stale" lead="What silence means here:">
           {detail.silence}
         </Notice>
       ) : null}
 
-      {detail.escalated ? (
-        <div className={styles.actions}>
-          <span className={styles.buttons}>
-            {detail.techOwnerId ? (
-              <Button
-                variant="primary"
-                onClick={() => onAssign(detail.techOwnerId!)}
-                disabled={Boolean(locked)}
-                title={locked ?? undefined}
-              >
-                Assign to {detail.techOwnerName}
-              </Button>
-            ) : null}
-            <Button onClick={onAnswer} disabled={Boolean(locked)} title={locked ?? undefined}>
-              Answer myself
-            </Button>
-            <LinkButton to={`/operations/agents/${detail.agentId}?control=pause`} variant="ghost">
-              Pause {detail.agentName}
-            </LinkButton>
-          </span>
-        </div>
-      ) : (
-        <div className={styles.actions}>
-          <span className={styles.buttons}>
-            <LinkButton to={`/operations/agents/${detail.agentId}`} variant="primary">
-              Investigate
-            </LinkButton>
-            <LinkButton to={`/operations/agents/${detail.agentId}?control=shadow`}>
-              Return to Shadow
-            </LinkButton>
-            <Menu
-              width={240}
-              trigger={({ toggle, ref, open }) => (
-                <Button
-                  ref={ref}
-                  variant="ghost"
-                  onClick={toggle}
-                  aria-expanded={open}
-                  aria-haspopup="menu"
-                >
-                  Snooze
-                </Button>
-              )}
-              groups={[
-                {
-                  label: 'Snooze until',
-                  items: [
-                    {
-                      id: 'hour',
-                      label: '1 hour',
-                      sub: locked ?? `Back at ${formatClock(hour)}`,
-                      locked: Boolean(locked),
-                      onSelect: () => onSnooze(hour),
-                    },
-                    {
-                      id: 'morning',
-                      label: 'Tomorrow 07:00',
-                      sub: locked ?? 'Back in the morning',
-                      locked: Boolean(locked),
-                      onSelect: () => onSnooze(morning),
-                    },
-                  ],
-                },
-              ]}
-            />
-            <Button
-              variant="ghost"
-              onClick={() => setDismissing(true)}
-              disabled={Boolean(locked)}
-              title={locked ?? undefined}
-            >
-              Dismiss…
-            </Button>
-          </span>
-          <span className={styles.escalation}>
-            {detail.escalated ? <Icon name="triangle" size={12} color="var(--cs-crit)" /> : null}
-            {detail.escalationLine}
-          </span>
-        </div>
-      )}
+      <div className={styles.actions}>
+        <span className={styles.buttons}>{buttons}</span>
+        {detail.escalationLine ? (
+          <span className={styles.escalation}>{detail.escalationLine}</span>
+        ) : null}
+      </div>
+
       {dismissing ? (
         <DismissDialog
           detail={detail}
           actorName={actorName}
           onClose={() => setDismissing(false)}
-          onConfirm={(input) => {
-            if (onDismiss(input)) setDismissing(false)
-          }}
+          onConfirm={onDismiss}
         />
       ) : null}
     </section>

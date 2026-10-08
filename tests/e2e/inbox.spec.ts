@@ -102,3 +102,43 @@ test('escalated to the sponsor (5d): Priya sees the late item and assigns it to 
   await expect(page.getByRole('list', { name: 'Needs me' })).not.toContainText('Monitor stale')
   expect(errors).toEqual([])
 })
+
+test.describe('the detail follows the item (review fixes)', () => {
+  test('a dismissed item, opened again, shows its outcome and no actions', async ({ page }) => {
+    await page.goto('/operations/inbox/exc-5512')
+    await page.getByRole('button', { name: 'Dismiss…' }).click()
+    await page.getByRole('dialog').getByRole('textbox', { name: 'Reason' }).fill('F-112 explains the edits.')
+    await page.getByRole('dialog').getByRole('button', { name: 'Dismiss with reason' }).click()
+    await page.goto('/operations/inbox/exc-5512')
+    const detail = page.getByRole('region', { name: 'Exception detail' })
+    await expect(detail).toContainText('Dismissed by Marcus at 09:52.')
+    await expect(detail.getByRole('button', { name: 'Dismiss…' })).toHaveCount(0)
+    await expect(detail.getByRole('button', { name: 'Snooze' })).toHaveCount(0)
+  })
+
+  test('the critical incident links to its incident record', async ({ page }) => {
+    await page.goto('/operations/inbox/exc-5501')
+    const detail = page.getByRole('region', { name: 'Exception detail' })
+    await expect(detail.getByRole('link', { name: 'Open incident INC-0029' })).toHaveAttribute('href', '/operations/incidents/inc-0029')
+    await expect(detail.getByRole('button', { name: 'Snooze' })).toHaveCount(0)
+  })
+
+  test('a question can be answered from the inbox', async ({ page }) => {
+    await page.goto('/operations/inbox/exc-5514')
+    await page.getByRole('region', { name: 'Exception detail' }).getByRole('button', { name: 'Answer yes' }).click()
+    await expect(page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Needs me · 3' })).toBeVisible()
+  })
+
+  test('the owner of an escalated item sees where it went, not the sponsor notice', async ({ page }) => {
+    await page.goto('/operations/inbox/exc-5508?scenario=stale-escalated')
+    const detail = page.getByRole('region', { name: 'Exception detail' })
+    await expect(detail).toContainText('Escalated to Priya at 10:46')
+    await expect(detail).not.toContainText('Escalated to you')
+    await expect(detail.getByRole('button', { name: /Assign to/ })).toHaveCount(0)
+  })
+
+  test('an unknown exception id says so', async ({ page }) => {
+    await page.goto('/operations/inbox/nope')
+    await expect(page.getByRole('region', { name: 'Exception detail' })).toContainText('No exception “nope”')
+  })
+})
