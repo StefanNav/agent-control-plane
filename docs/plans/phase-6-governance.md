@@ -790,7 +790,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - **"This draft":** "Drafted by v1.5.0 · 5 medications · no edits yet" (counted).
   - **The EHR sub-line:** "Drafted by Med Rec Agent v1.5.0 at 08:14 · review each line before you verify".
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **`scenarios.test.ts`:** `epic-fixed-later` has now 17 Dec 09:52, Med Rec at v1.5.0, FB-2291 `fixed` with the reply, and the change `accepted`.
   - **Selector:**
     - Ana's view shows the fix card with "5 other pharmacists" and "live since 16 Dec", and "Your flags · 3" in the order FB-2291, FB-2286, FB-2277.
@@ -798,10 +798,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - **e2e:**
     - As Ana, `/epic?day=later` shows "Okafor, James", "Your flag led to a fix" and "Fixed in v1.5.0". Dismiss hides the card.
     - `/epic?day=nope` shows today's state.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 10b.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(epic): fixed in v1.5.0, nine days later"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 10b.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(epic): fixed in v1.5.0, nine days later"`.
 
 ### Task 6.7: Unregistered callers (9b)
 

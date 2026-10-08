@@ -29,10 +29,17 @@ export function AgentPanel({ view }: { view: EpicView }) {
         </span>
         <span className={styles.meta}>{view.panel.sub}</span>
       </div>
+      {view.fix ? <FixCard fix={view.fix} canDismiss={view.canFlag} /> : null}
       <div className={styles.panelBlock}>
-        <Fact label="Sources">{view.panel.sources}</Fact>
-        <Fact label="What it did">{view.panel.did}</Fact>
-        <Fact label="Your edits">{view.panel.edits}</Fact>
+        {view.thisDraft ? (
+          <Fact label="This draft">{view.thisDraft}</Fact>
+        ) : (
+          <>
+            <Fact label="Sources">{view.panel.sources}</Fact>
+            <Fact label="What it did">{view.panel.did}</Fact>
+            <Fact label="Your edits">{view.panel.edits}</Fact>
+          </>
+        )}
         <span className={styles.actions}>
           {!view.canFlag ? (
             <Button locked={lockReason('flagDraft', personaId)}>Flag a problem</Button>
@@ -149,5 +156,43 @@ function FlagForm({ view, onClose }: { view: EpicView; onClose: () => void }) {
       ) : null}
       <span className={styles.meta}>{view.form.footer}</span>
     </section>
+  )
+}
+
+/** "Your flag led to a fix" (10b): the flag, the build that fixed it, the owner's note; What changed; Dismiss. */
+function FixCard({ fix, canDismiss }: { fix: NonNullable<EpicView['fix']>; canDismiss: boolean }) {
+  const dismiss = useDemo((s) => s.dismissFixNotice)
+  const [open, setOpen] = useState(false)
+  return (
+    <div className={styles.panelBlock}>
+      <section className={styles.fix} aria-label="Your flag led to a fix">
+        <h2 className={styles.fixTitle}>
+          <Icon name="check" color="var(--cs-ink)" />
+          Your flag led to a fix
+        </h2>
+        <span>
+          <span className={styles.mono}>{fix.code}</span> {fix.title}
+        </span>
+        <span className={styles.fixLine}>{fix.line}</span>
+        {fix.quote ? <span className={styles.meta}>{fix.quote}</span> : null}
+        {open ? (
+          <ul className={styles.changed}>
+            {fix.changed.map((c) => (
+              <li key={c}>{c}</li>
+            ))}
+          </ul>
+        ) : null}
+        <span className={styles.actions}>
+          <Button variant="ghost" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+            What changed
+          </Button>
+          {canDismiss ? (
+            <Button variant="ghost" onClick={() => dismiss(fix.flagId)}>
+              Dismiss
+            </Button>
+          ) : null}
+        </span>
+      </section>
+    </div>
   )
 }

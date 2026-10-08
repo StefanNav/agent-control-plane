@@ -1,4 +1,4 @@
-import type { EpicDraft, Flag } from '../types'
+import type { AgentAction, EpicDraft, Flag } from '../types'
 import { E10_SHIFT, fromMarch } from './redate'
 
 const d = (iso: string) => fromMarch(iso, E10_SHIFT)
@@ -94,3 +94,44 @@ export const flags: Flag[] = [
   split(2289, 'R. Kim', '7 West', '2026-12-07T11:05:00', 'DR-88290'),
   split(2290, 'T. Bauer', '8 East', '2026-12-08T07:55:00', 'DR-88376'),
 ]
+
+/** 10b: nine days later, Okafor's draft by v1.5.0 (R1: 26 Mar → 17 Dec). Added by `epic-fixed-later`. */
+export const DR_90455: EpicDraft = {
+  id: 'DR-90455',
+  agentId: 'med-rec',
+  build: 'v1.5.0',
+  draftedAt: '2026-12-17T08:14:00',
+  patient: { name: 'Okafor, James', age: 66, sex: 'M', mrn: '00419920', unit: '8 East', bed: '804-A', allergy: 'none known', admittedAt: d('2027-03-26T05:55:00') },
+  lines: [
+    { med: 'Lisinopril 10 mg', form: 'tab', dose: '10 mg', route: 'PO', frequency: 'Daily', lastTaken: d('2027-03-26T08:00:00'), source: 'Outside fill', sourceAt: d('2027-03-12T00:00:00') },
+    { med: 'Metformin 500 mg', form: 'tab', dose: '1,000 mg', route: 'PO', frequency: 'BID', lastTaken: d('2027-03-26T07:45:00'), source: 'Outside fill', sourceAt: d('2027-03-12T00:00:00') },
+    { med: 'Amlodipine 5 mg', form: 'tab', dose: '5 mg', route: 'PO', frequency: 'Daily', lastTaken: d('2027-03-26T08:00:00'), source: 'Epic list', sourceAt: d('2027-02-03T00:00:00') },
+    { med: 'Tamsulosin 0.4 mg', form: 'cap', dose: '0.4 mg', route: 'PO', frequency: 'Nightly', lastTaken: d('2027-03-25T21:00:00'), source: 'Admission interview' },
+    { med: 'Insulin glargine', form: '100 unit/mL', dose: '18 units', route: 'SC', frequency: 'Nightly', lastTaken: d('2027-03-25T21:30:00'), source: 'Pyxis', sourceAt: d('2027-03-24T00:00:00') },
+  ],
+  sources: 'Outside pharmacy fills · Epic home med list · Pyxis dispense history · admission interview note',
+  did: 'Matched 5 medications, changed no doses or frequencies (HS-04)',
+  actionId: 'act-89012',
+}
+
+/** DR-90455's trace (invented): v1.5.0 reads the structured frequency and Pyxis. */
+export const ACT_89012: AgentAction = {
+  id: 'act-89012',
+  code: 'ACT-89012',
+  at: '2026-12-17T08:14:00',
+  title: 'Draft med list · enc 4602',
+  agentId: 'med-rec',
+  agentVersion: 'v1.5.0',
+  sop: 'v1.5',
+  actingFor: 'Ana R., PharmD · 8 East',
+  reviewerOutcome: 'Waiting for review',
+  context: { privilege: 'PRV-0142 v3 · Draft', checks: 3, conditions: ['C1 · pharmacist signs', 'C3 · dialysis excluded'] },
+  steps: [
+    { at: '2026-12-17T08:13:20.114', kind: 'input', title: 'Admission · enc 4602 · 8 East', meta: 'Epic ADT' },
+    { at: '2026-12-17T08:13:22.630', kind: 'tool', title: 'epic.medlist.read', detail: 'Epic home med list · structured sig' },
+    { at: '2026-12-17T08:13:24.902', kind: 'tool', title: 'pyxis.dispense.read', detail: 'Pyxis dispense history · 30 days' },
+    { at: '2026-12-17T08:13:51.205', kind: 'policyPassed', title: 'Patient matches the encounter', ruleTag: 'HS-11 v1' },
+    { at: '2026-12-17T08:13:58.440', kind: 'policyPassed', title: 'No dose or frequency changed', ruleTag: 'HS-04 v3' },
+    { at: '2026-12-17T08:14:00.310', kind: 'output', title: 'Draft med list · 5 lines', detail: 'Sent to the pharmacist’s worklist' },
+  ],
+}

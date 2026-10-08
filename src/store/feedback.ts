@@ -1,4 +1,4 @@
-import type { DemoState, EpicDraft, Flag, FlagReason } from '../data/types'
+import type { AgentAction, DemoState, EpicDraft, Flag, FlagReason } from '../data/types'
 import { addDays } from '../lib/clock'
 import { nextCode, nextExceptionCode } from './mutations'
 import { personName } from './onboardingRules'
@@ -109,5 +109,19 @@ export function applyFlagAnswer(s: DemoState, exceptionId: string, answer: FlagA
   if (answer.kind === 'inProgress') Object.assign(flag, { status: 'inProgress', progress: text })
   else Object.assign(flag, { status: 'notDefect', notDefect: text })
   Object.assign(item, { state: 'resolved', outcome: answer.kind === 'inProgress' ? 'Working on a fix' : 'Not a defect', outcomeSub: text, closedAt: at, closedBy: by })
+  return s
+}
+
+/** A new draft reaches the pharmacist's worklist (10b, scenario only), with its trace. */
+export function applyAddEpicDraft(s: DemoState, draft: EpicDraft, action?: AgentAction): DemoState {
+  if (!s.epicDrafts.some((d) => d.id === draft.id)) s.epicDrafts.push(structuredClone(draft))
+  if (action && !s.actions.some((a) => a.id === action.id)) s.actions.push(structuredClone(action))
+  return s
+}
+
+/** The pharmacist dismisses "Your flag led to a fix" (10b); the flag stays in their list. */
+export function applySeenFix(s: DemoState, flagId: string, at: string): DemoState {
+  const flag = s.flags.find((f) => f.id === flagId)
+  if (flag) flag.seenFixAt = at
   return s
 }

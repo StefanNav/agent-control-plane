@@ -1,8 +1,9 @@
 import { createSeed } from '../seed'
 import { applyPause } from '../../store/mutations'
 import { DEMO_NOW } from '../../lib/clock'
-import { applyDeploy } from '../../store/changes'
-import { applyFlag, applyFlagAnswer } from '../../store/feedback'
+import { applyAccept, applyDeploy, applyHardStopApproval, applyReplay, applySystemsSignOff, changeId } from '../../store/changes'
+import { applyAddEpicDraft, applyFlag, applyFlagAnswer } from '../../store/feedback'
+import { ACT_89012, DR_90455 } from '../seed/feedback'
 import { V150 } from '../seed/catalogue'
 import { advanceClock, settleBefore } from './clock'
 import type { DemoState, Incident } from '../types'
@@ -28,6 +29,7 @@ export type ScenarioId =
   | 'review-decided'
   | 'shadow-day-21'
   | 'change-detected-v150'
+  | 'epic-fixed-later'
 
 /** Every scenario id, for validating a `?scenario=` param. */
 export const SCENARIO_IDS: readonly ScenarioId[] = [
@@ -49,6 +51,7 @@ export const SCENARIO_IDS: readonly ScenarioId[] = [
   'review-decided',
   'shadow-day-21',
   'change-detected-v150',
+  'epic-fixed-later',
 ]
 
 const medRec = (s: DemoState) => s.agents.find((a) => a.id === 'med-rec')!
@@ -77,6 +80,25 @@ export function changeDetected(s: DemoState): DemoState {
   settleBefore(s, '2026-12-15T00:00:00')
   applyDeploy(s, V150, V150_DEPLOY, 'sam')
   return advanceClock(s, '2026-12-15T09:52:00')
+}
+
+/**
+ * 10b (R1, spec "+9 days"): from 9a, Marcus replays and signs off, Priya approves HS-04 v3, Marcus
+ * accepts v1.5.0 on 16 Dec 08:30 and thanks Ana; on 17 Dec Okafor's draft is made by v1.5.0.
+ */
+export function epicFixedLater(s: DemoState): DemoState {
+  changeDetected(s)
+  const id = changeId('med-rec', V150.build)
+  applyReplay(s, id, 'marcus', '2026-12-15T10:20:00')
+  applySystemsSignOff(s, id, 'marcus', '2026-12-15T10:25:00')
+  applyHardStopApproval(s, id, 'priya', '2026-12-15T14:05:00')
+  applyAccept(s, id, 'marcus', '2026-12-16T08:30:00')
+  const flag = s.flags.find((f) => f.code === 'FB-2291')!
+  flag.reply = { by: 'marcus', text: 'Thanks. This caused the edit-rate jump on 7 West.', at: '2026-12-16T08:35:00' }
+  advanceClock(s, '2026-12-17T08:14:00')
+  settleBefore(s, '2026-12-17T00:00:00')
+  applyAddEpicDraft(s, DR_90455, ACT_89012)
+  return advanceClock(s, '2026-12-17T09:52:00')
 }
 
 /** E7 7c's incident, as it stands at 11:58 (before Priya approves at 13:10). */
@@ -199,6 +221,7 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
   // E3 3a / 3b: 05 Nov 09:30, shadow ran 15 Oct to 04 Nov; 2 of 3 targets met.
   'shadow-day-21': medRecAt('shadow-day-21'),
   'change-detected-v150': changeDetected,
+  'epic-fixed-later': epicFixedLater,
 }
 
 /** A fresh state for the scenario. */

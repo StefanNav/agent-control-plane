@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { useDemo } from '../../store'
 import { AgentPanel } from './AgentPanel'
 import { selectEpic } from './selectors'
@@ -12,6 +13,7 @@ const STAND_IN = 'Stand-in for Epic. Only the panel on the right is part of the 
  * right-hand Med Rec Agent panel is ours (10a, 10b).
  */
 export function EpicPage() {
+  useDayParam()
   const state = useDemo((s) => s)
   const view = selectEpic(state, state.personaId)
   const [note, setNote] = useState(false)
@@ -98,4 +100,23 @@ export function EpicPage() {
       </div>
     </div>
   )
+}
+
+/** `/epic?day=later` (spec §5.5, R15): nine days later is the `epic-fixed-later` scenario. Any other value is ignored. */
+function useDayParam() {
+  const [params, setParams] = useSearchParams()
+  const loadScenario = useDemo((s) => s.loadScenario)
+  const day = params.get('day')
+  useEffect(() => {
+    if (day === null) return
+    if (day === 'later') loadScenario('epic-fixed-later')
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('day')
+        return next
+      },
+      { replace: true },
+    )
+  }, [day, loadScenario, setParams])
 }

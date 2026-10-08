@@ -8,7 +8,7 @@ import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mu
 import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, signMode, testResult, type SystemsChange } from './onboarding'
 import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems, shadowProgress } from './onboardingRules'
 import { applyAccept, applyHardStopApproval, applyReplay, applySystemsSignOff, pendingChecks } from './changes'
-import { applyFlag, applyFlagAnswer, type FlagAnswer } from './feedback'
+import { applyFlag, applyFlagAnswer, applySeenFix, type FlagAnswer } from './feedback'
 import { can, lockReason } from './permissions'
 import { applyAddRole, applyCreateDivision, applyDivisionSettings, applyInvite, applyRemoveRole, applyReturnToShadow, diffDivision, divisionSlug, ROLE_LABEL, roleDivision, type DivisionPatch, type NewDivisionInput, type RoleInput } from './settings'
 import { runAction, type ActionResult } from './runAction'
@@ -97,6 +97,8 @@ export interface DemoActions {
   approveChangeHardStop: (changeId: string) => ActionResult
   /** Accept a held build once its checks are done: it starts serving (9a). Agent owner. */
   acceptChange: (changeId: string) => ActionResult
+  /** Dismiss "Your flag led to a fix" (10b). The flag's own pharmacist only. */
+  dismissFixNotice: (flagId: string) => ActionResult
   /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
   startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
   /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
@@ -733,6 +735,21 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Accepted build', target: `${agent.code} ${change.to.build}` },
               mutate: (draft) => {
                 applyAccept(draft, changeId, draft.personaId, draft.now)
+              },
+            })
+          },
+          dismissFixNotice: (flagId) => {
+            const s = get()
+            const flag = s.flags.find((f) => f.id === flagId)
+            if (!flag) return { ok: false, reason: 'Not found' }
+            if (flag.byId !== s.personaId) return { ok: false, reason: 'Only the pharmacist who flagged it can dismiss this' }
+            if (flag.status !== 'fixed' || flag.seenFixAt) return { ok: false, reason: 'Nothing to dismiss' }
+            return act({
+              action: 'flagDraft',
+              ctx: { agentId: flag.agentId },
+              audit: { action: 'Dismissed fix notice', target: flag.code },
+              mutate: (draft) => {
+                applySeenFix(draft, flagId, draft.now)
               },
             })
           },
