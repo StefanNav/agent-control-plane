@@ -392,6 +392,9 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-08 | Dark `--cs-fill` = `oklch(0.25 0.005 90)` (not in the handoff); product page title has no letter-spacing (as in `cs-build.js`) | Gaps and conflicts in the design source |
 | 2026-10-08 | Modals don't close on scrim click; every route has an in-shell error screen | Phase 1 review: protect typed reasons; never show a raw error page to visitors |
 | 2026-10-08 | Vercel project linked to the repo; production branch `main`; PR previews behind Vercel login | Public link is the production domain |
+| 2026-10-08 | Seed: agents outside Medications are invented except Prior Auth Agent (E4) and Discharge Summary Agent (PRD); Prior Auth's rule tag `PA-11 v1` is invented | Frames name only Medications agents |
+| 2026-10-08 | Seed: baseline privileges come from the 08 Dec division view (one per Medications activity; PRV-0142 v3 Med Rec active, PRV-0127 v2, PRV-0098 v4 overdue, PRV-0131 v3); the component sheet's awaiting / lapsed / stepped-down cards (dated Oct) live in gallery fixtures and scenarios | The sheet is dated early Oct; the demo clock is 08 Dec |
+| 2026-10-08 | Seed: inbox times aligned to the 09:52 clock (sheet uses 09:42); Phase 3 refines against E5 | One consistent "now" |
 | 2026-10-08 | Forbidden-terms check: real company name lives only in local `.git/info/forbidden-terms`; Phase 0 history was rewritten (before any push) to remove a leaked mention | A plan step had quoted the name literally |
 
 ## Session log

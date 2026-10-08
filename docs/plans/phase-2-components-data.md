@@ -175,7 +175,7 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
 - **Exceptions:** the five `CountersignCore` `EXB` items (drafts, edit, stop, stale, priv), with states and times as in its inbox (one overdue, three due soon, one resolved). Dates align to 08 Dec.
 - **Actions:** ACT-88213 with the nine trace steps from the component sheet.
 
-- [ ] **Step 1: Failing invariant tests**
+- [x] **Step 1: Failing invariant tests**
   - 5 divisions; agents per division `{ revenue-cycle: 6, medications: 20, discharge: 8, imaging-referrals: 4, patient-messages: 3 }`; 41 in total.
   - Every id is unique within its collection.
   - Every reference resolves: agent division, owner, tech owner, sponsor and grantor; activity agent; privilege activity and agent; exception agent and owner; role person and division.
@@ -184,10 +184,10 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
   - Med Rec Agent: `code === 'AGT-0123'`, `version === 'v1.3.0'`, `judgment.label === 'Review: 3 drafts'`, `judgment.ruleTag === 'HS-04 v2'`, `metrics.day === 138`.
   - `createSeed() !== createSeed()`, and mutating one doesn't change the other.
   - `createSeed().personaId === 'marcus'`, and `now === DEMO_NOW`.
-- [ ] **Step 2: Run** `pnpm test src/data`. Expected: FAIL.
-- [ ] **Step 3: Implement** the seed files. `index.ts` assembles them and `structuredClone`s.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(data): Lakeshore Health seed from the frames"`, and add the decision-log rows for invented names and re-dated privileges.
+- [x] **Step 2: Run** `pnpm test src/data`. Expected: FAIL.
+- [x] **Step 3: Implement** the seed files. `index.ts` assembles them and `structuredClone`s.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(data): Lakeshore Health seed from the frames"`, and add the decision-log rows for invented names and re-dated privileges.
 
 ### Task 2.4: Permissions
 
