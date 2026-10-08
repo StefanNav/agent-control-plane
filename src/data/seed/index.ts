@@ -13,7 +13,7 @@ import { privileges } from './privileges'
  * Bump whenever seed data or the DemoState shape changes: saved state from an older
  * version is discarded and replaced by a fresh seed (Review focus 1).
  */
-export const SEED_VERSION = 1
+export const SEED_VERSION = 2
 
 const SEED: DemoState = {
   version: SEED_VERSION,

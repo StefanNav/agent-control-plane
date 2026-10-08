@@ -7,6 +7,9 @@
 /** The seven personas a visitor can view the prototype as. */
 export type PersonaId = 'dana' | 'priya' | 'marcus' | 'sam' | 'drlee' | 'ana' | 'jordan'
 
+/** Every PersonaId, for validating saved state. */
+export const PERSONA_IDS: readonly PersonaId[] = ['dana', 'priya', 'marcus', 'sam', 'drlee', 'ana', 'jordan']
+
 /** Roles from the PRD permission matrix; assigned per division. */
 export type Role = 'programLead' | 'sponsor' | 'owner' | 'techOwner' | 'committee' | 'readOnly' | 'frontline'
 

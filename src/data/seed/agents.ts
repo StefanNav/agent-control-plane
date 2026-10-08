@@ -87,7 +87,7 @@ function otherAgent(divisionId: string, ownerId: string, sponsorId: string, leve
     platform: 'Epic',
     divisionId,
     ownerId,
-    techOwnerId: 'sam',
+    techOwnerId: 'omar',
     sponsorId,
     riskTier: 1,
     lifecycle: 'live',
@@ -139,10 +139,10 @@ export const agents: Agent[] = [
     ['prior-imaging', 'AGT-0172', 'Prior Imaging Lookup Agent', 'v1.0.3', 124, 98.4, 1.5, 98, 0],
     ['protocol-suggest', 'AGT-0173', 'Protocol Suggest Agent', 'v1.1.1', 61, 93.0, 6.5, 93, 0.2],
     ['contrast-screen', 'AGT-0174', 'Contrast Screen Agent', 'v1.0.5', 49, 96.9, 2.9, 97, 0],
-  ] satisfies Other[]).map(otherAgent('imaging-referrals', 'ravi', 'dana', 'draft', 'normal')),
+  ] satisfies Other[]).map(otherAgent('imaging-referrals', 'ravi', 'hana', 'draft', 'normal')),
   ...([
     ['message-triage', 'AGT-0181', 'Message Triage Agent', 'v0.6.0', 302, 0, 0, 87, 0.6],
     ['refill-request', 'AGT-0182', 'Refill Request Agent', 'v0.5.2', 118, 0, 0, 85, 0.4],
     ['appointment-reply', 'AGT-0183', 'Appointment Reply Agent', 'v0.4.1', 76, 0, 0, 84, 0.5],
-  ] satisfies Other[]).map(otherAgent('patient-messages', 'grace', 'dana', 'shadow', 'shadow')),
+  ] satisfies Other[]).map(otherAgent('patient-messages', 'grace', 'owen', 'shadow', 'shadow')),
 ]

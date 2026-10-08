@@ -65,3 +65,16 @@ test('lock reasons name who can act', () => {
   expect(lockReason('retire')).toBe('Program lead or sponsor only')
   expect(lockReason('pause', 'jordan')).toBe('Read-only access')
 })
+
+test('an unknown agent is never a permission', () => {
+  expect(can(s, 'marcus', 'pause', { agentId: 'typo' })).toBe(false)
+  expect(can(s, 'dana', 'pause', { agentId: 'typo' })).toBe(false)
+})
+
+test('Dana keeps the program lead column of §7 everywhere', () => {
+  for (const ctx of [undefined, ...s.divisions.map((d) => ({ divisionId: d.id }))]) {
+    for (const action of ['resume', 'signPrivilege', 'approveTools', 'configureTools', 'approveGoLive'] as const) {
+      expect(can(s, 'dana', action, ctx), `${action} ${ctx?.divisionId ?? 'no context'}`).toBe(false)
+    }
+  }
+})

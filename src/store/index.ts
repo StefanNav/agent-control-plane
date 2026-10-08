@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
-import type { DemoState, PersonaId } from '../data/types'
+import { PERSONA_IDS, type DemoState, type PersonaId } from '../data/types'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
 
@@ -21,6 +21,21 @@ export interface DemoActions {
 export type DemoStore = DemoState & DemoActions
 
 const DATA_KEYS = Object.keys(createSeed()) as Array<keyof DemoState>
+
+/**
+ * Saved state is used only if it is a full snapshot of the current seed version with a known
+ * persona; anything else (no version, missing collections, a stray persona) starts from the seed.
+ */
+function isCurrentSnapshot(saved: unknown): saved is DemoState {
+  if (!saved || typeof saved !== 'object') return false
+  const s = saved as Record<string, unknown>
+  const seed = createSeed() as unknown as Record<string, unknown>
+  return (
+    s.version === SEED_VERSION &&
+    PERSONA_IDS.includes(s.personaId as PersonaId) &&
+    DATA_KEYS.every((key) => typeof s[key] === typeof seed[key] && Array.isArray(s[key]) === Array.isArray(seed[key]))
+  )
+}
 
 /** Just the data, without the action functions. */
 export function dataOf(store: DemoState): DemoState {
@@ -45,14 +60,16 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
           claimException: (id) => {
             const exception = get().exceptions.find((e) => e.id === id)
             if (!exception) return { ok: false, reason: 'Not found' }
-            const agent = get().agents.find((a) => a.id === exception.agentId)
+            if (exception.state === 'resolved' || exception.state === 'dismissed') return { ok: false, reason: 'Already resolved' }
+            if (exception.claimedAt) return { ok: false, reason: 'Already claimed' }
             return act({
               action: 'resolveException',
-              ctx: { divisionId: agent?.divisionId },
+              ctx: { agentId: exception.agentId },
               audit: { action: 'Claimed', target: exception.code },
               mutate: (draft) => {
                 const target = draft.exceptions.find((e) => e.id === id)!
                 target.claimedAt = draft.now
+                target.ownerId = draft.personaId
                 if (target.state === 'new') target.state = 'claimed'
               },
             })
@@ -66,6 +83,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
         partialize: dataOf,
         // Any saved state from another seed version is replaced by a fresh seed (Review focus 1).
         migrate: () => createSeed(),
+        merge: (saved, current) => (isCurrentSnapshot(saved) ? { ...current, ...saved } : current),
       },
     ),
   )

@@ -24,10 +24,11 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
   // E6 6b: Marcus paused Med Rec Agent at 09:47.
   'med-rec-paused': pauseMedRec,
 
-  // E6 6d / component sheet 08: Marcus asks to resume; Priya hasn't approved yet.
+  // E6 6d / component sheet 08: Marcus asks to resume 2 h 14 min after pausing; Priya hasn't approved yet.
+  // The clock stays at 09:52 so the rest of the hospital reads as live.
   'resume-requested': (s) => {
     pauseMedRec(s)
-    s.now = '2026-12-08T12:01:00'
+    medRec(s).pausedAt = '2026-12-08T07:38:00'
     s.resumeRequests.push({
       agentId: 'med-rec',
       requestedBy: 'marcus',

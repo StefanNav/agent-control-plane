@@ -101,3 +101,46 @@ test('Review focus 2: storage that throws falls back to memory', () => {
     vi.unstubAllGlobals()
   }
 })
+
+describe('hydration rejects saved state that is not a full current snapshot (Review focus 1)', () => {
+  const load = (raw: string) => {
+    const storage = createMemoryStorage()
+    storage.setItem('acp-demo', raw)
+    return dataOf(createDemoStore(storage).getState())
+  }
+  const current = () => ({ ...createSeed(), personaId: 'priya' })
+
+  test('corrupt JSON', () => {
+    expect(load('{not json')).toEqual(createSeed())
+  })
+  test('a payload with no version', () => {
+    expect(load(JSON.stringify({ state: { personaId: 'priya' } }))).toEqual(createSeed())
+  })
+  test('the current version but missing data', () => {
+    expect(load(JSON.stringify({ version: SEED_VERSION, state: { version: SEED_VERSION, personaId: 'priya' } }))).toEqual(createSeed())
+  })
+  test('an unknown persona', () => {
+    const bad = { ...current(), personaId: 'nobody' }
+    expect(load(JSON.stringify({ version: SEED_VERSION, state: bad }))).toEqual(createSeed())
+  })
+  test('a valid snapshot is kept', () => {
+    expect(load(JSON.stringify({ version: SEED_VERSION, state: current() })).personaId).toBe('priya')
+  })
+})
+
+describe('claiming an exception', () => {
+  test('cannot claim what is already claimed or resolved; nothing changes or is logged', () => {
+    const store = fresh()
+    const before = store.getState().exceptions.find((e) => e.id === 'exc-5527')!
+    expect(store.getState().claimException('exc-5527')).toEqual({ ok: false, reason: 'Already claimed' })
+    expect(store.getState().claimException('exc-5521')).toEqual({ ok: false, reason: 'Already resolved' })
+    expect(store.getState().exceptions.find((e) => e.id === 'exc-5527')!.claimedAt).toBe(before.claimedAt)
+    expect(store.getState().audit).toEqual([])
+  })
+  test('claiming makes you the owner', () => {
+    const store = fresh()
+    store.getState().setPersona('dana')
+    expect(store.getState().claimException('exc-5530')).toEqual({ ok: true })
+    expect(store.getState().exceptions.find((e) => e.id === 'exc-5530')!.ownerId).toBe('dana')
+  })
+})

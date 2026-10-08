@@ -126,3 +126,13 @@ test('fresh copies, default persona and clock', () => {
   expect(a.version).toBe(SEED_VERSION)
   expect(a.audit).toEqual([])
 })
+
+test('agent owners, sponsors and tech owners hold those roles in the agent’s division', () => {
+  const holds = (personId: string, role: string, divisionId: string) =>
+    seed.roles.some((r) => r.personId === personId && r.role === role && (r.divisionId === divisionId || r.divisionId === 'all'))
+  for (const a of seed.agents) {
+    expect(holds(a.ownerId, 'owner', a.divisionId), `${a.id} owner`).toBe(true)
+    expect(holds(a.sponsorId, 'sponsor', a.divisionId), `${a.id} sponsor`).toBe(true)
+    expect(holds(a.techOwnerId, 'techOwner', a.divisionId), `${a.id} tech owner`).toBe(true)
+  }
+})

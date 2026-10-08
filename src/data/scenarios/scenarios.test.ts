@@ -54,3 +54,10 @@ test('loading a scenario keeps the current persona', () => {
   expect(store.getState().personaId).toBe('priya')
   expect(store.getState().agents.find((a) => a.id === 'med-rec')!.lifecycle).toBe('paused')
 })
+
+test('resume-requested keeps the demo clock; the pause was 2 h 14 min earlier', async () => {
+  const { DEMO_NOW, formatAgo } = await import('../../lib/clock')
+  const s = buildScenario('resume-requested')
+  expect(s.now).toBe(DEMO_NOW)
+  expect(formatAgo(agent(s, 'med-rec').pausedAt!, s.now)).toBe('2 h 14 min ago')
+})

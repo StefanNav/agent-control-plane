@@ -14,6 +14,9 @@ export const people: Person[] = [
   { id: 'elena', name: 'Elena', initial: 'E', title: 'Discharge services manager' },
   { id: 'ravi', name: 'Ravi', initial: 'R', title: 'Imaging operations manager' },
   { id: 'grace', name: 'Grace', initial: 'G', title: 'Patient access manager' },
+  { id: 'hana', name: 'Hana', initial: 'H', title: 'Director of Imaging' },
+  { id: 'owen', name: 'Owen', initial: 'O', title: 'Director of Patient Access' },
+  { id: 'omar', name: 'Omar', initial: 'O', title: 'Integration analyst' },
 ]
 
 /** Roles are assigned per division; 'all' spans every division. */
@@ -30,7 +33,12 @@ export const roles: RoleAssignment[] = [
   { personId: 'elena', divisionId: 'discharge', role: 'owner' },
   { personId: 'priya', divisionId: 'discharge', role: 'sponsor' },
   { personId: 'ravi', divisionId: 'imaging-referrals', role: 'owner' },
-  { personId: 'dana', divisionId: 'imaging-referrals', role: 'sponsor' },
+  { personId: 'hana', divisionId: 'imaging-referrals', role: 'sponsor' },
   { personId: 'grace', divisionId: 'patient-messages', role: 'owner' },
-  { personId: 'dana', divisionId: 'patient-messages', role: 'sponsor' },
+  { personId: 'owen', divisionId: 'patient-messages', role: 'sponsor' },
+  // Sam is technical owner in Medications only; Omar covers the other divisions.
+  { personId: 'omar', divisionId: 'revenue-cycle', role: 'techOwner' },
+  { personId: 'omar', divisionId: 'discharge', role: 'techOwner' },
+  { personId: 'omar', divisionId: 'imaging-referrals', role: 'techOwner' },
+  { personId: 'omar', divisionId: 'patient-messages', role: 'techOwner' },
 ]

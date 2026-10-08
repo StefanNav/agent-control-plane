@@ -65,6 +65,7 @@ export function can(
   ctx: PermContext = {},
 ): boolean {
   const agent = ctx.agentId ? state.agents.find((a) => a.id === ctx.agentId) : undefined
+  if (ctx.agentId && !agent) return false
   const divisionId = agent?.divisionId ?? ctx.divisionId
   const allowed = MATRIX[action]
   return state.roles.some((assignment) => {
