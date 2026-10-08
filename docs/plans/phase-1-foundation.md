@@ -197,15 +197,15 @@ Expected: FAIL (missing file / missing export)
 
 Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a4.25 4.25 0 1 1 0 8.5a4.25 4.25 0 1 1 0-8.5Z` stroke 1.5, no fill; diamond `M6 0.9L11.1 6L6 11.1L0.9 6Z` filled; triangle `M6 1.2L11.4 10.6H0.6Z` filled; stale = ring with `stroke-dasharray="2.2 1.75"`; shadow = ring + filled `M6 1.75a4.25 4.25 0 0 0 0 8.5Z`; paused `M2.6 2h2.4v8H2.6ZM7 2h2.4v8H7Z` filled; check `M2.5 6.2l2.3 2.3 4.7-5` stroke 1.8 round caps and joins; lock = shackle `M3.5 5.5V4a2.5 2.5 0 0 1 5 0v1.5` stroke 1.4 + `rect x=2 y=5.5 width=8 height=5.5 rx=1` filled; chevron viewBox `0 0 10 10`, `M2 3.5l3 3 3-3` stroke 1.5. All others use viewBox `0 0 12 12`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - each name renders an `svg` whose first `path` has the `d` above;
   - `stale` path has `stroke-dasharray="2.2 1.75"`;
   - `shadow` renders 2 paths; `lock` renders a path and a rect;
   - without `title` the svg has `aria-hidden="true"`; with `title` it has `role="img"` and a `<title>`.
-- [ ] **Step 2: Run; verify fail.** `pnpm test src/design-system/icons` → FAIL
-- [ ] **Step 3: Implement** `paths.ts` (data) and `Icon.tsx`.
-- [ ] **Step 4: Run; verify pass.**
-- [ ] **Step 5: Commit** `git commit -m "feat(ds): inline SVG icon set"`
+- [x] **Step 2: Run; verify fail.** `pnpm test src/design-system/icons` → FAIL
+- [x] **Step 3: Implement** `paths.ts` (data) and `Icon.tsx`.
+- [x] **Step 4: Run; verify pass.**
+- [x] **Step 5: Commit** `git commit -m "feat(ds): inline SVG icon set"`
 
 ### Task 1.4: Form primitives
 
