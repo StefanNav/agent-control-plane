@@ -42,7 +42,7 @@ Verify: `grep -rn "README" docs CLAUDE.md` shows only (a) `docs/design-handoff.m
 - [x] **Step 4: Write the interim project `README.md`**
 
 Contents (short; Phase 9 replaces it):
-- Title: `Agent Control Plane: clickable prototype`
+- Title: `Signal Agent Control Plane: clickable prototype` (brand set by Stefan on 2026-10-08)
 - One paragraph: a front-end prototype of an operations console for supervising AI agents in a hospital (onboarding, staged privileges, live supervision, stopping, audit), built from the Countersign design system, mock data only, fictional hospital Lakeshore Health.
 - `Status: in progress.` Link to `docs/BUILD_PLAN.md`.
 - Links: spec, design handoff, `designs/` (how to view: `cd designs && python3 -m http.server 4599`).
@@ -80,7 +80,7 @@ Expected: no file names, `exit=1`
 
 ```bash
 gh repo create StefanNav/agent-control-plane --public --source . --remote origin --push \
-  --description "Clickable prototype: an operations console for supervising AI agents in hospitals (Countersign design system, mock data)"
+  --description "Signal Agent Control Plane: clickable prototype of an operations console for supervising AI agents in hospitals (Countersign design system, mock data)"
 ```
 
 - [ ] **Step 4: Verify**

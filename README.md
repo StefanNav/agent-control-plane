@@ -1,6 +1,6 @@
-# Agent Control Plane: clickable prototype
+# Signal Agent Control Plane: clickable prototype
 
-A front-end prototype of an operations console for supervising AI agents in a hospital. Named humans onboard an agent, grant it staged privileges (Shadow → Draft → Supervised → Autonomous), supervise it by exception, stop it in one action, and reconstruct anything it did for an auditor. It's built from the **Countersign** design system and runs entirely on mock data for a fictional hospital, Lakeshore Health.
+A front-end prototype of **Agent Control Plane**, the agent layer of Signal's AI management system (AIMS): an operations console for supervising AI agents in a hospital. Named humans onboard an agent, grant it staged privileges (Shadow → Draft → Supervised → Autonomous), supervise it by exception, stop it in one action, and reconstruct anything it did for an auditor. It's built from the **Countersign** design system and runs entirely on mock data for a fictional hospital, Lakeshore Health.
 
 **Status: in progress.** Progress, phases and what's next live in [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md).
 

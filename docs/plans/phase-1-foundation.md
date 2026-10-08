@@ -54,7 +54,7 @@ Record the installed major versions of react, react-router, vite, vitest in the 
   - `src/test/setup.ts`: `import '@testing-library/jest-dom/vitest'`.
   - `eslint.config.js`: add `eslint-config-prettier`; ignore `dist`, `designs`, `reference`, `playwright-report`, `test-results`.
   - `.prettierrc.json`: `{ "singleQuote": true, "semi": false, "printWidth": 100 }`; `.prettierignore`: `designs/`, `reference/`, `pnpm-lock.yaml`, `dist/`.
-  - `index.html`: `<title>Agent Control Plane · Prototype</title>`, `lang="en"`.
+  - `index.html`: `<title>Signal · Agent Control Plane</title>`, `lang="en"`.
   - `package.json` scripts:
     - `"typecheck": "tsc -b"`, `"lint": "eslint ."`, `"test": "vitest run"`, `"build": "tsc -b && vite build"`
     - `"check": "pnpm typecheck && pnpm lint && pnpm test && vite build"`
@@ -298,7 +298,7 @@ Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a
 - `TopNav(props: { current: NavSection | null; avatarInitial: string; hospital?: string /* 'Lakeshore Health' */ })`: 48 high; "AIMS" wordmark; nav gap 24; current item 600 + `inset 0 -2px 0 var(--cs-acc)` + `aria-current="page"`.
 - `PageHeader(props: { breadcrumb?: ReactNode; title: ReactNode; status?: ReactNode; idLine?: ReactNode; chips?: ReactNode; people?: { role: string; name: string }[]; actions?: ReactNode; tabs?: ReactNode; steps?: ReactNode })`: title is the page's `h1`; padding 24 40 24 (0 bottom when `tabs` or `steps`).
 - `Split(props: { main: ReactNode; side: ReactNode })` (1fr + 340, gap 40, padding 32 40 48); `SplitL(props: { list: ReactNode; detail: ReactNode })` (420 + 1fr, gap 24, padding 24 40 48); `Body(props: { children: ReactNode })` (column, gap 20, padding 28 40 48).
-- `PrototypeBar()`: 32 px ink strip; left "Agent Control Plane · Prototype" (link to `/`); right static "Viewing as Marcus · Agent owner", "Stories", "Reset demo", "About" (wired in Phase 2 and 8).
+- `PrototypeBar()`: 32 px ink strip; left "Signal · Agent Control Plane · Prototype" (link to `/`); right static "Viewing as Marcus · Agent owner", "Stories", "Reset demo", "About" (wired in Phase 2 and 8).
 - `AppShell(props: { shell: 'app' | 'prototype' | 'kiosk' })`: the app container has `min-width: 1280px` (narrower windows scroll horizontally; the <1024 desktop gate comes in Phase 8). `app` = PrototypeBar + TopNav + `<Outlet/>`; `prototype` = PrototypeBar + `<Outlet/>`; `kiosk` = `<Outlet/>` only. TopNav `current` comes from the deepest route `handle.nav` (`useMatches`).
 - `NotFound()`: inside the shell; `h1` "Page not found"; one line "This page isn't part of the prototype."; link "Go to the Command Board" → `/operations`.
 

@@ -45,7 +45,7 @@ Each phase gets a step-by-step plan in `docs/plans/phase-N-<slug>.md`, written i
 
 Every task implicitly includes these. Values are verbatim from the spec.
 
-- **Never commit** `reference/source-docs/` or any `.docx`. Never name the company the source docs were written for, anywhere in the repo or site.
+- **Never commit** `reference/source-docs/` or any `.docx`. Never name the real company the source docs were written for, anywhere in the repo or site. The brand is **Signal** (stand-in; spec D7). Before every push, `git grep -il -f .git/info/forbidden-terms` must print nothing (the terms file is local-only).
 - Stack is fixed: Vite, React 19, TypeScript strict, React Router v7, Zustand, CSS Modules + `src/design-system/tokens.css`. **No UI component library, no icon library, no Tailwind.**
 - Fonts: IBM Plex Sans and IBM Plex Mono, weights **400 and 600 only**, via `@fontsource`.
 - Colours only through `--cs-*` tokens (OKLCH, values from `docs/design-handoff.md` "Design tokens"). Indigo = primary action and current/selected. Teal = review waiting only. Amber/red = warning/critical only. Healthy = grey. No gradients, no emoji, no coloured left-border cards.
@@ -350,6 +350,8 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-08 | Undesigned tabs composed from existing primitives only (D5) | Nav stays believable without inventing visuals |
 | 2026-10-08 | Desktop only; gate below 1024 px (D6) | Designs are 1440 px |
 | 2026-10-08 | Rolling-wave planning: each phase writes its detailed plan file as task N.0 | Later phases depend on interfaces built earlier |
+| 2026-10-08 | Brand is **Signal**, a stand-in for the real company (spec D7). Top-nav wordmark stays "AIMS" | Stefan's call; keeps the real name out while giving the prototype a brand |
+| 2026-10-08 | Forbidden-terms check: real company name lives only in local `.git/info/forbidden-terms`; Phase 0 history was rewritten (before any push) to remove a leaked mention | A plan step had quoted the name literally |
 
 ## Session log
 

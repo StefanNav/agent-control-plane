@@ -9,12 +9,14 @@
 
 ## 1. Purpose
 
-Build a front-end-only, clickable prototype of **Agent Control Plane**, the operations side of an AI management system (AIMS) for hospitals, from the **Countersign** designs in `designs/`. It is a portfolio piece. It must:
+Build a front-end-only, clickable prototype of **Agent Control Plane**, the operations side of **Signal**'s AI management system (AIMS) for hospitals, from the **Countersign** designs in `designs/`. It is a portfolio piece. It must:
 
 1. Show the user experience at high fidelity.
 2. Communicate what the product does and **how each persona uses it**.
 3. Be structured like a real product (routing, component library, typed data model, state), running entirely on mock data.
 4. Be publicly shareable: anyone with the link can click through it in a browser.
+
+**Brand.** *Signal* is the fictional company brand for this prototype, a stand-in for the company the source docs were written for. The product is **Agent Control Plane**, the agent layer of Signal's **AIMS**. The product's top-nav wordmark stays "AIMS" exactly as designed; "Signal" appears in the prototype layer (prototype bar, landing, About, page title, README). The real company name never appears anywhere.
 
 ### Success criteria
 
@@ -56,7 +58,7 @@ Copy on screens is final: take it from the frames. People, IDs, counts and dates
 
 A thin dark strip (about 32 px) sits **above** the product's own 48 px top nav. It holds the demo controls so they never mix with the designed UI:
 
-- "Agent Control Plane · Prototype" (links to `/`)
+- "Signal · Agent Control Plane · Prototype" (links to `/`)
 - Persona switcher: "Viewing as **Marcus** · Agent owner ▾"
 - Stories (menu of the 7 stories)
 - Reset demo
@@ -127,7 +129,7 @@ Switching persona changes:
 
 ### 4.6 About and component gallery
 
-- `/about`: short case-study context: the problem, the product principles, the Countersign design system, and how to use the prototype. Written from the source docs without naming the company those docs were written for.
+- `/about`: short case-study context: the problem, the product principles, the Countersign design system, and how to use the prototype. Written from the source docs, with **Signal** in place of the real company name.
 - `/about/components`: the 10 product components and the primitives, in light and dark, mirroring `designs/Countersign Components.dc.html`.
 
 ### 4.7 Viewport policy
@@ -419,7 +421,8 @@ Each phase ends at a checkpoint: a PR with a Vercel preview URL that Stefan revi
 | # | Item | Decision |
 |---|---|---|
 | D1 | Persona UX | Guided stories + free explore with persona switcher (§4) |
-| D2 | Repo visibility | Public repo; `.docx` source docs git-ignored; company named in the source docs not used on the site |
+| D2 | Repo visibility | Public repo; `.docx` source docs git-ignored; the real company named in the source docs never appears in the repo or on the site |
+| D7 | Brand | **Signal** is the stand-in brand (prototype bar, landing, About, page title, README). Top-nav wordmark stays "AIMS" as designed |
 | D3 | Stack | Vite + React + TS + CSS Modules + Zustand + React Router; Vercel (§5.1) |
 | D4 | E4 alternatives | Table is the default board; tiles and exceptions-first are a View toggle; wall display is `/wall` |
 | D5 | Undesigned tabs | Composed from existing primitives only, flagged "composed" (§5.5) |

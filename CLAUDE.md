@@ -1,6 +1,6 @@
 # Agent Control Plane prototype
 
-A clickable, front-end-only prototype of **Agent Control Plane**: the operations console of an AI management system (AIMS) for hospitals, where named humans onboard AI agents, grant staged privileges, supervise them live, stop them and produce audit evidence. Built from the **Countersign** designs in `designs/`. Mock data only (fictional hospital: Lakeshore Health). It's a public portfolio piece.
+A clickable, front-end-only prototype of **Signal Agent Control Plane**: the operations console of Signal's AI management system (AIMS) for hospitals, where named humans onboard AI agents, grant staged privileges, supervise them live, stop them and produce audit evidence. Built from the **Countersign** designs in `designs/`. Mock data only (fictional hospital: Lakeshore Health). It's a public portfolio piece.
 
 ## Start every session here
 
@@ -20,9 +20,14 @@ A clickable, front-end-only prototype of **Agent Control Plane**: the operations
 | `reference/cs-build.js` | Exact token and primitive specs (wins over the handoff for E2–E15 detail) |
 | `designs/*.dc.html` | The frames. Copy, layout and values come from here |
 | `reference/epics-and-stories.txt` | Stories and acceptance criteria |
-| `reference/source-docs/` | PRD, Vision, Roadmap (.docx). **Local only, git-ignored. Never commit them and never name the company they were written for.** |
+| `reference/source-docs/` | PRD, Vision, Roadmap (.docx). **Local only, git-ignored. Never commit them and never name the real company they were written for.** |
 
 View the designs: `pnpm designs` (after Phase 1) or `cd designs && python3 -m http.server 4599`, then open `http://localhost:4599`.
+
+## Brand and the real company name
+
+- The brand is **Signal**, a stand-in for the real company in the source docs. Use it in the prototype layer (prototype bar, landing, About, page title, README). The product's top-nav wordmark stays "AIMS" as designed.
+- The real company name must never appear in the repo or on the site. Before every push run `git grep -il -f .git/info/forbidden-terms` (must print nothing). That terms file is local-only; if it's missing, ask Stefan for the terms rather than guessing.
 
 ## Commands (available from Phase 1)
 
