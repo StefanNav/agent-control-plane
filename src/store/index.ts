@@ -2,9 +2,9 @@ import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
-import { PERSONA_IDS, type DemoState, type PersonaId, type Verb } from '../data/types'
+import { PERSONA_IDS, type DemoState, type Incident, type PersonaId, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
-import { applyPause, applyResume, nextArchiveCode } from './mutations'
+import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
 
@@ -59,6 +59,8 @@ export interface DemoActions {
   disableAgent: (agentId: string, reason: string) => ActionResult
   /** Archive for good after typing the agent's exact name; it leaves every board (6f). */
   retireAgent: (agentId: string, input: { typedName: string; reason: string }) => ActionResult
+  /** Open an incident for an agent with the actions it concerns (7a, 7b); anyone who can view the audit may. */
+  openIncident: (agentId: string, input: { title: string; actionIds: string[] }) => ActionResult
 }
 
 export interface PauseInput {
@@ -377,6 +379,50 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                 for (const e of draft.exceptions)
                   if (e.agentId === agentId && e.state !== 'resolved' && e.state !== 'dismissed')
                     Object.assign(e, { state: 'resolved', outcome: 'Closed: agent retired', closedAt: draft.now, closedBy: draft.personaId })
+              },
+            })
+          },
+          openIncident: (agentId, { title, actionIds }) => {
+            const s = get()
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!agent) return { ok: false, reason: 'Not found' }
+            const what = title.trim()
+            if (!what) return { ok: false, reason: 'A title is required' }
+            const code = nextIncidentCode(s)
+            return act({
+              action: 'openIncident',
+              ctx: { agentId },
+              audit: { action: 'Opened incident', target: code, reason: what },
+              mutate: (draft) => {
+                const name = (id: string) => draft.people.find((p) => p.id === id)?.name ?? id
+                const linked = draft.actions.filter((a) => actionIds.includes(a.id)).sort((a, b) => a.at.localeCompare(b.at))
+                const timeline: Incident['timeline'] = linked.map((a, i) => ({
+                  at: a.at,
+                  title: a.blockedBy ? (i === 0 ? 'First dose change blocked' : 'Blocked again') : i === 0 ? 'First linked action' : 'Linked action',
+                  sub: `${a.code} · ${a.title.replace('encounter ', 'enc ').replace(/^Draft med list · /, '')}`,
+                }))
+                const target = draft.agents.find((a) => a.id === agentId)!
+                if (target.pausedAt && target.pausedBy)
+                  timeline.push({ at: target.pausedAt, title: `${name(target.pausedBy)} paused the agent`, sub: target.pause ? `${target.pause.routed} drafts to pharmacists` : undefined, by: target.pausedBy })
+                timeline.push({ at: draft.now, title: `${name(draft.personaId)} opened this incident`, sub: `Linked ${linked.length} ${linked.length === 1 ? 'action' : 'actions'}`, by: draft.personaId })
+                timeline.sort((a, b) => a.at.localeCompare(b.at))
+                draft.incidents.push({
+                  id: code.toLowerCase(),
+                  code,
+                  title: what,
+                  agentId,
+                  state: 'open',
+                  openedAt: draft.now,
+                  openedBy: draft.personaId,
+                  commanderId: target.ownerId,
+                  harm: 'Under review',
+                  summary: linked.length
+                    ? `${target.name}: ${linked.length} ${linked.length === 1 ? 'action' : 'actions'} linked${linked[0]?.blockedBy ? `, blocked by ${linked[0].blockedBy}` : ''}, between ${linked[0]!.at.slice(11, 16)} and ${linked.at(-1)!.at.slice(11, 16)}.`
+                    : `${target.name}: opened without linked actions.`,
+                  linkedActionIds: actionIds.filter((id) => linked.some((a) => a.id === id)),
+                  corrections: [],
+                  timeline,
+                })
               },
             })
           },

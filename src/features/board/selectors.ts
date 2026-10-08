@@ -411,7 +411,7 @@ export function selectPrivilegeCards(s: DemoState, agentId: string): PrivilegeCa
 export function selectAgentHistory(s: DemoState, agentId: string) {
   const agent = s.agents.find((a) => a.id === agentId)
   if (!agent) return []
-  const codes = new Set([agent.code, agent.name, ...s.exceptions.filter((e) => e.agentId === agentId).map((e) => e.code)])
+  const codes = new Set([agent.code, agent.name, ...s.exceptions.filter((e) => e.agentId === agentId).map((e) => e.code), ...s.incidents.filter((i) => i.agentId === agentId).map((i) => i.code)])
   const audit = s.audit
     .filter((a) => codes.has(a.target))
     .map((a) => ({ id: a.id, at: a.at, text: `${a.action} ${a.target}`, sub: `${personName(s, a.who)}${a.reason ? ` · ${a.reason}` : ''}` }))

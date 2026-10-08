@@ -18,6 +18,7 @@ export type PermAction =
   | 'retire'
   | 'resolveException'
   | 'viewAudit'
+  | 'openIncident'
   | 'manageDivisions'
 
 /** How far a role reaches for an action: everywhere, its own divisions, or its own agents. */
@@ -46,6 +47,8 @@ const MATRIX: Record<PermAction, Partial<Record<Role, Scope>>> = {
   retire: { programLead: 'all', sponsor: 'own' },
   resolveException: BUILDERS,
   viewAudit: ALL_VIEWERS,
+  // 7a: opening an incident is the one thing read-only Jordan can create.
+  openIncident: ALL_VIEWERS,
   manageDivisions: { programLead: 'all' },
 }
 

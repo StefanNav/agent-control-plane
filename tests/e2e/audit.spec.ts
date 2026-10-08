@@ -1,0 +1,41 @@
+import { expect, test } from '@playwright/test'
+import { collectErrors } from './console'
+
+const asJordan = async (page: import('@playwright/test').Page) => {
+  await page.goto('/operations/actions')
+  await page.getByRole('button', { name: /^Viewing as/ }).click()
+  await page.getByRole('menuitem', { name: /Jordan/ }).click()
+}
+
+test('action list (7a) and trace (7b), read only, as Jordan', async ({ page }) => {
+  const errors = collectErrors(page)
+  await asJordan(page)
+  await page.goto('/operations/actions?agent=med-rec&policy=blocked')
+  await expect(page.getByText('3 of 1,912 actions today')).toBeVisible()
+  await expect(page.getByText('Read only · risk manager')).toBeVisible()
+  const rows = page.getByRole('table', { name: 'Actions' }).locator('[data-row-id]')
+  await expect(rows).toHaveCount(3)
+  await rows.first().getByRole('link', { name: 'ACT-88213' }).click()
+  await expect(page).toHaveURL(/\/operations\/actions\/act-88213/)
+  await expect(page.getByRole('heading', { name: 'Draft med list · encounter 4417' })).toBeVisible()
+  await expect(page.getByText('Policy · blocked')).toBeVisible()
+  await expect(page.getByText('4 checked · 1 blocked')).toBeVisible()
+  expect(errors).toEqual([])
+})
+
+test('Open incident from the trace creates INC-0031 and opens its record', async ({ page }) => {
+  await asJordan(page)
+  await page.goto('/operations/actions/act-88213')
+  await page.getByRole('button', { name: 'Open incident' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Open an incident' })
+  await expect(dialog).toContainText('Links 3 actions blocked by HS-04 v2 today')
+  await dialog.getByRole('button', { name: 'Open incident' }).click()
+  await expect(page).toHaveURL(/\/operations\/incidents\/inc-0031/)
+})
+
+test('Review focus 5: an unknown action is not found; a trace-less action says so', async ({ page }) => {
+  await page.goto('/operations/actions/nope')
+  await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible()
+  await page.goto('/operations/actions/act-88240')
+  await expect(page.getByText('No step-level trace was kept for this action.')).toBeVisible()
+})

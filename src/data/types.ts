@@ -307,6 +307,8 @@ export interface AgentAction {
   agentId: string
   agentVersion: string
   sop: string
+  /** "7f3a·c210" (7b). */
+  sopHash?: string
   actingFor: string
   /** Rule tag of the policy that blocked part of it, if any. */
   blockedBy?: string

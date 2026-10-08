@@ -451,7 +451,7 @@ These are the failure modes the spec implies that no screen test naturally cover
   - The Operations tabs are shared with `BoardHeader`.
   - 7a's footnote becomes gender-neutral: "Read only: Jordan can open anything on any board and replay any action, but has no controls. Opening an incident is the one thing Jordan can create. Every view is logged."
 
-- [ ] **Step 1: Failing tests (Review focus 5)**
+- [x] **Step 1: Failing tests (Review focus 5)**
   - **Selectors:**
     - Filters `{ agentId: 'med-rec', policy: 'blocked' }` give ACT-88213, ACT-88199 and ACT-88171, newest first, with the summary "3 of 1,912 actions today".
     - The trace of ACT-88213 has 8 steps and the "4 checked · 1 blocked" card.
@@ -462,10 +462,10 @@ These are the failure modes the spec implies that no screen test naturally cover
     - Opening ACT-88213 shows "POLICY · BLOCKED" with "HS-04 v2".
     - `/operations/actions/nope` is NotFound.
     - ACT-88240 shows the no-trace message.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 7a and 7b.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(audit): action list and trace"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 7a and 7b.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(audit): action list and trace"`.
 
 ### Task 4.8: Incidents list and incident record (7c)
 

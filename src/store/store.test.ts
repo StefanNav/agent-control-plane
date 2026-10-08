@@ -443,3 +443,19 @@ describe('disable or retire (6f) — Review focus 2, 3, 4', () => {
     expect(store.getState().audit.at(-1)).toMatchObject({ action: 'Disabled', target: 'AGT-0123' })
   })
 })
+
+test('Jordan opens an incident from ACT-88213 with the day\'s blocked actions linked (7a, 7c)', () => {
+  const store = fresh()
+  store.getState().setPersona('jordan')
+  expect(store.getState().openIncident('med-rec', { title: 'Dose changes proposed on admission drafts', actionIds: ['act-88213', 'act-88199', 'act-88171'] })).toEqual({ ok: true })
+  const inc = store.getState().incidents.at(-1)!
+  expect(inc).toMatchObject({ code: 'INC-0031', agentId: 'med-rec', state: 'open', openedBy: 'jordan', commanderId: 'marcus', openedAt: DEMO_NOW })
+  expect(inc.linkedActionIds).toEqual(['act-88213', 'act-88199', 'act-88171'])
+  expect(inc.timeline.map((t) => t.title)).toEqual(['First dose change blocked', 'Blocked again', 'Blocked again', 'Jordan opened this incident'])
+  expect(store.getState().audit.at(-1)).toMatchObject({ who: 'jordan', action: 'Opened incident', target: 'INC-0031' })
+})
+
+test('openIncident needs a title', () => {
+  const store = fresh()
+  expect(store.getState().openIncident('med-rec', { title: ' ', actionIds: [] })).toEqual({ ok: false, reason: 'A title is required' })
+})

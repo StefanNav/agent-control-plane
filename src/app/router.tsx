@@ -6,6 +6,8 @@ import { HospitalBoard } from '../features/board/HospitalBoard'
 import { WallDisplay } from '../features/board/WallDisplay'
 import { InboxPage } from '../features/inbox/InboxPage'
 import { InventoryPage } from '../features/inventory/InventoryPage'
+import { ActionsPage } from '../features/audit/ActionsPage'
+import { ActionTracePage } from '../features/audit/ActionTracePage'
 import { NotFound } from '../layout/NotFound'
 import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
 import { AppShell } from './AppShell'
@@ -23,6 +25,8 @@ const PAGES: Record<string, ReactNode> = {
   '/operations/inbox': <InboxPage />,
   '/operations/inbox/:exceptionId': <InboxPage />,
   '/inventory': <InventoryPage />,
+  '/operations/actions': <ActionsPage />,
+  '/operations/actions/:actionId': <ActionTracePage />,
   '/wall': <WallDisplay />,
 }
 

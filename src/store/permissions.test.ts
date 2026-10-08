@@ -25,6 +25,8 @@ const MATRIX: Array<[PermAction, [boolean, boolean, boolean, boolean, boolean, b
   ['retire', [true, true, false, false, false, false]],
   ['resolveException', [true, true, true, true, false, false]],
   ['viewAudit', [true, true, true, true, true, true]],
+  // 7a: opening an incident is the one thing read-only Jordan can create.
+  ['openIncident', [true, true, true, true, true, true]],
   ['manageDivisions', [true, false, false, false, false, false]],
 ]
 

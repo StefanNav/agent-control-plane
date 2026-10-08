@@ -27,6 +27,18 @@ export interface ActionTraceView {
 export interface ActionTraceProps {
   view: ActionTraceView
   onExport?: () => void
+  /** `card`: component sheet 09, with its own head and a rail. `rows`: the trace page (7b), ruled rows only. */
+  layout?: 'card' | 'rows'
+}
+
+/** 7b's step labels. */
+const ROW_LABEL: Record<TraceStepKind, string> = {
+  input: 'Input',
+  tool: 'Tool call',
+  policyPassed: 'Policy · passed',
+  policyBlocked: 'Policy · blocked',
+  output: 'Output',
+  reviewer: 'Reviewer outcome',
 }
 
 const KIND_LABEL: Record<TraceStepKind, string> = {
@@ -48,7 +60,30 @@ const MARKER: Record<TraceStepKind, ReactNode> = {
 }
 
 /** Every action replayable, start to finish, to the millisecond (component 09). */
-export function ActionTrace({ view, onExport }: ActionTraceProps) {
+export function ActionTrace({ view, onExport, layout = 'card' }: ActionTraceProps) {
+  if (layout === 'rows') {
+    return (
+      <ol className={styles.rowList}>
+        {view.steps.map((step, i) => {
+          const blocked = step.kind === 'policyBlocked'
+          return (
+            <li key={`${step.at}-${i}`} className={cx(styles.row, blocked && styles.rowBlocked)}>
+              <span className={styles.rowTime}>{step.at}</span>
+              <span className={cx(styles.rowKind, blocked && styles.blockedKind)}>{ROW_LABEL[step.kind]}</span>
+              <span className={styles.rowBody}>
+                <span className={cx(styles.rowTitle, step.kind === 'tool' && styles.monoTitle, (blocked || step.kind === 'reviewer') && styles.strongTitle)}>
+                  {step.ruleTag ? <RuleTag>{step.ruleTag}</RuleTag> : null}
+                  {step.title}
+                </span>
+                {step.detail ? <span className={styles.rowDetail}>{step.detail}</span> : null}
+                {step.meta ? <span className={styles.mono}>{step.meta}</span> : null}
+              </span>
+            </li>
+          )
+        })}
+      </ol>
+    )
+  }
   return (
     <div className={styles.trace}>
       <div className={styles.head}>
