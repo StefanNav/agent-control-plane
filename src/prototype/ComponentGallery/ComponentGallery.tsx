@@ -32,6 +32,7 @@ import type from '../../design-system/type.module.css'
 import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { Body } from '../../layout/layouts'
 import styles from './ComponentGallery.module.css'
+import { DarkSection, ProductSection } from './ProductSection'
 
 const TOKENS = [
   'bg', 'raised', 'sunk', 'hover', 'fill', 'sel', 'acc', 'acc-fill', 'line', 'line-strong', 'off', 'icon',
@@ -117,7 +118,7 @@ export function ComponentGallery() {
       <PageHeader
         breadcrumb="About / Components"
         title="Countersign components"
-        sub="The design-system primitives every screen is built from, in their states. Product components arrive in Phase 2."
+        sub="The design-system primitives and the ten product components every screen is built from, in their states, light and dark."
       />
       <Body>
         <Section title="Tokens">
@@ -400,6 +401,9 @@ export function ComponentGallery() {
             </Field>
           </Modal>
         </Section>
+
+        <ProductSection />
+        <DarkSection />
       </Body>
     </>
   )

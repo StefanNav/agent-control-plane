@@ -29,3 +29,10 @@ test('attention states use bold text; shadow and paused do not', () => {
   expect(screen.getByText('Review: 3 drafts').className).toMatch(/strong/)
   expect(screen.getByText('Shadow').className).not.toMatch(/strong/)
 })
+
+test('aligned normal sits in an invisible chip with icon space, still without an icon', () => {
+  const { container } = render(<StatusChip status="normal" label="Within scope" align />)
+  const chip = container.querySelector('[data-status="normal"]')!
+  expect(chip.className).toMatch(/invisible/)
+  expect(chip.querySelector('svg')).toBeNull()
+})

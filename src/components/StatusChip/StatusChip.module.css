@@ -107,3 +107,11 @@
   color: var(--cs-meta);
   font-weight: 400;
 }
+
+.invisible {
+  border-color: transparent;
+}
+
+.iconSpace {
+  flex: none;
+}

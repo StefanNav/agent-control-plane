@@ -18,7 +18,7 @@ export interface PrivilegeCardView {
   ladder: LadderState[]
   ladderCaption: string
   rows: { key: string; value: ReactNode }[]
-  footnote: string
+  footnote: ReactNode
   actionLabel: string
 }
 

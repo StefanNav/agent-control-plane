@@ -10,6 +10,8 @@ export interface StatusChipProps {
   size?: 'compact' | 'header' | 'comfortable'
   /** Resolved: line border, off icon, meta text. */
   muted?: boolean
+  /** In tables: draw normal inside an invisible chip so its word lines up with outlined chips. */
+  align?: boolean
 }
 
 const ICON: Record<Exclude<Status, 'normal'>, IconName> = {
@@ -34,7 +36,15 @@ const ICON_COLOR: Record<Exclude<Status, 'normal'>, string> = {
 const ATTENTION: Status[] = ['review', 'warn', 'crit', 'stale']
 
 /** State as colour + shape + word (component 01). Normal is just the word, in grey. */
-export function StatusChip({ status, label, size = 'compact', muted = false }: StatusChipProps) {
+export function StatusChip({ status, label, size = 'compact', muted = false, align = false }: StatusChipProps) {
+  if (status === 'normal' && align) {
+    return (
+      <span data-status="normal" className={cx(styles.chip, styles[size], styles.invisible)}>
+        <span className={styles.iconSpace} style={{ width: size === 'comfortable' ? 15 : 12 }} />
+        <span className={cx(styles.text, styles.plain)}>{label}</span>
+      </span>
+    )
+  }
   if (status === 'normal') {
     return (
       <span data-status="normal" className={cx(styles.plain, styles[`plain_${size}`])}>

@@ -442,17 +442,17 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
   - three monitor states
 - A "Dark" `h2` section in a `data-theme="dark"` panel with chips, the AgentTable and ExceptionList (as the sheet's dark section), plus a primary button and a checked checkbox. These cover Phase 1's deferred dark-fill minor; fix the checkbox fill to `--cs-acc-fill` if it fails contrast.
 
-- [ ] **Step 1: Failing e2e:**
+- [x] **Step 1: Failing e2e:**
   - `h2` "Product components" and `h2` "Dark" are visible.
   - Seven status chips are visible.
   - "Open pause dialog" opens a dialog titled "Pause Med Rec Agent?".
   - The dark panel's chip text colour differs from the light one (computed `color` of the review chip label).
   - No console errors.
-- [ ] **Step 2: Run** `pnpm e2e tests/e2e/gallery.spec.ts`. Expected: FAIL.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** the full e2e. Expected: PASS.
-- [ ] **Step 5: Visual check** against `designs/Countersign Components.dc.html` at 1440 (`pnpm designs`), section by section. Fix differences and commit.
-- [ ] **Step 6: Commit** with `git commit -m "feat(prototype): product components in the gallery, light and dark"`.
+- [x] **Step 2: Run** `pnpm e2e tests/e2e/gallery.spec.ts`. Expected: FAIL.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** the full e2e. Expected: PASS.
+- [x] **Step 5: Visual check** against `designs/Countersign Components.dc.html` at 1440 (`pnpm designs`), section by section. Fix differences and commit.
+- [x] **Step 6: Commit** with `git commit -m "feat(prototype): product components in the gallery, light and dark"`.
 
 ### Task 2.10: Persona switcher, Reset demo, checkpoint
 

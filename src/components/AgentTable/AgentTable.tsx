@@ -48,7 +48,7 @@ export function AgentTable({ rows, selectedId = null, onSelect, onOpen, ariaLabe
       width: '304px',
       render: (row) => (
         <span className={styles.status}>
-          <StatusChip status={row.status} label={row.label} />
+          <StatusChip status={row.status} label={row.label} align />
           {row.ruleTag ? <RuleTag>{row.ruleTag}</RuleTag> : null}
         </span>
       ),

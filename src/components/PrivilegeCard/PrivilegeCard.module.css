@@ -105,6 +105,9 @@
 }
 
 .footnote {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
   font-size: 12px;
   line-height: 16px;
   color: var(--cs-text2);
