@@ -21,7 +21,7 @@ Update this block every time a session stops, even mid-phase.
 | **Current phase** | Phase 3: Command Board and inbox (◐ in progress) |
 | **Branch** | `phase-3-board-inbox` |
 | **Last completed** | Phase 2 approved and squash-merged (PR #12) (2026-10-08) |
-| **Next task** | Phase 3 Task 3.0: write `docs/plans/phase-3-board-inbox.md` |
+| **Next task** | Phase 3 Task 3.1 in [`docs/plans/phase-3-board-inbox.md`](plans/phase-3-board-inbox.md) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -91,7 +91,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 0 | Setup | ☑ Merged | `main` | [#1](https://github.com/StefanNav/agent-control-plane/issues/1) | no PR (docs on `main`) | [phase-0-setup.md](plans/phase-0-setup.md) |
 | 1 | Foundation | ☑ Merged | `phase-1-foundation` | [#2](https://github.com/StefanNav/agent-control-plane/issues/2) | [#11](https://github.com/StefanNav/agent-control-plane/pull/11) | [phase-1-foundation.md](plans/phase-1-foundation.md) |
 | 2 | Components and data | ☑ Merged | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | [#12](https://github.com/StefanNav/agent-control-plane/pull/12) | [phase-2-components-data.md](plans/phase-2-components-data.md) |
-| 3 | Command Board and inbox | ◐ In progress | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | – | to write (Task 3.0) |
+| 3 | Command Board and inbox | ◐ In progress | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | – | [phase-3-board-inbox.md](plans/phase-3-board-inbox.md) |
 | 4 | Controls and audit | ☐ Not started | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | – | to write (Task 4.0) |
 | 5 | Onboarding and go-live | ☐ Not started | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | – | to write (Task 5.0) |
 | 6 | Governance and fast follows | ☐ Not started | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | – | to write (Task 6.0) |
@@ -230,16 +230,18 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 
 **Goal:** Owners supervise by exception (E4, E5).
 
-- [ ] 3.0 Write `docs/plans/phase-3-board-inbox.md`; commit
-- [ ] 3.1 Hospital board 4a with MonitorHealth header, severity sort, View toggle → tiles 4d and exceptions-first 4f
-- [ ] 3.2 Division view 4b (AgentRow, stale row rules, keyboard: click selects, Tab focus, Arrow moves, Enter opens)
-- [ ] 3.3 Agent view 4c with tabs (Overview, Scorecard placeholder for Phase 5; Activities, Actions, Privileges, History composed); unknown agent ID renders `NotFound` (**Review focus 4 test**)
-- [ ] 3.4 Wall display `/wall` (4e): dark theme, own larger type scale, no controls, no prototype bar (a small corner "Exit wall display" control instead)
-- [ ] 3.5 Inbox 5a: segmented Needs me / Daily digest / Log (Needs me filtered to the current persona's exceptions), groups Overdue / Due soon / Resolved today, detail panel, claim
-- [ ] 3.6 Dismiss with a reason 5b (reason required; tunes the rule; audit entry)
-- [ ] 3.7 Daily digest 5c (720 px, 07:00) and Log tab
-- [ ] 3.8 Escalation 5d (deadline past demo clock → overdue, escalated to sponsor)
-- [ ] 3.9 E2E: from the board, reach the one agent needing action among Marcus's 20; checkpoint
+- [x] 3.0 Write `docs/plans/phase-3-board-inbox.md`; commit
+- [ ] 3.1 Seed refinement from E4/E5 (exceptions, activities, recent actions, events; `SEED_VERSION` 3)
+- [ ] 3.2 Board and inbox selectors (severity sort, overdue/escalation/freshness from `now`)
+- [ ] 3.3 Hospital board 4a with View toggle → tiles 4d and exceptions-first 4f
+- [ ] 3.4 Division view 4b with the selected-agent panel
+- [ ] 3.5 Agent view 4c with tabs (Activities, Actions, Privileges, History composed; Scorecard in Phase 5); unknown agent renders `NotFound` (**Review focus 4 test**)
+- [ ] 3.6 Wall display `/wall` (4e): dark, own type scale, no controls (corner "Exit wall display")
+- [ ] 3.7 Inbox 5a: list + detail with the 14-day chart, claim and snooze
+- [ ] 3.8 Dismiss with a reason 5b
+- [ ] 3.9 Daily digest 5c, Log, Waiting on others
+- [ ] 3.10 Escalated to the sponsor 5d (`stale-escalated` scenario, assign, `?scenario=` param)
+- [ ] 3.11 E2E journey "find the one problem among 20"; checkpoint
 
 **Done when:** frames 4a–4f, 5a–5d built and visually checked.
 **Handoff notes:** _written at the end of the phase._
@@ -434,6 +436,7 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-08 | Seed: inbox times aligned to the 09:52 clock (sheet uses 09:42); Phase 3 refines against E5 | One consistent "now" |
 | 2026-10-08 | Invented people: Tom (Revenue cycle manager), Nina (Director of Revenue Cycle), Elena (Discharge services manager), Ravi (Imaging operations manager), Grace (Patient access manager), Hana (Director of Imaging, sponsor), Owen (Director of Patient Access, sponsor), Omar (Integration analyst, technical owner outside Medications) | Every division needs named owner, sponsor and technical owner; frames name only owners |
 | 2026-10-08 | Claiming an exception makes the claimer its owner; claimed or resolved items can't be re-claimed | Phase 2 review: "Needs me" must follow who took it |
+| 2026-10-08 | Phase 3 split into 3.0–3.11: seed refinement and selectors come before screens; inbox tabs follow E5 (Needs me / Waiting on others / Log), digest at `?view=digest` | E5 frames differ from the spec's assumed `tab=digest` |
 | 2026-10-08 | Forbidden-terms check: real company name lives only in local `.git/info/forbidden-terms`; Phase 0 history was rewritten (before any push) to remove a leaked mention | A plan step had quoted the name literally |
 
 ## Session log
