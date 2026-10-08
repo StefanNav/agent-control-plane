@@ -1,0 +1,28 @@
+.row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  column-gap: 12px;
+  padding: 8px 20px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.time {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sub {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-meta);
+  text-wrap: pretty;
+}

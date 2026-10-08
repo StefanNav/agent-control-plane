@@ -1,0 +1,48 @@
+.bar {
+  /* The bar is ink, so focus rings on it use the light surface colour. */
+  --cs-focus: var(--cs-raised);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  padding: 0 24px;
+  background: var(--cs-ink);
+  color: var(--cs-line-strong);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.brand {
+  color: var(--cs-raised);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tag {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cs-off);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.strong {
+  color: var(--cs-raised);
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--cs-off);
+}
+
+.link {
+  color: var(--cs-raised);
+  text-decoration: none;
+}

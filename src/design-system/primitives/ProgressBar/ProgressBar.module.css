@@ -1,0 +1,14 @@
+.track {
+  display: inline-block;
+  flex: none;
+  height: 4px;
+  background: var(--cs-line);
+  border-radius: 2px;
+}
+
+.fill {
+  display: block;
+  height: 4px;
+  background: var(--cs-text2);
+  border-radius: 2px;
+}

@@ -1,0 +1,47 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 3px;
+  border: none;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  flex: none;
+}
+
+.sm {
+  height: 32px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.primary {
+  background: var(--cs-acc-fill);
+  color: var(--cs-on-acc);
+}
+
+.secondary {
+  background: var(--cs-raised);
+  color: var(--cs-ink);
+  border: 1px solid var(--cs-line-strong);
+}
+
+.ghost {
+  height: 32px;
+  padding: 0 8px;
+  background: transparent;
+  color: var(--cs-text2);
+}
+
+.blocked {
+  background: var(--cs-fill);
+  color: var(--cs-meta);
+  border: 1px solid var(--cs-line);
+  cursor: not-allowed;
+}

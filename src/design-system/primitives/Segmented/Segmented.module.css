@@ -1,0 +1,66 @@
+/* choice: equal grid, radio-card treatment (cs-build `seg`) */
+.choice {
+  display: grid;
+  gap: 8px;
+}
+
+.choice .segment {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: 3px;
+  border: 1px solid var(--cs-line-strong);
+  background: var(--cs-raised);
+  text-align: left;
+  cursor: pointer;
+}
+
+.choice .on {
+  border: 1.5px solid var(--cs-acc);
+  background: var(--cs-sel);
+}
+
+.choice .label {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.choice .on .label {
+  font-weight: 600;
+}
+
+.sub {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+/* control: compact switch (CountersignCore inbox header) */
+.control {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 3px;
+  background: var(--cs-sunk);
+  border: 1px solid var(--cs-line);
+}
+
+.control .segment {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--cs-text2);
+  font-size: 13px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.control .on {
+  background: var(--cs-sel);
+  box-shadow: inset 0 0 0 1px var(--cs-line-strong);
+  color: var(--cs-ink);
+  font-weight: 600;
+}

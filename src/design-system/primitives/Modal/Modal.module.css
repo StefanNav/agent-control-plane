@@ -1,0 +1,77 @@
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--cs-scrim);
+}
+
+.dialog {
+  position: absolute;
+  top: 96px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 120px);
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 6px;
+  box-shadow: var(--cs-shadow-modal);
+  overflow: hidden;
+  outline: none;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 24px 16px;
+}
+
+.title {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.description {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+  text-wrap: pretty;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 4px 24px 24px;
+  overflow-y: auto;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  background: var(--cs-sunk);
+  border-top: 1px solid var(--cs-line);
+}
+
+.audit {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}

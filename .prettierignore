@@ -1,0 +1,7 @@
+designs/
+reference/
+pnpm-lock.yaml
+dist/
+.superpowers/
+playwright-report/
+test-results/

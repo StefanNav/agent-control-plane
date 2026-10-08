@@ -1,0 +1,85 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 40px 24px;
+  background: var(--cs-raised);
+  border-bottom: 1px solid var(--cs-line);
+}
+
+.low {
+  gap: 16px;
+  padding-bottom: 0;
+}
+
+.top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.crumb {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+}
+
+.status {
+  font-size: 14px;
+  color: var(--cs-meta);
+}
+
+.ids {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.people {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.name {
+  color: var(--cs-ink);
+}
+
+.sub {
+  max-width: 900px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+}

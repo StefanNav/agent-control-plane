@@ -1,0 +1,10 @@
+.tag {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-text2);
+  box-shadow: inset 0 0 0 1px var(--cs-line-strong);
+  border-radius: 2px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}

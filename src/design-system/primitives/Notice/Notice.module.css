@@ -1,0 +1,41 @@
+.notice {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr);
+  column-gap: 10px;
+  align-items: start;
+  padding: 12px 14px;
+  background: var(--cs-sunk);
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 3px;
+}
+
+.mark {
+  display: flex;
+  height: 20px;
+  align-items: center;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.text {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+  text-wrap: pretty;
+}
+
+.lead {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.actions {
+  display: flex;
+  gap: 4px;
+  margin-left: -8px;
+}

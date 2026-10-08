@@ -1,0 +1,58 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  background: var(--cs-bg);
+  color: var(--cs-ink);
+  font-family: var(--cs-font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+/* Focus rings show only after keyboard use (see focus.ts). */
+:root:not([data-keyboard]) *:focus {
+  outline: none;
+}
+
+:root[data-keyboard] :focus-visible {
+  outline: 2px solid var(--cs-focus);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

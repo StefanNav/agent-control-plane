@@ -31,15 +31,15 @@ See `docs/BUILD_PLAN.md` → Global constraints. Most relevant here: no UI/icon 
 **Interfaces:**
 - Produces: `cx(...parts: Array<string | false | null | undefined>): string` in `src/lib/cx.ts`; scripts `dev`, `build`, `preview`, `typecheck`, `lint`, `test`, `check`, `e2e`, `designs`, `format`.
 
-- [ ] **Step 1: Branch**
+- [x] **Step 1: Branch**
 
 Run: `git checkout -b phase-1-foundation`
 
-- [ ] **Step 2: Scaffold outside the repo and copy in**
+- [x] **Step 2: Scaffold outside the repo and copy in**
 
 The repo root is not empty, so scaffold in the scratchpad: `pnpm create vite@latest acp-scaffold --template react-ts`. Copy `package.json`, `index.html`, `vite.config.ts`, `tsconfig*.json`, `src/main.tsx` into the repo root. Do **not** copy its `README.md`, `_gitignore`, `_oxlintrc.json`, `public/`, `src/App.*`, `src/assets/`, `src/index.css`. (create-vite 9.2 ships oxlint, no `eslint.config.js` and no `vite-env.d.ts`; `"types": ["vite/client"]` in `tsconfig.app.json` replaces the latter.) Set `"name": "agent-control-plane"`, `"private": true`, `"packageManager": "pnpm@11.5.1"` (CI's `pnpm/action-setup` reads it).
 
-- [ ] **Step 3: Install dependencies**
+- [x] **Step 3: Install dependencies**
 
 ```bash
 pnpm add react-router zustand @fontsource/ibm-plex-sans @fontsource/ibm-plex-mono
@@ -50,7 +50,7 @@ pnpm add -D vitest jsdom @testing-library/react @testing-library/user-event @tes
 ```
 Record the installed major versions of react, react-router, vite, vitest in the BUILD_PLAN decision log.
 
-- [ ] **Step 4: Configure**
+- [x] **Step 4: Configure**
   - `tsconfig.app.json`: `"strict": true`, `"noUncheckedIndexedAccess": true`, `"types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]` (keep `vite/client`: CSS Module and `?raw` imports need it).
   - `vite.config.ts`: `test: { environment: 'jsdom', globals: true, setupFiles: ['src/test/setup.ts'], include: ['src/**/*.test.{ts,tsx}'] }`.
   - `src/test/setup.ts`: `import '@testing-library/jest-dom/vitest'`.
@@ -62,7 +62,7 @@ Record the installed major versions of react, react-router, vite, vitest in the 
     - `"check": "pnpm typecheck && pnpm lint && pnpm test && vite build"`
     - `"e2e": "playwright test"`, `"designs": "serve designs -l 4599"`, `"format": "prettier --write ."`
 
-- [ ] **Step 5: Write the failing test** in `src/lib/cx.test.ts`
+- [x] **Step 5: Write the failing test** in `src/lib/cx.test.ts`
 
 ```ts
 import { cx } from './cx'
@@ -75,19 +75,19 @@ test('returns an empty string when nothing is truthy', () => {
 })
 ```
 
-- [ ] **Step 6: Run it to verify it fails**
+- [x] **Step 6: Run it to verify it fails**
 
 Run: `pnpm test src/lib/cx.test.ts`
 Expected: FAIL, cannot resolve `./cx`
 
-- [ ] **Step 7: Implement `cx` in `src/lib/cx.ts`**; make `src/main.tsx` render a bare `<div>Agent Control Plane</div>` for now
+- [x] **Step 7: Implement `cx` in `src/lib/cx.ts`**; make `src/main.tsx` render a bare `<div>Agent Control Plane</div>` for now
 
-- [ ] **Step 8: Run the full gate**
+- [x] **Step 8: Run the full gate**
 
 Run: `pnpm check`
 Expected: typecheck, lint, 2 tests and build all pass
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add -A
@@ -139,7 +139,7 @@ git commit -m "chore: scaffold Vite + React + TS app with check gate"
 
 Light values go on `:root`; dark values on `[data-theme="dark"]`. Every colour is written `oklch(L C H)`.
 
-- [ ] **Step 1: Write the failing token test** in `src/design-system/tokens.test.ts`
+- [x] **Step 1: Write the failing token test** in `src/design-system/tokens.test.ts`
 
 Import the file as text (`import css from './tokens.css?raw'`). Split it into the `:root { … }` block and the `[data-theme="dark"] { … }` block. A table in the test lists every light and dark pair above (except the `--cs-fill` dark value, which is asserted only to exist). Assertions:
 
@@ -156,7 +156,7 @@ test('dark --cs-fill is defined', () => {
 ```
 with entries such as `['--cs-ink', 'oklch(0.21 0.004 90)']` and `['--cs-acc-fill', 'oklch(0.43 0.15 268)']` (dark).
 
-- [ ] **Step 2: Write the failing focus test** in `src/design-system/focus.test.ts`
+- [x] **Step 2: Write the failing focus test** in `src/design-system/focus.test.ts`
 
 ```ts
 test('Tab turns keyboard mode on, mousedown turns it off', () => {
@@ -171,20 +171,20 @@ test('arrow keys also turn keyboard mode on', () => { /* ArrowDown → 'true' */
 test('cleanup removes listeners', () => { /* after stop(), Tab leaves dataset.keyboard undefined */ })
 ```
 
-- [ ] **Step 3: Run both; verify they fail**
+- [x] **Step 3: Run both; verify they fail**
 
 Run: `pnpm test src/design-system`
 Expected: FAIL (missing file / missing export)
 
-- [ ] **Step 4: Implement**
+- [x] **Step 4: Implement**
   - `tokens.css` per the table.
   - `type.module.css`: one class per row of the handoff Typography table (`pageTitle` 24/32 600 −0.01em; `statValue` 20/28 600; `sectionTitle` 18/24 600; `body` 16/24; `ui` 14/20; `dense` 13/18; `meta` 12/16 `--cs-meta`; `mono` Plex Mono 12/16; `label` Mono 12/16 600 uppercase +0.05em `--cs-meta`; `wordmark` 14 600 +0.04em).
   - `global.css`: `body { margin:0; background: var(--cs-bg); color: var(--cs-ink); font-family: 'IBM Plex Sans', sans-serif; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased }`; `button { font: inherit }`; `:root:not([data-keyboard]) *:focus { outline: none }`; `:root[data-keyboard] :focus-visible { outline: 2px solid var(--cs-focus); outline-offset: 1px }`; `@media (prefers-reduced-motion: reduce) { * { transition: none !important } }`.
   - `focus.ts`: `installKeyboardFocusMode(doc = document)` listens for `keydown` (Tab, ArrowUp/Down/Left/Right) → `dataset.keyboard = 'true'`; `mousedown` → delete; returns cleanup.
   - `main.tsx`: import `@fontsource/ibm-plex-sans/400.css`, `/600.css`, same for mono; then `tokens.css`, `global.css`; call `installKeyboardFocusMode()`.
 
-- [ ] **Step 5: Run; verify pass.** Run: `pnpm test src/design-system` → PASS
-- [ ] **Step 6: Commit** `git commit -m "feat(ds): Countersign tokens, type roles, global styles, keyboard focus mode"`
+- [x] **Step 5: Run; verify pass.** Run: `pnpm test src/design-system` → PASS
+- [x] **Step 6: Commit** `git commit -m "feat(ds): Countersign tokens, type roles, global styles, keyboard focus mode"`
 
 ### Task 1.3: Icon set
 
@@ -197,15 +197,15 @@ Expected: FAIL (missing file / missing export)
 
 Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a4.25 4.25 0 1 1 0 8.5a4.25 4.25 0 1 1 0-8.5Z` stroke 1.5, no fill; diamond `M6 0.9L11.1 6L6 11.1L0.9 6Z` filled; triangle `M6 1.2L11.4 10.6H0.6Z` filled; stale = ring with `stroke-dasharray="2.2 1.75"`; shadow = ring + filled `M6 1.75a4.25 4.25 0 0 0 0 8.5Z`; paused `M2.6 2h2.4v8H2.6ZM7 2h2.4v8H7Z` filled; check `M2.5 6.2l2.3 2.3 4.7-5` stroke 1.8 round caps and joins; lock = shackle `M3.5 5.5V4a2.5 2.5 0 0 1 5 0v1.5` stroke 1.4 + `rect x=2 y=5.5 width=8 height=5.5 rx=1` filled; chevron viewBox `0 0 10 10`, `M2 3.5l3 3 3-3` stroke 1.5. All others use viewBox `0 0 12 12`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - each name renders an `svg` whose first `path` has the `d` above;
   - `stale` path has `stroke-dasharray="2.2 1.75"`;
   - `shadow` renders 2 paths; `lock` renders a path and a rect;
   - without `title` the svg has `aria-hidden="true"`; with `title` it has `role="img"` and a `<title>`.
-- [ ] **Step 2: Run; verify fail.** `pnpm test src/design-system/icons` → FAIL
-- [ ] **Step 3: Implement** `paths.ts` (data) and `Icon.tsx`.
-- [ ] **Step 4: Run; verify pass.**
-- [ ] **Step 5: Commit** `git commit -m "feat(ds): inline SVG icon set"`
+- [x] **Step 2: Run; verify fail.** `pnpm test src/design-system/icons` → FAIL
+- [x] **Step 3: Implement** `paths.ts` (data) and `Icon.tsx`.
+- [x] **Step 4: Run; verify pass.**
+- [x] **Step 5: Commit** `git commit -m "feat(ds): inline SVG icon set"`
 
 ### Task 1.4: Form primitives
 
@@ -222,7 +222,7 @@ Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a
 - `Segmented<T extends string>(props: { value: T; onChange: (value: T) => void; options: { value: T; label: ReactNode; sub?: ReactNode }[]; variant?: 'choice' | 'control' })`: `choice` = equal-grid segmented choice (radio-card treatment); `control` = compact inbox control (r3, 32 high).
 - `FilterPill(props: { on: boolean; onClick: () => void; children: ReactNode })`
 
-- [ ] **Step 1: Failing tests** (one file per primitive):
+- [x] **Step 1: Failing tests** (one file per primitive):
   - Button: `blocked` has `aria-disabled="true"` and clicking does not call `onClick`; default `type="button"`; `primary` gets the primary class.
   - Field + Input: `getByLabelText('Purpose')` finds the input (label `htmlFor` wiring); `locked` input is `readOnly` and contains a lock svg.
   - Select: choosing an option calls `onChange` with its value.
@@ -230,10 +230,10 @@ Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a
   - RadioCardGroup: `role="radiogroup"`; clicking an option calls `onChange`; ArrowDown moves to the next enabled option and selects it (skips `disabled`); selected option has `aria-checked="true"`.
   - Segmented: clicking a segment calls `onChange(value)`; selected has `aria-pressed="true"`.
   - FilterPill: `aria-pressed` mirrors `on`.
-- [ ] **Step 2: Run; verify fail.** `pnpm test src/design-system/primitives`
-- [ ] **Step 3: Implement** each primitive and its CSS Module from the handoff "Shared primitives" (Buttons, Field, Radio card, Checkbox, Segmented choice, Filter pill) and `cs-build.js`. Export all from `src/design-system/index.ts`.
-- [ ] **Step 4: Run; verify pass.**
-- [ ] **Step 5: Commit** `git commit -m "feat(ds): form primitives"`
+- [x] **Step 2: Run; verify fail.** `pnpm test src/design-system/primitives`
+- [x] **Step 3: Implement** each primitive and its CSS Module from the handoff "Shared primitives" (Buttons, Field, Radio card, Checkbox, Segmented choice, Filter pill) and `cs-build.js`. Export all from `src/design-system/index.ts`.
+- [x] **Step 4: Run; verify pass.**
+- [x] **Step 5: Commit** `git commit -m "feat(ds): form primitives"`
 
 ### Task 1.5: Display primitives
 
@@ -250,7 +250,7 @@ Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a
 
 `sparklinePath` algorithm (pinned so tests and component agree): padding 2 px; `x_i = 2 + i * (width - 4) / (n - 1)`; `y_i = 2 + (1 - (v_i - min) / (max - min)) * (height - 4)`; if `max === min`, every `y = height / 2`; numbers rounded to 2 decimals, trailing zeros dropped; format `M{x} {y}L{x} {y}…`; fewer than 2 values → `''`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - `sparklinePath([0, 10, 5], 72, 20) === 'M2 18L36 2L70 10'`
   - `sparklinePath([5, 5], 72, 20) === 'M2 10L70 10'`
   - `sparklinePath([3], 72, 20) === ''`
@@ -258,10 +258,10 @@ Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a
   - `ProgressBar value={1.4}` → `aria-valuenow="100"`; `value={-1}` → `"0"`; `role="progressbar"`.
   - `DefinitionList` renders a `dl` with `dt`/`dd` pairs in order.
   - `Notice` renders `lead` in a `strong`.
-- [ ] **Step 2: Run; verify fail.**
-- [ ] **Step 3: Implement** from the handoff (Card, Paper, Definition list, Notice, Stat strip, Sparkline, Progress bar, Rule tag, Log row).
-- [ ] **Step 4: Run; verify pass.**
-- [ ] **Step 5: Commit** `git commit -m "feat(ds): display primitives"`
+- [x] **Step 2: Run; verify fail.**
+- [x] **Step 3: Implement** from the handoff (Card, Paper, Definition list, Notice, Stat strip, Sparkline, Progress bar, Rule tag, Log row).
+- [x] **Step 4: Run; verify pass.**
+- [x] **Step 5: Commit** `git commit -m "feat(ds): display primitives"`
 
 ### Task 1.6: Interactive structures
 
@@ -278,16 +278,16 @@ Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a
 - `MenuItem = { id: string; label: ReactNode; sub?: ReactNode; onSelect?: () => void; locked?: boolean }`; `Menu(props: { trigger: (p: { open: boolean; toggle: () => void; ref: Ref<HTMLButtonElement> }) => ReactNode; groups: { label?: string; items: MenuItem[] }[]; align?: 'left' | 'right' })`
 - `Modal(props: { open: boolean; onClose: () => void; title: ReactNode; children: ReactNode; audit?: ReactNode; actions: ReactNode; width?: number /* 600 */ })`: portal to `document.body`, scrim, top 96, `--cs-shadow-modal`; footer has `audit` (mono) left and `actions` right.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - Table: column headers render as `columnheader` in order; clicking row 2 calls `onSelect('r2')`; row with `selectedId` has `aria-selected="true"`; focusing row 1 and pressing ArrowDown focuses row 2; Enter on a focused row calls `onOpen`; a group header with label "Overdue" and count 2 renders before its rows; right-aligned cells carry `data-align="right"`.
   - Tabs: current item has `aria-current="page"`; items with `to` render links (wrap in `MemoryRouter`).
   - WizardSteps: current step `aria-current="step"`; a `done` step contains the check icon, a `locked` step the lock icon.
   - Menu: clicking the trigger shows `role="menu"`; ArrowDown moves focus between `menuitem`s; a `locked` item has `aria-disabled="true"` and selecting it does not call `onSelect`; Escape closes and returns focus to the trigger.
   - Modal: `open` renders `role="dialog"` with `aria-modal="true"` and `aria-labelledby` pointing at the title; focus moves inside on open; Tab from the last focusable element wraps to the first; Escape calls `onClose`; when `open` flips false, focus returns to the element focused before opening.
-- [ ] **Step 2: Run; verify fail.**
-- [ ] **Step 3: Implement** from the handoff (Table, Tabs, Wizard steps, Menu, Modal) and `cs-build.js`.
-- [ ] **Step 4: Run; verify pass.**
-- [ ] **Step 5: Commit** `git commit -m "feat(ds): table, tabs, wizard steps, menu, modal"`
+- [x] **Step 2: Run; verify fail.**
+- [x] **Step 3: Implement** from the handoff (Table, Tabs, Wizard steps, Menu, Modal) and `cs-build.js`.
+- [x] **Step 4: Run; verify pass.**
+- [x] **Step 5: Commit** `git commit -m "feat(ds): table, tabs, wizard steps, menu, modal"`
 
 ### Task 1.7: Layout and app shell
 
@@ -304,13 +304,13 @@ Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a
 - `AppShell(props: { shell: 'app' | 'prototype' | 'kiosk' })`: the app container has `min-width: 1280px` (narrower windows scroll horizontally; the <1024 desktop gate comes in Phase 8). `app` = PrototypeBar + TopNav + `<Outlet/>`; `prototype` = PrototypeBar + `<Outlet/>`; `kiosk` = `<Outlet/>` only. TopNav `current` comes from the deepest route `handle.nav` (`useMatches`).
 - `NotFound()`: inside the shell; `h1` "Page not found"; one line "This page isn't part of the prototype."; link "Go to the Command Board" → `/operations`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - TopNav: five links in `NAV_ITEMS` order with exact labels; `current='operations'` → Operations has `aria-current="page"`, others don't; avatar shows the initial; "Lakeshore Health" visible.
   - PageHeader: `title` renders as the only `h1`; `people` renders "Owner" then "Marcus"; `actions` render.
-- [ ] **Step 2: Run; verify fail.**
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run; verify pass.**
-- [ ] **Step 5: Commit** `git commit -m "feat(layout): top nav, page header, body layouts, app shell, prototype bar"`
+- [x] **Step 2: Run; verify fail.**
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run; verify pass.**
+- [x] **Step 5: Commit** `git commit -m "feat(layout): top nav, page header, body layouts, app shell, prototype bar"`
 
 ### Task 1.8: Route table, router, placeholders, route smoke test
 
@@ -330,7 +330,7 @@ Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a
 
 Shell per route: `kiosk` for `/wall`; `prototype` for `/`, `/about`, `/about/components`, `/epic`; `app` for everything else.
 
-- [ ] **Step 1: Failing unit test** `src/app/routes.test.ts`
+- [x] **Step 1: Failing unit test** `src/app/routes.test.ts`
 
 ```ts
 const EXPECTED = [
@@ -362,15 +362,15 @@ test('redirect targets exist', () => {
 test('wall is kiosk; landing, about, epic are prototype; rest are app', () => { /* per spec */ })
 ```
 
-- [ ] **Step 2: Run; verify fail.**
-- [ ] **Step 3: Implement** `routes.ts`, `router.tsx` (group routes under three `AppShell` layout routes by `shell`; add redirect routes; `*` → `NotFound` in the `app` shell) and `Placeholder.tsx` (PageHeader with the route `title`; mono line `Frames 4a · 4d · 4f`; Notice "Built in Phase N. This placeholder lists the frames this route will show."). Wire `main.tsx`.
-- [ ] **Step 4: Run; verify pass.** `pnpm test src/app`
-- [ ] **Step 5: Playwright config and smoke test**
+- [x] **Step 2: Run; verify fail.**
+- [x] **Step 3: Implement** `routes.ts`, `router.tsx` (group routes under three `AppShell` layout routes by `shell`; add redirect routes; `*` → `NotFound` in the `app` shell) and `Placeholder.tsx` (PageHeader with the route `title`; mono line `Frames 4a · 4d · 4f`; Notice "Built in Phase N. This placeholder lists the frames this route will show."). Wire `main.tsx`.
+- [x] **Step 4: Run; verify pass.** `pnpm test src/app`
+- [x] **Step 5: Playwright config and smoke test**
   - `playwright.config.ts`: chromium only; viewport 1440×900; `webServer: { command: 'pnpm build && pnpm preview --port 4173 --strictPort', port: 4173, reuseExistingServer: !process.env.CI }`; `baseURL: 'http://localhost:4173'`.
   - `tests/e2e/routes.spec.ts`: for each `routeTable` entry, `page.goto(samplePath)` directly (no in-app navigation), collect `pageerror` and `console` errors, expect an `h1` to be visible and zero errors. Plus: `/no-such-page` shows "Page not found"; `/portfolio` ends at `/portfolio/privileges`.
   - `vercel.json`: `{ "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }`.
-- [ ] **Step 6: Run** `pnpm exec playwright install chromium && pnpm e2e` → all pass
-- [ ] **Step 7: Commit** `git commit -m "feat(app): route table, router, placeholders, route smoke test"`
+- [x] **Step 6: Run** `pnpm exec playwright install chromium && pnpm e2e` → all pass
+- [x] **Step 7: Commit** `git commit -m "feat(app): route table, router, placeholders, route smoke test"`
 
 ### Task 1.9: Primitives gallery (`/about/components`)
 
@@ -381,11 +381,11 @@ test('wall is kiosk; landing, about, epic are prototype; rest are app', () => { 
 **Interfaces:**
 - Produces: `ComponentGallery()` with sections `Tokens`, `Type`, `Icons`, `Buttons`, `Fields`, `Selection`, `Display`, `Table`, `Navigation`, `Menu and modal`. Phase 2 adds `Product components` (light and dark).
 
-- [ ] **Step 1: Failing e2e** `tests/e2e/gallery.spec.ts`: page has an `h2` per section above; clicking "Open modal" shows `role="dialog"`; Escape closes it; no console errors.
-- [ ] **Step 2: Run; verify fail.** `pnpm e2e tests/e2e/gallery.spec.ts`
-- [ ] **Step 3: Implement**: token swatches (light and a `data-theme="dark"` panel), the type scale, every icon, every primitive in its states (button variants and sizes; locked input; checked and unchecked checkbox; radio cards with a disabled option; segmented both variants; filter pills on/off; a 3-row table with a selected row and a group header; tabs; wizard steps with all four marks; a menu with a locked item; a modal).
-- [ ] **Step 4: Run; verify pass.**
-- [ ] **Step 5: Commit** `git commit -m "feat(prototype): primitives gallery"`
+- [x] **Step 1: Failing e2e** `tests/e2e/gallery.spec.ts`: page has an `h2` per section above; clicking "Open modal" shows `role="dialog"`; Escape closes it; no console errors.
+- [x] **Step 2: Run; verify fail.** `pnpm e2e tests/e2e/gallery.spec.ts`
+- [x] **Step 3: Implement**: token swatches (light and a `data-theme="dark"` panel), the type scale, every icon, every primitive in its states (button variants and sizes; locked input; checked and unchecked checkbox; radio cards with a disabled option; segmented both variants; filter pills on/off; a 3-row table with a selected row and a group header; tabs; wizard steps with all four marks; a menu with a locked item; a modal).
+- [x] **Step 4: Run; verify pass.**
+- [x] **Step 5: Commit** `git commit -m "feat(prototype): primitives gallery"`
 
 ### Task 1.10: CI, Vercel, checkpoint
 
@@ -393,8 +393,8 @@ test('wall is kiosk; landing, about, epic are prototype; rest are app', () => { 
 - Create: `.github/workflows/ci.yml`
 - Modify: `docs/BUILD_PLAN.md`, this file (tick steps)
 
-- [ ] **Step 1: CI workflow** on `pull_request` and `push` to `main`: checkout → `pnpm/action-setup` → `actions/setup-node` (Node 24, cache pnpm) → `pnpm install --frozen-lockfile` → `pnpm check` → `pnpm exec playwright install --with-deps chromium` → `pnpm e2e` → upload `playwright-report/` on failure.
-- [ ] **Step 2: Commit and push the branch**
+- [x] **Step 1: CI workflow** on `pull_request` and `push` to `main`: checkout → `pnpm/action-setup` → `actions/setup-node` (Node 24, cache pnpm) → `pnpm install --frozen-lockfile` → `pnpm check` → `pnpm exec playwright install --with-deps chromium` → `pnpm e2e` → upload `playwright-report/` on failure.
+- [x] **Step 2: Commit and push the branch**
 
 ```bash
 git add .github
@@ -402,7 +402,7 @@ git commit -m "ci: check and e2e on PRs"
 git push -u origin phase-1-foundation
 ```
 
-- [ ] **Step 3: Link Vercel**
+- [x] **Step 3: Link Vercel**
 
 ```bash
 vercel link --yes --project agent-control-plane
@@ -410,11 +410,11 @@ vercel git connect https://github.com/StefanNav/agent-control-plane
 ```
 If `git connect` says the Vercel GitHub app lacks access to the repo, ask Stefan to grant it (Vercel dashboard → Add New Project → import `agent-control-plane`). This is the one step that may need him. Framework preset: Vite; install `pnpm install`; build `pnpm build`; output `dist`.
 
-- [ ] **Step 4: Open the PR**
+- [x] **Step 4: Open the PR**
 
 `gh pr create --title "Phase 1: Foundation" --body` with: the Phase 1 checklist, `Closes #2` (issue numbers are phase + 1), and a note that the Vercel preview link appears below. Verify CI is green and the Vercel bot posts a preview URL.
 
-- [ ] **Step 5: Visual check.** On the preview URL at 1440×900, screenshot `/operations` (shell + placeholder) and `/about/components`. Compare buttons, fields, table, tabs, wizard steps and modal against `designs/Countersign Components.dc.html` and the handoff specs (`pnpm designs` → `http://localhost:4599`). Fix differences; commit.
-- [ ] **Step 6: Deep-link check on the preview.** Open `<preview>/operations/agents/med-rec` directly and refresh; it must load (no Vercel 404).
-- [ ] **Step 7: Update `docs/BUILD_PLAN.md`**: tick 1.1–1.10; Phase 1 → ⏸ At checkpoint; PR link; Latest preview URL; Phase 1 handoff notes (what exists, where, versions, gotchas, what Phase 2 needs); decision log; session log; Start here → "Next task: Phase 2, Task 2.0 (after Stefan approves Phase 1)". Commit and push.
+- [x] **Step 5: Visual check.** On the preview URL at 1440×900, screenshot `/operations` (shell + placeholder) and `/about/components`. Compare buttons, fields, table, tabs, wizard steps and modal against `designs/Countersign Components.dc.html` and the handoff specs (`pnpm designs` → `http://localhost:4599`). Fix differences; commit.
+- [x] **Step 6: Deep-link check on the preview.** Open `<preview>/operations/agents/med-rec` directly and refresh; it must load (no Vercel 404).
+- [x] **Step 7: Update `docs/BUILD_PLAN.md`**: tick 1.1–1.10; Phase 1 → ⏸ At checkpoint; PR link; Latest preview URL; Phase 1 handoff notes (what exists, where, versions, gotchas, what Phase 2 needs); decision log; session log; Start here → "Next task: Phase 2, Task 2.0 (after Stefan approves Phase 1)". Commit and push.
 - [ ] **Step 8: STOP. Ask Stefan to review** the preview URL and the PR. After approval: squash-merge (`gh pr merge --squash --delete-branch`), confirm production deploy on the Vercel URL, record the **Live URL** in Start here, set Phase 1 → ☑ Merged, commit to `main`.

@@ -1,0 +1,50 @@
+.box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 3px;
+}
+
+.locked {
+  background: var(--cs-fill);
+  border-color: var(--cs-line);
+}
+
+.select {
+  appearance: none;
+  flex: 1;
+  min-width: 0;
+  padding: 10px 40px 10px 14px;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  line-height: 24px;
+  cursor: pointer;
+  outline: none;
+}
+
+.select:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.mark {
+  position: absolute;
+  right: 14px;
+  display: flex;
+  color: var(--cs-meta);
+  pointer-events: none;
+}
+
+:global(:root[data-keyboard]) .box:focus-within {
+  outline: 2px solid var(--cs-focus);
+  outline-offset: 1px;
+}
+
+/* The box draws the ring; the inner select must not draw its own. */
+:global(:root[data-keyboard]) .select:focus-visible {
+  outline: none;
+}
