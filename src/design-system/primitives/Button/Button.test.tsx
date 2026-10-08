@@ -29,3 +29,21 @@ test('renders an icon before the label', () => {
   render(<Button icon={<svg data-testid="icon" />}>Pause</Button>)
   expect(screen.getByTestId('icon')).toBeInTheDocument()
 })
+
+test('locked: the designed locked state, focusable, with its reason announced', async () => {
+  const onClick = vi.fn()
+  render(
+    <Button locked="Read-only access" onClick={onClick}>
+      Pause agent
+    </Button>,
+  )
+  const button = screen.getByRole('button', { name: 'Pause agent' })
+  expect(button).toHaveAttribute('aria-disabled', 'true')
+  expect(button).toHaveAccessibleDescription('Read-only access')
+  expect(button).toHaveAttribute('title', 'Read-only access')
+  expect(button.querySelector('[data-icon="lock"], svg')).not.toBeNull()
+  button.focus()
+  expect(button).toHaveFocus()
+  await userEvent.click(button)
+  expect(onClick).not.toHaveBeenCalled()
+})

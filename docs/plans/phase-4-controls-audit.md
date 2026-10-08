@@ -183,7 +183,7 @@ These are the failure modes the spec implies that no screen test naturally cover
 - Valid `?control=` ids: `pause-activity | pause-agent | pause-division | shadow | revoke | disable | retire`. `pause` is kept as an alias for `pause-agent`, because Phase 3 links use it. Unknown ids are ignored.
 - While the agent is paused or retired, the header hides Controls (as 6d does) and shows only "Open in Inventory".
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **Button:** `locked="Read-only access"` gives `aria-disabled="true"`, a lock icon, an accessible description "Read-only access", and no `onClick` call.
   - **`controlMenu` as Marcus on med-rec:**
     - group labels `['Pause', 'Narrow fixes', 'Program lead only']`
@@ -191,10 +191,10 @@ These are the failure modes the spec implies that no screen test naturally cover
     - Disable and Retire are locked with sub "Dana"
   - **`controlMenu` as Jordan:** every item is locked.
   - **e2e:** Controls shows the three groups; choosing "Pause this agent…" sets `?control=pause-agent`. Task 4.3 makes it open the dialog.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 6a: menu width, group labels, subs and lock rows.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(controls): control menu and locked buttons"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 6a: menu width, group labels, subs and lock rows.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(controls): control menu and locked buttons"`.
 
 ### Task 4.3: Pause with impact preview (6b)
 

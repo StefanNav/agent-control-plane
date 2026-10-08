@@ -5,7 +5,7 @@ import { Button, Icon, LinkButton, Menu, Notice, Tabs } from '../../design-syste
 import { NotFound } from '../../layout/NotFound'
 import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { useDemo } from '../../store'
-import { can, lockReason } from '../../store/permissions'
+import { controlMenu, parseControl, type ControlId } from '../controls/controlMenu'
 import {
   ActionsTab,
   ActivitiesTab,
@@ -28,15 +28,16 @@ const LABELS: Record<Tab, string> = {
   history: 'History',
 }
 
-/** The agent controls. Their dialogs (impact preview, then confirm) arrive in Phase 4. */
-const CONTROLS = {
-  pause: 'Pause',
+/** Pending-control copy until each dialog lands (Tasks 4.3–4.6). */
+const CONTROL_LEAD: Record<ControlId, string> = {
+  'pause-activity': 'Pause one activity of',
+  'pause-agent': 'Pause',
+  'pause-division': 'Pause every agent alongside',
   shadow: 'Return one activity to Shadow on',
   revoke: 'Revoke a tool from',
   disable: 'Disable',
   retire: 'Retire',
-} as const
-type Control = keyof typeof CONTROLS
+}
 
 /** One agent: activities, privileges, metrics and recent actions in one place (4c). */
 export function AgentView() {
@@ -47,8 +48,11 @@ export function AgentView() {
   if (!view) return <NotFound />
 
   const tab = (TABS.find((t) => t === params.get('tab')) ?? 'overview') as Tab
-  const control = (Object.keys(CONTROLS) as Control[]).find((c) => c === params.get('control'))
-  const setControl = (next: Control | null) =>
+  const control = parseControl(params.get('control'))
+  const agent = state.agents.find((a) => a.id === agentId)
+  /** Paused or retired: the header offers only "Open in Inventory" (6d). */
+  const stopped = agent?.lifecycle === 'paused' || agent?.lifecycle === 'retired'
+  const setControl = (next: ControlId | null) =>
     setParams(
       (prev) => {
         const p = new URLSearchParams(prev)
@@ -58,10 +62,6 @@ export function AgentView() {
       },
       { replace: true },
     )
-  const allowed = (action: Parameters<typeof can>[2]) =>
-    can(state, state.personaId, action, { agentId })
-  const lock = (action: Parameters<typeof can>[2]) =>
-    allowed(action) ? undefined : lockReason(action, state.personaId)
 
   const content: Record<Tab, ReactNode> = {
     overview: <Overview view={view} />,
@@ -86,62 +86,25 @@ export function AgentView() {
         }
         actions={
           <>
-            <Menu
-              align="right"
-              trigger={({ toggle, ref, open }) => (
-                <Button ref={ref} onClick={toggle} aria-expanded={open} aria-haspopup="menu">
-                  Controls
-                  <Icon name="chevron" size={10} />
-                </Button>
-              )}
-              groups={[
-                {
-                  label: 'Scope first',
-                  items: [
-                    {
-                      id: 'pause',
-                      onSelect: () => setControl('pause'),
-                      label: 'Pause agent',
-                      sub: lock('pause') ?? 'Takes effect at the gateway within seconds',
-                      locked: !allowed('pause'),
-                    },
-                    {
-                      id: 'shadow',
-                      onSelect: () => setControl('shadow'),
-                      label: 'Return one activity to Shadow',
-                      sub: lock('returnToShadow') ?? 'The rest of the agent keeps working',
-                      locked: !allowed('returnToShadow'),
-                    },
-                    {
-                      id: 'revoke',
-                      onSelect: () => setControl('revoke'),
-                      label: 'Revoke a tool',
-                      sub: lock('revokeTool') ?? 'Remove one tool grant',
-                      locked: !allowed('revokeTool'),
-                    },
-                  ],
-                },
-                {
-                  label: 'Program lead',
-                  items: [
-                    {
-                      id: 'disable',
-                      onSelect: () => setControl('disable'),
-                      label: 'Disable agent',
-                      sub: lock('disable') ?? 'Revokes access; records kept',
-                      locked: !allowed('disable'),
-                    },
-                    {
-                      id: 'retire',
-                      onSelect: () => setControl('retire'),
-                      label: 'Retire agent',
-                      sub: lock('retire') ?? 'Permanent; needs typed confirmation',
-                      locked: !allowed('retire'),
-                    },
-                  ],
-                },
-              ]}
-            />
+            {stopped ? null : (
+              <Menu
+                align="right"
+                width={302}
+                trigger={({ toggle, ref, open }) => (
+                  <Button ref={ref} onClick={toggle} aria-expanded={open} aria-haspopup="menu">
+                    Controls
+                    <Icon name="chevron" size={10} />
+                  </Button>
+                )}
+                groups={controlMenu(state, state.personaId, agentId).map((group) => ({
+                  label: group.label,
+                  items: group.items.map((item) => ({
+                    ...item,
+                    onSelect: () => setControl(item.control),
+                  })),
+                }))}
+              />
+            )}
             <LinkButton to={`/inventory/agents/${agentId}`}>Open in Inventory</LinkButton>
           </>
         }
@@ -163,7 +126,7 @@ export function AgentView() {
       {control ? (
         <section aria-label="Pending control" className={styles.pending}>
           <Notice
-            lead={`${CONTROLS[control]} ${view.name}`}
+            lead={`${CONTROL_LEAD[control]} ${view.name}`}
             actions={
               <Button variant="ghost" size="sm" onClick={() => setControl(null)}>
                 Close
