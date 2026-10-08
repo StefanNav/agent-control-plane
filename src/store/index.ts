@@ -3,10 +3,28 @@ import { createJSONStorage, persist, type StateStorage } from 'zustand/middlewar
 import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type DemoState, type PersonaId } from '../data/types'
+import { formatClock } from '../lib/clock'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
 
 export type { ActionResult } from './runAction'
+
+/** Why an exception was dismissed (5b); the category tunes the rule that raised it. */
+export type DismissCategory = 'expected' | 'duplicate' | 'noisy' | 'other'
+
+export const DISMISS_LABELS: Record<DismissCategory, string> = {
+  expected: 'Expected change',
+  duplicate: 'Duplicate',
+  noisy: 'Rule is too noisy',
+  other: 'Other',
+}
+
+export interface DismissInput {
+  category: DismissCategory
+  reason: string
+  /** A rule change to propose alongside, e.g. "Raise the MR-12 threshold … until 11 Dec". */
+  tune?: string
+}
 
 export interface DemoActions {
   setPersona: (id: PersonaId) => void
@@ -16,6 +34,14 @@ export interface DemoActions {
   loadScenario: (id: ScenarioId) => void
   /** Take ownership of an exception (state → claimed, stamped with the demo clock). */
   claimException: (id: string) => ActionResult
+  /** Hide an exception from the inbox until `until`; the deadline still stands. */
+  snoozeException: (id: string, until: string) => ActionResult
+  /** Close an exception without acting on it. A reason is required; it is logged. */
+  dismissException: (id: string, input: DismissInput) => ActionResult
+  /** Hand an exception to someone else; the previous owner and you stay copied. */
+  assignException: (id: string, personId: string) => ActionResult
+  /** Answer a question from a person (5a): closes it with the answer. */
+  answerQuestion: (id: string, answer: 'yes' | 'no') => ActionResult
 }
 
 export type DemoStore = DemoState & DemoActions
@@ -52,15 +78,21 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
           if (result.ok) set(state)
           return result
         }
+        /** An open exception, or the reason it can't be acted on. */
+        const openException = (id: string) => {
+          const exception = get().exceptions.find((e) => e.id === id)
+          if (!exception) return { error: { ok: false, reason: 'Not found' } as ActionResult }
+          if (exception.state === 'resolved' || exception.state === 'dismissed') return { error: { ok: false, reason: 'Already resolved' } as ActionResult }
+          return { exception }
+        }
         return {
           ...createSeed(),
           setPersona: (id) => set({ personaId: id }),
           reset: () => set(createSeed()),
           loadScenario: (id) => set({ ...buildScenario(id), personaId: get().personaId }),
           claimException: (id) => {
-            const exception = get().exceptions.find((e) => e.id === id)
-            if (!exception) return { ok: false, reason: 'Not found' }
-            if (exception.state === 'resolved' || exception.state === 'dismissed') return { ok: false, reason: 'Already resolved' }
+            const { exception, error } = openException(id)
+            if (!exception) return error
             if (exception.claimedAt) return { ok: false, reason: 'Already claimed' }
             return act({
               action: 'resolveException',
@@ -71,6 +103,78 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                 target.claimedAt = draft.now
                 target.ownerId = draft.personaId
                 if (target.state === 'new') target.state = 'claimed'
+              },
+            })
+          },
+          snoozeException: (id, until) => {
+            const { exception, error } = openException(id)
+            if (!exception) return error
+            return act({
+              action: 'resolveException',
+              ctx: { agentId: exception.agentId },
+              audit: { action: 'Snoozed', target: exception.code, reason: `until ${formatClock(until)}` },
+              mutate: (draft) => {
+                draft.exceptions.find((e) => e.id === id)!.snoozedUntil = until
+              },
+            })
+          },
+          assignException: (id, personId) => {
+            const { exception, error } = openException(id)
+            if (!exception) return error
+            const person = get().people.find((p) => p.id === personId)
+            if (!person) return { ok: false, reason: 'Unknown person' }
+            return act({
+              action: 'resolveException',
+              ctx: { agentId: exception.agentId },
+              audit: { action: 'Assigned', target: exception.code, reason: `to ${person.name}` },
+              mutate: (draft) => {
+                const target = draft.exceptions.find((e) => e.id === id)!
+                const keep = [target.ownerId, draft.personaId].filter((p) => p !== personId)
+                target.copied = [...new Set([...target.copied.filter((p) => p !== personId), ...keep])]
+                target.ownerId = personId
+                target.assignedAt = draft.now
+              },
+            })
+          },
+          answerQuestion: (id, answer) => {
+            const { exception, error } = openException(id)
+            if (!exception) return error
+            if (exception.kind !== 'question') return { ok: false, reason: 'Not a question' }
+            return act({
+              action: 'resolveException',
+              ctx: { agentId: exception.agentId },
+              audit: { action: 'Answered', target: exception.code, reason: answer === 'yes' ? 'Yes' : 'No' },
+              mutate: (draft) => {
+                const target = draft.exceptions.find((e) => e.id === id)!
+                Object.assign(target, { state: 'resolved', outcome: `Answered ${answer}`, closedAt: draft.now, closedBy: draft.personaId })
+              },
+            })
+          },
+          dismissException: (id, { category, reason, tune }) => {
+            const { exception, error } = openException(id)
+            if (!exception) return error
+            const why = reason.trim()
+            if (!why) return { ok: false, reason: 'A reason is required' }
+            return act({
+              action: 'resolveException',
+              ctx: { agentId: exception.agentId },
+              audit: { action: 'Dismissed', target: exception.code, reason: `${DISMISS_LABELS[category]} · ${why}` },
+              mutate: (draft) => {
+                const target = draft.exceptions.find((e) => e.id === id)!
+                target.state = 'dismissed'
+                target.dismissReason = why
+                target.closedAt = draft.now
+                target.closedBy = draft.personaId
+                if (!tune) return
+                const agent = draft.agents.find((a) => a.id === exception.agentId)
+                const name = (personId?: string) => draft.people.find((p) => p.id === personId)?.name ?? 'the technical owner'
+                draft.logEvents.push({
+                  id: `log-tune-${draft.logEvents.length + 1}`,
+                  at: draft.now,
+                  agentId: exception.agentId,
+                  text: tune,
+                  sub: `Requested by ${name(draft.personaId)} · ${name(agent?.techOwnerId)} is asked to confirm`,
+                })
               },
             })
           },

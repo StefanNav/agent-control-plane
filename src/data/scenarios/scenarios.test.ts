@@ -61,3 +61,20 @@ test('resume-requested keeps the demo clock; the pause was 2 h 14 min earlier', 
   expect(s.now).toBe(DEMO_NOW)
   expect(formatAgo(agent(s, 'med-rec').pausedAt!, s.now)).toBe('2 h 14 min ago')
 })
+
+test('stale-escalated (5d): at 12:00 the unanswered stale monitor is escalated to Priya', async () => {
+  const { selectInbox } = await import('../../features/inbox/selectors')
+  const s = buildScenario('stale-escalated')
+  expect(s.now).toBe('2026-12-08T12:00:00')
+  expect(s.exceptions.find((e) => e.id === 'exc-5530')!.claimedAt).toBeDefined()
+  expect(agent(s, 'med-rec').monitor.lastSeen).toBe('2026-12-08T11:59:00')
+  expect(agent(s, 'formulary-swap').monitor.lastSeen).toBe('2026-12-08T06:41:00')
+  const priya = selectInbox(s, 'priya')
+  expect(priya.needsMe.map((i) => [i.id, i.escalated])).toEqual([
+    ['exc-5508', true],
+    ['exc-5503', false],
+    ['exc-5497', false],
+  ])
+  expect(priya.needsMe[0]!.due).toBe('1 h 14 min late')
+  expect(priya.waiting.map((i) => i.id)).toEqual(['exc-5512'])
+})

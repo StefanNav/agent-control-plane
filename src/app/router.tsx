@@ -1,5 +1,10 @@
 import type { ReactNode } from 'react'
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router'
+import { AgentView } from '../features/board/AgentView'
+import { DivisionView } from '../features/board/DivisionView'
+import { HospitalBoard } from '../features/board/HospitalBoard'
+import { WallDisplay } from '../features/board/WallDisplay'
+import { InboxPage } from '../features/inbox/InboxPage'
 import { NotFound } from '../layout/NotFound'
 import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
 import { AppShell } from './AppShell'
@@ -11,6 +16,12 @@ import { redirects, routeTable } from './routes'
 /** Real screens by route path. Routes not listed here render their Placeholder. */
 const PAGES: Record<string, ReactNode> = {
   '/about/components': <ComponentGallery />,
+  '/operations': <HospitalBoard />,
+  '/operations/divisions/:divisionId': <DivisionView />,
+  '/operations/agents/:agentId': <AgentView />,
+  '/operations/inbox': <InboxPage />,
+  '/operations/inbox/:exceptionId': <InboxPage />,
+  '/wall': <WallDisplay />,
 }
 
 function childrenFor(shell: ShellKind): RouteObject[] {

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Icon } from '../../icons/Icon'
 import styles from './Notice.module.css'
 
-export type NoticeMark = 'warn' | 'crit' | 'review' | 'lock' | 'none'
+export type NoticeMark = 'warn' | 'crit' | 'review' | 'stale' | 'lock' | 'none'
 
 export interface NoticeProps {
   mark?: NoticeMark
@@ -17,6 +17,7 @@ const MARKS: Record<Exclude<NoticeMark, 'none'>, ReactNode> = {
   warn: <Icon name="diamond" color="var(--cs-warn)" />,
   crit: <Icon name="triangle" color="var(--cs-crit)" />,
   review: <Icon name="ring" color="var(--cs-rev)" />,
+  stale: <Icon name="stale" color="var(--cs-meta)" />,
   lock: <Icon name="lock" color="var(--cs-meta)" />,
 }
 

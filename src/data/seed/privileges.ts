@@ -8,6 +8,8 @@ import { agents } from './agents'
  * sheet's lapsed / stepped-down examples live in the gallery fixtures and in scenarios.
  */
 const KNOWN: Record<string, Partial<Privilege>> = {
+  'med-rec-allergy': { domain: '7 West, 8 East · adults 18+', evidence: 'Shadow validation in progress', grantedAt: '2026-10-14T10:00:00', grantedBy: 'drlee', reviewDate: undefined },
+  'discharge-meds-interactions': { domain: '7 West · adults', evidence: 'Shadow validation in progress', grantedBy: 'drlee', grantedAt: '2026-09-02T10:00:00', reviewDate: '2026-12-02T00:00:00' },
   'med-rec-admission': {
     code: 'PRV-0142',
     version: 3,
@@ -15,6 +17,7 @@ const KNOWN: Record<string, Partial<Privilege>> = {
     evidence: '21-day shadow · 1,204 cases · 2 of 3 targets met',
     conditions: ['C1–C3 · Dr. Lee'],
     grantedAt: '2026-11-06T10:05:00',
+    reviewDate: '2027-02-05T00:00:00',
     stepDownTriggers: ['Edit rate above 15% for 3 days', 'New version', 'Incident'],
   },
   'discharge-meds': {
@@ -61,9 +64,9 @@ export const privileges: Privilege[] = activities
       domain: known.domain ?? '7 West, 8 East · adults 18+',
       conditions: known.conditions ?? [],
       evidence: known.evidence ?? 'Shadow validation · targets met',
-      grantedBy: agent.grantorId,
+      grantedBy: known.grantedBy ?? (act.level === 'shadow' ? 'drlee' : agent.grantorId),
       grantedAt: known.grantedAt ?? '2026-09-01T10:00:00',
-      reviewDate: agent.reviewDate,
+      reviewDate: 'reviewDate' in known ? known.reviewDate : agent.reviewDate,
       state: known.state ?? 'active',
       stepDownTriggers: known.stepDownTriggers ?? ['Edit rate above 15% for 3 days'],
     }

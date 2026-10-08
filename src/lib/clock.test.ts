@@ -1,10 +1,14 @@
 import {
+  addMinutes,
+  tomorrowAt,
   DEMO_NOW,
+  formatAge,
   formatAgo,
   formatClock,
   formatClockSeconds,
   formatDate,
   formatDay,
+  formatDue,
   formatMs,
   formatRelative,
   minutesBetween,
@@ -46,4 +50,34 @@ test('formatAgo', () => {
 test('minutesBetween is b − a in whole minutes', () => {
   expect(minutesBetween('2026-12-08T09:40:00', NOW)).toBe(12)
   expect(minutesBetween(NOW, '2026-12-08T09:40:00')).toBe(-12)
+})
+
+test.each([
+  ['2026-12-08T08:05:00', '1 h 47'],
+  ['2026-12-08T09:42:00', '10 min'],
+  ['2026-12-08T06:46:00', '3 h 06'],
+  ['2026-12-01T06:00:00', '7 d'],
+])('formatAge(%s) → %s', (from, expected) => {
+  expect(formatAge(from, NOW)).toBe(expected)
+})
+
+test.each([
+  ['2026-12-08T10:46:00', 'Due 10:46'],
+  ['2026-12-09T17:00:00', 'Due tomorrow'],
+  ['2026-12-11T17:00:00', 'Due Friday'],
+  ['2026-12-15T17:00:00', 'Due 15 Dec'],
+  ['2026-12-08T09:40:00', '12 min late'],
+])('formatDue(%s) → %s', (deadline, expected) => {
+  expect(formatDue(deadline, NOW)).toBe(expected)
+})
+
+test('formatDue reports lateness in hours and minutes', () => {
+  expect(formatDue('2026-12-08T10:46:00', '2026-12-08T12:00:00')).toBe('1 h 14 min late')
+})
+
+test('addMinutes and tomorrowAt keep local, timezone-free ISO strings', () => {
+  expect(addMinutes('2026-12-08T09:52:00', 60)).toBe('2026-12-08T10:52:00')
+  expect(addMinutes('2026-12-31T23:30:00', 45)).toBe('2027-01-01T00:15:00')
+  expect(tomorrowAt('2026-12-08T09:52:00', '07:00')).toBe('2026-12-09T07:00:00')
+  expect(tomorrowAt('2026-12-31T23:59:00', '07:00')).toBe('2027-01-01T07:00:00')
 })

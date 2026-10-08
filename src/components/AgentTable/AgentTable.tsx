@@ -33,11 +33,19 @@ export interface AgentTableProps {
   selectedId?: string | null
   onSelect?: (id: string) => void
   onOpen?: (id: string) => void
+  /** `full` = component-sheet widths; `withPanel` = division view beside the 344px agent panel (4b). */
+  layout?: 'full' | 'withPanel'
   ariaLabel: string
 }
 
+const WIDTHS = {
+  full: ['304px', 'minmax(0, 1fr)', '40px', '76px', '56px', '56px', '56px', '224px'],
+  withPanel: ['244px', 'minmax(0, 1fr)', '40px', '100px', '56px', '56px', '56px', '172px'],
+} as const
+
 /** The division view's agent rows (component 02): judgment first, quality next to volume. */
-export function AgentTable({ rows, selectedId = null, onSelect, onOpen, ariaLabel }: AgentTableProps) {
+export function AgentTable({ rows, selectedId = null, onSelect, onOpen, layout = 'full', ariaLabel }: AgentTableProps) {
+  const w = WIDTHS[layout]
   const number = (row: AgentRowView, value: string, extra?: string) => (
     <span className={cx(styles.number, row.status === 'stale' && styles.withdrawn, extra)}>{value}</span>
   )
@@ -45,7 +53,7 @@ export function AgentTable({ rows, selectedId = null, onSelect, onOpen, ariaLabe
     {
       id: 'status',
       header: 'Status · rule ↓',
-      width: '304px',
+      width: w[0],
       render: (row) => (
         <span className={styles.status}>
           <StatusChip status={row.status} label={row.label} align />
@@ -56,7 +64,7 @@ export function AgentTable({ rows, selectedId = null, onSelect, onOpen, ariaLabe
     {
       id: 'agent',
       header: 'Agent',
-      width: 'minmax(0, 1fr)',
+      width: w[1],
       render: (row) => (
         <span className={styles.agent}>
           <span className={cx(styles.name, row.id === selectedId && styles.selectedName)}>{row.name}</span>
@@ -64,12 +72,12 @@ export function AgentTable({ rows, selectedId = null, onSelect, onOpen, ariaLabe
         </span>
       ),
     },
-    { id: 'day', header: '24h', width: '40px', align: 'right', render: (row) => number(row, row.day) },
-    { id: 'asIs', header: 'Signed as is', width: '76px', align: 'right', render: (row) => number(row, row.signedAsIs) },
+    { id: 'day', header: '24h', width: w[2], align: 'right', render: (row) => number(row, row.day) },
+    { id: 'asIs', header: 'Signed as is', width: w[3], align: 'right', render: (row) => number(row, row.signedAsIs) },
     {
       id: 'edited',
       header: 'Edited',
-      width: '56px',
+      width: w[4],
       align: 'right',
       render: (row) =>
         number(row, row.edited, row.status === 'warn' && /edit/i.test(row.label) ? styles.warnText : undefined),
@@ -77,7 +85,7 @@ export function AgentTable({ rows, selectedId = null, onSelect, onOpen, ariaLabe
     {
       id: 'blocked',
       header: 'Blocked',
-      width: '56px',
+      width: w[5],
       align: 'right',
       render: (row) => {
         const blocked = row.blocked !== '0' && row.blocked !== '—'
@@ -87,7 +95,7 @@ export function AgentTable({ rows, selectedId = null, onSelect, onOpen, ariaLabe
     {
       id: 'trend',
       header: '7 days',
-      width: '56px',
+      width: w[6],
       align: 'right',
       render: (row) => (
         <Sparkline
@@ -105,9 +113,9 @@ export function AgentTable({ rows, selectedId = null, onSelect, onOpen, ariaLabe
     {
       id: 'privilege',
       header: 'Privilege',
-      width: '224px',
+      width: w[7],
       render: (row) => (
-        <span className={styles.privilege}>
+        <span className={cx(styles.privilege, layout === 'withPanel' && styles.privilegeTight)}>
           <AutonomyLadder
             variant="compact"
             steps={LEVELS.map((level, i) => ({ level, state: row.ladder[i] ?? 'locked' }))}

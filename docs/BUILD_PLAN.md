@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 3: Command Board and inbox (◐ in progress) |
+| **Current phase** | Phase 3: Command Board and inbox (◐ at checkpoint, awaiting Stefan's review) |
 | **Branch** | `phase-3-board-inbox` |
-| **Last completed** | Phase 2 approved and squash-merged (PR #12) (2026-10-08) |
-| **Next task** | Phase 3 Task 3.0: write `docs/plans/phase-3-board-inbox.md` |
+| **Last completed** | Phase 3 built, fresh review fixed; PR [#13](https://github.com/StefanNav/agent-control-plane/pull/13) open (2026-10-08) |
+| **Next task** | Stefan reviews PR #13 → squash-merge → Phase 4 Task 4.0 (write `docs/plans/phase-4-controls-audit.md`) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none open |
+| **Latest preview** | Vercel preview on PR [#13](https://github.com/StefanNav/agent-control-plane/pull/13) (behind Vercel login) |
 
 ### How to resume in a new session
 
@@ -91,7 +91,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 0 | Setup | ☑ Merged | `main` | [#1](https://github.com/StefanNav/agent-control-plane/issues/1) | no PR (docs on `main`) | [phase-0-setup.md](plans/phase-0-setup.md) |
 | 1 | Foundation | ☑ Merged | `phase-1-foundation` | [#2](https://github.com/StefanNav/agent-control-plane/issues/2) | [#11](https://github.com/StefanNav/agent-control-plane/pull/11) | [phase-1-foundation.md](plans/phase-1-foundation.md) |
 | 2 | Components and data | ☑ Merged | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | [#12](https://github.com/StefanNav/agent-control-plane/pull/12) | [phase-2-components-data.md](plans/phase-2-components-data.md) |
-| 3 | Command Board and inbox | ◐ In progress | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | – | to write (Task 3.0) |
+| 3 | Command Board and inbox | ◐ Checkpoint | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | [#13](https://github.com/StefanNav/agent-control-plane/pull/13) | [phase-3-board-inbox.md](plans/phase-3-board-inbox.md) |
 | 4 | Controls and audit | ☐ Not started | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | – | to write (Task 4.0) |
 | 5 | Onboarding and go-live | ☐ Not started | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | – | to write (Task 5.0) |
 | 6 | Governance and fast follows | ☐ Not started | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | – | to write (Task 6.0) |
@@ -230,19 +230,41 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 
 **Goal:** Owners supervise by exception (E4, E5).
 
-- [ ] 3.0 Write `docs/plans/phase-3-board-inbox.md`; commit
-- [ ] 3.1 Hospital board 4a with MonitorHealth header, severity sort, View toggle → tiles 4d and exceptions-first 4f
-- [ ] 3.2 Division view 4b (AgentRow, stale row rules, keyboard: click selects, Tab focus, Arrow moves, Enter opens)
-- [ ] 3.3 Agent view 4c with tabs (Overview, Scorecard placeholder for Phase 5; Activities, Actions, Privileges, History composed); unknown agent ID renders `NotFound` (**Review focus 4 test**)
-- [ ] 3.4 Wall display `/wall` (4e): dark theme, own larger type scale, no controls, no prototype bar (a small corner "Exit wall display" control instead)
-- [ ] 3.5 Inbox 5a: segmented Needs me / Daily digest / Log (Needs me filtered to the current persona's exceptions), groups Overdue / Due soon / Resolved today, detail panel, claim
-- [ ] 3.6 Dismiss with a reason 5b (reason required; tunes the rule; audit entry)
-- [ ] 3.7 Daily digest 5c (720 px, 07:00) and Log tab
-- [ ] 3.8 Escalation 5d (deadline past demo clock → overdue, escalated to sponsor)
-- [ ] 3.9 E2E: from the board, reach the one agent needing action among Marcus's 20; checkpoint
+- [x] 3.0 Write `docs/plans/phase-3-board-inbox.md`; commit
+- [x] 3.1 Seed refinement from E4/E5 (exceptions, activities, recent actions, events; `SEED_VERSION` 3)
+- [x] 3.2 Board and inbox selectors (severity sort, overdue/escalation/freshness from `now`)
+- [x] 3.3 Hospital board 4a with View toggle → tiles 4d and exceptions-first 4f
+- [x] 3.4 Division view 4b with the selected-agent panel
+- [x] 3.5 Agent view 4c with tabs (Activities, Actions, Privileges, History composed; Scorecard in Phase 5); unknown agent renders `NotFound` (**Review focus 4 test**)
+- [x] 3.6 Wall display `/wall` (4e): dark, own type scale, no controls (corner "Exit wall display")
+- [x] 3.7 Inbox 5a: list + detail with the 14-day chart, claim and snooze
+- [x] 3.8 Dismiss with a reason 5b
+- [x] 3.9 Daily digest 5c, Log, Waiting on others
+- [x] 3.10 Escalated to the sponsor 5d (`stale-escalated` scenario, assign, `?scenario=` param)
+- [x] 3.11 E2E journey "find the one problem among 20"; checkpoint
 
 **Done when:** frames 4a–4f, 5a–5d built and visually checked.
-**Handoff notes:** _written at the end of the phase._
+**Handoff notes (Phase 3 → Phase 4)**
+
+- **What exists**
+  - Board: `/operations` (4a; `?view=tiles` 4d, `?view=exceptions` 4f, `?division=`), `/operations/divisions/:id` (4b, `?agent=`), `/operations/agents/:id` (4c, `?tab=`, `?control=`), `/wall` (4e, kiosk shell).
+  - Inbox: `/operations/inbox[/:exceptionId]` with `?tab=waiting|log` and `?view=digest` (5a–5d).
+  - Store actions: `claimException`, `snoozeException`, `dismissException`, `assignException`, `answerQuestion`. All go through `runAction`.
+  - Scenario `stale-escalated` (clock 12:00 via `advanceClock`, which keeps live heartbeats live). `?scenario=<id>` on any app URL loads a scenario once and drops the param.
+  - Primitives gained `LinkButton`, Table `minRowHeight` (default rows now 56), Sparkline `color`, a `stale` Notice mark. Components gained `noticeMark(status)`. Feature-level `TrendChart` (inbox).
+- **Review fixes (fresh reviewer, all test-first):** keyboard Enter/Space select table rows; notice marks follow status; paused rows withdraw metrics; the Controls menu opens a pending-control notice; the inbox detail follows state, kind and viewer (closed outcome, incident link, answerable questions, sponsor-only escalation notice, no stale deadline line, dismiss refusal shown); unknown exception ids say so. `SEED_VERSION` is 4.
+- **Deferred minors:** snooze hides items from copied people and holds escalation (fix before Phase 8 moves the clock); 4a "Open exceptions" counts agents; fixed-text silence durations; "Work N exceptions" counts the whole inbox; unknown `?agent=`; banner "Open PRV-…" target; assign to current owner; the "E" shortcut (WCAG 2.1.4), 4f filter `aria-pressed`, arrow keys not moving the division panel, lock reasons on native-disabled buttons; composed agent tabs thin outside Medications; small code tidy (duplicated status icon maps, raw colours in two CSS files, unused `log`/`logTotal`, whole-store subscriptions); `isCurrentSnapshot` checks only top-level keys.
+- **What Phase 4 needs**
+  - Replace the `?control=` pending notice in `AgentView` with the real dialogs (`PauseDialog`/`ResumeDialog` exist in components). Links already point there: division panel "Pause agent", inbox "Return to Shadow", escalated "Pause …".
+  - **Audit pauses as action `'Paused'`.** The wall's "last hour" count reads that string.
+  - `/operations/incidents/inc-0029` is linked from the inbox incident and the board; it is still a placeholder.
+  - Locked controls should use the designed locked state, not native `disabled` + `title`.
+- **Gotchas**
+  - The Tabs primitive is a labelled `nav` of links, so e2e finds tabs as links (`navigation "Inbox" → link "Needs me · 4"`).
+  - Playwright won't click an `aria-disabled` button; assert the attribute and `click({ force: true })`.
+  - Caps labels are Plex **Mono** 12/16 600 with 0.05em tracking.
+  - `figure` has a default 40px margin; reset it.
+  - CSS-module order lets a feature class override a primitive's `min-height` (the dismiss reason box).
 
 ## Phase 4: Controls and audit
 
@@ -351,16 +373,16 @@ Tick **Built** when the screen exists at its route; tick **QA'd** after the side
 
 | Frame | Name | Route | Phase | Built | QA'd |
 |---|---|---|---|---|---|
-| 4a | Hospital view | `/operations` | 3 | ☐ | ☐ |
-| 4a·wall/4e | Wall display | `/wall` | 3 | ☐ | ☐ |
-| 4b | Division view | `/operations/divisions/medications` | 3 | ☐ | ☐ |
-| 4c | Agent view | `/operations/agents/med-rec` | 3 | ☐ | ☐ |
-| 4d | Tile grid | `/operations?view=tiles` | 3 | ☐ | ☐ |
-| 4f | Exceptions first | `/operations?view=exceptions` | 3 | ☐ | ☐ |
-| 5a | Inbox and detail | `/operations/inbox/:id` | 3 | ☐ | ☐ |
-| 5b | Dismiss with a reason | inbox modal | 3 | ☐ | ☐ |
-| 5c | Daily digest | `/operations/inbox?tab=digest` | 3 | ☐ | ☐ |
-| 5d | Escalated to Priya | inbox item | 3 | ☐ | ☐ |
+| 4a | Hospital view | `/operations` | 3 | ☑ | ☑ |
+| 4a·wall/4e | Wall display | `/wall` | 3 | ☑ | ☑ |
+| 4b | Division view | `/operations/divisions/medications` | 3 | ☑ | ☑ |
+| 4c | Agent view | `/operations/agents/med-rec` | 3 | ☑ | ☑ |
+| 4d | Tile grid | `/operations?view=tiles` | 3 | ☑ | ☑ |
+| 4f | Exceptions first | `/operations?view=exceptions` | 3 | ☑ | ☑ |
+| 5a | Inbox and detail | `/operations/inbox/:id` | 3 | ☑ | ☑ |
+| 5b | Dismiss with a reason | inbox modal | 3 | ☑ | ☑ |
+| 5c | Daily digest | `/operations/inbox?view=digest` | 3 | ☑ | ☑ |
+| 5d | Escalated to Priya | inbox item | 3 | ☑ | ☑ |
 | 6a | Control menu | agent view | 4 | ☐ | ☐ |
 | 6b | Impact preview | agent view modal | 4 | ☐ | ☐ |
 | 6c | Return activity to Shadow | agent view modal | 4 | ☐ | ☐ |
@@ -434,7 +456,17 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-08 | Seed: inbox times aligned to the 09:52 clock (sheet uses 09:42); Phase 3 refines against E5 | One consistent "now" |
 | 2026-10-08 | Invented people: Tom (Revenue cycle manager), Nina (Director of Revenue Cycle), Elena (Discharge services manager), Ravi (Imaging operations manager), Grace (Patient access manager), Hana (Director of Imaging, sponsor), Owen (Director of Patient Access, sponsor), Omar (Integration analyst, technical owner outside Medications) | Every division needs named owner, sponsor and technical owner; frames name only owners |
 | 2026-10-08 | Claiming an exception makes the claimer its owner; claimed or resolved items can't be re-claimed | Phase 2 review: "Needs me" must follow who took it |
+| 2026-10-08 | Phase 3 split into 3.0–3.11: seed refinement and selectors come before screens; inbox tabs follow E5 (Needs me / Waiting on others / Log), digest at `?view=digest` | E5 frames differ from the spec's assumed `tab=digest` |
+| 2026-10-08 | Seed v3 (E4/E5): exceptions EXC-5501/5508/5530/5512 from the frames; EXC-5514 (Sam's question), 5497 (Duplicate Rx review overdue), 5503 (C2 report) have invented codes. "Needs me" = items you own; "Waiting on others" = items you're copied on (reproduces 5a's 4/2 and 5d's 3/1). Monitor-stale timeline reads "no data after 06:41" to match the board's 3 h (frames disagree) | One consistent inbox model across frames |
 | 2026-10-08 | Forbidden-terms check: real company name lives only in local `.git/info/forbidden-terms`; Phase 0 history was rewritten (before any push) to remove a leaked mention | A plan step had quoted the name literally |
+| 2026-10-08 | Severity order: critical, then review/warn/stale tied (seed order), then normal, paused, shadow | Matches the division view's own row order |
+| 2026-10-08 | Table rows default to 56 px (44 + padding, content-box in the frames); hospital rows 68; board-density rows 32 | Measured against 4a/4b |
+| 2026-10-08 | "Needs a human" counts agents by judgment, so dismissing an exception doesn't lower it; the 7-day column is open exceptions per day | Dismissal closes the alert, not the agent's out-of-scope behaviour |
+| 2026-10-08 | Inbox: escalation = past deadline, unclaimed, unassigned, not an incident → the division sponsor. Snooze hides from the inbox until its time. Assigning keeps the previous owner and the assigner copied. Digest carries needs-me items not due within 2 h | Reproduces 5a–5d from one model |
+| 2026-10-08 | The wall's "last hour" pause count reads audit entries with action `'Paused'`; Phase 4 must use that string | Cross-phase contract |
+| 2026-10-08 | Buttons for later flows set `?control=` on the agent view and say where the flow lives (Phase 4) | "Never dead" rule; one place to wire the dialogs |
+| 2026-10-08 | Questions are answered in the inbox (`answerQuestion`: Answer yes / Answer no) | The digest's "Answer" link needed a destination; no frame shows it (composed) |
+| 2026-10-08 | Product copy avoids gendered pronouns ("It reached their inbox…") | Names don't tell us pronouns |
 
 ## Session log
 
@@ -449,3 +481,4 @@ One row per working session. Newest last.
 | 2026-10-08 | 1 | Stefan approved; PR #11 squash-merged; #2 closed | Phase 2 Task 2.0 |
 | 2026-10-08 | 2 | Built Phase 2 (types, clock, seed, permissions, store, scenarios, 10 product components, gallery light + dark, persona switcher, reset). Visual pass vs component sheet. Fresh review: 3 Important + 3 re-graded fixed test-first; 4 minors deferred. PR #12 open | Stefan reviews Phase 2 → merge → Phase 3 Task 3.0 |
 | 2026-10-08 | 2 | Stefan approved; PR #12 squash-merged; #3 closed | Phase 3 Task 3.0 |
+| 2026-10-08 | 3 | Built Phase 3 (seed v3→4, board and inbox selectors, 4a–4f, 5a–5d, journey e2e) with measured visual checks per frame. Fresh review: 5 Important + 2 re-graded fixed test-first; minors deferred (see handoff notes). PR #13 open | Stefan reviews Phase 3 → merge → Phase 4 Task 4.0 |

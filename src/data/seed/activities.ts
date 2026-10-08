@@ -32,31 +32,46 @@ const medRec: Activity[] = [
     level: 'draft',
     reviewLevel: 'normal',
     branches: [],
+    today: '96 drafts',
   },
   {
     id: 'med-rec-allergy',
     agentId: 'med-rec',
     name: 'Flag allergy conflicts',
-    level: 'draft',
+    level: 'shadow',
     reviewLevel: 'normal',
     branches: [],
+    today: '41 in shadow',
   },
 ]
+
+/** Discharge Meds Agent's second activity (division view 4b). */
+const dischargeInteractions: Activity = {
+  id: 'discharge-meds-interactions',
+  agentId: 'discharge-meds',
+  name: 'Flag discharge interactions',
+  level: 'shadow',
+  reviewLevel: 'normal',
+  branches: [],
+}
 
 /** One activity per agent (id = agent id), except Med Rec Agent's two. */
 export const activities: Activity[] = [
   ...medRec,
   ...agents
     .filter((a) => a.id !== 'med-rec')
-    .map((a) => ({
-      id: a.id,
-      agentId: a.id,
-      name: JOBS[a.id] ?? a.name.replace(/ Agent$/, ''),
-      level: a.level,
-      reviewLevel: 'normal' as const,
-      branches:
+    .flatMap((a): Activity[] => [
+      {
+        id: a.id,
+        agentId: a.id,
+        name: JOBS[a.id] ?? a.name.replace(/ Agent$/, ''),
+        level: a.level,
+        reviewLevel: 'normal' as const,
+        branches:
         a.id === 'allergy-recon'
           ? [{ id: 'outside-records', name: 'Add an allergy from outside records', favourable: true }]
           : [],
-    })),
+      },
+      ...(a.id === 'discharge-meds' ? [dischargeInteractions] : []),
+    ]),
 ]

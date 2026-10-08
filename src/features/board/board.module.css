@@ -1,0 +1,402 @@
+/* Shared styles for the Operations board views (E4). Values from the frames. */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px 40px 48px;
+}
+
+.boardGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  column-gap: 40px;
+  align-items: start;
+  padding: 32px 40px 48px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mono {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+  white-space: nowrap;
+}
+
+.monoStrong {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-strong);
+  white-space: nowrap;
+}
+
+.meta {
+  color: var(--cs-meta);
+}
+
+.metaDense {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-meta);
+}
+
+.metaSmall {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.text2 {
+  color: var(--cs-text2);
+}
+
+.text2Dense {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-text2);
+}
+
+.note {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+  text-wrap: pretty;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.pills {
+  display: flex;
+  gap: 8px;
+}
+
+.divisionName {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.counts {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-strong);
+}
+
+/* Division panel (4a) */
+.panelColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.panelHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 20px;
+}
+
+.panelTitle {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.panelSub {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.panelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 20px 16px;
+}
+
+.panelText {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+  text-wrap: pretty;
+}
+
+.panelRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 10px;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 20px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.panelRowValue {
+  font-size: 12px;
+  color: var(--cs-meta);
+  text-align: right;
+}
+
+.panelFoot {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--cs-line);
+}
+
+.attentionList {
+  display: flex;
+  flex-direction: column;
+}
+
+.attentionRow {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  column-gap: 10px;
+  align-items: baseline;
+  padding: 8px 0;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.attentionRow > :first-child {
+  align-self: center;
+}
+
+.strongName {
+  font-weight: 600;
+}
+
+/* Tiles (4d) */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  padding: 20px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 6px;
+}
+
+.tileWide {
+  grid-column: span 3;
+}
+
+.tileNarrow {
+  grid-column: span 2;
+  border-color: var(--cs-line);
+}
+
+.tileHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tileTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tileTitle {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.squares {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.square {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--cs-fill);
+  border: 1px solid var(--cs-line);
+}
+
+.squareMarked {
+  background: var(--cs-raised);
+}
+
+.sq_crit {
+  border-color: var(--cs-crit);
+}
+
+.sq_warn {
+  border-color: var(--cs-warn);
+}
+
+.sq_review {
+  border-color: var(--cs-rev);
+}
+
+.sq_stale {
+  border: 1px dashed var(--cs-icon);
+}
+
+.sq_shadow,
+.sq_paused {
+  border-color: var(--cs-line-strong);
+}
+
+.tileNotes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.tileFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Exceptions first (4f) */
+.strip {
+  display: grid;
+  grid-template-columns: 208px repeat(5, minmax(0, 1fr));
+}
+
+.stripCell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.stripCell + .stripCell {
+  border-left: 1px solid var(--cs-line);
+}
+
+.stripOn {
+  background: var(--cs-sel);
+  box-shadow: inset 0 -2px 0 var(--cs-acc);
+}
+
+.stripHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stripName {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.exceptionsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  column-gap: 32px;
+  align-items: start;
+}
+
+.cardHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.cardTitle {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.kvRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.cardNote {
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 13px;
+}
+
+.bold {
+  font-weight: 600;
+}
+
+.cardHeadStacked {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px;
+}

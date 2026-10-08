@@ -4,6 +4,7 @@ import { actions } from './actions'
 import { activities } from './activities'
 import { agents } from './agents'
 import { divisions } from './divisions'
+import { changeEvents, logEvents } from './events'
 import { exceptions } from './exceptions'
 import { people, roles } from './people'
 import { grants, hardStops, instructions } from './policies'
@@ -13,7 +14,7 @@ import { privileges } from './privileges'
  * Bump whenever seed data or the DemoState shape changes: saved state from an older
  * version is discarded and replaced by a fresh seed (Review focus 1).
  */
-export const SEED_VERSION = 2
+export const SEED_VERSION = 4
 
 const SEED: DemoState = {
   version: SEED_VERSION,
@@ -31,6 +32,9 @@ const SEED: DemoState = {
   exceptions,
   actions,
   resumeRequests: [],
+  logEvents,
+  changeEvents,
+  stats24h: { closedEarlier: 5, medianCloseMin: 41, lastHour: { hardStops: 3, pauses: 1, pages: 0 } },
   audit: [],
 }
 

@@ -1,5 +1,6 @@
 export { Icon, type IconName, type IconProps } from './icons/Icon'
 export { Button, type ButtonProps, type ButtonVariant } from './primitives/Button/Button'
+export { LinkButton, type LinkButtonProps } from './primitives/Button/LinkButton'
 export { Field, type FieldProps } from './primitives/Field/Field'
 export { Input, type InputProps } from './primitives/Input/Input'
 export { Select, type SelectProps } from './primitives/Select/Select'

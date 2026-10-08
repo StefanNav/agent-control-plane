@@ -1,0 +1,249 @@
+/* Wall display (4e): its own type scale so it reads across a room. */
+.wall {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-height: 100vh;
+  padding: 36px 48px;
+  background: var(--cs-bg);
+  color: var(--cs-ink);
+}
+
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.headText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kicker,
+.kickerPad {
+  font-size: 18px;
+  line-height: 24px;
+  letter-spacing: 0.04em;
+  color: var(--cs-meta);
+}
+
+.kickerPad {
+  padding-bottom: 6px;
+}
+
+.kickerPlain {
+  font-size: 18px;
+  line-height: 24px;
+  color: var(--cs-meta);
+  white-space: nowrap;
+}
+
+.title {
+  font-size: 40px;
+  line-height: 48px;
+  font-weight: 600;
+}
+
+.clockBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.clock {
+  font-family: var(--cs-font-mono);
+  font-size: 44px;
+  line-height: 52px;
+}
+
+.grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 40px;
+  min-height: 0;
+}
+
+.attention {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px 32px;
+  background: var(--cs-raised);
+  border-radius: 6px;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.cardTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cardTitle {
+  font-size: 36px;
+  line-height: 44px;
+  font-weight: 600;
+}
+
+.cardSub {
+  font-size: 20px;
+  line-height: 28px;
+  color: var(--cs-meta);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  align-self: flex-start;
+  height: 40px;
+  padding: 0 14px 0 12px;
+  border: 1.5px solid var(--cs-line-strong);
+  border-radius: 3px;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chip_crit {
+  border-color: var(--cs-crit);
+  color: var(--cs-crit);
+}
+
+.chip_warn {
+  border-color: var(--cs-warn);
+  color: var(--cs-warn-text);
+}
+
+.chip_review {
+  border-color: var(--cs-rev);
+  color: var(--cs-rev);
+}
+
+.chip_stale {
+  border-style: dashed;
+  border-color: var(--cs-icon);
+  color: var(--cs-strong);
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  column-gap: 14px;
+  align-items: baseline;
+  padding: 10px 0;
+  border-top: 1px solid var(--cs-line);
+}
+
+.itemMark {
+  align-self: center;
+  display: flex;
+}
+
+.itemText {
+  font-size: 22px;
+  line-height: 30px;
+}
+
+.itemName {
+  font-weight: 600;
+}
+
+.itemReason {
+  color: var(--cs-text2);
+}
+
+.itemAge {
+  font-family: var(--cs-font-mono);
+  font-size: 18px;
+  line-height: 30px;
+  color: var(--cs-meta);
+}
+
+.quiet {
+  display: flex;
+  flex-direction: column;
+}
+
+.quietRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 0;
+  border-top: 1px solid var(--cs-line);
+}
+
+.quietName {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quietTitle {
+  font-size: 26px;
+  line-height: 34px;
+  color: var(--cs-text2);
+}
+
+.lastHour {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 18px;
+  border-top: 1px solid var(--cs-line);
+}
+
+.lastHourText {
+  font-size: 22px;
+  line-height: 30px;
+  color: var(--cs-text2);
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 16px;
+  line-height: 22px;
+  color: var(--cs-meta);
+}
+
+/* Barely there until hovered or focused: the wall has no controls. */
+.exit {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 12px;
+  color: var(--cs-meta);
+  opacity: 0;
+  text-decoration: none;
+}
+
+.wall:hover .exit,
+.exit:focus-visible {
+  opacity: 1;
+}

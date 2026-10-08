@@ -1,6 +1,6 @@
 import type { Agent, Level, Status } from '../types'
 
-const LIVE = '2026-12-08T09:51:47'
+const LIVE = '2026-12-08T09:51:00'
 
 /** '05 Feb' → '2027-02-05'; December dates fall in 2026 (the demo is 08 Dec 2026). */
 function reviewDate(dayMonth: string): string {
@@ -41,6 +41,12 @@ const MEDICATIONS: Array<[id: string, code: string, row: Row]> = [
   ['opioid-taper', 'AGT-0144', ['shadow', 'Shadow', 'SC-03 v1', 'Opioid Taper Agent', 'v0.7.4', '22', '—', '—', '0', 'Shadow', 'Dr. Lee', '16 Dec', 82, 0.6]],
 ]
 
+/** Values the agent view (4c) and division panel (4b) show beyond the board row. */
+const EXTRA: Record<string, Partial<Agent>> = {
+  'med-rec': { sop: 'v1.3.1', today: { drafts: 96, expected: 140 } },
+  'discharge-meds': { judgedAt: '2026-12-08T09:41:00' },
+}
+
 function medicationsAgent([id, code, row]: (typeof MEDICATIONS)[number]): Agent {
   const [status, label, rule, name, version, day, asIs, edited, blocked, level, grantor, review, end, drift] = row
   const stale = status === 'stale'
@@ -66,9 +72,14 @@ function medicationsAgent([id, code, row]: (typeof MEDICATIONS)[number]): Agent 
       edited: num(edited),
       blocked: num(blocked),
       trend: { end, drift },
+      ...(id === 'med-rec' ? { rejected: 1.5 } : {}),
+      ...(id === 'discharge-meds' ? { weekActions: 1964, rejected: 0.3 } : {}),
     },
     monitor: { lastSeen: stale ? '2026-12-08T06:41:00' : LIVE, expectedIntervalMin: 5 },
+    gateway: 'gw-east-2',
+    judgedAt: '2026-12-08T09:41:00',
     ...(status === 'paused' ? { pausedBy: 'marcus', pausedAt: '2026-12-07T16:10:00' } : {}),
+    ...EXTRA[id],
   }
 }
 
@@ -103,6 +114,7 @@ function otherAgent(divisionId: string, ownerId: string, sponsorId: string, leve
       trend: { end, drift },
     },
     monitor: { lastSeen: LIVE, expectedIntervalMin: 5 },
+    gateway: 'gw-east-2',
   })
 }
 
