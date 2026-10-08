@@ -54,7 +54,9 @@ export function Menu({ trigger, groups, align = 'left', width = 280 }: MenuProps
     const list = items()
     const index = list.indexOf(document.activeElement as HTMLElement)
     if (event.key === 'Escape') {
+      // Stop here so a menu inside a modal closes only the menu.
       event.preventDefault()
+      event.stopPropagation()
       close(true)
     } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault()

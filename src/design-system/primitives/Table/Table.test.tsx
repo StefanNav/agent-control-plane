@@ -87,3 +87,27 @@ test('right-aligned cells are marked', () => {
   setup()
   expect(screen.getByText('147').closest('[role="cell"]')).toHaveAttribute('data-align', 'right')
 })
+
+test('Enter on a control inside a cell does not open the row', async () => {
+  const onOpen = vi.fn()
+  const onClick = vi.fn()
+  const columns: Column<Row>[] = [
+    { id: 'name', header: 'Agent', width: '1fr', render: (r) => <button onClick={onClick}>{r.name}</button> },
+  ]
+  render(<Table ariaLabel="Agents" columns={columns} rows={ROWS} getRowId={(r) => r.id} onOpen={onOpen} />)
+  screen.getByRole('button', { name: 'Med Rec Agent' }).focus()
+  await userEvent.keyboard('{Enter}')
+  expect(onOpen).not.toHaveBeenCalled()
+  expect(onClick).toHaveBeenCalled()
+})
+
+test('arrow keys inside a cell input stay in the input', async () => {
+  const columns: Column<Row>[] = [
+    { id: 'name', header: 'Agent', width: '1fr', render: (r) => <input aria-label={`note ${r.id}`} /> },
+  ]
+  render(<Table ariaLabel="Agents" columns={columns} rows={ROWS} getRowId={(r) => r.id} />)
+  const input = screen.getByRole('textbox', { name: 'note r1' })
+  input.focus()
+  await userEvent.keyboard('{ArrowDown}')
+  expect(input).toHaveFocus()
+})

@@ -69,3 +69,37 @@ test('closing returns focus to the opener', async () => {
   expect(screen.queryByRole('dialog')).toBeNull()
   expect(opener).toHaveFocus()
 })
+
+test('Shift+Tab and Tab from the dialog container stay inside', async () => {
+  render(<Harness />)
+  await userEvent.click(screen.getByRole('button', { name: 'Pause…' }))
+  const dialog = screen.getByRole('dialog')
+  dialog.focus()
+  await userEvent.tab({ shift: true })
+  expect(screen.getByRole('button', { name: 'Pause agent' })).toHaveFocus()
+  dialog.focus()
+  await userEvent.tab()
+  expect(screen.getByRole('textbox', { name: 'Reason' })).toHaveFocus()
+})
+
+test('focus that escapes the dialog is pulled back, and Escape still closes', async () => {
+  const onClose = vi.fn()
+  render(<Harness onClose={onClose} />)
+  const opener = screen.getByRole('button', { name: 'Pause…' })
+  await userEvent.click(opener)
+  opener.focus()
+  expect(screen.getByRole('dialog').contains(document.activeElement)).toBe(true)
+  await userEvent.keyboard('{Escape}')
+  expect(onClose).toHaveBeenCalled()
+})
+
+test('clicking the scrim does not close the dialog', async () => {
+  const onClose = vi.fn()
+  render(<Harness onClose={onClose} />)
+  await userEvent.click(screen.getByRole('button', { name: 'Pause…' }))
+  const scrim = document.querySelector('[data-scrim]')
+  expect(scrim).not.toBeNull()
+  await userEvent.click(scrim!)
+  expect(onClose).not.toHaveBeenCalled()
+  expect(screen.getByRole('dialog')).toBeInTheDocument()
+})

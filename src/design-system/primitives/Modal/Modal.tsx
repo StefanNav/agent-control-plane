@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
+import { useEffect, useEffectEvent, useId, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import styles from './Modal.module.css'
 
@@ -19,19 +19,60 @@ export interface ModalProps {
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
+/**
+ * Centred dialog on a scrim. While open it owns the keyboard: Escape closes it,
+ * Tab cycles inside it, and focus that lands outside is pulled back in.
+ * The scrim does not close it, so a half-typed reason is never lost by a stray click.
+ */
 export function Modal({ open, onClose, title, description, children, audit, actions, width = 600 }: ModalProps) {
   const titleId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
+  const close = useEffectEvent(onClose)
 
   useEffect(() => {
     if (!open) return
-    const opener = document.activeElement as HTMLElement | null
     const dialog = dialogRef.current
-    const first = dialog?.querySelector<HTMLElement>(FOCUSABLE)
-    ;(first ?? dialog)?.focus()
+    if (!dialog) return
+    const opener = document.activeElement as HTMLElement | null
+    const focusable = () => Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE))
+    ;(focusable()[0] ?? dialog).focus()
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        close()
+        return
+      }
+      if (event.key !== 'Tab') return
+      const items = focusable()
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (!first || !last) {
+        event.preventDefault()
+        dialog.focus()
+        return
+      }
+      const active = document.activeElement as HTMLElement | null
+      const inside = active !== null && items.includes(active)
+      if (event.shiftKey && (!inside || active === first)) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && (!inside || active === last)) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+    const onFocusIn = (event: FocusEvent) => {
+      if (!dialog.contains(event.target as Node)) (focusable()[0] ?? dialog).focus()
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    document.addEventListener('focusin', onFocusIn)
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('focusin', onFocusIn)
       document.body.style.overflow = previousOverflow
       opener?.focus()
     }
@@ -39,29 +80,9 @@ export function Modal({ open, onClose, title, description, children, audit, acti
 
   if (!open) return null
 
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Escape') {
-      event.stopPropagation()
-      onClose()
-      return
-    }
-    if (event.key !== 'Tab') return
-    const focusable = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])
-    const first = focusable[0]
-    const last = focusable[focusable.length - 1]
-    if (!first || !last) return
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault()
-      last.focus()
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault()
-      first.focus()
-    }
-  }
-
   return createPortal(
     <div className={styles.layer}>
-      <div className={styles.scrim} onClick={() => onClose()} />
+      <div className={styles.scrim} data-scrim />
       <div
         ref={dialogRef}
         role="dialog"
@@ -70,7 +91,6 @@ export function Modal({ open, onClose, title, description, children, audit, acti
         tabIndex={-1}
         className={styles.dialog}
         style={{ width }}
-        onKeyDown={onKeyDown}
       >
         <div className={styles.head}>
           <h2 id={titleId} className={styles.title}>

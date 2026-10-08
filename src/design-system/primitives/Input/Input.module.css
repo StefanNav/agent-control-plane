@@ -29,3 +29,8 @@
   outline: 2px solid var(--cs-focus);
   outline-offset: 1px;
 }
+
+/* The box draws the ring; the inner input must not draw its own. */
+:global(:root[data-keyboard]) .input:focus-visible {
+  outline: none;
+}

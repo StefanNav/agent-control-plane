@@ -55,6 +55,6 @@
   flex: none;
   width: 14px;
   height: 14px;
-  border: 1.5px solid var(--cs-ink);
+  border: 1.5px solid var(--cs-text2);
   border-radius: 2px;
 }

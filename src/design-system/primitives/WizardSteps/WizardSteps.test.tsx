@@ -21,3 +21,26 @@ test('marks: done has a check, locked has a lock', () => {
   const locked = screen.getByText('5 · Sponsor approval').closest('li')!
   expect(locked.querySelector('rect')).not.toBeNull()
 })
+
+test('done and review marks are 14px; locked is 12px (as drawn in E1)', () => {
+  render(<WizardSteps steps={STEPS} current="job" />)
+  const svgSize = (label: string) => screen.getByText(label).closest('li')!.querySelector('svg')?.getAttribute('width')
+  expect(svgSize('1 · Intake')).toBe('14')
+  expect(svgSize('6 · Ready for review')).toBe('14')
+  expect(svgSize('5 · Sponsor approval')).toBe('12')
+})
+
+test('a step not started yet has no mark and a muted label', () => {
+  render(
+    <WizardSteps
+      current="intake"
+      steps={[
+        { id: 'intake', label: '1 · Intake', sub: 'Dana · ready to start', mark: 'todo' },
+        { id: 'job', label: '2 · Job description', sub: 'Marcus · after start', mark: 'none' },
+      ]}
+    />,
+  )
+  const step = screen.getByText('2 · Job description').closest('li')!
+  expect(step.querySelector('svg')).toBeNull()
+  expect(screen.getByText('2 · Job description').className).toMatch(/muted/)
+})

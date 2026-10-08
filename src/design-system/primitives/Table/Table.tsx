@@ -55,6 +55,8 @@ export function Table<Row>({
   const byId = new Map(rows.map((row) => [getRowId(row), row]))
 
   const onRowKeyDown = (event: KeyboardEvent<HTMLDivElement>, id: string) => {
+    // Keys pressed in a control inside a cell (link, button, input) belong to that control.
+    if (event.target !== event.currentTarget) return
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault()
       const table = event.currentTarget.closest('[role="table"]')

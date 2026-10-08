@@ -1,4 +1,6 @@
 .bar {
+  /* The bar is ink, so focus rings on it use the light surface colour. */
+  --cs-focus: var(--cs-raised);
   display: flex;
   align-items: center;
   justify-content: space-between;
