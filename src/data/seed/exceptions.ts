@@ -136,6 +136,7 @@ export const exceptions: AgentException[] = [
     status: 'normal',
     kind: 'question',
     type: 'Question',
+    short: 'Move pyxis.dispense.read to the v2 endpoint?',
     reason: 'Move pyxis.dispense.read to the v2 endpoint? Same data, faster.',
     agentId: 'med-rec',
     from: 'sam',

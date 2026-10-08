@@ -1,0 +1,139 @@
+/* The 07:00 email (5c): 720 wide, set like a plain message. */
+.email {
+  /* 720 inside the border, as in 5c. */
+  width: 722px;
+  max-width: 100%;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line-strong);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 28px;
+  background: var(--cs-sunk);
+  border-bottom: 1px solid var(--cs-line);
+}
+
+.line {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-text2);
+}
+
+.key {
+  color: var(--cs-meta);
+}
+
+.subject {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 28px 28px;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+.sub {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cs-meta);
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--cs-line);
+}
+
+.rowText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.text {
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--cs-ink);
+}
+
+.meta {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-meta);
+}
+
+.open {
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 600;
+  color: var(--cs-acc);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.open:hover {
+  text-decoration: underline;
+}
+
+.logLine {
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.logLine a,
+.foot a {
+  color: var(--cs-ink);
+}
+
+.foot {
+  padding-top: 16px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-meta);
+}

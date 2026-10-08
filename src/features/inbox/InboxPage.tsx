@@ -8,7 +8,15 @@ import { can, lockReason } from '../../store/permissions'
 import { ExceptionDetail } from './ExceptionDetail'
 import { InboxItem } from './InboxItem'
 import { personName } from '../board/selectors'
-import { selectExceptionDetail, selectInbox, selectInboxHeader } from './selectors'
+import { Digest } from './Digest'
+import { LogList } from './LogList'
+import {
+  selectDigest,
+  selectExceptionDetail,
+  selectInbox,
+  selectInboxHeader,
+  selectLog,
+} from './selectors'
 import styles from './inbox.module.css'
 
 type Tab = 'needs' | 'waiting' | 'log'
@@ -29,11 +37,17 @@ export function InboxPage() {
   const selectedId = exceptionId ?? items[0]?.id
   const detail = selectedId ? selectExceptionDetail(state, selectedId) : null
   const search = tab === 'needs' ? '' : `?tab=${tab}`
-  const days = (detail?.trend ?? []).map((_, i, all) => formatDate(addMinutes(state.now, -(all.length - 1 - i) * 24 * 60)))
+  const days = (detail?.trend ?? []).map((_, i, all) =>
+    formatDate(addMinutes(state.now, -(all.length - 1 - i) * 24 * 60)),
+  )
   const agentId = detail?.agentId
-  const locked = can(state, state.personaId, 'resolveException', { agentId }) ? null : lockReason('resolveException', state.personaId)
+  const locked = can(state, state.personaId, 'resolveException', { agentId })
+    ? null
+    : lockReason('resolveException', state.personaId)
 
   const listLabel = tab === 'waiting' ? 'Waiting on others' : 'Needs me'
+  const settingsTo = header.divisionId ? `/settings/divisions/${header.divisionId}` : '/settings'
+  const view = params.get('view') === 'digest' ? 'digest' : 'inbox'
   return (
     <>
       <PageHeader
@@ -45,65 +59,95 @@ export function InboxPage() {
             <LinkButton to="/operations/inbox?view=digest" variant="ghost">
               Daily digest
             </LinkButton>
-            <LinkButton to={header.divisionId ? `/settings/divisions/${header.divisionId}` : '/settings'}>Delivery settings</LinkButton>
+            <LinkButton to={settingsTo}>Delivery settings</LinkButton>
           </span>
         }
         tabs={
           <Tabs
             ariaLabel="Inbox"
-            current={tab}
+            current={view === 'digest' ? '' : tab}
             items={[
               { id: 'needs', label: `Needs me · ${inbox.needsMe.length}`, to: '/operations/inbox' },
-              { id: 'waiting', label: `Waiting on others · ${inbox.waiting.length}`, to: '/operations/inbox?tab=waiting' },
+              {
+                id: 'waiting',
+                label: `Waiting on others · ${inbox.waiting.length}`,
+                to: '/operations/inbox?tab=waiting',
+              },
               { id: 'log', label: 'Log', to: '/operations/inbox?tab=log' },
             ]}
           />
         }
       />
-      <div className={styles.body}>
-        <div className={styles.listCard}>
-          <div className={styles.listHead}>
-            <span className={styles.label}>
-              {listLabel} · {items.length}
-            </span>
-            <span className={styles.sorted}>sorted by deadline</span>
-          </div>
-          {items.length ? (
-            <ul aria-label={listLabel} className={styles.list}>
-              {items.map((item) => (
-                <InboxItem key={item.id} item={item} to={`/operations/inbox/${item.id}${search}`} selected={item.id === selectedId} />
-              ))}
-            </ul>
-          ) : (
-            <p className={styles.empty}>{tab === 'waiting' ? 'Nothing is waiting on anyone else.' : 'Nothing needs you right now.'}</p>
-          )}
-          <div className={styles.howItReaches}>
-            <span className={styles.label}>How this reaches you</span>
-            <span>Critical pages you. Warnings, reviews and questions land here and in the 07:00 digest. Information stays in the log.</span>
-          </div>
+      {view === 'digest' ? (
+        <div className={styles.digestWrap}>
+          <span className={styles.digestNote}>
+            The 07:00 email · sent every morning; anything due within two hours reaches you as it
+            happens
+          </span>
+          <Digest digest={selectDigest(state, state.personaId)} settingsTo={settingsTo} />
         </div>
-        {detail ? (
-          <ExceptionDetail
-            detail={detail}
-            now={state.now}
-            days={days}
-            locked={locked}
-            onSnooze={(until) => {
-              if (snoozeException(detail.id, until).ok) navigate(`/operations/inbox${search}`)
-            }}
-            actorName={personName(state, state.personaId)}
-            onDismiss={(input) => {
-              const ok = dismissException(detail.id, input).ok
-              if (ok) navigate(`/operations/inbox${search}`)
-              return ok
-            }}
-          />
-        ) : (
-          <section aria-label="Exception detail" className={styles.detailEmpty}>
-            Select an item to see what happened and what it needs.
-          </section>
-        )}
-      </div>
+      ) : tab === 'log' ? (
+        <div className={styles.single}>
+          <LogList rows={selectLog(state)} />
+        </div>
+      ) : (
+        <div className={styles.body}>
+          <div className={styles.listCard}>
+            <div className={styles.listHead}>
+              <span className={styles.label}>
+                {listLabel} · {items.length}
+              </span>
+              <span className={styles.sorted}>sorted by deadline</span>
+            </div>
+            {items.length ? (
+              <ul aria-label={listLabel} className={styles.list}>
+                {items.map((item) => (
+                  <InboxItem
+                    key={item.id}
+                    item={item}
+                    to={`/operations/inbox/${item.id}${search}`}
+                    selected={item.id === selectedId}
+                  />
+                ))}
+              </ul>
+            ) : (
+              <p className={styles.empty}>
+                {tab === 'waiting'
+                  ? 'Nothing is waiting on anyone else.'
+                  : 'Nothing needs you right now.'}
+              </p>
+            )}
+            <div className={styles.howItReaches}>
+              <span className={styles.label}>How this reaches you</span>
+              <span>
+                Critical pages you. Warnings, reviews and questions land here and in the 07:00
+                digest. Information stays in the log.
+              </span>
+            </div>
+          </div>
+          {detail ? (
+            <ExceptionDetail
+              detail={detail}
+              now={state.now}
+              days={days}
+              locked={locked}
+              onSnooze={(until) => {
+                if (snoozeException(detail.id, until).ok) navigate(`/operations/inbox${search}`)
+              }}
+              actorName={personName(state, state.personaId)}
+              onDismiss={(input) => {
+                const ok = dismissException(detail.id, input).ok
+                if (ok) navigate(`/operations/inbox${search}`)
+                return ok
+              }}
+            />
+          ) : (
+            <section aria-label="Exception detail" className={styles.detailEmpty}>
+              Select an item to see what happened and what it needs.
+            </section>
+          )}
+        </div>
+      )}
     </>
   )
 }

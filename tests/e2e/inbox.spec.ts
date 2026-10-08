@@ -62,3 +62,23 @@ test('dismiss with a reason (5b): blocked until a reason is given, then logged o
   await expect(page.getByText('Dismissed EXC-5512')).toBeVisible()
   expect(errors).toEqual([])
 })
+
+test.describe('digest, log and waiting (5c)', () => {
+  test('the daily digest reads like the 07:00 email; Open the log goes to the log', async ({ page }) => {
+    const errors = collectErrors(page)
+    await page.goto('/operations/inbox')
+    await page.getByRole('link', { name: 'Daily digest' }).click()
+    await expect(page.getByText('2 things need you today')).toBeVisible()
+    await expect(page.getByText('Changed yesterday · 2')).toBeVisible()
+    await page.getByRole('link', { name: 'Open the log' }).click()
+    await expect(page).toHaveURL(/tab=log/)
+    await expect(page.getByText('41 events')).toBeVisible()
+    expect(errors).toEqual([])
+  })
+
+  test('Waiting on others lists the two items Marcus is copied on', async ({ page }) => {
+    await page.goto('/operations/inbox')
+    await page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Waiting on others · 2' }).click()
+    await expect(page.getByRole('list', { name: 'Waiting on others' }).getByRole('listitem')).toHaveCount(2)
+  })
+})

@@ -315,3 +315,24 @@
 .reasonBox {
   min-height: 96px;
 }
+
+.single {
+  padding: 24px 40px 40px;
+}
+
+.logRows {
+  padding: 4px 16px 8px;
+}
+
+.digestWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px 40px 40px;
+}
+
+.digestNote {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-meta);
+}

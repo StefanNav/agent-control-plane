@@ -1,5 +1,5 @@
 import type { AgentException, DemoState, LogEvent, PersonaId, Status } from '../../data/types'
-import { formatClock, formatDue, formatAgo, minutesBetween } from '../../lib/clock'
+import { formatAgo, formatClock, formatDay, formatDue, minutesBetween } from '../../lib/clock'
 import { personName } from '../board/selectors'
 
 export const isOpen = (e: AgentException) => e.state !== 'resolved' && e.state !== 'dismissed'
@@ -74,8 +74,6 @@ export function selectExceptionDetail(s: DemoState, id: string) {
   const agent = s.agents.find((a) => a.id === e.agentId)
   const sponsor = personName(s, sponsorOf(s, e))
   const owner = personName(s, e.ownerId)
-  const dueText = formatDue(e.deadline, s.now).replace(/^Due /, '')
-  const sameDay = /^\d\d:\d\d$/.test(dueText)
   const escalated = isEscalated(e, s.now)
   return {
     id: e.id,
@@ -87,7 +85,7 @@ export function selectExceptionDetail(s: DemoState, id: string) {
     agentId: e.agentId,
     agentName: agent?.name ?? '',
     headline: e.detail?.headline ?? e.reason,
-    meta: [e.code, e.ruleTag, `raised ${formatClock(e.raisedAt)}`, `due ${sameDay ? `today ${dueText}` : dueText}`, owner].filter(Boolean).join(' · '),
+    meta: [e.code, e.ruleTag, `raised ${formatClock(e.raisedAt)}`, dueWithDay(e.deadline, s.now).replace(/^Due/, 'due'), owner].filter(Boolean).join(' · '),
     escalated,
     escalationLine: escalated ? `Escalated to ${sponsor} at ${formatClock(e.deadline)}` : `Not handled by ${formatClock(e.deadline)} → goes to ${sponsor}`,
     ownerName: owner,
@@ -116,4 +114,61 @@ export function selectInboxHeader(s: DemoState, personaId: PersonaId): { status:
   const divisionId = roles.some((r) => r.divisionId === 'all') ? undefined : roles[0]?.divisionId
   const division = s.divisions.find((d) => d.id === divisionId)
   return { status: `${personName(s, personaId)} · ${division?.name ?? 'All divisions'}`, divisionId }
+}
+
+/** "Due today 15:00" for a same-day deadline; otherwise formatDue's "Due tomorrow", "Due Friday"… */
+function dueWithDay(deadline: string, now: string): string {
+  const due = formatDue(deadline, now)
+  return /^Due \d\d:\d\d$/.test(due) ? due.replace('Due ', 'Due today ') : due
+}
+
+/** Statuses that mean an agent acted outside its job description. */
+const OUT_OF_SCOPE: Status[] = ['crit', 'warn', 'review']
+
+/**
+ * The 07:00 email (5c). Items due within two hours reach you as they happen, so the digest
+ * carries what can wait for the morning; changes from yesterday; and the size of the log.
+ */
+export function selectDigest(s: DemoState, personaId: PersonaId) {
+  const { divisionId } = selectInboxHeader(s, personaId)
+  const division = s.divisions.find((d) => d.id === divisionId)
+  const agents = s.agents.filter((a) => !divisionId || a.divisionId === divisionId)
+  const within = agents.filter((a) => !OUT_OF_SCOPE.includes(a.judgment.status)).length
+  const pages = s.divisions.filter((d) => (!divisionId || d.id === divisionId) && d.page).length
+  const open = s.exceptions.filter((e) => isOpen(e) && !isSnoozed(e, s.now))
+  const needs = selectInbox(s, personaId)
+    .needsMe.filter((item) => !item.dueSoon)
+    .map((item) => {
+      const e = open.find((x) => x.id === item.id)!
+      const agent = s.agents.find((a) => a.id === e.agentId)
+      const question = e.kind === 'question'
+      return {
+        id: e.id,
+        status: e.status,
+        label: question && e.from ? `Question from ${personName(s, e.from)}` : e.type,
+        text: question ? (e.short ?? e.reason) : `${agent?.name} · ${e.short ?? e.reason}`,
+        due: dueWithDay(e.deadline, s.now),
+        link: question ? 'Answer' : 'Open',
+      }
+    })
+  return {
+    from: 'AIMS · Lakeshore Health',
+    to: personName(s, personaId),
+    subject: `${division?.name ?? 'All divisions'} · daily digest · ${formatDay(s.now)}`,
+    title: `${needs.length} ${needs.length === 1 ? 'thing needs' : 'things need'} you today`,
+    sub: `${within} of ${agents.length} agents within scope overnight. ${pages ? `${pages} ${pages === 1 ? 'page' : 'pages'} went out.` : 'Nothing paged you.'}`,
+    needs,
+    changes: s.changeEvents,
+    logTotal: s.logEvents.length,
+  }
+}
+
+/** Every log event, newest first, with the agent named (the inbox Log tab). */
+export function selectLog(s: DemoState) {
+  return [...s.logEvents]
+    .sort((a, b) => b.at.localeCompare(a.at))
+    .map((e) => {
+      const agent = s.agents.find((a) => a.id === e.agentId)?.name
+      return { id: e.id, time: formatClock(e.at), text: e.text, sub: [agent, e.sub].filter(Boolean).join(' · ') }
+    })
 }

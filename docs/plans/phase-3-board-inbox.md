@@ -296,14 +296,14 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
 - `?tab=log` lists `logEvents` as `LogRow`s with the total.
 - `?tab=waiting` lists the waiting items.
 
-- [ ] **Step 1: Failing e2e:**
+- [x] **Step 1: Failing e2e:**
   - The digest shows "2 things need you today" and "Changed yesterday · 2".
   - "Open the log" goes to `?tab=log`, which shows "41 events".
   - "Waiting on others · 2" lists two items.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against E5 5c.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(inbox): daily digest, log, waiting on others"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against E5 5c.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(inbox): daily digest, log, waiting on others"`.
 
 ### Task 3.10: Escalated to the sponsor (5d)
 

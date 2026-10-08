@@ -1,5 +1,5 @@
 import { createSeed } from '../../data/seed'
-import { selectExceptionDetail, selectInbox, selectInboxHeader } from './selectors'
+import { selectDigest, selectExceptionDetail, selectInbox, selectInboxHeader, selectLog } from './selectors'
 
 const s = createSeed()
 
@@ -54,4 +54,33 @@ test('the inbox header names the persona and their division', () => {
   const s = createSeed()
   expect(selectInboxHeader(s, 'marcus')).toEqual({ status: 'Marcus · Medications', divisionId: 'medications' })
   expect(selectInboxHeader(s, 'dana')).toEqual({ status: 'Dana · All divisions', divisionId: undefined })
+})
+
+test('the 07:00 digest (5c): what can wait for the morning email, what changed, what stays in the log', () => {
+  const digest = selectDigest(createSeed(), 'marcus')
+  expect(digest).toMatchObject({
+    from: 'AIMS · Lakeshore Health',
+    to: 'Marcus',
+    subject: 'Medications · daily digest · Tue 08 Dec',
+    title: '2 things need you today',
+    sub: '17 of 20 agents within scope overnight. Nothing paged you.',
+    logTotal: 41,
+  })
+  expect(digest.needs).toEqual([
+    { id: 'exc-5512', status: 'warn', label: 'Edit rate rising', text: 'Renal Dosing Agent · edit rate 19.2 % against 10 %', due: 'Due today 15:00', link: 'Open' },
+    { id: 'exc-5514', status: 'normal', label: 'Question from Sam', text: 'Move pyxis.dispense.read to the v2 endpoint?', due: 'Due tomorrow', link: 'Answer' },
+  ])
+  expect(digest.changes.map((c) => c.text)).toEqual([
+    'Allergy Recon Agent v1.2.1 deployed by Sam. Re-validation passed on 200 replayed cases.',
+    'HS-04 v2 published: dose checks now read strengths from the formulary table.',
+  ])
+})
+
+test('the log lists every event newest first, with the agent named', () => {
+  const s = createSeed()
+  const withTune = { ...s, logEvents: [...s.logEvents, { id: 'log-tune-42', at: '2026-12-08T09:52:00', agentId: 'renal-dosing', text: 'Raise the MR-12 threshold', sub: 'Requested by Marcus' }] }
+  const rows = selectLog(withTune)
+  expect(rows).toHaveLength(42)
+  expect(rows[0]).toEqual({ id: 'log-tune-42', time: '09:52', text: 'Raise the MR-12 threshold', sub: 'Renal Dosing Agent · Requested by Marcus' })
+  expect(rows[1]!.time).toBe('09:50')
 })
