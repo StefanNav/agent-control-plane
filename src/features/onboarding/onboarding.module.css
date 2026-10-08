@@ -586,3 +586,53 @@ a.check:hover {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* Systems and verbs (1c). */
+.whyRow {
+  min-height: 68px;
+}
+
+.whyLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 220px;
+  flex: none;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.whySelect {
+  flex: 1;
+}
+
+.rowAttention {
+  background: var(--cs-sel);
+  box-shadow: inset 2px 0 0 var(--cs-acc);
+}
+
+.reach {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 20px;
+  background: var(--cs-bg);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.reach .caps {
+  margin-bottom: 8px;
+}
+
+.reach strong {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}

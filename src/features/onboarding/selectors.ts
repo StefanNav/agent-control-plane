@@ -1,7 +1,8 @@
 import { ORG_NEVER, ORG_POL_02 } from '../../data/seed/catalogue'
-import type { DemoState, Domain } from '../../data/types'
+import type { DemoState, Domain, GrantCell, Verb } from '../../data/types'
 import { formatClock, formatDate } from '../../lib/clock'
-import { FIELD_NAMES, firstMissingField, jobFields, limitsProgress, onboardingContext, openStep, personName, recordItems, systemsProgress, type JobFieldId } from '../../store/onboardingRules'
+import { purposeText } from '../../store/onboarding'
+import { FIELD_NAMES, firstMissingField, jobFields, limitsProgress, needsReason, onboardingContext, openStep, personName, reachLine, recordItems, systemsProgress, type JobFieldId } from '../../store/onboardingRules'
 import { onBoard } from '../board/selectors'
 
 /** The span-of-control guideline: past this many directly supervised activities, exceptions wait (2a). */
@@ -188,5 +189,62 @@ export function selectJobStep(s: DemoState, agentId: string, viewer: string) {
     actingForNote: template.actingForNote,
     suggestionsLabel: template.suggestionsLabel,
     suggestions: template.escalationSuggestions.filter((t) => !job.escalation.some((e) => e.toLowerCase() === t.toLowerCase())),
+  }
+}
+
+const VERB_ORDER: Verb[] = ['read', 'draft', 'write', 'submit', 'sign', 'order']
+const WHY_NAME: Record<string, string> = { 'Microsoft Teams': 'Teams' }
+
+/** Step 3, systems and verbs (1c): the grid, why each grant, the reach line, and what's left. */
+export function selectSystemsStep(s: DemoState, agentId: string) {
+  const { record, template, people } = onboardingContext(s, agentId)
+  if (!record) return null
+  const grants = record.grants
+  const unexplained = (system: string, verb: Verb) => {
+    const g = grants.find((x) => x.system === system && x.verb === verb)
+    return Boolean(g && needsReason(g, grants) && g.activity === null)
+  }
+  const rows = template.systems.map(({ system, detail }) => ({
+    system,
+    detail,
+    cells: Object.fromEntries(
+      VERB_ORDER.map((verb): [Verb, GrantCell] => [
+        verb,
+        verb === 'sign' || verb === 'order' ? 'locked' : !grants.some((g) => g.system === system && g.verb === verb) ? 'none' : unexplained(system, verb) ? 'changed' : 'granted',
+      ]),
+    ) as Record<Verb, GrantCell>,
+  }))
+  const why = template.systems.flatMap(({ system }) =>
+    VERB_ORDER.flatMap((verb) => {
+      const g = grants.find((x) => x.system === system && x.verb === verb)
+      if (!g || !needsReason(g, grants)) return []
+      return [{ key: `${system}·${verb}`, system, verb, label: `${WHY_NAME[system] ?? system} · ${verb}`, activity: g.activity, why: g.why, isNew: g.activity === null }]
+    }),
+  )
+  const progress = systemsProgress(s, agentId)
+  const items = recordItems(s, agentId)
+  const limits = limitsProgress(record)
+  const selected = why.find((w) => w.isNew)?.system
+  const owner = personName(s, people.owner)
+  const tech = personName(s, people.tech)
+  return {
+    frozen: Boolean(record.frozenAt),
+    owner,
+    tech,
+    sponsor: personName(s, people.sponsor),
+    meta: progress.complete ? `${owner} · done` : `${owner} · ${progress.done} of ${progress.total}`,
+    rows,
+    selected,
+    why,
+    purposes: [
+      { value: 'all', label: purposeText(record, 'all') },
+      ...record.job.activities.map((a) => ({ value: a.id, label: a.name })),
+      { value: 'escalation', label: purposeText(record, 'escalation') },
+    ],
+    reach: reachLine(grants),
+    progress,
+    items,
+    alsoNeeded: limits.total && limits.tested === limits.total ? [] : [`${limits.total ? `${limits.total} hard stops` : 'Hard stops'} · ${tech}`],
+    next: why.filter((w) => w.isNew).map((w) => `${w.label} needs its activity`),
   }
 }

@@ -24,10 +24,14 @@ export interface SystemsVerbsGridProps {
   actions?: ReactNode
   /** Makes unlocked cells toggle buttons. */
   onToggle?: (system: string, verb: Verb) => void
+  /** The row that needs attention (1c: a grant still missing its activity). */
+  selected?: string
+  /** Replaces the footer's lead-in before the policy tag (1c "Sign and order are locked for every agent by"). */
+  policyText?: ReactNode
 }
 
 /** Which systems the agent may read, draft, write or submit to (component 07). */
-export function SystemsVerbsGrid({ rows, policyId, note, actions, onToggle }: SystemsVerbsGridProps) {
+export function SystemsVerbsGrid({ rows, policyId, note, actions, onToggle, selected, policyText }: SystemsVerbsGridProps) {
   return (
     <div className={styles.grid}>
       <div className={cx(styles.row, styles.head)}>
@@ -40,7 +44,7 @@ export function SystemsVerbsGrid({ rows, policyId, note, actions, onToggle }: Sy
         ))}
       </div>
       {rows.map((row) => (
-        <div key={row.system} className={styles.row}>
+        <div key={row.system} className={cx(styles.row, row.system === selected && styles.selected)} data-selected={row.system === selected ? 'true' : undefined}>
           <span className={styles.system}>
             <span className={styles.systemName}>{row.system}</span>
             <span className={styles.detail}>{row.detail}</span>
@@ -76,7 +80,7 @@ export function SystemsVerbsGrid({ rows, policyId, note, actions, onToggle }: Sy
       ))}
       <div className={styles.foot}>
         <span className={styles.footText}>
-          Sign and order stay with people at every level, locked by <RuleTag>{policyId}</RuleTag>.{note ? <> {note}</> : null}
+          {policyText ?? 'Sign and order stay with people at every level, locked by'} <RuleTag>{policyId}</RuleTag>.{note ? <> {note}</> : null}
         </span>
         {actions ? <span className={styles.actions}>{actions}</span> : null}
       </div>

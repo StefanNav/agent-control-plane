@@ -134,6 +134,7 @@ export function selectExceptionDetail(s: DemoState, id: string, viewer: PersonaI
   return {
     id: e.id,
     code: e.code,
+    link: e.link,
     status: e.status,
     type: e.type,
     kind: e.kind,

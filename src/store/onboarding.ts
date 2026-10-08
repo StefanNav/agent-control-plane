@@ -1,8 +1,9 @@
 import { HARD_STOP_LIBRARY } from '../data/seed/catalogue'
 import { agentFromIntake } from '../data/seed/onboarding'
-import type { DemoState, JobDraft, Limit, Onboarding } from '../data/types'
-import { nextHardStopCode } from './mutations'
-import { jobFields, onboardingContext, personName, templateFor } from './onboardingRules'
+import type { AgentException, DemoState, JobDraft, Limit, Onboarding, Verb } from '../data/types'
+import { addMinutes } from '../lib/clock'
+import { nextExceptionCode, nextHardStopCode } from './mutations'
+import { jobFields, onboardingContext, personName, systemsProgress, templateFor } from './onboardingRules'
 
 /**
  * Onboarding state changes, shared by store actions and scenarios so a scenario builds exactly
@@ -98,5 +99,88 @@ export function applyJobEdit(s: DemoState, agentId: string, patch: Partial<JobDr
   record.savedAt = at
   if (jobFields(s, agentId).every((f) => f.done)) record.done.job ??= { at, by }
   else delete record.done.job
+  return s
+}
+
+/** 17:00 two days after `at`: the deadline for an onboarding hand-off. */
+const handOffDeadline = (at: string) => `${addMinutes(at, 2 * 24 * 60).slice(0, 10)}T17:00:00`
+
+/** Raise an onboarding hand-off in someone's inbox (ruling R9): a review item that links to the step. */
+export function raiseItem(
+  s: DemoState,
+  input: { agentId: string; type: string; reason: string; action: string; actionSub: string; ownerId: string; copied: string[]; link: { label: string; to: string }; at: string; deadline?: string },
+): AgentException {
+  const code = nextExceptionCode(s)
+  const item: AgentException = {
+    id: code.toLowerCase(),
+    code,
+    status: 'review',
+    kind: 'review',
+    type: input.type,
+    reason: input.reason,
+    agentId: input.agentId,
+    raisedAt: input.at,
+    action: input.action,
+    actionSub: input.actionSub,
+    ownerId: input.ownerId,
+    copied: input.copied.filter((p) => p !== input.ownerId),
+    deadline: input.deadline ?? handOffDeadline(input.at),
+    state: 'new',
+    route: 'inbox',
+    link: input.link,
+  }
+  s.exceptions.push(item)
+  return item
+}
+
+/** Close the open hand-offs of a type once their step is done. */
+export function resolveItems(s: DemoState, agentId: string, type: string, by: string, at: string, outcome: string): void {
+  for (const e of s.exceptions)
+    if (e.agentId === agentId && e.type === type && e.state !== 'resolved' && e.state !== 'dismissed')
+      Object.assign(e, { state: 'resolved', outcome, closedAt: at, closedBy: by })
+}
+
+const openItem = (s: DemoState, agentId: string, type: string) => s.exceptions.some((e) => e.agentId === agentId && e.type === type && e.state !== 'resolved' && e.state !== 'dismissed')
+
+export type SystemsChange = { kind: 'grant'; system: string; verb: Verb; on: boolean } | { kind: 'reason'; system: string; verb: Verb; activity: string; why?: string }
+
+/** What a grant's activity says when no reason is written (1c). */
+export function purposeText(record: Onboarding, activity: string): string {
+  if (activity === 'all') return record.job.activities.length === 2 ? 'Both activities' : `All ${record.job.activities.length} activities`
+  if (activity === 'escalation') return 'Escalation: tell the pharmacist why the case was handed over'
+  return record.job.activities.find((a) => a.id === activity)?.name ?? activity
+}
+
+/** Tick a cell or name the activity it serves (1c); finishing the grid sends the technical owner the hard stops. */
+export function applySystemsEdit(s: DemoState, agentId: string, change: SystemsChange, by: string, at: string): DemoState {
+  const record = s.onboardings.find((r) => r.agentId === agentId)
+  if (!record) return s
+  const index = record.grants.findIndex((g) => g.system === change.system && g.verb === change.verb)
+  if (change.kind === 'grant') {
+    if (change.on && index < 0) record.grants.push({ system: change.system, verb: change.verb, activity: null, why: '', added: at })
+    if (!change.on && index >= 0) record.grants.splice(index, 1)
+  } else if (index >= 0) {
+    Object.assign(record.grants[index]!, { activity: change.activity, why: change.why ?? purposeText(record, change.activity) })
+  }
+  record.version += 1
+  record.savedAt = at
+  const { people } = onboardingContext(s, agentId)
+  if (systemsProgress(s, agentId).complete) {
+    if (!record.done.systems) {
+      record.done.systems = { at, by }
+      if (record.limits.length && !openItem(s, agentId, 'Tools: hard stops to test'))
+        raiseItem(s, {
+          agentId,
+          type: 'Tools: hard stops to test',
+          reason: `${record.limits.length} hard stops from ${personName(s, people.owner)}’s never list to test on the last 30 days`,
+          action: 'test the hard stops',
+          actionSub: `Then send the set to ${personName(s, people.sponsor)}`,
+          ownerId: people.tech,
+          copied: [people.owner],
+          link: { label: 'Open tools and hard stops', to: `/inventory/agents/${agentId}/onboarding/tools` },
+          at,
+        })
+    }
+  } else delete record.done.systems
   return s
 }

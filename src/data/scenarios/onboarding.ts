@@ -1,5 +1,5 @@
-import { applyJobEdit, applyStart } from '../../store/onboarding'
-import type { DemoState } from '../types'
+import { applyJobEdit, applyStart, applySystemsEdit } from '../../store/onboarding'
+import type { DemoState, Verb } from '../types'
 import { dropAgents, rewindTo } from './rewind'
 
 /**
@@ -8,14 +8,15 @@ import { dropAgents, rewindTo } from './rewind'
  * store's own mutations, so a frame's state is exactly what the UI would produce.
  */
 
-export type MedRecStage = 'intake' | 'job-5-of-7'
+export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4'
 
-const STAGES: MedRecStage[] = ['intake', 'job-5-of-7']
+const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4']
 
 /** "Now" in each stage's frame. */
 const NOW: Record<MedRecStage, string> = {
   intake: '2026-10-01T09:05:00',
   'job-5-of-7': '2026-10-04T08:41:00',
+  'systems-3-of-4': '2026-10-05T11:09:00',
 }
 
 /** A dated step and the first stage at which it has happened. */
@@ -49,7 +50,37 @@ const TIMELINE: Step[] = [
     stage: 'job-5-of-7',
     run: (s) => applyJobEdit(s, 'med-rec', { actingFor: 'The admitting pharmacist on the patient’s unit', targets: { agreement: 90, omitted: 3 } }, 'marcus', '2026-10-03T16:42:00'),
   },
+  // 1b → 1c: Marcus finishes the job on 04 Oct (v0.5).
+  {
+    stage: 'systems-3-of-4',
+    run: (s) =>
+      applyJobEdit(
+        s,
+        'med-rec',
+        { escalation: ['Home list and fill history disagree', 'Patient on dialysis', 'More than 15 home medications'], targets: { inaccurate: 2 } },
+        'marcus',
+        '2026-10-04T09:05:00',
+      ),
+  },
+  // 1c: on 05 Oct Marcus ticks the grid and explains every grant but Teams · write (v0.6).
+  { stage: 'systems-3-of-4', run: (s) => grantMedRecSystems(s, '2026-10-05T11:08:00') },
 ]
+
+/** 1c's grid in one autosave: Epic read and draft, worklist read and write, Pyxis read, Teams write (unexplained). */
+function grantMedRecSystems(s: DemoState, at: string) {
+  const record = s.onboardings.find((r) => r.agentId === 'med-rec')!
+  const grants: Array<[string, Verb, string | null, string]> = [
+    ['Epic', 'read', 'all', 'Both activities: home list, allergies, fill history'],
+    ['Epic', 'draft', 'med-rec-admission', 'Reconcile home medications. The draft lands in Epic as pending, for the pharmacist to sign.'],
+    ['Pharmacy worklist', 'read', null, ''],
+    ['Pharmacy worklist', 'write', 'med-rec-admission', 'Puts the draft in the admitting pharmacist’s queue'],
+    ['Pyxis', 'read', 'med-rec-admission', 'Dispense history, to check the home list'],
+    ['Microsoft Teams', 'write', null, ''],
+  ]
+  record.grants = grants.map(([system, verb, activity, why]) => ({ system, verb, activity, why, added: at }))
+  // One autosave, counted through the store's own edit so version and done follow its rules.
+  applySystemsEdit(s, 'med-rec', { kind: 'grant', system: 'Microsoft Teams', verb: 'write', on: true }, 'marcus', at)
+}
 
 /** The hospital before Med Rec Agent existed, with REQ-0093 approved and waiting. */
 function beforeMedRec(s: DemoState, at: string): DemoState {

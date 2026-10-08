@@ -90,7 +90,17 @@ export function ExceptionDetail({
 
   let buttons: ReactNode
   if (detail.closed) {
-    buttons = <LinkButton to={agentLink}>Open agent</LinkButton>
+    buttons = detail.link ? <LinkButton to={detail.link.to}>{detail.link.label}</LinkButton> : <LinkButton to={agentLink}>Open agent</LinkButton>
+  } else if (detail.link) {
+    // An onboarding hand-off: the work lives on the step it links to (ruling R9).
+    buttons = (
+      <>
+        <LinkButton to={detail.link.to} variant="primary">
+          {detail.link.label}
+        </LinkButton>
+        {snooze}
+      </>
+    )
   } else if (detail.kind === 'incident' && detail.incidentId) {
     buttons = (
       <>

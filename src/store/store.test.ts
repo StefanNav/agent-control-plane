@@ -676,3 +676,40 @@ describe('updateJob (1b) — Review focus 3', () => {
     expect(limits().map((l) => l.code)).toEqual(['HS-12'])
   })
 })
+
+describe('updateSystems (1c)', () => {
+  const at = (persona: 'marcus' | 'jordan') => {
+    const store = fresh()
+    store.getState().loadScenario('onboarding-systems')
+    store.getState().setPersona(persona)
+    return store
+  }
+
+  test('Sign and Order are locked for every agent by ORG-POL-02', () => {
+    const store = at('marcus')
+    const before = dataOf(store.getState())
+    expect(store.getState().updateSystems('med-rec', { kind: 'grant', system: 'Epic', verb: 'sign', on: true })).toEqual({ ok: false, reason: 'Locked for every agent by ORG-POL-02' })
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+
+  test('naming Teams · write’s activity finishes the grid on 05 Oct at v0.7 and sends Sam the hard stops to test', async () => {
+    const { stepStates } = await import('./onboardingRules')
+    const store = at('marcus')
+    expect(store.getState().updateSystems('med-rec', { kind: 'reason', system: 'Microsoft Teams', verb: 'write', activity: 'escalation' })).toEqual({ ok: true })
+    const s = store.getState()
+    const record = s.onboardings.find((r) => r.agentId === 'med-rec')!
+    expect(record.version).toBe(7)
+    expect(record.done.systems).toEqual({ at: s.now, by: 'marcus' })
+    expect(stepStates(s, 'med-rec')[2]!.sub).toBe('Marcus · done 05 Oct')
+    const item = s.exceptions.find((e) => e.agentId === 'med-rec' && e.type === 'Tools: hard stops to test')!
+    expect(item).toMatchObject({ ownerId: 'sam', kind: 'review', status: 'review', state: 'new', link: { label: 'Open tools and hard stops', to: '/inventory/agents/med-rec/onboarding/tools' } })
+    expect(item.code).toMatch(/^EXC-54\d\d$/)
+    expect(s.audit.at(-1)).toMatchObject({ action: 'Edited systems and verbs', target: 'AGT-0123' })
+  })
+
+  test('a reason needs a granted cell; Jordan can’t edit', () => {
+    const store = at('marcus')
+    expect(store.getState().updateSystems('med-rec', { kind: 'reason', system: 'Pyxis', verb: 'write', activity: 'escalation' })).toEqual({ ok: false, reason: 'Not granted' })
+    expect(at('jordan').getState().updateSystems('med-rec', { kind: 'grant', system: 'Pyxis', verb: 'draft', on: true }).ok).toBe(false)
+  })
+})

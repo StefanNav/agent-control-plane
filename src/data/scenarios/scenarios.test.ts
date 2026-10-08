@@ -127,3 +127,13 @@ test('onboarding-at-5-of-7 (1b, 1i): Marcus left the job description at 5 of 7 o
     expect.objectContaining({ name: 'Med Rec Agent', request: 'REQ-0093', step: '2 · Job description', stepSub: 'Escalation triggers, inaccuracy target', waitingOnId: 'marcus', progress: '6 of 13', lastChange: '03 Oct 16:42', field: 'escalation' }),
   ])
 })
+
+test('onboarding-systems (1c): 05 Oct 11:09, systems 3 of 4 while Teams · write has no activity', async () => {
+  const { systemsProgress } = await import('../../store/onboardingRules')
+  const s = buildScenario('onboarding-systems')
+  expect(s.now).toBe('2026-10-05T11:09:00')
+  const record = s.onboardings.find((r) => r.agentId === 'med-rec')!
+  expect(record.version).toBe(6)
+  expect(record.done.job?.at).toBe('2026-10-04T09:05:00')
+  expect(systemsProgress(s, 'med-rec')).toMatchObject({ done: 3, total: 4, complete: false })
+})

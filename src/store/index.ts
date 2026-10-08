@@ -5,7 +5,7 @@ import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type DemoState, type Incident, type JobDraft, type PersonaId, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
-import { applyJobEdit, applyStart } from './onboarding'
+import { applyJobEdit, applyStart, applySystemsEdit, type SystemsChange } from './onboarding'
 import { FIELD_NAMES, JOB_KEY_FIELD } from './onboardingRules'
 import { can, lockReason } from './permissions'
 import { runAction, type ActionResult } from './runAction'
@@ -76,6 +76,8 @@ export interface DemoActions {
   startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
   /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
   updateJob: (agentId: string, patch: Partial<JobDraft>) => ActionResult
+  /** Tick a systems × verbs cell, or name the activity a grant serves (1c). Sign and Order stay locked. */
+  updateSystems: (agentId: string, change: SystemsChange) => ActionResult
 }
 
 export interface PauseInput {
@@ -569,6 +571,23 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Edited job description', target: agent.code, reason: fields.map((f) => FIELD_NAMES[f]).join(', ') },
               mutate: (draft) => {
                 applyJobEdit(draft, agentId, patch, draft.personaId, draft.now)
+              },
+            })
+          },
+          updateSystems: (agentId, change) => {
+            const s = get()
+            const record = s.onboardings.find((r) => r.agentId === agentId)
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!record || !agent) return { ok: false, reason: 'Not onboarding' }
+            if (record.frozenAt) return { ok: false, reason: 'Frozen at v1.0 · with AIMS Review' }
+            if (change.verb === 'sign' || change.verb === 'order') return { ok: false, reason: 'Locked for every agent by ORG-POL-02' }
+            if (change.kind === 'reason' && !record.grants.some((g) => g.system === change.system && g.verb === change.verb)) return { ok: false, reason: 'Not granted' }
+            return act({
+              action: 'editJobDescription',
+              ctx: { agentId },
+              audit: { action: 'Edited systems and verbs', target: agent.code, reason: `${change.system} · ${change.verb}${change.kind === 'grant' ? (change.on ? ' granted' : ' removed') : ' activity named'}` },
+              mutate: (draft) => {
+                applySystemsEdit(draft, agentId, change, draft.personaId, draft.now)
               },
             })
           },

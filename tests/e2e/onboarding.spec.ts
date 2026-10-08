@@ -71,3 +71,18 @@ test('job description (1b) from Drafts (1i): Continue lands on the first missing
   await expect(page.getByRole('button', { name: /^2 · Job description Marcus · done 04 Oct/ })).toBeVisible()
   expect(errors).toEqual([])
 })
+
+test('systems and verbs (1c): naming Teams · write’s activity finishes the grid', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/inventory/agents/med-rec/onboarding/systems?scenario=onboarding-systems')
+  await expect(page.getByRole('heading', { name: 'Systems and verbs · 3 of 4' })).toBeVisible()
+  await expect(page.getByText('Reads Epic, the worklist and Pyxis. Drafts in Epic. Writes to the worklist and Teams.')).toBeVisible()
+  await expect(page.locator('[data-cell="changed"]')).toHaveCount(1)
+  await page.getByRole('combobox', { name: 'Teams · write: the activity it serves' }).selectOption('escalation')
+  await expect(page.getByRole('heading', { name: 'Systems and verbs · done' })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^3 · Systems and verbs Marcus · done 05 Oct/ })).toBeVisible()
+  await expect(page.locator('[data-cell="changed"]')).toHaveCount(0)
+  // Sign is locked for every agent: no toggle exists for it.
+  await expect(page.getByRole('button', { name: 'Epic · sign' })).toHaveCount(0)
+  expect(errors).toEqual([])
+})

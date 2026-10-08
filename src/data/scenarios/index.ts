@@ -14,6 +14,7 @@ export type ScenarioId =
   | 'stale-escalated'
   | 'onboarding-intake'
   | 'onboarding-at-5-of-7'
+  | 'onboarding-systems'
 
 /** Every scenario id, for validating a `?scenario=` param. */
 export const SCENARIO_IDS: readonly ScenarioId[] = [
@@ -25,6 +26,7 @@ export const SCENARIO_IDS: readonly ScenarioId[] = [
   'stale-escalated',
   'onboarding-intake',
   'onboarding-at-5-of-7',
+  'onboarding-systems',
 ]
 
 /** The seed's live heartbeat (one minute before DEMO_NOW). */
@@ -151,6 +153,9 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
 
   // E1 1b / 1i: 04 Oct 08:41, Marcus returns to the job description he left at 5 of 7.
   'onboarding-at-5-of-7': medRecAt('job-5-of-7'),
+
+  // E1 1c: 05 Oct 11:09, Marcus has ticked the grid; Teams · write still needs its activity.
+  'onboarding-systems': medRecAt('systems-3-of-4'),
 }
 
 /** A fresh state for the scenario. */

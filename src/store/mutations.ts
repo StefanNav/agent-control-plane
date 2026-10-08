@@ -85,3 +85,6 @@ export const nextPrivilegeCode = (s: DemoState) => nextCode(s.privileges.map((p)
 /** "HS-12": the next hard-stop code after the library's, every agent's and every record's (ruling R10). */
 export const nextHardStopCode = (s: DemoState, extra: string[] = [], library: string[] = []) =>
   nextCode([...s.hardStops.map((h) => h.code), ...s.onboardings.flatMap((r) => r.limits.map((l) => l.code)), ...library, ...extra], 'HS-', 2)
+
+/** The next inbox code; codes before the demo's own start at EXC-5401, so a rewound October never restarts at EXC-0001. */
+export const nextExceptionCode = (s: DemoState) => nextCode(['EXC-5400', ...s.exceptions.map((e) => e.code)], 'EXC-', 4)

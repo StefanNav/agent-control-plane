@@ -10,6 +10,7 @@ import { useDemo } from '../../store'
 import { onboardingContext, personName, STEP_NAMES, STEP_ORDER, type StepId } from '../../store/onboardingRules'
 import { IntakeStep } from './IntakeStep'
 import { JobStep } from './JobStep'
+import { SystemsStep } from './SystemsStep'
 import { Rail } from './Rail'
 import { selectOnboardingHeader } from './selectors'
 import { StepCard } from './StepCard'
@@ -30,6 +31,7 @@ export function OnboardingPage() {
   let content: ReactNode
   if (step === 'intake') content = <IntakeStep agentId={agentId} />
   else if (record && step === 'job') content = <JobStep agentId={agentId} />
+  else if (record && step === 'systems') content = <SystemsStep agentId={agentId} />
   else if (!record) {
     content = (
       <Split

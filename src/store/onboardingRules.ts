@@ -248,3 +248,27 @@ export function openStep(s: DemoState, agentId: string): { step: StepId; number:
   if (record.sponsor.state === 'waiting') return at('approval', ['Review: final set'], people.sponsor)
   return at('tools', [`Send to ${personName(s, people.sponsor)}`], people.tech)
 }
+
+const REACH_NAME: Record<string, string> = { 'Pharmacy worklist': 'the worklist', 'Microsoft Teams': 'Teams' }
+const listOf = (items: string[]) => (items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`)
+const capital = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
+
+/** "Reach in one line" (1c), the line the sponsor and the committee read; `short` is 2b's Reach finding. */
+export function reachLine(grants: Pick<OnboardingGrant, 'system' | 'verb'>[]): { does: string; never: string; short: string } {
+  const systemsWith = (verb: Verb) => [...new Set(grants.filter((g) => g.verb === verb).map((g) => g.system))]
+  const name = (system: string) => REACH_NAME[system] ?? system
+  const parts = [
+    ['Reads', systemsWith('read')],
+    ['Drafts in', systemsWith('draft')],
+    ['Writes to', systemsWith('write')],
+    ['Submits to', systemsWith('submit')],
+  ] as const
+  const does = parts.filter(([, s]) => s.length).map(([verb, s]) => `${verb} ${listOf(s.map(name))}.`).join(' ')
+  const nowhere = (['submit', 'sign', 'order'] as const).filter((v) => !systemsWith(v).length)
+  const words: Record<string, string> = { submit: 'submits', sign: 'signs', order: 'orders' }
+  const never = nowhere.length ? `${capital(listOf(nowhere.map((v) => words[v]!)))} nowhere.` : ''
+  const reads = systemsWith('read').length
+  const drafts = systemsWith('draft')
+  const short = [`Reads ${reads} ${reads === 1 ? 'system' : 'systems'}${drafts.length ? `, drafts in ${listOf(drafts.map(name))}` : ''}.`, never.replace(/\.$/, '')].join(' ')
+  return { does, never, short }
+}

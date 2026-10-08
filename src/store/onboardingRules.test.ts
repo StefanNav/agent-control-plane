@@ -103,3 +103,13 @@ test('before start: the intake waits on Dana and later steps say "after start"',
   expect(recordItems(s, intake.agentId)).toEqual({ done: 0, total: 10 })
   expect(openStep(s, intake.agentId)).toMatchObject({ step: 'intake', waitingOn: 'dana' })
 })
+
+test('1c: the reach in one line, read from the grants', async () => {
+  const { reachLine } = await import('./onboardingRules')
+  const s = createSeed()
+  expect(reachLine(s.onboardings.find((r) => r.agentId === 'med-rec')!.grants)).toEqual({
+    does: 'Reads Epic, the worklist and Pyxis. Drafts in Epic. Writes to the worklist and Teams.',
+    never: 'Submits, signs and orders nowhere.',
+    short: 'Reads 3 systems, drafts in Epic. Submits, signs and orders nowhere',
+  })
+})
