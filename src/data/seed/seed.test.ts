@@ -26,7 +26,18 @@ test('five divisions with the board’s agent counts (41 agents)', () => {
 })
 
 test('ids are unique within each collection', () => {
-  for (const items of [seed.people, seed.divisions, seed.agents, seed.activities, seed.privileges, seed.hardStops, seed.instructions, seed.exceptions, seed.actions]) {
+  const collections: Array<Array<{ id: string }>> = [
+    seed.people,
+    seed.divisions,
+    seed.agents,
+    seed.activities,
+    seed.privileges,
+    seed.hardStops,
+    seed.instructions,
+    seed.exceptions,
+    seed.actions,
+  ]
+  for (const items of collections) {
     expect(ids(items).size).toBe(items.length)
   }
   expect(new Set(seed.agents.map((a) => a.code)).size).toBe(seed.agents.length)
