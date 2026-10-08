@@ -39,3 +39,17 @@ test('disabled options cannot be chosen', async () => {
   await userEvent.click(screen.getByRole('radio', { name: 'This agent' }))
   expect(onChange).not.toHaveBeenCalled()
 })
+
+test('cards can sit side by side (2b tiers)', () => {
+  render(
+    <RadioCardGroup
+      name="tier"
+      aria-label="Tier"
+      value="2"
+      onChange={() => {}}
+      columns={4}
+      options={['1', '2', '3', '4'].map((v) => ({ value: v, title: `Tier ${v}` }))}
+    />,
+  )
+  expect(screen.getByRole('radiogroup', { name: 'Tier' })).toHaveStyle({ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' })
+})

@@ -19,6 +19,7 @@ export type ScenarioId =
   | 'onboarding-sponsor-review'
   | 'onboarding-returned-hs11'
   | 'onboarding-ready'
+  | 'review-risk-tier'
 
 /** Every scenario id, for validating a `?scenario=` param. */
 export const SCENARIO_IDS: readonly ScenarioId[] = [
@@ -35,6 +36,7 @@ export const SCENARIO_IDS: readonly ScenarioId[] = [
   'onboarding-sponsor-review',
   'onboarding-returned-hs11',
   'onboarding-ready',
+  'review-risk-tier',
 ]
 
 /** The seed's live heartbeat (one minute before DEMO_NOW). */
@@ -176,6 +178,9 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
 
   // E1 1h: 07 Oct 16:05, Priya signed at 16:02; the record is frozen at v1.0 and with AIMS Review.
   'onboarding-ready': medRecAt('ready'),
+
+  // E2 2b: 13 Oct 10:15, Dana sets the risk tier; the suggestion is Tier 2.
+  'review-risk-tier': medRecAt('risk-tier'),
 }
 
 /** A fresh state for the scenario. */

@@ -81,3 +81,10 @@ test('addMinutes and tomorrowAt keep local, timezone-free ISO strings', () => {
   expect(tomorrowAt('2026-12-08T09:52:00', '07:00')).toBe('2026-12-09T07:00:00')
   expect(tomorrowAt('2026-12-31T23:59:00', '07:00')).toBe('2027-01-01T07:00:00')
 })
+
+test('addDays counts calendar days, across a daylight-saving change', async () => {
+  const { addDays } = await import('./clock')
+  expect(addDays('2026-10-15T00:00:00', 20)).toBe('2026-11-04T00:00:00')
+  expect(addDays('2026-11-06T09:52:00', 91)).toBe('2027-02-05T09:52:00')
+  expect(addDays('2026-12-08T09:52:00', -1)).toBe('2026-12-07T09:52:00')
+})

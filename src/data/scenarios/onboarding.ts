@@ -8,9 +8,9 @@ import { dropAgents, rewindTo } from './rewind'
  * store's own mutations, so a frame's state is exactly what the UI would produce.
  */
 
-export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4' | 'tools-tested' | 'sponsor-review' | 'returned-hs11' | 'ready'
+export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4' | 'tools-tested' | 'sponsor-review' | 'returned-hs11' | 'ready' | 'risk-tier'
 
-const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4', 'tools-tested', 'sponsor-review', 'returned-hs11', 'ready']
+const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4', 'tools-tested', 'sponsor-review', 'returned-hs11', 'ready', 'risk-tier']
 
 /** "Now" in each stage's frame. */
 const NOW: Record<MedRecStage, string> = {
@@ -21,6 +21,7 @@ const NOW: Record<MedRecStage, string> = {
   'sponsor-review': '2026-10-07T09:05:00',
   'returned-hs11': '2026-10-07T09:31:00',
   ready: '2026-10-07T16:05:00',
+  'risk-tier': '2026-10-13T10:15:00',
 }
 
 /** A dated step and the first stage at which it has happened. */

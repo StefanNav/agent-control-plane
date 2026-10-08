@@ -834,3 +834,48 @@ describe('sponsor approval and the return loop (1e–1g) — Review focus 1, 2, 
     expect(at('onboarding-returned-hs11', 'marcus').getState().replyToSponsor('med-rec', 'Hi').ok).toBe(false)
   })
 })
+
+describe('risk tier (2b) — Review focus 2, 3', () => {
+  const at = (persona: 'dana' | 'priya') => {
+    const store = fresh()
+    store.getState().loadScenario('review-risk-tier')
+    store.getState().setPersona(persona)
+    return store
+  }
+  const REASON = 'Med rec errors carry into every inpatient order. Pharmacist review catches most, not all. The board should see this at Tier 3 until shadow evidence is in.'
+
+  test('Dana raises it to Tier 3 with a reason: the packet is built and Dr. Lee has it for 14 Oct', () => {
+    const store = at('dana')
+    expect(store.getState().setRiskTier('med-rec', { tier: 3, reason: REASON })).toEqual({ ok: true })
+    const s = store.getState()
+    const review = s.onboardings.find((r) => r.agentId === 'med-rec')!.review!
+    expect(review).toMatchObject({ suggestedTier: 2, tier: 3, tierReason: REASON, tierAt: s.now, tierBy: 'dana', packetAt: s.now, shadowDays: 21 })
+    expect(s.agents.find((a) => a.id === 'med-rec')!.riskTier).toBe(3)
+    expect(s.exceptions.find((e) => e.type === 'Review: your decision')).toMatchObject({ ownerId: 'drlee', deadline: '2026-10-14T17:00:00', link: { to: '/portfolio/reviews/med-rec' } })
+    expect(s.exceptions.find((e) => e.type === 'Review: risk tier')!.state).toBe('resolved')
+    expect(store.getState().setRiskTier('med-rec', { tier: 2 })).toEqual({ ok: false, reason: 'Not ready for a tier' })
+  })
+
+  test('a tier other than the suggestion needs a reason; the suggested one doesn’t', () => {
+    const store = at('dana')
+    const before = dataOf(store.getState())
+    expect(store.getState().setRiskTier('med-rec', { tier: 3, reason: ' ' })).toEqual({ ok: false, reason: 'A reason is required' })
+    expect(dataOf(store.getState())).toEqual(before)
+    expect(store.getState().setRiskTier('med-rec', { tier: 2 })).toEqual({ ok: true })
+  })
+
+  test('Priya can’t set the tier', () => {
+    const store = at('priya')
+    expect(store.getState().setRiskTier('med-rec', { tier: 2 }).ok).toBe(false)
+  })
+
+  test('Tier 1 starts shadow at once, with no board', () => {
+    const store = at('dana')
+    expect(store.getState().setRiskTier('med-rec', { tier: 1, reason: 'Pharmacist signs every line.' })).toEqual({ ok: true })
+    const s = store.getState()
+    expect(s.onboardings.find((r) => r.agentId === 'med-rec')!.review).toMatchObject({ tier: 1, shadowFrom: '2026-10-14T00:00:00' })
+    expect(s.onboardings.find((r) => r.agentId === 'med-rec')!.review!.packetAt).toBeUndefined()
+    expect(s.agents.find((a) => a.id === 'med-rec')).toMatchObject({ lifecycle: 'live', level: 'shadow', riskTier: 1 })
+    expect(s.exceptions.some((e) => e.type === 'Review: your decision')).toBe(false)
+  })
+})

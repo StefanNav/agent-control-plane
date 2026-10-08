@@ -1,7 +1,7 @@
 import { BOARD_MEETINGS, HARD_STOP_LIBRARY, RETEST_CASES, TIER_RULES } from '../data/seed/catalogue'
 import { agentFromIntake } from '../data/seed/onboarding'
-import type { AgentException, DemoState, JobDraft, Limit, LimitTest, Onboarding, Verb } from '../data/types'
-import { addMinutes, formatDate } from '../lib/clock'
+import type { AgentException, DemoState, GrantCell, JobDraft, Limit, LimitTest, Onboarding, Tier, Verb } from '../data/types'
+import { addDays, formatDate, tomorrowAt } from '../lib/clock'
 import { nextExceptionCode, nextHardStopCode, nextPrivilegeCode } from './mutations'
 import { jobFields, onboardingContext, personName, recordItems, riskFactors, systemsProgress, templateFor } from './onboardingRules'
 
@@ -104,7 +104,7 @@ export function applyJobEdit(s: DemoState, agentId: string, patch: Partial<JobDr
 }
 
 /** 17:00 two days after `at`: the deadline for an onboarding hand-off. */
-const handOffDeadline = (at: string) => `${addMinutes(at, 2 * 24 * 60).slice(0, 10)}T17:00:00`
+const handOffDeadline = (at: string) => `${addDays(at, 2).slice(0, 10)}T17:00:00`
 
 /** Raise an onboarding hand-off in someone's inbox (ruling R9): a review item that links to the step. */
 export function raiseItem(
@@ -345,5 +345,110 @@ export function applySponsorSign(s: DemoState, agentId: string, by: string, at: 
     sub: rounds.length ? `After ${rounds.length === 1 ? 'one round' : `${rounds.length} rounds`} of changes${last?.about ? ` on ${last.about}` : ''}` : 'First review',
     decision: true,
   })
+  return s
+}
+
+/** The board's committee chair, who receives the packet. */
+const chairOf = (s: DemoState) => s.roles.find((r) => r.role === 'committee')?.personId ?? 'drlee'
+
+/** Dana sets the risk tier (2b): Tier 2 and above build the packet for the board; Tier 1 starts shadow (R7). */
+export function applySetTier(s: DemoState, agentId: string, input: { tier: Tier; reason?: string }, by: string, at: string): DemoState {
+  const record = s.onboardings.find((r) => r.agentId === agentId)
+  const agent = s.agents.find((a) => a.id === agentId)
+  const review = record?.review
+  if (!record || !agent || !review) return s
+  const { intake, people } = onboardingContext(s, agentId)
+  Object.assign(review, { tier: input.tier, tierAt: at, tierBy: by, shadowDays: Math.max(TIER_RULES[input.tier].shadowDays, intakeShadowDays(intake?.condition?.text)) })
+  if (input.reason) review.tierReason = input.reason
+  agent.riskTier = input.tier
+  resolveItems(s, agentId, 'Review: risk tier', by, at, `Set Tier ${input.tier}`)
+  record.history.push({
+    at,
+    by,
+    text: `${personName(s, by)} · set Tier ${input.tier}`,
+    sub: input.tier === review.suggestedTier ? 'As suggested' : `Suggested Tier ${review.suggestedTier} · reason recorded`,
+    decision: true,
+  })
+  if (input.tier < 2) return applyShadowStart(s, agentId, by, at)
+  review.packetAt = at
+  const chair = chairOf(s)
+  raiseItem(s, {
+    agentId,
+    type: 'Review: your decision',
+    reason: `${agent.name} · Tier ${input.tier} · ${TIER_RULES[input.tier].label}. The packet is ready for the board.`,
+    action: 'decide at the board meeting',
+    actionSub: `${TIER_RULES[input.tier].board} · ${formatDate(review.meeting)}`,
+    ownerId: chair,
+    copied: [by, people.sponsor],
+    link: { label: 'Open the packet', to: `/portfolio/reviews/${agentId}` },
+    at,
+    deadline: `${review.meeting.slice(0, 10)}T17:00:00`,
+  })
+  return s
+}
+
+const VERBS_ALL: Verb[] = ['read', 'draft', 'write', 'submit', 'sign', 'order']
+
+/** Approval starts shadow the next day (2d): the agent goes live at Shadow with its v2 privileges, grants and hard stops. */
+export function applyShadowStart(s: DemoState, agentId: string, by: string, at: string): DemoState {
+  const record = s.onboardings.find((r) => r.agentId === agentId)
+  const agent = s.agents.find((a) => a.id === agentId)
+  const review = record?.review
+  if (!record || !agent || !review) return s
+  const { template } = onboardingContext(s, agentId)
+  const from = tomorrowAt(at, '00:00')
+  review.shadowFrom = from
+  const end = addDays(from, review.shadowDays - 1)
+  Object.assign(agent, {
+    lifecycle: 'live',
+    level: 'shadow',
+    grantorId: by,
+    reviewDate: end,
+    judgment: { status: 'shadow', label: 'Shadow' },
+    metrics: { ...agent.metrics, day: 0 },
+    monitor: { lastSeen: at, expectedIntervalMin: 5 },
+  })
+  const conditions = review.decision?.conditions ?? []
+  for (const a of record.job.activities) {
+    const current = s.privileges.filter((p) => p.activityId === a.id).sort((x, y) => y.version - x.version)[0]
+    const binds = conditions.filter((c) => !c.activityIds.length || c.activityIds.includes(a.id))
+    const notes = binds.flatMap((c) => (c.domainNote ? [c.domainNote] : []))
+    if (current) current.state = 'closed'
+    const code = current?.code ?? nextPrivilegeCode(s)
+    const version = (current?.version ?? 0) + 1
+    s.privileges.push({
+      id: `${code.toLowerCase()}-v${version}`,
+      code,
+      version,
+      activityId: a.id,
+      agentId,
+      level: 'shadow',
+      domain: [current?.domain ?? `${record.job.domain.units.join(', ')} · ${record.job.domain.patients.toLowerCase()}`, ...notes].join(' · '),
+      conditions: binds.map((c) => c.id),
+      evidence: 'Shadow validation in progress',
+      grantedBy: by,
+      grantedAt: at,
+      state: 'active',
+      stepDownTriggers: [],
+    })
+  }
+  for (const { system, detail } of template.systems) {
+    const verbs = record.grants.filter((g) => g.system === system).map((g) => g.verb)
+    if (!verbs.length) continue
+    s.grants = s.grants.filter((g) => !(g.agentId === agentId && g.system === system))
+    s.grants.push({
+      agentId,
+      system,
+      detail,
+      cells: Object.fromEntries(VERBS_ALL.map((v): [Verb, GrantCell] => [v, v === 'sign' || v === 'order' ? 'locked' : verbs.includes(v) ? 'granted' : 'none'])) as Record<Verb, GrantCell>,
+    })
+  }
+  for (const l of record.limits) {
+    const id = `${agentId}-${l.code.toLowerCase()}`
+    if (s.hardStops.some((h) => h.id === id)) continue
+    s.hardStops.push({ id, code: l.code, version: l.version, title: l.title, text: l.text, ownerId: l.ownerId, approvedBy: s.agents.find((x) => x.id === agentId)!.sponsorId, approvedAt: record.sponsor.signedAt ?? at, agentId, blocks30d: l.test?.blocked ?? 0, actions30d: l.test?.of ?? 0, firedToday: 0 })
+  }
+  for (const a of record.job.activities)
+    if (!s.scorecards.some((c) => c.activityId === a.id)) s.scorecards.push({ activityId: a.id, from, to: from, cases: 0, results: {}, causes: [], sampleCaseIds: [] })
   return s
 }

@@ -2,10 +2,10 @@ import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
-import { PERSONA_IDS, type DemoState, type Incident, type JobDraft, type PersonaId, type Verb } from '../data/types'
+import { PERSONA_IDS, type DemoState, type Incident, type JobDraft, type PersonaId, type Tier, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
-import { applyJobEdit, applyReply, applyRequestChanges, applySend, applySponsorSign, applyStart, applySystemsEdit, applyTest, testResult, type SystemsChange } from './onboarding'
+import { applyJobEdit, applyReply, applyRequestChanges, applySend, applySetTier, applySponsorSign, applyStart, applySystemsEdit, applyTest, testResult, type SystemsChange } from './onboarding'
 import { FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems } from './onboardingRules'
 import { can, lockReason } from './permissions'
 import { runAction, type ActionResult } from './runAction'
@@ -88,6 +88,8 @@ export interface DemoActions {
   replyToSponsor: (agentId: string, text: string) => ActionResult
   /** The sponsor approves and signs the set: frozen at v1.0 and with AIMS Review (1e → 1h). */
   approveAsSponsor: (agentId: string) => ActionResult
+  /** Set the risk tier (2b); a tier other than the suggested one needs a reason. Tier 2+ builds the packet. */
+  setRiskTier: (agentId: string, input: { tier: Tier; reason?: string }) => ActionResult
 }
 
 export interface PauseInput {
@@ -692,6 +694,23 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Approved as sponsor', target: agent.code, reason: `${agent.code} v1.0 · job, reach and limits` },
               mutate: (draft) => {
                 applySponsorSign(draft, agentId, draft.personaId, draft.now)
+              },
+            })
+          },
+          setRiskTier: (agentId, { tier, reason }) => {
+            const s = get()
+            const record = s.onboardings.find((r) => r.agentId === agentId)
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!record || !agent) return { ok: false, reason: 'Not found' }
+            if (!record.frozenAt || !record.review || record.review.tier) return { ok: false, reason: 'Not ready for a tier' }
+            const why = reason?.trim() ?? ''
+            if (tier !== record.review.suggestedTier && !why) return { ok: false, reason: 'A reason is required' }
+            return act({
+              action: 'prepareGoLive',
+              ctx: { agentId },
+              audit: { action: 'Set risk tier', target: agent.code, reason: `Tier ${tier}${why ? ` · ${why}` : ''}` },
+              mutate: (draft) => {
+                applySetTier(draft, agentId, { tier, ...(why ? { reason: why } : {}) }, draft.personaId, draft.now)
               },
             })
           },

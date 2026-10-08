@@ -12,6 +12,8 @@ import { IncidentPage } from '../features/audit/IncidentPage'
 import { IncidentsPage } from '../features/audit/IncidentsPage'
 import { ExportPage } from '../features/audit/ExportPage'
 import { OnboardingPage } from '../features/onboarding/OnboardingPage'
+import { RecordPage } from '../features/review/RecordPage'
+import { RiskTierPage } from '../features/review/RiskTierPage'
 import { NotFound } from '../layout/NotFound'
 import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
 import { AppShell } from './AppShell'
@@ -35,6 +37,8 @@ const PAGES: Record<string, ReactNode> = {
   '/operations/incidents/:incidentId': <IncidentPage />,
   '/reports/export': <ExportPage />,
   '/inventory/agents/:agentId/onboarding/:step': <OnboardingPage />,
+  '/inventory/agents/:agentId': <RecordPage />,
+  '/inventory/agents/:agentId/risk-tier': <RiskTierPage />,
   '/wall': <WallDisplay />,
 }
 

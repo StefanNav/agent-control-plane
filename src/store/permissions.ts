@@ -10,6 +10,7 @@ export type PermAction =
   | 'prepareGoLive'
   | 'signPrivilege'
   | 'approveGoLive'
+  | 'requestGoLive'
   | 'pause'
   | 'returnToShadow'
   | 'revokeTool'
@@ -38,6 +39,8 @@ const MATRIX: Record<PermAction, Partial<Record<Role, Scope>>> = {
   prepareGoLive: { programLead: 'all' },
   signPrivilege: { sponsor: 'own' },
   approveGoLive: { committee: 'all' },
+  // 3a: the owner asks the sponsor to sign the move out of Shadow.
+  requestGoLive: { owner: 'own' },
   pause: STOPPERS,
   // 6c and the "Enforce the limits" story: the technical owner may also return an activity to Shadow.
   returnToShadow: { ...STOPPERS, techOwner: 'ownAgents' },
@@ -70,6 +73,8 @@ export function can(
 ): boolean {
   const agent = ctx.agentId ? state.agents.find((a) => a.id === ctx.agentId) : undefined
   if (ctx.agentId && !agent) return false
+  // R7: the board decides go-live only for Tier 2 and above; Tier 1 goes straight to shadow.
+  if (action === 'approveGoLive' && agent && agent.riskTier < 2) return false
   const divisionId = agent?.divisionId ?? ctx.divisionId
   const allowed = MATRIX[action]
   return state.roles.some((assignment) => {
@@ -91,6 +96,7 @@ const REASONS: Partial<Record<PermAction, string>> = {
   approveTools: 'Clinical sponsor only',
   signPrivilege: 'Clinical sponsor only',
   approveGoLive: 'Review board only',
+  requestGoLive: 'Agent owner only',
   resume: 'Owner and sponsor only',
 }
 
