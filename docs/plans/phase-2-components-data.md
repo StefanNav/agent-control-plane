@@ -98,7 +98,7 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
   - `v_j = end - drift * (6 - j) + (j === 6 ? 0 : noise(index, j))`
   - each value is clamped to [75, 100]
 
-- [ ] **Step 1: Failing tests**, with `NOW = '2026-12-08T09:52:00'`:
+- [x] **Step 1: Failing tests**, with `NOW = '2026-12-08T09:52:00'`:
   - `formatClock(NOW) === '09:52'`
   - `formatClockSeconds('2026-12-08T09:42:17') === '09:42:17'`
   - `formatMs('2026-12-08T09:38:04.512') === '09:38:04.512'`
@@ -112,10 +112,10 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
   - `formatAgo('2026-12-08T07:38:00', NOW) === '2 h 14 min ago'`
   - `trendPoints(0, { end: 91, drift: 0.2 })` has length 7, last value `91`, every value in [75, 100]
   - `trendPoints(1, { end: 78, drift: -1.8 })[6] === 78`, and its first value is greater than its last (the edit-rate decline)
-- [ ] **Step 2: Run** `pnpm test src/lib`. Expected: FAIL (modules missing).
-- [ ] **Step 3: Implement** `clock.ts` and `trend.ts`.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(lib): demo clock, formatters, design trend points"`.
+- [x] **Step 2: Run** `pnpm test src/lib`. Expected: FAIL (modules missing).
+- [x] **Step 3: Implement** `clock.ts` and `trend.ts`.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(lib): demo clock, formatters, design trend points"`.
 
 ### Task 2.3: Seed
 
