@@ -1,4 +1,4 @@
-import { applyJobEdit, applyRequestChanges, applySend, applyStart, applySystemsEdit, applyTest } from '../../store/onboarding'
+import { applyJobEdit, applyRequestChanges, applySend, applySponsorSign, applyStart, applySystemsEdit, applyTest } from '../../store/onboarding'
 import type { DemoState, Verb } from '../types'
 import { dropAgents, rewindTo } from './rewind'
 
@@ -8,9 +8,9 @@ import { dropAgents, rewindTo } from './rewind'
  * store's own mutations, so a frame's state is exactly what the UI would produce.
  */
 
-export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4' | 'tools-tested' | 'sponsor-review' | 'returned-hs11'
+export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4' | 'tools-tested' | 'sponsor-review' | 'returned-hs11' | 'ready'
 
-const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4', 'tools-tested', 'sponsor-review', 'returned-hs11']
+const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4', 'tools-tested', 'sponsor-review', 'returned-hs11', 'ready']
 
 /** "Now" in each stage's frame. */
 const NOW: Record<MedRecStage, string> = {
@@ -20,6 +20,7 @@ const NOW: Record<MedRecStage, string> = {
   'tools-tested': '2026-10-06T14:21:00',
   'sponsor-review': '2026-10-07T09:05:00',
   'returned-hs11': '2026-10-07T09:31:00',
+  ready: '2026-10-07T16:05:00',
 }
 
 /** A dated step and the first stage at which it has happened. */
@@ -81,6 +82,10 @@ const TIMELINE: Step[] = [
   { stage: 'returned-hs11', run: (s) => applyRequestChanges(s, 'med-rec', { to: 'sam', about: 'HS-11', note: HS11_NOTE }, 'priya', '2026-10-07T09:14:00') },
   // Pin: 1g reads "Autosaved 09:31" (Sam had the step open).
   { stage: 'returned-hs11', run: (s) => void (s.onboardings.find((r) => r.agentId === 'med-rec')!.savedAt = '2026-10-07T09:31:00') },
+  // 1g → 1h: Sam re-tests HS-11 on the 212 transfers and sends again; Priya signs at 16:02.
+  { stage: 'ready', run: (s) => applyTest(s, 'med-rec', 'HS-11', 'sep-8east-transfers', 'sam', '2026-10-07T10:40:00') },
+  { stage: 'ready', run: (s) => applySend(s, 'med-rec', 'sam', '2026-10-07T10:45:00') },
+  { stage: 'ready', run: (s) => applySponsorSign(s, 'med-rec', 'priya', '2026-10-07T16:02:00') },
 ]
 
 /** Priya's note on HS-11 (1f, verbatim). */

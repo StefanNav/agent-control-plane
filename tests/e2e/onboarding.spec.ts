@@ -136,3 +136,16 @@ test('sponsor approval (1e–1g): Priya sends HS-11 back, Sam re-tests, Priya ap
   await expect(page.getByText('AGT-0123 · v1.0 · frozen')).toBeVisible()
   expect(errors).toEqual([])
 })
+
+test('ready for review (1h): frozen at v1.0; the job description is read only', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/inventory/agents/med-rec/onboarding/review?scenario=onboarding-ready')
+  await expect(page.getByRole('heading', { name: 'Ready for review' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Sponsor signature' })).toContainText('AGT-0123 v1.0')
+  await expect(page.getByRole('region', { name: 'Sponsor signature' })).toContainText('Sam re-ran it: 0 of 212 would have been blocked.')
+  await expect(page.getByRole('heading', { name: 'Onboarding · 13 of 13' })).toBeVisible()
+  await page.goto('/inventory/agents/med-rec/onboarding/job')
+  await expect(page.getByText('Read only: Frozen at v1.0 · with AIMS Review.')).toBeVisible()
+  await expect(page.getByRole('textbox', { name: 'Escalation trigger' })).toHaveCount(0)
+  expect(errors).toEqual([])
+})

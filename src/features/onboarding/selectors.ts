@@ -1,5 +1,6 @@
 import { gatewayTool, ORG_NEVER, ORG_POL_02, RETEST_CASES } from '../../data/seed/catalogue'
 import type { DemoState, Domain, GrantCell, Verb } from '../../data/types'
+import { formatDay } from '../../lib/clock'
 import { formatClock, formatDate } from '../../lib/clock'
 import { purposeText } from '../../store/onboarding'
 import { FIELD_NAMES, firstMissingField, jobFields, limitsProgress, needsReason, onboardingContext, openStep, personName, reachLine, readyToSend, recordItems, systemsProgress, type JobFieldId } from '../../store/onboardingRules'
@@ -89,6 +90,9 @@ export function selectIntakeStep(s: DemoState, agentId: string) {
 /** "v0.4", or "v1.0" once the sponsor has signed. */
 export const versionLabel = (version: number, frozen: boolean) => (frozen ? 'v1.0' : `v0.${version}`)
 
+/** The board's decision, as a status (2d "Approved with conditions"). */
+export const DECISION_LABEL = { approve: 'Approved', approveWithConditions: 'Approved with conditions', reReview: 'Re-review', deny: 'Denied' } as const
+
 /** The record header (1a–1h): title, status, IDs, people, review chip and autosave. */
 export function selectOnboardingHeader(s: DemoState, agentId: string) {
   const { record, intake, agent, people } = onboardingContext(s, agentId)
@@ -112,8 +116,9 @@ export function selectOnboardingHeader(s: DemoState, agentId: string) {
   }
   const frozen = Boolean(record.frozenAt)
   const review = record.sponsor.state
-  const status = frozen ? 'In review' : review === 'waiting' ? 'Onboarding · waiting for sponsor' : review === 'returned' ? 'Onboarding · returned' : 'Onboarding · draft'
-  const decided = Boolean(record.review?.decision)
+  const decision = record.review?.decision
+  const status = frozen ? (decision ? DECISION_LABEL[decision.kind] : 'In review') : review === 'waiting' ? 'Onboarding · waiting for sponsor' : review === 'returned' ? 'Onboarding · returned' : 'Onboarding · draft'
+  const decided = Boolean(decision)
   return {
     breadcrumb: `Inventory / Agents / ${name}`,
     title: name,
@@ -416,3 +421,58 @@ export function selectReturned(s: DemoState, agentId: string, viewer: string) {
     about: limit ? { code: limit.code, label: `${limit.code} v${limit.version}`, title: limit.title, reopened: Boolean(limit.reopened) } : null,
   }
 }
+
+/** Step 6, ready for review (1h): the sponsor's signature, the rounds, and what happens next. */
+export function selectReviewStep(s: DemoState, agentId: string) {
+  const { record, people } = onboardingContext(s, agentId)
+  const agent = s.agents.find((a) => a.id === agentId)
+  if (!record || !agent || record.sponsor.state !== 'signed' || !record.sponsor.signedAt) return null
+  const sponsor = personName(s, people.sponsor)
+  const tech = personName(s, people.tech)
+  const chair = personName(s, s.roles.find((r) => r.role === 'committee')?.personId)
+  const signedAt = record.sponsor.signedAt
+  const tools = record.grants.filter((g) => needsReason(g, record.grants)).length
+  const rounds = record.sponsor.earlier.filter((e) => e.kind === 'returned')
+  const last = rounds.at(-1)
+  const limit = last?.about ? record.limits.find((l) => l.code === last.about) : undefined
+  const set = last?.casesId ? RETEST_CASES.sets[last.casesId] : undefined
+  const count = rounds.length === 1 ? 'one round' : `${rounds.length} rounds`
+  const roundsText = !rounds.length
+    ? 'Signed on the first review.'
+    : limit && set && limit.test
+      ? `Signed after ${count} of changes: ${sponsor} asked for ${limit.code} to be re-tested on ${set.phrase}. ${tech} re-ran it: ${n(limit.test.blocked)} of ${n(limit.test.of)} would have been blocked. Both notes stay on the record.`
+      : `Signed after ${count} of changes: ${sponsor} asked about ${last?.about ?? 'the job and reach'}. Both notes stay on the record.`
+  const meeting = record.review?.meeting
+  const year = signedAt.slice(0, 4)
+  const step = (key: 'intake' | 'job' | 'systems' | 'tools') => record.done[key]
+  return {
+    signature: [
+      ['Signed by', `${sponsor} · clinical sponsor`],
+      ['When', `${formatDate(signedAt)} ${year} · ${formatClock(signedAt)}`],
+      ['Version', `${agent.code} v1.0`],
+      ['Covers', `Job, reach, ${tools} tools, ${record.limits.length} hard stops`],
+    ] as [string, string][],
+    rounds: roundsText,
+    next: [
+      ['Risk tier', `AIMS Review assigns it. ${personName(s, people.lead)} is told when it’s set.`],
+      ['Committee packet', `Built from this record for ${chair}, the committee chair.${meeting ? ` Next meeting ${formatDate(meeting)}.` : ''}`],
+      ['The agent', 'Stays a shadow-ready draft. It can’t act until the committee approves and a privilege is signed.'],
+      ['Changes', `Frozen at v1.0. A change needs a new version and ${sponsor}’s approval again; AIMS Review is told.`],
+    ] as [string, string][],
+    side: {
+      title: `Onboarding · ${recordItems(s, agentId).done} of ${recordItems(s, agentId).total}`,
+      sub: `Complete · ${formatDate(record.startedAt)} to ${formatDate(signedAt)}`,
+      rows: [
+        { label: 'Intake', who: personName(s, step('intake')?.by ?? record.startedBy) },
+        { label: `Job description · ${jobFields(s, agentId).length}`, who: personName(s, step('job')?.by ?? people.owner) },
+        { label: 'Systems and verbs', who: personName(s, step('systems')?.by ?? people.owner) },
+        { label: `Tools and hard stops · ${record.limits.length}`, who: tech },
+        { label: 'Sponsor approval', who: sponsor },
+      ],
+      decided: record.review?.decision ? `Decided by ${personName(s, record.review.decision.by)} · ${formatDay(record.review.decision.at)}` : null,
+      waiting: `Waiting on AIMS Review. Nothing is needed from ${listNames([people.lead, people.owner, people.tech, people.sponsor].map((id) => personName(s, id)))} until the committee meets.`,
+    },
+  }
+}
+
+const listNames = (names: string[]) => (names.length < 2 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} or ${names.at(-1)}`)

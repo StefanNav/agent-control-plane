@@ -918,3 +918,35 @@ a.check:hover {
   align-items: center;
   gap: 12px;
 }
+
+/* Ready for review (1h). */
+.signature {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: var(--cs-bg);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+}
+
+.signatureGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+
+.signatureGrid dt {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.signatureGrid dd {
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}

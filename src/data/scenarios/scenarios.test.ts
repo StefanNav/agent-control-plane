@@ -168,3 +168,13 @@ test('onboarding-sponsor-review (1e, 1f) and onboarding-returned-hs11 (1g)', asy
   expect(record.sponsor.returned).toMatchObject({ to: 'sam', about: 'HS-11', at: '2026-10-07T09:14:00' })
   expect(stepStates(returned, 'med-rec').slice(3, 5).map((s) => s.sub)).toEqual(['Sam · returned 07 Oct', 'Priya · reset, opens when you send'])
 })
+
+test('onboarding-ready (1h): Priya signed at 16:02 on 07 Oct; frozen at v1.0, in review', () => {
+  const s = buildScenario('onboarding-ready')
+  expect(s.now).toBe('2026-10-07T16:05:00')
+  const record = s.onboardings.find((r) => r.agentId === 'med-rec')!
+  expect(record).toMatchObject({ version: 10, frozenAt: '2026-10-07T16:02:00', sponsor: { state: 'signed', round: 2 } })
+  expect(record.limits[2]!.test).toMatchObject({ at: '2026-10-07T10:40:00', blocked: 0, of: 212 })
+  expect(s.agents.find((a) => a.id === 'med-rec')!.lifecycle).toBe('inReview')
+  expect(s.exceptions.filter((e) => e.agentId === 'med-rec' && e.state === 'new').map((e) => [e.type, e.ownerId])).toEqual([['Review: risk tier', 'dana']])
+})

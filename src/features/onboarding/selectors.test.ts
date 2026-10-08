@@ -56,3 +56,27 @@ test('1b: Marcus is welcomed back at the first missing field; the side panel say
   expect(job.never.map((n) => n.becomes)).toEqual(['HS-04', 'HS-07', 'HS-11', 'ORG-POL-02'])
   expect(selectJobStep(s5, 'med-rec', 'sam')!.welcome).toBeNull()
 })
+
+test('1h: the signature, the round of changes, and what happens next', async () => {
+  const { selectReviewStep } = await import('./selectors')
+  const ready = buildScenario('onboarding-ready')
+  const view = selectReviewStep(ready, 'med-rec')!
+  expect(view.signature).toEqual([
+    ['Signed by', 'Priya · clinical sponsor'],
+    ['When', '07 Oct 2026 · 16:02'],
+    ['Version', 'AGT-0123 v1.0'],
+    ['Covers', 'Job, reach, 5 tools, 3 hard stops'],
+  ])
+  expect(view.rounds).toBe(
+    'Signed after one round of changes: Priya asked for HS-11 to be re-tested on September’s 8 East transfers. Sam re-ran it: 0 of 212 would have been blocked. Both notes stay on the record.',
+  )
+  expect(view.next.map(([k]) => k)).toEqual(['Risk tier', 'Committee packet', 'The agent', 'Changes'])
+  expect(view.next[1]![1]).toBe('Built from this record for Dr. Lee, the committee chair. Next meeting 14 Oct.')
+  expect(view.side).toMatchObject({ title: 'Onboarding · 13 of 13', sub: 'Complete · 01 Oct to 07 Oct' })
+  // The completed baseline record reads the same.
+  expect(selectReviewStep(createBaseline(), 'med-rec')!.rounds).toBe(view.rounds)
+})
+
+function createBaseline() {
+  return buildScenario('baseline')
+}

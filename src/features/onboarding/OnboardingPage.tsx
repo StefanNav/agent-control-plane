@@ -14,6 +14,7 @@ import { ApprovalStep } from './ApprovalStep'
 import { SystemsStep } from './SystemsStep'
 import { ToolsStep } from './ToolsStep'
 import { Rail } from './Rail'
+import { ReviewStep } from './ReviewStep'
 import { selectOnboardingHeader } from './selectors'
 import { StepCard } from './StepCard'
 import styles from './onboarding.module.css'
@@ -31,14 +32,19 @@ export function OnboardingPage() {
   const { record, intake, people } = onboardingContext(state, agentId)
 
   const number = `0${STEP_ORDER.indexOf(step) + 1}`
-  let content: ReactNode
-  if (step === 'intake') content = <IntakeStep agentId={agentId} />
-  else if (record && step === 'job') content = <JobStep agentId={agentId} />
-  else if (record && step === 'systems') content = <SystemsStep agentId={agentId} />
-  else if (record && step === 'tools') content = <ToolsStep agentId={agentId} />
-  else if (record && step === 'approval') content = <ApprovalStep key={agentId} agentId={agentId} onRequesting={setRequesting} />
-  else if (!record) {
-    content = (
+  const steps: Record<StepId, ReactNode> = {
+    intake: <IntakeStep agentId={agentId} />,
+    job: <JobStep agentId={agentId} />,
+    systems: <SystemsStep agentId={agentId} />,
+    tools: <ToolsStep agentId={agentId} />,
+    approval: <ApprovalStep key={agentId} agentId={agentId} onRequesting={setRequesting} />,
+    review: <ReviewStep agentId={agentId} />,
+  }
+  // Before onboarding starts, every step but the intake waits for the program lead.
+  const content: ReactNode =
+    step === 'intake' || record ? (
+      steps[step]
+    ) : (
       <Split
         main={
           <StepCard number={number} title={STEP_NAMES[step]}>
@@ -50,18 +56,6 @@ export function OnboardingPage() {
         side={null}
       />
     )
-  } else {
-    content = (
-      <Split
-        main={
-          <StepCard number={number} title={STEP_NAMES[step]}>
-            <Notice mark="none">This step is being built.</Notice>
-          </StepCard>
-        }
-        side={null}
-      />
-    )
-  }
 
   const events = record
     ? record.history

@@ -18,6 +18,7 @@ export type ScenarioId =
   | 'onboarding-tools-tested'
   | 'onboarding-sponsor-review'
   | 'onboarding-returned-hs11'
+  | 'onboarding-ready'
 
 /** Every scenario id, for validating a `?scenario=` param. */
 export const SCENARIO_IDS: readonly ScenarioId[] = [
@@ -33,6 +34,7 @@ export const SCENARIO_IDS: readonly ScenarioId[] = [
   'onboarding-tools-tested',
   'onboarding-sponsor-review',
   'onboarding-returned-hs11',
+  'onboarding-ready',
 ]
 
 /** The seed's live heartbeat (one minute before DEMO_NOW). */
@@ -171,6 +173,9 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
 
   // E1 1g: 07 Oct 09:31, Priya sent HS-11 back to Sam at 09:14; her review resets.
   'onboarding-returned-hs11': medRecAt('returned-hs11'),
+
+  // E1 1h: 07 Oct 16:05, Priya signed at 16:02; the record is frozen at v1.0 and with AIMS Review.
+  'onboarding-ready': medRecAt('ready'),
 }
 
 /** A fresh state for the scenario. */
