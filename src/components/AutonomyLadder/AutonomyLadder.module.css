@@ -1,0 +1,126 @@
+/* Compact: four segments; outline, not colour, marks a proposal. */
+.compact {
+  display: inline-flex;
+  flex: none;
+}
+
+.row {
+  gap: 2px;
+}
+
+.row .segment {
+  width: 8px;
+  height: 8px;
+}
+
+.panel {
+  gap: 3px;
+}
+
+.panel .segment {
+  width: 28px;
+  height: 6px;
+}
+
+.segment {
+  border-radius: 1px;
+}
+
+.passed {
+  background: var(--cs-lad-pass);
+}
+
+.current {
+  background: var(--cs-ink);
+}
+
+.proposed {
+  border: 1.5px solid var(--cs-ink);
+}
+
+.available {
+  border: 1px solid var(--cs-off);
+}
+
+.locked {
+  background: var(--cs-lad-lock);
+}
+
+/* Full: a 4-column card. */
+.full {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 80px;
+  padding: 12px 16px;
+}
+
+.cell + .cell {
+  border-left: 1px solid var(--cs-line);
+}
+
+.caption {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.level {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.evidence {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.cell_current {
+  background: var(--cs-fill);
+}
+
+.cell_current .level,
+.cell_proposed .level {
+  font-weight: 600;
+}
+
+.cell_proposed {
+  box-shadow: inset 0 0 0 2px var(--cs-ink);
+}
+
+.cell_proposed .caption {
+  color: var(--cs-text2);
+}
+
+.cell_passed .level {
+  color: var(--cs-text2);
+}
+
+.cell_locked {
+  background: var(--cs-sunk);
+}
+
+.cell_locked .level {
+  color: var(--cs-meta);
+}
+
+.cell_locked .evidence {
+  font-family: var(--cs-font-sans);
+}

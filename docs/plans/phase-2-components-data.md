@@ -336,7 +336,7 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
     - locked = `--cs-lad-lock` fill
   - Expose `data-state` per segment.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - StatusChip: `normal` renders no svg, and the text has the meta class. `stale` has a dashed border class and the dashed ring icon. `crit` renders a triangle. `data-status` is set.
   - AgentTable:
     - The header labels match the order above.
@@ -356,10 +356,10 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
     - Compact has 4 segments with `data-state` in order.
     - Full marks the proposed cell `data-state="proposed"`, and locked cells contain a lock icon.
   - `sparklinePath([75, 100], 72, 20, [75, 100])` returns `'M2 18L70 2'`.
-- [ ] **Step 2: Run** `pnpm test src/components src/design-system`. Expected: FAIL.
-- [ ] **Step 3: Implement**, including the additive `Table.columnGap` and `Sparkline`/`sparklinePath` `domain` props.
-- [ ] **Step 4: Run** the full suite. Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(components): status chip, agent table, exception list, privilege card, autonomy ladder"`.
+- [x] **Step 2: Run** `pnpm test src/components src/design-system`. Expected: FAIL.
+- [x] **Step 3: Implement**, including the additive `Table.columnGap` and `Sparkline`/`sparklinePath` `domain` props.
+- [x] **Step 4: Run** the full suite. Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(components): status chip, agent table, exception list, privilege card, autonomy ladder"`.
 
 ### Task 2.8: Product components 06–10
 

@@ -34,6 +34,8 @@ export interface TableProps<Row> {
   hideHeader?: boolean
   /** Rows to render in `meta` colour (e.g. resolved items). */
   isMuted?: (row: Row) => boolean
+  /** Column gap in px. Default 16 (board rows use 12). */
+  columnGap?: number
   ariaLabel: string
 }
 
@@ -49,9 +51,11 @@ export function Table<Row>({
   groups,
   hideHeader = false,
   isMuted,
+  columnGap = 16,
   ariaLabel,
 }: TableProps<Row>) {
   const template = columns.map((column) => column.width).join(' ')
+  const grid = { gridTemplateColumns: template, columnGap }
   const byId = new Map(rows.map((row) => [getRowId(row), row]))
 
   const onRowKeyDown = (event: KeyboardEvent<HTMLDivElement>, id: string) => {
@@ -86,7 +90,7 @@ export function Table<Row>({
           selected && styles.selected,
           isMuted?.(row) && styles.muted,
         )}
-        style={{ gridTemplateColumns: template }}
+        style={grid}
         onClick={() => onSelect?.(id)}
         onDoubleClick={() => onOpen?.(id)}
         onKeyDown={(event) => onRowKeyDown(event, id)}
@@ -110,7 +114,7 @@ export function Table<Row>({
   return (
     <div role="table" aria-label={ariaLabel} className={styles.table}>
       {hideHeader ? null : (
-        <div role="row" className={styles.head} style={{ gridTemplateColumns: template }}>
+        <div role="row" className={styles.head} style={grid}>
           {columns.map((column) => (
             <span
               key={column.id}

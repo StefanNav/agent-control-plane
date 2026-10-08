@@ -15,12 +15,6 @@
   flex: none;
 }
 
-.sm {
-  height: 32px;
-  font-size: 13px;
-  line-height: 18px;
-}
-
 .primary {
   background: var(--cs-acc-fill);
   color: var(--cs-on-acc);
@@ -44,4 +38,12 @@
   color: var(--cs-meta);
   border: 1px solid var(--cs-line);
   cursor: not-allowed;
+}
+
+/* In-card buttons (32 high, 13 px, padding 0 12), including ghost. */
+.sm {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+  line-height: 18px;
 }

@@ -1,0 +1,152 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.head,
+.group {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cs-meta);
+  background: var(--cs-sunk);
+}
+
+.head {
+  display: grid;
+  column-gap: 12px;
+  align-items: center;
+  height: 28px;
+  padding: 0 16px;
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 16px;
+  border-top: 1px solid var(--cs-line);
+}
+
+.list > .group:first-child,
+.list > [role='rowgroup']:first-child > .group {
+  border-top: none;
+}
+
+.item {
+  display: grid;
+  column-gap: 12px;
+  align-items: start;
+  padding: 12px 16px;
+  border-top: 1px solid var(--cs-line);
+  cursor: default;
+  transition: background-color 150ms ease-out;
+}
+
+.item:hover {
+  background: var(--cs-hover);
+}
+
+.selected,
+.selected:hover {
+  background: var(--cs-sel);
+  box-shadow: inset 2px 0 0 var(--cs-acc);
+}
+
+:global(:root[data-keyboard]) .item:focus-visible {
+  outline: 2px solid var(--cs-focus);
+  outline-offset: -2px;
+}
+
+.dot {
+  display: block;
+  width: 6px;
+  height: 6px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: var(--cs-ink);
+}
+
+.typeCell {
+  display: flex;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.reason {
+  font-size: 13px;
+  line-height: 18px;
+  text-wrap: pretty;
+}
+
+.strongReason {
+  font-weight: 600;
+}
+
+.meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.mono {
+  font-family: var(--cs-font-mono);
+}
+
+.action {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+}
+
+.owner {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-strong);
+}
+
+.sub {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.deadlineRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.deadline {
+  font-family: var(--cs-font-mono);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-strong);
+  white-space: nowrap;
+}
+
+.overdue {
+  color: var(--cs-crit);
+  font-weight: 600;
+}
+
+.mutedText {
+  color: var(--cs-meta);
+  font-weight: 400;
+}
