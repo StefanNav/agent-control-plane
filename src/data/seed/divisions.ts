@@ -9,7 +9,7 @@ export const divisions: Division[] = [
     sponsorId: 'nina',
     lapsePolicy: 'shadow',
     monitor: { state: 'delayed', lastAt: '2026-12-08T09:46:00' },
-    trend: { end: 88, drift: -0.8 },
+    exceptionsByDay: [0, 0, 0, 0, 1, 1, 1],
     page: { at: '2026-12-08T08:05:00', ackAt: '2026-12-08T08:06:00', who: 'tom' },
     incidentId: 'inc-0029',
     note: '9 drafts went to the auth team',
@@ -22,7 +22,7 @@ export const divisions: Division[] = [
     sponsorId: 'priya',
     lapsePolicy: 'shadow',
     monitor: { state: 'live', lastAt: '2026-12-08T09:51:47' },
-    trend: { end: 93, drift: -0.3 },
+    exceptionsByDay: [0, 1, 0, 1, 1, 2, 2],
     resumeNeeds: ['Marcus', 'Priya'],
   },
   {
@@ -32,7 +32,8 @@ export const divisions: Division[] = [
     sponsorId: 'priya',
     lapsePolicy: 'shadow',
     monitor: { state: 'live', lastAt: '2026-12-08T09:51:47' },
-    trend: { end: 95, drift: 0.1 },
+    exceptionsByDay: [1, 0, 0, 1, 0, 0, 0],
+    closedThisWeek: 1,
   },
   {
     id: 'imaging-referrals',
@@ -41,7 +42,7 @@ export const divisions: Division[] = [
     sponsorId: 'hana',
     lapsePolicy: 'nothing',
     monitor: { state: 'live', lastAt: '2026-12-08T09:51:47' },
-    trend: { end: 96, drift: 0 },
+    exceptionsByDay: [0, 0, 0, 0, 0, 0, 0],
   },
   {
     id: 'patient-messages',
@@ -50,6 +51,6 @@ export const divisions: Division[] = [
     sponsorId: 'owen',
     lapsePolicy: 'nothing',
     monitor: { state: 'live', lastAt: '2026-12-08T09:51:47' },
-    trend: { end: 86, drift: 0.5 },
+    exceptionsByDay: [0, 0, 0, 0, 0, 0, 0],
   },
 ]

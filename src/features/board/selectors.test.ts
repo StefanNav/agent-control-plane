@@ -65,3 +65,17 @@ test('pausing an agent shows on its row', () => {
   const paused = buildScenario('med-rec-paused')
   expect(selectAgentRows(paused, 'medications').find((r) => r.name === 'Med Rec Agent')!.status).toBe('paused')
 })
+
+test('exceptions first (4f): critical first then by deadline; next deadline shows who it goes to', async () => {
+  const { selectOpenExceptions, selectLast24h } = await import('./selectors')
+  const rows = selectOpenExceptions(s)
+  expect(rows.map((r) => [r.type, r.deadline])).toEqual([
+    ['Wrong-patient draft', 'Incident open'],
+    ['Monitor stale', '10:46 → Priya'],
+    ['Review: 3 drafts', '11:00'],
+    ['Edit rate rising', '15:00'],
+    ['Review overdue', '15 Dec'],
+  ])
+  expect(rows[0]).toMatchObject({ agent: 'Prior Auth Agent', division: 'Revenue cycle', owner: 'Tom', age: '1 h 47' })
+  expect(selectLast24h(s)).toEqual({ pages: '1 · Tom, 08:05', pauses: '2', closed: '6 · median 41 min' })
+})

@@ -77,8 +77,10 @@ export interface Division {
   sponsorId: string
   lapsePolicy: 'nothing' | 'shadow' | 'pause'
   monitor: { state: 'live' | 'delayed' | 'stale'; lastAt: string }
-  /** Seven-day acceptance trend for the hospital board. */
-  trend: Trend
+  /** Open exceptions per day over the last 7 days, oldest first (the board's "7 days" column). */
+  exceptionsByDay: number[]
+  /** Exceptions closed this week, for quiet divisions ("1 closed this week"). */
+  closedThisWeek?: number
   /** Last page sent for this division (4a). */
   page?: { at: string; ackAt?: string; who: string }
   incidentId?: string
@@ -225,6 +227,8 @@ export interface AgentException {
   reason: string
   /** Board phrasing, e.g. "3 drafts held by HS-04 v2". */
   short?: string
+  /** The hospital exception list's reason when it differs from the inbox (4f). */
+  boardReason?: string
   agentId: string
   ruleTag?: string
   /** Who raised a question, if a person did. */
@@ -335,5 +339,7 @@ export interface DemoState {
   resumeRequests: ResumeRequest[]
   logEvents: LogEvent[]
   changeEvents: ChangeEvent[]
+  /** Hospital-wide counts before today's activity (4f "Last 24 hours"). */
+  stats24h: { closedEarlier: number; medianCloseMin: number }
   audit: AuditEntry[]
 }

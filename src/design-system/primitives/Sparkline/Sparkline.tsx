@@ -16,6 +16,8 @@ export interface SparklineProps {
   strokeWidth?: number
   /** Default 2 (board rows use 1.75). */
   dotRadius?: number
+  /** Line colour, a `var(--cs-*)` token. Default text2 (stale: off). */
+  color?: string
 }
 
 export function Sparkline({
@@ -27,10 +29,11 @@ export function Sparkline({
   domain,
   strokeWidth = 1.5,
   dotRadius = 2,
+  color: lineColor,
 }: SparklineProps) {
   const pts = sparklinePoints(values, width, height, domain)
   const last = pts[pts.length - 1]
-  const color = stale ? 'var(--cs-off)' : 'var(--cs-text2)'
+  const color = stale ? 'var(--cs-off)' : (lineColor ?? 'var(--cs-text2)')
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden style={{ flex: 'none', display: 'block' }}>
       <path

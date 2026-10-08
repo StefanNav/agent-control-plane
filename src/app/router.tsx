@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router'
+import { HospitalBoard } from '../features/board/HospitalBoard'
 import { NotFound } from '../layout/NotFound'
 import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
 import { AppShell } from './AppShell'
@@ -11,6 +12,7 @@ import { redirects, routeTable } from './routes'
 /** Real screens by route path. Routes not listed here render their Placeholder. */
 const PAGES: Record<string, ReactNode> = {
   '/about/components': <ComponentGallery />,
+  '/operations': <HospitalBoard />,
 }
 
 function childrenFor(shell: ShellKind): RouteObject[] {

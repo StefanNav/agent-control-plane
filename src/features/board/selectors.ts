@@ -48,7 +48,14 @@ export interface DivisionSummary {
   breakdown: string
   counts: Partial<Record<Status, number>>
   needsHuman: number
-  trend: number[]
+  /** Open exceptions per day, last 7 days. */
+  exceptionsByDay: number[]
+  /** Quiet divisions: "No open exceptions · 1 closed this week", "3 agents in shadow · nothing reaches patients". */
+  quietNote: string
+  page?: { at: string; ackAt?: string; who: string }
+  incidentId?: string
+  note?: string
+  resumeNeeds?: string[]
   attention: { agentId: string; name: string; status: Status; reason: string; age: string }[]
   nextDeadline?: { at: string; to: string }
   agentStatuses: Status[]
@@ -56,7 +63,7 @@ export interface DivisionSummary {
 
 /** One row per division for the hospital board (4a, 4d, 4e), needing-a-human first. */
 export function selectDivisionSummaries(s: DemoState): DivisionSummary[] {
-  const summaries = s.divisions.map((d, i): DivisionSummary => {
+  const summaries = s.divisions.map((d): DivisionSummary => {
     const agents = s.agents.filter((a) => a.divisionId === d.id)
     const attentionAgents = agents.filter((a) => ATTENTION.includes(a.judgment.status))
     const counts: Partial<Record<Status, number>> = {}
@@ -94,7 +101,14 @@ export function selectDivisionSummaries(s: DemoState): DivisionSummary[] {
       breakdown: parts.length ? parts.join(' · ') : 'None',
       counts,
       needsHuman: attentionAgents.length,
-      trend: trendPoints(i, d.trend),
+      exceptionsByDay: d.exceptionsByDay,
+      quietNote: allShadow
+        ? `${plural(agents.length, 'agent', 'agents')} in shadow · nothing reaches patients`
+        : `No open exceptions${d.closedThisWeek ? ` · ${d.closedThisWeek} closed this week` : ''}`,
+      ...(d.page ? { page: d.page } : {}),
+      ...(d.incidentId ? { incidentId: d.incidentId } : {}),
+      ...(d.note ? { note: d.note } : {}),
+      ...(d.resumeNeeds ? { resumeNeeds: d.resumeNeeds } : {}),
       attention: attentionAgents.map((a) => {
         const e = attentionException(s, a.id)
         return {
@@ -265,3 +279,43 @@ export function selectAgentOverview(s: DemoState, agentId: string) {
 
 export type AgentOverview = NonNullable<ReturnType<typeof selectAgentOverview>>
 export type AgentPanel = NonNullable<ReturnType<typeof selectAgentPanel>>
+
+/** Every open exception that needs a human, hospital-wide: critical first, then by deadline (4f). */
+export function selectOpenExceptions(s: DemoState) {
+  const nextByDivision = new Map(selectDivisionSummaries(s).map((d) => [d.id, d]))
+  return s.exceptions
+    .filter((e) => isOpen(e) && ATTENTION.includes(e.status))
+    .sort((a, b) => Number(b.status === 'crit') - Number(a.status === 'crit') || a.deadline.localeCompare(b.deadline))
+    .map((e) => {
+      const agent = s.agents.find((a) => a.id === e.agentId)!
+      const division = s.divisions.find((d) => d.id === agent.divisionId)!
+      const summary = nextByDivision.get(division.id)
+      const time = formatDate(e.deadline) === formatDate(s.now) ? formatClock(e.deadline) : formatDate(e.deadline)
+      const isNext = summary?.nextDeadline?.at === formatClock(e.deadline) && formatDate(e.deadline) === formatDate(s.now)
+      return {
+        id: e.id,
+        status: e.status,
+        type: e.type,
+        reason: e.boardReason ?? e.reason,
+        agent: agent.name,
+        agentId: agent.id,
+        isNext,
+        division: division.name,
+        owner: personName(s, e.ownerId),
+        age: formatAge(e.raisedAt, s.now),
+        deadline: e.kind === 'incident' ? 'Incident open' : isNext ? `${time} → ${summary!.nextDeadline!.to}` : time,
+      }
+    })
+}
+
+/** "Last 24 hours" on the exceptions-first board. */
+export function selectLast24h(s: DemoState) {
+  const paged = s.divisions.filter((d) => d.page)
+  const today = formatDate(s.now)
+  const closedToday = s.exceptions.filter((e) => !isOpen(e) && e.closedAt && formatDate(e.closedAt) === today).length
+  return {
+    pages: paged.length ? `${paged.length} · ${paged.map((d) => `${personName(s, d.page!.who)}, ${formatClock(d.page!.at)}`).join('; ')}` : '0',
+    pauses: String(s.agents.filter((a) => a.lifecycle === 'paused').length),
+    closed: `${s.stats24h.closedEarlier + closedToday} · median ${s.stats24h.medianCloseMin} min`,
+  }
+}

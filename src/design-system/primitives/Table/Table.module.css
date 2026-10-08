@@ -42,7 +42,8 @@
   display: grid;
   column-gap: 16px;
   align-items: center;
-  min-height: 44px;
+  /* The design's rows are min-height 44 + padding 6 (content-box), i.e. 56 in all. */
+  min-height: 56px;
   padding: 6px 16px;
   border-top: 1px solid var(--cs-line);
   font-size: 13px;

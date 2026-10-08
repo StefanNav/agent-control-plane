@@ -36,6 +36,8 @@ export interface TableProps<Row> {
   isMuted?: (row: Row) => boolean
   /** Column gap in px. Default 16 (board rows use 12). */
   columnGap?: number
+  /** Minimum row height in px, overriding the density (e.g. 56 for the hospital board). */
+  minRowHeight?: number
   ariaLabel: string
 }
 
@@ -52,6 +54,7 @@ export function Table<Row>({
   hideHeader = false,
   isMuted,
   columnGap = 16,
+  minRowHeight,
   ariaLabel,
 }: TableProps<Row>) {
   const template = columns.map((column) => column.width).join(' ')
@@ -90,7 +93,7 @@ export function Table<Row>({
           selected && styles.selected,
           isMuted?.(row) && styles.muted,
         )}
-        style={grid}
+        style={minRowHeight ? { ...grid, minHeight: minRowHeight } : grid}
         onClick={() => onSelect?.(id)}
         onDoubleClick={() => onOpen?.(id)}
         onKeyDown={(event) => onRowKeyDown(event, id)}

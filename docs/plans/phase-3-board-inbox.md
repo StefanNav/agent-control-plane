@@ -141,17 +141,17 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
 - **4d tiles:** each division is a tile with one square per agent. Divisions needing a human come first and are larger, as in the frame.
 - **4f:** the exception table "5 open exceptions across the hospital", sorted critical first, then by deadline. A filter strip of divisions, the "Quiet" summary and the "Last 24 hours" stats.
 
-- [ ] **Step 1: Failing e2e:**
+- [x] **Step 1: Failing e2e:**
   - `/operations` shows "2 divisions need a human".
   - The first row is Revenue cycle, and the panel shows "INC-0029 · open".
   - Clicking Medications selects it, and "Open division" goes to `/operations/divisions/medications`.
   - `?view=tiles` shows 41 agent squares.
   - `?view=exceptions` lists 5 exceptions, with "Wrong-patient draft" first.
   - The "Needs a human" pill hides Discharge.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against E4 frames 4a, 4d and 4f at 1440.
-- [ ] **Step 4: Run** `pnpm check` and `pnpm e2e`. Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(board): hospital view with tiles and exceptions-first views"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against E4 frames 4a, 4d and 4f at 1440.
+- [x] **Step 4: Run** `pnpm check` and `pnpm e2e`. Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(board): hospital view with tiles and exceptions-first views"`.
 
 ### Task 3.4: Division view (4b)
 
