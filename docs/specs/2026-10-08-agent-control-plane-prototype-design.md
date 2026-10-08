@@ -1,7 +1,7 @@
 # Agent Control Plane prototype: design spec
 
 - **Date:** 2026-10-08
-- **Status:** Approved in conversation, pending written review
+- **Status:** Approved (2026-10-08)
 - **Owner:** Stefan (stefan.nav7@gmail.com, GitHub `StefanNav`)
 - **Build plan:** `docs/BUILD_PLAN.md` (the living, trackable plan; start there when resuming work)
 
@@ -24,7 +24,7 @@ Build a front-end-only, clickable prototype of **Agent Control Plane**, the oper
 - A visitor who has never heard of the product can pick a persona on the landing page and follow that persona's story end to end without getting lost.
 - In free explore, switching persona visibly changes what that person can do (locked controls, landing page, inbox contents).
 - Actions change the mock data and the change shows everywhere it should (pause an agent, and the board, agent view and inbox agree).
-- The work is on GitHub in a public repo, each phase is a reviewed PR, and `main` auto-deploys to a public Vercel URL.
+- The work is on GitHub in a public repo, each phase from Phase 1 on is a reviewed PR (Phase 0 was docs-only on `main`), and `main` auto-deploys to a public Vercel URL.
 - A new agent session with no memory of this conversation can resume the build from `CLAUDE.md` and `docs/BUILD_PLAN.md` alone.
 
 ## 2. Scope
@@ -181,7 +181,7 @@ src/
   store/          index.ts, slices/, selectors.ts, permissions.ts, auditLog.ts
   lib/            clock.ts, format.ts (times, durations, IDs), cx.ts
 tests/e2e/        Playwright specs
-docs/             BUILD_PLAN.md, specs/
+docs/             BUILD_PLAN.md, plans/ (one step file per phase), specs/, design-handoff.md
 ```
 
 ### 5.3 Layer rules
@@ -375,8 +375,8 @@ Each phase ends at a checkpoint: a PR with a Vercel preview URL that Stefan revi
 
 | # | Phase | Builds | Checkpoint (what Stefan reviews) |
 |---|---|---|---|
-| 0 | Setup | git repo, `.gitignore` (source docs, `.DS_Store`), public GitHub repo `StefanNav/agent-control-plane`, `CLAUDE.md`, `docs/BUILD_PLAN.md`, milestones and phase issues, Vercel project linked | Repo exists; plan and issues visible on GitHub |
-| 1 | Foundation | Vite scaffold, lint/format, tokens, fonts, icons, all primitives, TopNav, PageHeader, layouts, full route table with placeholders, prototype bar shell, CI, first deploy | Live URL: every nav link works; primitives gallery |
+| 0 | Setup | git repo, `.gitignore` (source docs, `.DS_Store`), public GitHub repo `StefanNav/agent-control-plane`, `CLAUDE.md`, `docs/BUILD_PLAN.md`, milestones and phase issues | Repo exists; plan and issues visible on GitHub |
+| 1 | Foundation | Vite scaffold, lint/format, tokens, fonts, icons, all primitives, TopNav, PageHeader, layouts, full route table with placeholders, prototype bar shell, CI, Vercel project linked, first deploy | Live URL: every nav link works; primitives gallery |
 | 2 | Components and data | 10 product components (light + dark) in the gallery; types, seed, store, scenarios, permissions, audit log, clock; persona switcher wired; Reset demo | Gallery side by side with the Countersign component sheet; switching persona changes the avatar and locks |
 | 3 | Command Board and inbox | E4 (4a–4f, wall) and E5 (5a–5d) | Find the one agent needing action among 20; dismiss needs a reason |
 | 4 | Controls and audit | E6 (6a–6f), E7 (7a–7d), inventory 8c | Pause → board updates → two-person resume; trace ACT-88213 |
@@ -422,11 +422,11 @@ Each phase ends at a checkpoint: a PR with a Vercel preview URL that Stefan revi
 |---|---|---|
 | D1 | Persona UX | Guided stories + free explore with persona switcher (§4) |
 | D2 | Repo visibility | Public repo; `.docx` source docs git-ignored; the real company named in the source docs never appears in the repo or on the site |
-| D7 | Brand | **Signal** is the stand-in brand (prototype bar, landing, About, page title, README). Top-nav wordmark stays "AIMS" as designed |
 | D3 | Stack | Vite + React + TS + CSS Modules + Zustand + React Router; Vercel (§5.1) |
 | D4 | E4 alternatives | Table is the default board; tiles and exceptions-first are a View toggle; wall display is `/wall` |
 | D5 | Undesigned tabs | Composed from existing primitives only, flagged "composed" (§5.5) |
 | D6 | Viewport | Desktop only; gate below 1024 px (§4.7) |
+| D7 | Brand | **Signal** is the stand-in brand (prototype bar, landing, About, page title, README). Top-nav wordmark stays "AIMS" as designed |
 | O1 | Ring overload (design handoff issue 1) | Build as designed; check the wall display at Phase 9; if solid vs dashed fails at 12 px, stale becomes a dashed square |
 | O2 | Wall display scale (issue 2) | `/wall` uses its own larger type scale taken from frame 4e |
 | O3 | Dialog elevation (issue 3) | Use the modal shadow, as the design handoff says |

@@ -25,3 +25,6 @@ blob-report/
 .env.*
 !.env.example
 .vercel/
+
+# Agent execution scratch (ledgers, briefs)
+.superpowers/

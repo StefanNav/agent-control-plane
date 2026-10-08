@@ -18,11 +18,11 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 0: Setup (⏸ at checkpoint, awaiting Stefan's review) |
-| **Branch** | `main` (pushed to `origin`) |
-| **Last completed** | Phase 0 Tasks 0.1–0.4: repo public, 10 milestones, labels, 10 phase issues (2026-10-08) |
-| **Next task** | After Stefan approves Phase 0: finish Phase 0 Task 0.5 Step 3 (close #1, remove its `checkpoint` label, set Phase 0 ☑ Merged, push), then Phase 1 Task 1.1 in [`docs/plans/phase-1-foundation.md`](plans/phase-1-foundation.md) (creates branch `phase-1-foundation`) |
-| **Blockers** | Stefan reviewing Phase 0 (repo, issues, plan on GitHub) |
+| **Current phase** | Phase 1: Foundation (◐ in progress) |
+| **Branch** | `phase-1-foundation` |
+| **Last completed** | Phase 0 approved and closed (#1), review minors fixed (2026-10-08) |
+| **Next task** | Phase 1, Task 1.1 in [`docs/plans/phase-1-foundation.md`](plans/phase-1-foundation.md) |
+| **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | none yet (first deploy in Phase 1) |
 | **Latest preview** | none |
@@ -74,7 +74,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 
 - **Branch per phase:** `phase-N-<slug>` off `main`.
 - **GitHub:** milestone `Phase N: <name>` and one issue per phase whose body is that phase's task checklist. The phase PR says `Closes #<issue>`.
-- **Commits:** small, one per plan step group, conventional prefixes (`feat:`, `fix:`, `test:`, `docs:`, `chore:`). End each message with the attribution trailer in `CLAUDE.md`.
+- **Commits:** small, one per plan step group, conventional prefixes (`feat:`, `fix:`, `test:`, `docs:`, `chore:`). Commit and PR attribution follows the harness's guidance (as `CLAUDE.md` says).
 - **Checkpoint protocol** (end of every phase):
   1. `pnpm check` and `pnpm e2e` green.
   2. Screenshot every new screen at 1440 px and compare side by side with its frame (`pnpm designs` serves the design files on port 4599). Fix differences. Tick the frame in the tracker below.
@@ -88,8 +88,8 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 
 | # | Phase | Status | Branch | Issue | PR | Plan file |
 |---|---|---|---|---|---|---|
-| 0 | Setup | ⏸ At checkpoint | `main` | [#1](https://github.com/StefanNav/agent-control-plane/issues/1) | no PR (docs on `main`) | [phase-0-setup.md](plans/phase-0-setup.md) |
-| 1 | Foundation | ☐ Not started | `phase-1-foundation` | [#2](https://github.com/StefanNav/agent-control-plane/issues/2) | – | [phase-1-foundation.md](plans/phase-1-foundation.md) |
+| 0 | Setup | ☑ Merged | `main` | [#1](https://github.com/StefanNav/agent-control-plane/issues/1) | no PR (docs on `main`) | [phase-0-setup.md](plans/phase-0-setup.md) |
+| 1 | Foundation | ◐ In progress | `phase-1-foundation` | [#2](https://github.com/StefanNav/agent-control-plane/issues/2) | – | [phase-1-foundation.md](plans/phase-1-foundation.md) |
 | 2 | Components and data | ☐ Not started | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | – | to write (Task 2.0) |
 | 3 | Command Board and inbox | ☐ Not started | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | – | to write (Task 3.0) |
 | 4 | Controls and audit | ☐ Not started | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | – | to write (Task 4.0) |
@@ -112,7 +112,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 - [x] 0.2 Write `CLAUDE.md` (done during planning, 2026-10-08)
 - [x] 0.3 Create the public repo `StefanNav/agent-control-plane` and push `main`
 - [x] 0.4 Create labels, the 10 phase milestones and the 10 phase issues
-- [ ] 0.5 Checkpoint: Stefan reviews the repo, issues and plan on GitHub
+- [x] 0.5 Checkpoint: Stefan reviews the repo, issues and plan on GitHub (approved 2026-10-08)
 
 **Done when:** repo is public, `main` has spec + plan + `CLAUDE.md`, 10 milestones and 10 issues exist, no `.docx` in history.
 **Handoff notes (2026-10-08):**
@@ -370,3 +370,4 @@ One row per working session. Newest last.
 |---|---|---|---|
 | 2026-10-08 | – | Brainstormed and approved design; wrote spec, this plan, Phase 0 and 1 step files, and `CLAUDE.md`; local git repo with design handoff | Stefan reviews plan → Phase 0 |
 | 2026-10-08 | 0 | Moved handoff to `docs/`, interim README, adopted Signal brand, created public repo, milestones, labels, issues #1–#10 | Stefan reviews Phase 0 → Phase 1 |
+| 2026-10-08 | 0 | Fresh review: 3 Important fixed (Phase 1 Task 1.1 vs create-vite 9.2, CI pnpm version, PR issue number) + 4 minors fixed; Stefan approved; #1 closed | Phase 1 Task 1.1 |

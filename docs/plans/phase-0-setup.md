@@ -150,4 +150,4 @@ git commit -m "docs: Phase 0 checkpoint"
 git push
 ```
 
-- [ ] **Step 3: STOP. Ask Stefan to review** the repo page, the issues/milestones, and `docs/BUILD_PLAN.md` on GitHub. After approval: close the Phase 0 issue (#1) and remove its `checkpoint` label, tick 0.5 and set Phase 0 to ☑ Merged in BUILD_PLAN, point Start here at Phase 1 Task 1.1, commit + push.
+- [x] **Step 3: STOP. Ask Stefan to review** the repo page, the issues/milestones, and `docs/BUILD_PLAN.md` on GitHub. After approval: close the Phase 0 issue (#1) and remove its `checkpoint` label, tick 0.5 and set Phase 0 to ☑ Merged in BUILD_PLAN, point Start here at Phase 1 Task 1.1, commit + push.
