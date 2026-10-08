@@ -1,9 +1,9 @@
-import { HARD_STOP_LIBRARY, RETEST_CASES } from '../data/seed/catalogue'
+import { BOARD_MEETINGS, HARD_STOP_LIBRARY, RETEST_CASES, TIER_RULES } from '../data/seed/catalogue'
 import { agentFromIntake } from '../data/seed/onboarding'
 import type { AgentException, DemoState, JobDraft, Limit, LimitTest, Onboarding, Verb } from '../data/types'
-import { addMinutes } from '../lib/clock'
-import { nextExceptionCode, nextHardStopCode } from './mutations'
-import { jobFields, onboardingContext, personName, recordItems, systemsProgress, templateFor } from './onboardingRules'
+import { addMinutes, formatDate } from '../lib/clock'
+import { nextExceptionCode, nextHardStopCode, nextPrivilegeCode } from './mutations'
+import { jobFields, onboardingContext, personName, recordItems, riskFactors, systemsProgress, templateFor } from './onboardingRules'
 
 /**
  * Onboarding state changes, shared by store actions and scenarios so a scenario builds exactly
@@ -97,6 +97,7 @@ export function applyJobEdit(s: DemoState, agentId: string, patch: Partial<JobDr
   syncLimits(s, record)
   record.version += 1
   record.savedAt = at
+  resetIfWaiting(s, record, by, at)
   if (jobFields(s, agentId).every((f) => f.done)) record.done.job ??= { at, by }
   else delete record.done.job
   return s
@@ -164,6 +165,7 @@ export function applySystemsEdit(s: DemoState, agentId: string, change: SystemsC
   }
   record.version += 1
   record.savedAt = at
+  resetIfWaiting(s, record, by, at)
   const { people } = onboardingContext(s, agentId)
   if (systemsProgress(s, agentId).complete) {
     if (!record.done.systems) {
@@ -211,6 +213,7 @@ export function applyTest(s: DemoState, agentId: string, code: string, casesId: 
   const set = casesId ? RETEST_CASES.sets[casesId] : undefined
   if (limit.test) limit.previousTest = limit.test
   limit.test = { at, by, blocked, of, ...(casesId ? { casesId } : {}), examples }
+  resetIfWaiting(s, record, by, at)
   delete limit.reopened
   record.history.push({ at, by, text: `${personName(s, by)} · ${set ? 're-tested' : 'tested'} ${code}`, sub: `${blocked} of ${of.toLocaleString('en-US')} would have been blocked` })
   return s
@@ -244,6 +247,103 @@ export function applySend(s: DemoState, agentId: string, by: string, at: string)
     copied: [people.owner, people.tech],
     link: { label: 'Open the final set', to: `/inventory/agents/${agentId}/onboarding/approval` },
     at,
+  })
+  return s
+}
+
+/** Any edit while the sponsor is reviewing resets the review (1d: "Any edit after you send resets her review"). */
+function resetIfWaiting(s: DemoState, record: Onboarding, by: string, at: string): void {
+  if (record.sponsor.state !== 'waiting') return
+  record.sponsor.state = 'notSent'
+  record.sponsor.earlier.push({ at, kind: 'reset', note: 'Review reset by an edit' })
+  resolveItems(s, record.agentId, 'Review: final set', by, at, 'Reset: record edited')
+  const { people } = onboardingContext(s, record.agentId)
+  record.history.push({ at, by, text: `${personName(s, by)} · edited the set`, sub: `${personName(s, people.sponsor)}’s review reset` })
+}
+
+/** The sponsor sends the set back with a note (1f): only the row it's about reopens. */
+export function applyRequestChanges(s: DemoState, agentId: string, input: { to: string; about?: string; note: string }, by: string, at: string): DemoState {
+  const record = s.onboardings.find((r) => r.agentId === agentId)
+  if (!record) return s
+  record.sponsor.state = 'returned'
+  record.sponsor.returned = { to: input.to, ...(input.about ? { about: input.about } : {}), note: input.note, at }
+  const limit = input.about ? record.limits.find((l) => l.code === input.about) : undefined
+  if (limit) limit.reopened = { by, at }
+  resolveItems(s, agentId, 'Review: final set', by, at, 'Changes requested')
+  const toTools = Boolean(limit)
+  raiseItem(s, {
+    agentId,
+    type: `Returned: ${limit ? limit.code : 'job and reach'}`,
+    reason: input.note,
+    action: limit ? `re-test ${limit.code}` : 'revise the job and reach',
+    actionSub: `${personName(s, by)} sent it back`,
+    ownerId: input.to,
+    copied: [by],
+    link: { label: toTools ? 'Open tools and hard stops' : 'Open the job description', to: `/inventory/agents/${agentId}/onboarding/${toTools ? 'tools' : 'job'}` },
+    at,
+  })
+  record.history.push({ at, by, text: `${personName(s, by)} · requested changes`, sub: limit ? `About ${limit.code} v${limit.version}` : 'About job and reach', decision: true })
+  return s
+}
+
+/** The person it went back to answers the sponsor (1g "Reply to Priya"). */
+export function applyReply(s: DemoState, agentId: string, text: string, by: string, at: string): DemoState {
+  const record = s.onboardings.find((r) => r.agentId === agentId)
+  if (!record?.sponsor.returned) return s
+  record.sponsor.returned.reply = { text, at }
+  record.history.push({ at, by, text: `${personName(s, by)} · replied`, sub: text })
+  return s
+}
+
+/** "21-day shadow before any Draft privilege" → 21. */
+const intakeShadowDays = (text: string | undefined) => Number(/(\d+)-day shadow/.exec(text ?? '')?.[1] ?? 0)
+
+/** The sponsor approves and signs the set (1e → 1h): v1.0, frozen, with AIMS Review. */
+export function applySponsorSign(s: DemoState, agentId: string, by: string, at: string): DemoState {
+  const record = s.onboardings.find((r) => r.agentId === agentId)
+  const agent = s.agents.find((a) => a.id === agentId)
+  if (!record || !agent) return s
+  const { intake, template, people } = onboardingContext(s, agentId)
+  const rounds = record.sponsor.earlier.filter((e) => e.kind === 'returned')
+  Object.assign(record.sponsor, { state: 'signed', signedAt: at })
+  record.version = 10
+  record.savedAt = at
+  record.frozenAt = at
+  agent.lifecycle = 'inReview'
+  for (const a of record.job.activities)
+    if (!s.activities.some((x) => x.id === a.id)) s.activities.push({ id: a.id, agentId, name: a.name, level: 'shadow', reviewLevel: 'normal', branches: [] })
+  const domain = `${record.job.domain.units.join(', ')} · ${record.job.domain.patients.toLowerCase()}`
+  for (const a of record.job.activities) {
+    const code = nextPrivilegeCode(s)
+    s.privileges.push({ id: `${code.toLowerCase()}-v1`, code, version: 1, activityId: a.id, agentId, level: 'shadow', domain, conditions: [], evidence: 'Awaiting the AI review board', state: 'awaiting', stepDownTriggers: [] })
+  }
+  const { suggested } = riskFactors(s, agentId)
+  const meeting = BOARD_MEETINGS.find((m) => m > at) ?? BOARD_MEETINGS.at(-1)!
+  record.review = {
+    suggestedTier: suggested,
+    meeting,
+    proposedConditions: template.conditions,
+    shadowDays: Math.max(TIER_RULES[suggested].shadowDays, intakeShadowDays(intake?.condition?.text)),
+  }
+  resolveItems(s, agentId, 'Review: final set', by, at, 'Approved and signed')
+  raiseItem(s, {
+    agentId,
+    type: 'Review: risk tier',
+    reason: `${agent.name} is frozen at v1.0. Set the risk tier to build the committee packet.`,
+    action: 'set the risk tier',
+    actionSub: `Suggested Tier ${suggested} · the board meets ${formatDate(meeting)}`,
+    ownerId: people.lead,
+    copied: [people.sponsor],
+    link: { label: 'Open risk tier', to: `/inventory/agents/${agentId}/risk-tier` },
+    at,
+  })
+  const last = rounds.at(-1)
+  record.history.push({
+    at,
+    by,
+    text: `${personName(s, by)} · signed as sponsor`,
+    sub: rounds.length ? `After ${rounds.length === 1 ? 'one round' : `${rounds.length} rounds`} of changes${last?.about ? ` on ${last.about}` : ''}` : 'First review',
+    decision: true,
   })
   return s
 }

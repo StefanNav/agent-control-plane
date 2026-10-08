@@ -153,3 +153,18 @@ test('onboarding-tools-tested (1d): 06 Oct 14:21, all three hard stops tested, v
   expect(stepStates(s, 'med-rec').slice(3, 5).map((st) => st.sub)).toEqual(['Sam · 3 of 3 tested', 'Priya · opens when you send'])
   expect(s.exceptions.filter((e) => e.agentId === 'med-rec' && e.state === 'new').map((e) => [e.type, e.ownerId])).toEqual([['Tools: hard stops to test', 'sam']])
 })
+
+test('onboarding-sponsor-review (1e, 1f) and onboarding-returned-hs11 (1g)', async () => {
+  const { stepStates } = await import('../../store/onboardingRules')
+  const review = buildScenario('onboarding-sponsor-review')
+  expect(review.now).toBe('2026-10-07T09:05:00')
+  expect(review.onboardings.find((r) => r.agentId === 'med-rec')!.sponsor).toMatchObject({ state: 'waiting', sentAt: '2026-10-06T15:10:00', sentBy: 'sam', round: 1 })
+  expect(stepStates(review, 'med-rec').slice(3, 5).map((s) => s.sub)).toEqual(['Sam · done 06 Oct', 'Priya · waiting since 06 Oct'])
+
+  const returned = buildScenario('onboarding-returned-hs11')
+  expect(returned.now).toBe('2026-10-07T09:31:00')
+  const record = returned.onboardings.find((r) => r.agentId === 'med-rec')!
+  expect(record.savedAt).toBe('2026-10-07T09:31:00')
+  expect(record.sponsor.returned).toMatchObject({ to: 'sam', about: 'HS-11', at: '2026-10-07T09:14:00' })
+  expect(stepStates(returned, 'med-rec').slice(3, 5).map((s) => s.sub)).toEqual(['Sam · returned 07 Oct', 'Priya · reset, opens when you send'])
+})

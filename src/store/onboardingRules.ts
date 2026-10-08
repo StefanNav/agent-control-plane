@@ -202,9 +202,12 @@ export function stepStates(s: DemoState, agentId: string): { id: StepId; number:
     return step('approval', `${sponsor} · opens when 2–4 are done`, 'locked', people.sponsor)
   })()
 
+  const returnedToOwner = review.state === 'returned' && review.returned?.to === people.owner
   return [
     step('intake', `${starter} · done ${formatDate(record.done.intake?.at ?? record.startedAt)}`, 'done', people.lead),
-    jobDone
+    returnedToOwner
+      ? step('job', `${owner} · returned ${formatDate(review.returned!.at)}`, 'todo', people.owner)
+      : jobDone
       ? step('job', `${owner} · done ${formatDate(record.done.job?.at ?? record.savedAt)}`, 'done', people.owner)
       : step('job', `${owner} · ${fields.filter((f) => f.done).length} of 7`, 'todo', people.owner),
     systems.complete
@@ -224,6 +227,8 @@ export function openStep(s: DemoState, agentId: string): { step: StepId; number:
   const at = (step: StepId, missing: string[], waitingOn: string) => ({ step, number: STEP_ORDER.indexOf(step) + 1, name: STEP_NAMES[step], missing, waitingOn })
   if (!record) return intake && !intake.startedAt ? at('intake', ['Approved, not started'], people.lead) : null
   if (record.sponsor.state === 'signed') return null
+  if (record.sponsor.state === 'returned' && record.sponsor.returned?.to === people.owner)
+    return at('job', [`Changes ${personName(s, people.sponsor)} asked for`], people.owner)
 
   const fields = jobFields(s, agentId)
   if (fields.some((f) => !f.done)) {
@@ -271,4 +276,44 @@ export function reachLine(grants: Pick<OnboardingGrant, 'system' | 'verb'>[]): {
   const drafts = systemsWith('draft')
   const short = [`Reads ${reads} ${reads === 1 ? 'system' : 'systems'}${drafts.length ? `, drafts in ${listOf(drafts.map(name))}` : ''}.`, never.replace(/\.$/, '')].join(' ')
   return { does, never, short }
+}
+
+/** "Change a dose" → "changing a dose" (2b findings). */
+const gerund = (text: string) => {
+  const [first = '', ...rest] = text.split(' ')
+  const word = first.toLowerCase()
+  const ing = word.endsWith('e') && !word.endsWith('ee') ? `${word.slice(0, -1)}ing` : `${word}ing`
+  return [ing, ...rest].join(' ')
+}
+
+export type Effect = 'Raises' | 'Held down' | 'Lowers' | 'Neutral'
+
+/** Risk factors suggested from the job description and the systems grid (2b), and the tier they suggest. */
+export function riskFactors(s: DemoState, agentId: string): { rows: { factor: string; finding: string; from: string; effect: Effect }[]; suggested: 1 | 2 | 3 | 4 } {
+  const { record, intake } = onboardingContext(s, agentId)
+  const grants = record?.grants ?? []
+  // Identity checks guard every draft; they aren't an adverse branch of the work.
+  const adverse = (record?.limits ?? []).filter((l) => l.library !== 'PT-MATCH-01')
+  const submits = [...new Set(grants.filter((g) => g.verb === 'submit').map((g) => g.system))]
+  const drafts = grants.some((g) => g.verb === 'draft')
+  const pharmacist = /pharmacist/i.test(record?.job.actingFor ?? '')
+  const rows: { factor: string; finding: string; from: string; effect: Effect }[] = []
+  if (intake?.patientImpact) rows.push({ factor: 'Patient impact', finding: intake.patientImpact, from: 'Job description · purpose', effect: 'Raises' })
+  if (adverse.length) {
+    const all = adverse.length === 1 ? 'Blocked at the gateway' : adverse.length === 2 ? 'Both blocked at the gateway' : 'All blocked at the gateway'
+    rows.push({ factor: 'Adverse branches', finding: `${capital(adverse.map((l) => gerund(l.from)).join(', '))}. ${all}`, from: `Hard stops ${adverse.map((l) => l.code).join(', ')}`, effect: 'Held down' })
+  }
+  rows.push(
+    submits.length
+      ? { factor: 'Facing', finding: `Acts without review: submits to ${listOf(submits)}`, from: 'Systems grid · submits', effect: 'Raises' }
+      : drafts
+        ? { factor: 'Facing', finding: `Clinician-facing. ${pharmacist ? 'A pharmacist signs every draft before the chart' : 'A person reviews every draft before it is used'}`, from: 'Systems grid · draft only', effect: 'Lowers' }
+        : { factor: 'Facing', finding: 'Internal: reads and flags only', from: 'Systems grid · read only', effect: 'Lowers' },
+  )
+  rows.push({ factor: 'Reach', finding: reachLine(grants).short, from: 'Systems grid', effect: submits.length ? 'Raises' : 'Lowers' })
+  if (intake?.volume) rows.push({ factor: 'Volume', finding: intake.volume, from: 'Rollout domain', effect: 'Neutral' })
+  const raises = rows.filter((r) => r.effect === 'Raises').length
+  const lowers = rows.filter((r) => r.effect === 'Lowers').length
+  const suggested = submits.length ? 4 : !intake?.patientImpact ? 1 : raises > lowers ? 3 : 2
+  return { rows, suggested }
 }

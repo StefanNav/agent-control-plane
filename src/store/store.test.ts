@@ -760,3 +760,77 @@ describe('tools and hard stops (1d) — Review focus 2', () => {
     expect(store.getState().sendToSponsor('med-rec')).toEqual({ ok: false, reason: 'Already with the sponsor' })
   })
 })
+
+describe('sponsor approval and the return loop (1e–1g) — Review focus 1, 2, 3', () => {
+  const at = (scenario: 'onboarding-sponsor-review' | 'onboarding-returned-hs11', persona: 'priya' | 'sam' | 'marcus') => {
+    const store = fresh()
+    store.getState().loadScenario(scenario)
+    store.getState().setPersona(persona)
+    return store
+  }
+  const NOTE = 'HS-11 shows 0 blocks. Before I sign, please test it on September’s 8 East transfers. That’s where a wrong-patient draft would happen.'
+  const record = (store: ReturnType<typeof fresh>) => store.getState().onboardings.find((r) => r.agentId === 'med-rec')!
+
+  test('Priya sends HS-11 back to Sam: only HS-11 reopens, 11 of 13, Sam has the item, Priya’s closes', async () => {
+    const { recordItems } = await import('./onboardingRules')
+    const store = at('onboarding-sponsor-review', 'priya')
+    expect(store.getState().requestSponsorChanges('med-rec', { to: 'sam', about: 'HS-11', note: NOTE })).toEqual({ ok: true })
+    const s = store.getState()
+    expect(record(store).sponsor).toMatchObject({ state: 'returned', returned: { to: 'sam', about: 'HS-11', note: NOTE, at: s.now } })
+    expect(record(store).limits.map((l) => Boolean(l.reopened))).toEqual([false, false, true])
+    expect(recordItems(s, 'med-rec')).toEqual({ done: 11, total: 13 })
+    expect(s.exceptions.find((e) => e.type === 'Returned: HS-11')).toMatchObject({ ownerId: 'sam', state: 'new', link: { to: '/inventory/agents/med-rec/onboarding/tools' } })
+    expect(s.exceptions.find((e) => e.type === 'Review: final set')!.state).toBe('resolved')
+  })
+
+  test('Sam re-tests on the 8 East transfers and sends again; Priya approves: v1.0, frozen, in review, v1 privileges, Dana asked for the tier', async () => {
+    const store = at('onboarding-returned-hs11', 'sam')
+    expect(store.getState().testHardStop('med-rec', 'HS-11', 'sep-8east-transfers')).toEqual({ ok: true })
+    expect(record(store).limits[2]!.test).toMatchObject({ blocked: 0, of: 212, casesId: 'sep-8east-transfers' })
+    expect(store.getState().sendToSponsor('med-rec')).toEqual({ ok: true })
+    expect(record(store).sponsor).toMatchObject({ state: 'waiting', round: 2 })
+    store.getState().setPersona('priya')
+    expect(store.getState().approveAsSponsor('med-rec')).toEqual({ ok: true })
+    const s = store.getState()
+    expect(record(store)).toMatchObject({ version: 10, frozenAt: s.now, sponsor: { state: 'signed', signedAt: s.now } })
+    expect(record(store).review).toMatchObject({ suggestedTier: 2, meeting: '2026-10-14T15:00:00', shadowDays: 21 })
+    expect(s.agents.find((a) => a.id === 'med-rec')!.lifecycle).toBe('inReview')
+    expect(s.activities.filter((a) => a.agentId === 'med-rec').map((a) => [a.id, a.level])).toEqual([
+      ['med-rec-admission', 'shadow'],
+      ['med-rec-allergy', 'shadow'],
+    ])
+    expect(s.privileges.filter((p) => p.agentId === 'med-rec').map((p) => [p.code, p.version, p.level, p.state])).toEqual([
+      ['PRV-0142', 1, 'shadow', 'awaiting'],
+      ['PRV-0143', 1, 'shadow', 'awaiting'],
+    ])
+    expect(s.exceptions.find((e) => e.type === 'Review: risk tier')).toMatchObject({ ownerId: 'dana', state: 'new', link: { to: '/inventory/agents/med-rec/risk-tier' } })
+    expect(s.exceptions.find((e) => e.type === 'Returned: HS-11')!.state).toBe('resolved')
+  })
+
+  test('Review focus 1: Marcus edits while Priya reviews — her review resets and her item closes', async () => {
+    const { stepStates } = await import('./onboardingRules')
+    const store = at('onboarding-sponsor-review', 'marcus')
+    expect(store.getState().updateJob('med-rec', { purpose: 'Prepare admission medication reconciliation drafts for pharmacist review.' })).toEqual({ ok: true })
+    const s = store.getState()
+    expect(record(store).sponsor.state).toBe('notSent')
+    expect(s.exceptions.find((e) => e.type === 'Review: final set')).toMatchObject({ state: 'resolved', outcome: 'Reset: record edited' })
+    expect(stepStates(s, 'med-rec')[4]!.sub).toBe('Priya · reset, opens when you send')
+  })
+
+  test('Review focus 2, 3: Marcus can’t approve; an empty note is refused; nothing to approve once returned', () => {
+    const marcus = at('onboarding-sponsor-review', 'marcus')
+    const before = dataOf(marcus.getState())
+    expect(marcus.getState().approveAsSponsor('med-rec').ok).toBe(false)
+    expect(dataOf(marcus.getState())).toEqual(before)
+    const priya = at('onboarding-sponsor-review', 'priya')
+    expect(priya.getState().requestSponsorChanges('med-rec', { to: 'sam', about: 'HS-11', note: '  ' })).toEqual({ ok: false, reason: 'A note is required' })
+    expect(at('onboarding-returned-hs11', 'priya').getState().approveAsSponsor('med-rec')).toEqual({ ok: false, reason: 'Not waiting for you' })
+  })
+
+  test('Sam may reply to Priya; Marcus may not reply for Sam', () => {
+    const sam = at('onboarding-returned-hs11', 'sam')
+    expect(sam.getState().replyToSponsor('med-rec', 'Running it on the 212 transfers now.')).toEqual({ ok: true })
+    expect(record(sam).sponsor.returned!.reply).toMatchObject({ text: 'Running it on the 212 transfers now.' })
+    expect(at('onboarding-returned-hs11', 'marcus').getState().replyToSponsor('med-rec', 'Hi').ok).toBe(false)
+  })
+})

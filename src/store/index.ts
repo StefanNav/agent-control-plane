@@ -5,7 +5,7 @@ import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type DemoState, type Incident, type JobDraft, type PersonaId, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
-import { applyJobEdit, applySend, applyStart, applySystemsEdit, applyTest, testResult, type SystemsChange } from './onboarding'
+import { applyJobEdit, applyReply, applyRequestChanges, applySend, applySponsorSign, applyStart, applySystemsEdit, applyTest, testResult, type SystemsChange } from './onboarding'
 import { FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems } from './onboardingRules'
 import { can, lockReason } from './permissions'
 import { runAction, type ActionResult } from './runAction'
@@ -82,6 +82,12 @@ export interface DemoActions {
   testHardStop: (agentId: string, code: string, casesId?: string) => ActionResult
   /** Send the finished set to the sponsor for "Review: final set" (1d). */
   sendToSponsor: (agentId: string) => ActionResult
+  /** The sponsor sends the set back to one person with a note; only what it's about reopens (1f). */
+  requestSponsorChanges: (agentId: string, input: { to: string; about?: string; note: string }) => ActionResult
+  /** The person it went back to replies to the sponsor (1g); optional. */
+  replyToSponsor: (agentId: string, text: string) => ActionResult
+  /** The sponsor approves and signs the set: frozen at v1.0 and with AIMS Review (1e → 1h). */
+  approveAsSponsor: (agentId: string) => ActionResult
 }
 
 export interface PauseInput {
@@ -631,6 +637,61 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Sent to sponsor', target: agent.code, reason: `Review: final set · v0.${record.version}` },
               mutate: (draft) => {
                 applySend(draft, agentId, draft.personaId, draft.now)
+              },
+            })
+          },
+          requestSponsorChanges: (agentId, { to, about, note }) => {
+            const s = get()
+            const record = s.onboardings.find((r) => r.agentId === agentId)
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!record || !agent) return { ok: false, reason: 'Not onboarding' }
+            if (record.sponsor.state !== 'waiting') return { ok: false, reason: 'Not waiting for you' }
+            const why = note.trim()
+            if (!why) return { ok: false, reason: 'A note is required' }
+            if (about && !record.limits.some((l) => l.code === about)) return { ok: false, reason: 'Not found' }
+            return act({
+              action: 'approveTools',
+              ctx: { agentId },
+              audit: { action: 'Requested changes', target: agent.code, reason: `${about ?? 'Job and reach'} · ${why}` },
+              mutate: (draft) => {
+                applyRequestChanges(draft, agentId, { to, ...(about ? { about } : {}), note: why }, draft.personaId, draft.now)
+              },
+            })
+          },
+          replyToSponsor: (agentId, text) => {
+            const s = get()
+            const record = s.onboardings.find((r) => r.agentId === agentId)
+            const agent = s.agents.find((a) => a.id === agentId)
+            const returned = record?.sponsor.returned
+            if (!record || !agent || record.sponsor.state !== 'returned' || !returned) return { ok: false, reason: 'Nothing to reply to' }
+            const what = text.trim()
+            if (!what) return { ok: false, reason: 'A reply needs text' }
+            if (s.personaId !== returned.to) return { ok: false, reason: `Only ${s.people.find((p) => p.id === returned.to)?.name ?? 'the person it went to'} can reply` }
+            return act({
+              action: returned.to === agent.techOwnerId ? 'configureTools' : 'editJobDescription',
+              ctx: { agentId },
+              audit: { action: 'Replied to sponsor', target: agent.code, reason: what },
+              mutate: (draft) => {
+                applyReply(draft, agentId, what, draft.personaId, draft.now)
+              },
+            })
+          },
+          approveAsSponsor: (agentId) => {
+            const s = get()
+            const record = s.onboardings.find((r) => r.agentId === agentId)
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!record || !agent) return { ok: false, reason: 'Not onboarding' }
+            if (record.sponsor.state !== 'waiting') return { ok: false, reason: 'Not waiting for you' }
+            if (!readyToSend(s, agentId)) {
+              const items = recordItems(s, agentId)
+              return { ok: false, reason: `${items.total - items.done - 1} items left` }
+            }
+            return act({
+              action: 'approveTools',
+              ctx: { agentId },
+              audit: { action: 'Approved as sponsor', target: agent.code, reason: `${agent.code} v1.0 · job, reach and limits` },
+              mutate: (draft) => {
+                applySponsorSign(draft, agentId, draft.personaId, draft.now)
               },
             })
           },

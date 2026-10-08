@@ -1,4 +1,4 @@
-import { applyJobEdit, applyStart, applySystemsEdit, applyTest } from '../../store/onboarding'
+import { applyJobEdit, applyRequestChanges, applySend, applyStart, applySystemsEdit, applyTest } from '../../store/onboarding'
 import type { DemoState, Verb } from '../types'
 import { dropAgents, rewindTo } from './rewind'
 
@@ -8,9 +8,9 @@ import { dropAgents, rewindTo } from './rewind'
  * store's own mutations, so a frame's state is exactly what the UI would produce.
  */
 
-export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4' | 'tools-tested'
+export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4' | 'tools-tested' | 'sponsor-review' | 'returned-hs11'
 
-const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4', 'tools-tested']
+const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4', 'tools-tested', 'sponsor-review', 'returned-hs11']
 
 /** "Now" in each stage's frame. */
 const NOW: Record<MedRecStage, string> = {
@@ -18,6 +18,8 @@ const NOW: Record<MedRecStage, string> = {
   'job-5-of-7': '2026-10-04T08:41:00',
   'systems-3-of-4': '2026-10-05T11:09:00',
   'tools-tested': '2026-10-06T14:21:00',
+  'sponsor-review': '2026-10-07T09:05:00',
+  'returned-hs11': '2026-10-07T09:31:00',
 }
 
 /** A dated step and the first stage at which it has happened. */
@@ -73,7 +75,16 @@ const TIMELINE: Step[] = [
   { stage: 'tools-tested', run: (s) => applyTest(s, 'med-rec', 'HS-11', undefined, 'sam', '2026-10-06T14:21:00') },
   // Pin: the frames number Sam's autosaves v0.9 from here on (ruling R8: tests don't bump the version).
   { stage: 'tools-tested', run: (s) => void (s.onboardings.find((r) => r.agentId === 'med-rec')!.version = 9) },
+  // 1d → 1e: Sam sends the set to Priya at 15:10.
+  { stage: 'sponsor-review', run: (s) => applySend(s, 'med-rec', 'sam', '2026-10-06T15:10:00') },
+  // 1f → 1g: Priya sends HS-11 back to Sam the next morning.
+  { stage: 'returned-hs11', run: (s) => applyRequestChanges(s, 'med-rec', { to: 'sam', about: 'HS-11', note: HS11_NOTE }, 'priya', '2026-10-07T09:14:00') },
+  // Pin: 1g reads "Autosaved 09:31" (Sam had the step open).
+  { stage: 'returned-hs11', run: (s) => void (s.onboardings.find((r) => r.agentId === 'med-rec')!.savedAt = '2026-10-07T09:31:00') },
 ]
+
+/** Priya's note on HS-11 (1f, verbatim). */
+export const HS11_NOTE = 'HS-11 shows 0 blocks. Before I sign, please test it on September’s 8 East transfers. That’s where a wrong-patient draft would happen.'
 
 /** 1c's grid in one autosave: Epic read and draft, worklist read and write, Pyxis read, Teams write (unexplained). */
 function grantMedRecSystems(s: DemoState, at: string) {

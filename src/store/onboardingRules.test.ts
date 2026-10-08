@@ -113,3 +113,17 @@ test('1c: the reach in one line, read from the grants', async () => {
     short: 'Reads 3 systems, drafts in Epic. Submits, signs and orders nowhere',
   })
 })
+
+test('2b: risk factors from the job and the grid; Med Rec is suggested Tier 2', async () => {
+  const { riskFactors } = await import('./onboardingRules')
+  const s = createSeed()
+  const { rows, suggested } = riskFactors(s, 'med-rec')
+  expect(rows.map((r) => [r.factor, r.finding, r.from, r.effect])).toEqual([
+    ['Patient impact', 'A wrong or missing home medication carries into inpatient orders', 'Job description · purpose', 'Raises'],
+    ['Adverse branches', 'Changing a dose, removing an allergy. Both blocked at the gateway', 'Hard stops HS-04, HS-07', 'Held down'],
+    ['Facing', 'Clinician-facing. A pharmacist signs every draft before the chart', 'Systems grid · draft only', 'Lowers'],
+    ['Reach', 'Reads 3 systems, drafts in Epic. Submits, signs and orders nowhere', 'Systems grid', 'Lowers'],
+    ['Volume', 'About 140 admissions a day on 2 units', 'Rollout domain', 'Neutral'],
+  ])
+  expect(suggested).toBe(2)
+})

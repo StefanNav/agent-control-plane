@@ -127,7 +127,8 @@ export function selectOnboardingHeader(s: DemoState, agentId: string) {
       { role: 'Sponsor', name: personName(s, agent.sponsorId) },
       { role: 'Division', name: division },
     ],
-    saved: frozen ? null : record.savedAt,
+    // The sponsor's view of a sent set carries no autosave (1e); the builders' does (1b–1d, 1g).
+    saved: frozen || review === 'waiting' ? null : record.savedAt,
   }
 }
 
@@ -164,6 +165,7 @@ export function selectJobStep(s: DemoState, agentId: string, viewer: string) {
       : null
   return {
     agentName: s.agents.find((a) => a.id === agentId)?.name ?? '',
+    returnedToOwner: record.sponsor.state === 'returned' && record.sponsor.returned?.to === people.owner,
     owner: personName(s, people.owner),
     sponsor: personName(s, people.sponsor),
     tech: personName(s, people.tech),
@@ -281,10 +283,11 @@ export function selectToolsStep(s: DemoState, agentId: string) {
           resultLong: `Would have blocked ${n(l.test.blocked)} of ${n(l.test.of)} drafts`,
           when: l.test.casesId ? `re-tested ${formatDate(l.test.at)} · ${RETEST_CASES.sets[l.test.casesId]?.label ?? ''}` : `${testedWhen(l.test.at, s.now)}${l.test.examples.length ? ` · ${l.test.examples.length} examples` : l.test.blocked === 0 ? ' · nothing would have been blocked' : ''}`,
           blocks: `${l.test.blocked} ${l.test.blocked === 1 ? 'block' : 'blocks'}`,
+          on: formatDate(l.test.at),
           examples: l.test.examples.map((e) => ({ ...e, date: formatDate(e.date) })),
         }
       : null,
-    last: l.previousTest && l.reopened ? `Last result: would have blocked ${n(l.test?.blocked ?? 0)} of ${n(l.test?.of ?? 0)} · last 30 days · ${formatDate(l.test!.at)}` : null,
+    last: l.reopened && l.test ? `Last result: would have blocked ${n(l.test.blocked)} of ${n(l.test.of)} · ${l.test.casesId ? RETEST_CASES.sets[l.test.casesId]?.label : 'last 30 days'} · ${formatDate(l.test.at)}` : null,
   }))
   const progress = limitsProgress(record)
   const items = recordItems(s, agentId)
@@ -302,5 +305,114 @@ export function selectToolsStep(s: DemoState, agentId: string) {
     state: record.sponsor.state,
     sentAt: record.sponsor.sentAt,
     returned: record.sponsor.returned ?? null,
+  }
+}
+
+/** "Prepare admission…" → "Prepares admission…": the sponsor and the committee read the job in the third person (1e, 2c). */
+export function thirdPerson(text: string): string {
+  const [first = '', ...rest] = text.split(' ')
+  const verb = /[^aeiou]y$/.test(first) ? `${first.slice(0, -1)}ies` : /(s|sh|ch|x|z|o)$/.test(first) ? `${first}es` : `${first}s`
+  return [verb, ...rest].join(' ')
+}
+
+const pct1 = (n: number | null) => (n === null ? '—' : `${n.toFixed(1)} %`)
+
+/** The job, reach and limits as one page (1e, 2c), shared by the sponsor's review and the committee packet. */
+export function selectFinalSet(s: DemoState, agentId: string) {
+  const { record, template, people } = onboardingContext(s, agentId)
+  if (!record) return null
+  const owner = personName(s, people.owner)
+  const tech = personName(s, people.tech)
+  const verbs = (system: string) => VERB_ORDER.filter((v) => record.grants.some((g) => g.system === system && g.verb === v))
+  const lastTest = record.limits.map((l) => l.test?.at ?? '').sort().at(-1)
+  const tools = record.grants.filter((g) => needsReason(g, record.grants)).length
+  return {
+    job: {
+      heading: `Job · ${owner}${record.done.job ? ` · ${formatDate(record.done.job.at)}` : ''}`,
+      purpose: thirdPerson(record.job.purpose),
+      does: record.job.activities.map((a) => ({ id: a.id, name: thirdPerson(a.name), branch: a.branch })),
+      never: record.job.never.map((text) => ({ text: thirdPerson(text), code: record.limits.find((l) => l.from === text)?.code ?? '' })),
+      handsOff: record.job.escalation,
+      actsFor: record.job.actingFor ?? '—',
+      goesLive: template.criteria.map((c) => ({ id: c.id, text: `${c.label} ${c.direction === 'atLeast' ? 'at least' : 'at most'} ${pct1(record.job.targets[c.id] ?? null)}`, short: `${c.label} ${c.direction === 'atLeast' ? '≥' : '≤'} ${pct1(record.job.targets[c.id] ?? null)}` })),
+      worksOn: `${record.job.domain.units.join(' and ')} · ${record.job.domain.patients.toLowerCase()} · ${record.job.domain.hours.toLowerCase()}`,
+    },
+    reach: {
+      heading: `Reach · ${owner}${record.done.systems ? ` · ${formatDate(record.done.systems.at)}` : ''}`,
+      rows: template.systems.filter(({ system }) => verbs(system).length).map(({ system }) => ({ system, verbs: verbs(system).map((v, i) => (i ? v : v.charAt(0).toUpperCase() + v.slice(1))).join(', ') })),
+    },
+    limits: {
+      heading: `Limits · ${tech}${lastTest ? ` · ${formatDate(lastTest)}` : ''}`,
+      rows: record.limits.map((l) => ({
+        code: l.code,
+        label: `${l.code} v${l.version}`,
+        title: l.title,
+        result: l.test ? `Would have blocked ${n(l.test.blocked)} of ${n(l.test.of)}${l.test.examples.length ? ` · ${l.test.examples.length} examples` : ''}` : 'Not tested',
+        retest: l.test?.casesId ? `Re-tested on ${RETEST_CASES.sets[l.test.casesId]?.label ?? ''}, as ${personName(s, people.sponsor)} asked` : null,
+        shortResult: l.test ? `Would have blocked ${n(l.test.blocked)} of ${n(l.test.of)}` : 'Not tested',
+      })),
+      tools: `${tools} gateway tools, each matching a grant above`,
+    },
+  }
+}
+
+/** Step 5, sponsor approval (1e, 1f): state, who did what, and the round note. */
+export function selectApprovalStep(s: DemoState, agentId: string, viewer: string) {
+  const { record, people } = onboardingContext(s, agentId)
+  const agent = s.agents.find((a) => a.id === agentId)
+  if (!record || !agent) return null
+  const sponsorName = personName(s, people.sponsor)
+  const you = viewer === people.sponsor
+  const review = record.sponsor
+  const lastReturn = review.earlier.filter((e) => e.kind === 'returned').at(-1)
+  const lastReset = review.earlier.at(-1)?.kind === 'reset'
+  const retested = lastReturn?.about ? record.limits.find((l) => l.code === lastReturn.about)?.test : undefined
+  const roundNote =
+    review.round <= 1 && !review.earlier.length
+      ? { lead: 'First review.', text: `Nothing has been approved or sent back before. If anyone edits the record after ${you ? 'you approve, your approval resets and you’re' : `${sponsorName} approves, the approval resets and ${sponsorName} is`} asked again.` }
+      : lastReset
+        ? { lead: `Review ${review.round}.`, text: 'An edit reset the last review, so the set was sent again.' }
+        : {
+            lead: `Review ${review.round}.`,
+            text: `${sponsorName} sent ${lastReturn?.about ?? 'the job and reach'} back on ${lastReturn ? formatDate(lastReturn.at) : ''}${retested ? `; ${personName(s, retested.by)} re-tested it: ${n(retested.blocked)} of ${n(retested.of)} would have been blocked` : ''}.`,
+          }
+  const who = [
+    record.done.intake && { text: `${personName(s, record.done.intake.by)} · intake`, date: formatDate(record.done.intake.at) },
+    record.done.job && { text: `${personName(s, record.done.job.by)} · job description`, date: formatDate(record.done.job.at) },
+    record.done.systems && { text: `${personName(s, record.done.systems.by)} · systems and verbs`, date: formatDate(record.done.systems.at) },
+    record.done.tools && { text: `${personName(s, people.tech)} · tools and hard stops`, date: formatDate(record.done.tools.at) },
+  ].filter(Boolean) as { text: string; date: string }[]
+  return {
+    state: review.state,
+    you,
+    sponsorId: people.sponsor,
+    sponsor: sponsorName,
+    owner: { id: people.owner, name: personName(s, people.owner) },
+    tech: { id: people.tech, name: personName(s, people.tech) },
+    sent: review.sentAt ? `Sent by ${personName(s, review.sentBy)} · ${formatDate(review.sentAt)} ${formatClock(review.sentAt)}` : null,
+    waiting: review.sentAt ? `Waiting for ${you ? 'you' : sponsorName} since ${formatDate(review.sentAt)} ${formatClock(review.sentAt)}` : null,
+    signed: review.signedAt ? `Signed by ${sponsorName} · ${formatDate(review.signedAt)} ${formatClock(review.signedAt)}` : null,
+    returned: review.returned ? { to: personName(s, review.returned.to), at: formatDate(review.returned.at) } : null,
+    signLine: `Signs ${you ? 'you' : sponsorName} as sponsor of ${agent.code} v0.${record.version}, logged with time and version. The record moves to AIMS Review.`,
+    who,
+    roundNote,
+  }
+}
+
+/** What the sponsor sent back (1g), for the person it went to. */
+export function selectReturned(s: DemoState, agentId: string, viewer: string) {
+  const { record, people } = onboardingContext(s, agentId)
+  const returned = record?.sponsor.returned
+  if (!record || !returned) return null
+  const limit = returned.about ? record.limits.find((l) => l.code === returned.about) : undefined
+  return {
+    sponsor: personName(s, people.sponsor),
+    to: returned.to,
+    toName: personName(s, returned.to),
+    head: `${formatDate(returned.at)} ${formatClock(returned.at)}${limit ? ` · about ${limit.code} v${limit.version}` : ''}`,
+    note: returned.note,
+    reply: returned.reply ? { text: returned.reply.text, at: `${formatDate(returned.reply.at)} ${formatClock(returned.reply.at)}` } : null,
+    canReply: viewer === returned.to,
+    about: limit ? { code: limit.code, label: `${limit.code} v${limit.version}`, title: limit.title, reopened: Boolean(limit.reopened) } : null,
   }
 }

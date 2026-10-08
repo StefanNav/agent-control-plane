@@ -10,6 +10,7 @@ import { useDemo } from '../../store'
 import { onboardingContext, personName, STEP_NAMES, STEP_ORDER, type StepId } from '../../store/onboardingRules'
 import { IntakeStep } from './IntakeStep'
 import { JobStep } from './JobStep'
+import { ApprovalStep } from './ApprovalStep'
 import { SystemsStep } from './SystemsStep'
 import { ToolsStep } from './ToolsStep'
 import { Rail } from './Rail'
@@ -25,6 +26,7 @@ export function OnboardingPage() {
   const state = useDemo((s) => s)
   const header = useMemo(() => selectOnboardingHeader(state, agentId), [state, agentId])
   const [history, setHistory] = useState(false)
+  const [requesting, setRequesting] = useState(false)
   if (!header || !isStep(step)) return <NotFound />
   const { record, intake, people } = onboardingContext(state, agentId)
 
@@ -34,6 +36,7 @@ export function OnboardingPage() {
   else if (record && step === 'job') content = <JobStep agentId={agentId} />
   else if (record && step === 'systems') content = <SystemsStep agentId={agentId} />
   else if (record && step === 'tools') content = <ToolsStep agentId={agentId} />
+  else if (record && step === 'approval') content = <ApprovalStep key={agentId} agentId={agentId} onRequesting={setRequesting} />
   else if (!record) {
     content = (
       <Split
@@ -82,7 +85,7 @@ export function OnboardingPage() {
             </Button>
           </span>
         }
-        steps={<Rail agentId={agentId} current={step} />}
+        steps={<Rail agentId={agentId} current={step} override={step === 'approval' && requesting ? { approval: `${personName(state, people.sponsor)} · requesting changes` } : undefined} />}
       />
       {content}
       <Modal

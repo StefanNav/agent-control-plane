@@ -731,3 +731,190 @@ a.check:hover {
   font-weight: 600;
   color: var(--cs-ink);
 }
+
+/* Returned (1g) and sponsor approval (1e, 1f). */
+.quote {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px;
+  background: var(--cs-fill);
+  border-radius: 6px;
+}
+
+.quoteHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-ink);
+}
+
+.quoteHead strong {
+  font-weight: 600;
+}
+
+.quoteText,
+.reply {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-ink);
+}
+
+.reply {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.replyForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.retest {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 6px;
+}
+
+.retestTitle {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.selects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.setGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.setRow {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-top: 1px solid var(--cs-line);
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-ink);
+}
+
+.setRow:first-of-type {
+  border-top: 0;
+}
+
+.setKey {
+  font-size: 14px;
+  color: var(--cs-meta);
+}
+
+.setValue {
+  display: flex;
+  flex-direction: column;
+}
+
+.setRight {
+  font-size: 14px;
+  color: var(--cs-meta);
+  text-align: right;
+}
+
+.limitPick {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: left;
+  color: var(--cs-ink);
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--cs-line);
+  cursor: pointer;
+}
+
+.limitPick:hover {
+  background: var(--cs-hover);
+}
+
+.limitPicked {
+  background: var(--cs-sel);
+  box-shadow: inset 2px 0 0 var(--cs-acc);
+}
+
+.signBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--cs-line);
+}
+
+.signText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 560px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.signText strong {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.whoRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 20px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 20px 20px;
+}
+
+.doesLine {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.runRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

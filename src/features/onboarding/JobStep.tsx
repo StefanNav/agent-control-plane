@@ -8,6 +8,7 @@ import { Split } from '../../layout/layouts'
 import { useDemo } from '../../store'
 import type { JobFieldId } from '../../store/onboardingRules'
 import { can, lockReason } from '../../store/permissions'
+import { ReturnedNote } from './ReturnedNote'
 import { SendToSponsor } from './SendToSponsor'
 import { selectJobStep } from './selectors'
 import { StepCard } from './StepCard'
@@ -145,6 +146,7 @@ export function JobStep({ agentId }: { agentId: string }) {
               <span className={styles.monoMeta}>{view.welcome.saved}</span>
             </div>
           ) : null}
+          {view.returnedToOwner ? <ReturnedNote agentId={agentId} /> : null}
           {!editable ? <span className={styles.note}>Read only: {readOnlyReason}.</span> : null}
           <div className={styles.fields}>
             <Block id="purpose" done={fieldDone('purpose')} request={view.requestCode}>
@@ -363,7 +365,7 @@ export function JobStep({ agentId }: { agentId: string }) {
           alsoLabel={`Also needed before ${view.sponsor}`}
           foot={
             <>
-              <SendToSponsor agentId={agentId} />
+              <SendToSponsor agentId={agentId} again={view.returnedToOwner} />
               {view.blocked.left > 0 ? (
                 <span>
                   <strong>Blocked: {view.blocked.left} items left.</strong>{' '}

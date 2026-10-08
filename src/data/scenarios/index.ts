@@ -16,6 +16,8 @@ export type ScenarioId =
   | 'onboarding-at-5-of-7'
   | 'onboarding-systems'
   | 'onboarding-tools-tested'
+  | 'onboarding-sponsor-review'
+  | 'onboarding-returned-hs11'
 
 /** Every scenario id, for validating a `?scenario=` param. */
 export const SCENARIO_IDS: readonly ScenarioId[] = [
@@ -29,6 +31,8 @@ export const SCENARIO_IDS: readonly ScenarioId[] = [
   'onboarding-at-5-of-7',
   'onboarding-systems',
   'onboarding-tools-tested',
+  'onboarding-sponsor-review',
+  'onboarding-returned-hs11',
 ]
 
 /** The seed's live heartbeat (one minute before DEMO_NOW). */
@@ -161,6 +165,12 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
 
   // E1 1d: 06 Oct 14:21, Sam has tested all three hard stops; Send to Priya unlocks.
   'onboarding-tools-tested': medRecAt('tools-tested'),
+
+  // E1 1e / 1f: 07 Oct 09:05, the final set waits for Priya since 06 Oct 15:10.
+  'onboarding-sponsor-review': medRecAt('sponsor-review'),
+
+  // E1 1g: 07 Oct 09:31, Priya sent HS-11 back to Sam at 09:14; her review resets.
+  'onboarding-returned-hs11': medRecAt('returned-hs11'),
 }
 
 /** A fresh state for the scenario. */
