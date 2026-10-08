@@ -241,7 +241,7 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
   - Selectors: `selectPersona(s): Person`, `selectCan(s, action, ctx?)`.
   - `PERSONAS` comes later, in `src/prototype/personas.ts` (2.10). The store holds only the `personaId`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - `setPersona('jordan')` changes `personaId`.
   - `reset()` after `setPersona('jordan')` restores `marcus` and seed data.
   - `runAction` as Marcus on a Medications exception: the result is ok, the claimed state is applied, and one audit entry `{ who: 'marcus', at: DEMO_NOW }` exists.
@@ -249,11 +249,11 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
   - `claimException('exc-…')` as Marcus sets `claimedAt` to `state.now` and `state` to `'claimed'`. As Jordan it returns `ok: false`.
   - **Review focus 1:** store a saved state with `version: SEED_VERSION - 1` (or a `{ version: 0, state: {…garbage…} }` payload) under `acp-demo`, then create the store. Its state equals `createSeed()` fields.
   - **Review focus 2:** with a `localStorage` whose `getItem`/`setItem` throw (`vi.stubGlobal`), `safeStorage` works in memory, so `setItem` then `getItem` returns the value, and the store can still be created and `setPersona` works.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement.** Export a `createDemoStore()` factory (for tests) and the app singleton `useDemo`.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Add to `CLAUDE.md` Conventions:** "Bump `SEED_VERSION` (src/data/seed/index.ts) whenever seed data or `DemoState` changes; mutate state only through store actions built on `runAction`."
-- [ ] **Step 6: Commit** with `git commit -m "feat(store): demo store with versioned persistence and guarded actions"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement.** Export a `createDemoStore()` factory (for tests) and the app singleton `useDemo`.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Add to `CLAUDE.md` Conventions:** "Bump `SEED_VERSION` (src/data/seed/index.ts) whenever seed data or `DemoState` changes; mutate state only through store actions built on `runAction`."
+- [x] **Step 6: Commit** with `git commit -m "feat(store): demo store with versioned persistence and guarded actions"`.
 
 ### Task 2.6: Scenarios
 
