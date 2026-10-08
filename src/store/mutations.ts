@@ -68,7 +68,7 @@ export function applyResume(s: DemoState, agentId: string, approvedBy: string): 
   return s
 }
 
-const nextCode = (codes: string[], prefix: string, width: number) => {
+export const nextCode = (codes: string[], prefix: string, width: number) => {
   const max = Math.max(0, ...codes.map((c) => Number(c.slice(prefix.length)) || 0))
   return `${prefix}${String(max + 1).padStart(width, '0')}`
 }

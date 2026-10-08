@@ -344,6 +344,62 @@ export interface AgentAction {
   steps: TraceStep[]
 }
 
+/** A draft as the pharmacist sees it in Epic (E10, the neutral stand-in). */
+export interface EpicDraft {
+  /** 'DR-88412' */
+  id: string
+  agentId: string
+  build: string
+  draftedAt: string
+  patient: { name: string; age: number; sex: 'F' | 'M'; mrn: string; unit: string; bed: string; allergy: string; admittedAt: string }
+  lines: {
+    /** 'Metoprolol tartrate 25 mg'; `form` is shown after it ('tab'). */
+    med: string
+    form: string
+    dose: string
+    route: string
+    frequency: string
+    lastTaken: string
+    /** 'Outside fill' with `sourceAt`, or 'Admission interview'. */
+    source: string
+    sourceAt?: string
+    edit?: { field: 'frequency' | 'dose'; from: string; to: string; by: string }
+  }[]
+  sources: string
+  did: string
+  /** The agent's trace for this draft. */
+  actionId: string
+}
+
+export type FlagReason = 'frequency' | 'dose' | 'missed' | 'duplicate' | 'other'
+
+/** A pharmacist's flag on a draft, sent from Epic to the agent's owner (E10). */
+export interface Flag {
+  id: string
+  /** 'FB-2291' */
+  code: string
+  draftId: string
+  agentId: string
+  /** A persona who flagged it; other pharmacists are named only. */
+  byId?: string
+  byName: string
+  unit: string
+  at: string
+  reason: FlagReason
+  title: string
+  note?: string
+  edit?: { med: string; field: string; from: string; to: string }
+  status: 'sent' | 'inProgress' | 'fixed' | 'notDefect'
+  progress?: string
+  notDefect?: string
+  fixedIn?: string
+  fixedAt?: string
+  reply?: { by: string; text: string; at: string }
+  /** When the pharmacist dismissed "Your flag led to a fix" (10b). */
+  seenFixAt?: string
+  exceptionId?: string
+}
+
 /** An informational event: kept in the log, never sent to anyone. */
 export interface LogEvent {
   id: string
@@ -636,6 +692,10 @@ export interface DemoState {
   scorecards: Scorecard[]
   sampleCases: SampleCase[]
   exports: ExportRecord[]
+  /** Drafts in the Epic stand-in (E10). */
+  epicDrafts: EpicDraft[]
+  /** Pharmacists' flags from Epic (E10). */
+  flags: Flag[]
   /** Hospital-wide counts before today's activity (4f "Last 24 hours"); `actionsToday` for 7a. */
   stats24h: {
     closedEarlier: number

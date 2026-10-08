@@ -33,6 +33,7 @@ export function InboxPage() {
   const assignException = useDemo((s) => s.assignException)
   const claimException = useDemo((s) => s.claimException)
   const answerQuestion = useDemo((s) => s.answerQuestion)
+  const answerFlag = useDemo((s) => s.answerFlag)
   const tab: Tab = TABS.find((t) => t === params.get('tab')) ?? 'needs'
   const inbox = useMemo(() => selectInbox(state, state.personaId), [state])
   const header = selectInboxHeader(state, state.personaId)
@@ -147,6 +148,11 @@ export function InboxPage() {
               onClaim={() => claimException(detail.id)}
               onAnswer={(answer) => {
                 if (answerQuestion(detail.id, answer).ok) backToList()
+              }}
+              onAnswerFlag={(answer) => {
+                const result = answerFlag(detail.id, answer)
+                if (result.ok && answer.kind !== 'reply') backToList()
+                return result
               }}
               onDismiss={(input) => {
                 const result = dismissException(detail.id, input)

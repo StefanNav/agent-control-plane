@@ -19,6 +19,7 @@ import { PacketPage } from '../features/review/PacketPage'
 import { RecordPage } from '../features/review/RecordPage'
 import { RiskTierPage } from '../features/review/RiskTierPage'
 import { DivisionSettingsPage } from '../features/settings/DivisionSettingsPage'
+import { EpicPage } from '../features/epic/EpicPage'
 import { PeoplePage } from '../features/settings/PeoplePage'
 import { NotFound } from '../layout/NotFound'
 import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
@@ -52,6 +53,7 @@ const PAGES: Record<string, ReactNode> = {
   '/wall': <WallDisplay />,
   '/settings/divisions/:divisionId': <DivisionSettingsPage />,
   '/settings/people': <PeoplePage />,
+  '/epic': <EpicPage />,
 }
 
 function childrenFor(shell: ShellKind): RouteObject[] {

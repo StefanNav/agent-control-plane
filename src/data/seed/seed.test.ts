@@ -1,3 +1,4 @@
+import * as catalogue from './catalogue'
 import { DEMO_NOW } from '../../lib/clock'
 import { createSeed, SEED_VERSION } from './index'
 
@@ -172,7 +173,7 @@ describe('E4 and E5 refinements', () => {
     ])
   })
 
-  test('Med Rec has its five recent actions (4c) plus ACT-88171 (7a) and the shadow case ACT-61840 (3b); ACT-88213 keeps its trace', () => {
+  test('Med Rec has its five recent actions (4c) plus ACT-88171 (7a), Ana’s draft ACT-88209 (10a) and the shadow case ACT-61840 (3b); ACT-88213 keeps its trace', () => {
     expect(seed.actions.filter((a) => a.agentId === 'med-rec').map((a) => a.code)).toEqual([
       'ACT-88240',
       'ACT-88213',
@@ -180,6 +181,7 @@ describe('E4 and E5 refinements', () => {
       'ACT-88199',
       'ACT-88188',
       'ACT-88171',
+      'ACT-88209',
       'ACT-61840',
     ])
     expect(seed.actions.find((a) => a.code === 'ACT-88213')!.steps).toHaveLength(8)
@@ -337,5 +339,28 @@ describe('Phase 5: shadow scorecards and sample cases (3a, 3b)', () => {
     const card = s.scorecards.find((c) => c.activityId === 'med-rec-allergy')!
     expect(card.to).toBe('2026-12-07T00:00:00')
     expect(Object.values(card.results).map((r) => r.value)).toEqual([94.6, 1.2, 1.1])
+  })
+})
+
+describe('Phase 6: v2 frames re-dated to December (R1, R2)', () => {
+  const strings = (value: unknown, out: string[] = []): string[] => {
+    if (typeof value === 'string') out.push(value)
+    else if (Array.isArray(value)) value.forEach((v) => strings(v, out))
+    else if (value && typeof value === 'object') Object.values(value).forEach((v) => strings(v, out))
+    return out
+  }
+
+  test('no seed or catalogue string shows a March date, and Med Rec never reads v1.4.2 (Review focus 5)', () => {
+    const seedNow = createSeed()
+    const all = [...strings(seedNow), ...strings(Object.values(catalogue))]
+    expect(all.filter((t) => /\b\d{2} Mar\b/.test(t))).toEqual([])
+    // Claim Scrubber Agent really is v1.4.2; nothing else may be (9a, 10a's March build).
+    expect([...strings({ ...seedNow, agents: [] }), ...strings(Object.values(catalogue))].filter((t) => t.includes('v1.4.2'))).toEqual([])
+  })
+
+  test('flag codes are unique and stop at FB-2290, so Ana’s flag is FB-2291', () => {
+    const codes = createSeed().flags.map((f) => f.code)
+    expect(new Set(codes).size).toBe(codes.length)
+    expect([...codes].sort().at(-1)).toBe('FB-2290')
   })
 })

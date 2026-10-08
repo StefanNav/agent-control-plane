@@ -8,6 +8,7 @@ import {
   formatDue,
   minutesBetween,
 } from '../../lib/clock'
+import { FLAG_REASONS } from '../../store/feedback'
 import { onBoard, personName } from '../board/selectors'
 
 export const isOpen = (e: AgentException) => e.state !== 'resolved' && e.state !== 'dismissed'
@@ -94,6 +95,23 @@ export function selectInbox(
     waiting: [...waiting].sort(byDeadline).map((e) => itemView(s, e, personaId)),
     log: s.logEvents,
     logTotal: s.logEvents.length,
+  }
+}
+
+/** The flag behind a `flag` item, as the owner reads it in the inbox. */
+function flagView(s: DemoState, exceptionId: string) {
+  const f = s.flags.find((x) => x.exceptionId === exceptionId)
+  if (!f) return null
+  const draft = s.epicDrafts.find((d) => d.id === f.draftId)
+  return {
+    code: f.code,
+    by: f.byName,
+    reason: FLAG_REASONS[f.reason],
+    edit: f.edit ? `${f.edit.med} · ${f.edit.field}: ${f.edit.from} → ${f.edit.to}` : null,
+    note: f.note ?? null,
+    draft: `${f.draftId}${draft ? ` · ${draft.patient.unit}` : ''}`,
+    traceTo: draft ? `/operations/actions/${draft.actionId}` : null,
+    reply: f.reply ? `${personName(s, f.reply.by)}: “${f.reply.text}”` : null,
   }
 }
 
@@ -213,6 +231,8 @@ export function selectExceptionDetail(s: DemoState, id: string, viewer: PersonaI
     tune: e.detail?.tune,
     /** The rule without its version, e.g. 'MR-12'. */
     ruleName: e.ruleTag?.split(' ')[0],
+    /** A pharmacist's flag from Epic (10a, R14): what they edited, why, and the agent's trace. */
+    flag: flagView(s, e.id),
     action: e.action,
     copied: e.copied.map((p) => personName(s, p)),
   }

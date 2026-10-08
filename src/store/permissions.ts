@@ -21,6 +21,8 @@ export type PermAction =
   | 'viewAudit'
   | 'openIncident'
   | 'manageDivisions'
+  /** A frontline pharmacist flags a draft from Epic (10a). */
+  | 'flagDraft'
 
 /** How far a role reaches for an action: everywhere, its own divisions, or its own agents. */
 type Scope = 'all' | 'own' | 'ownAgents'
@@ -54,6 +56,8 @@ const MATRIX: Record<PermAction, Partial<Record<Role, Scope>>> = {
   // 7a: opening an incident is the one thing read-only Jordan can create.
   openIncident: ALL_VIEWERS,
   manageDivisions: { programLead: 'all' },
+  // 10a: only frontline pharmacists flag drafts, from Epic.
+  flagDraft: { frontline: 'own' },
 }
 
 export interface PermContext {
@@ -93,6 +97,7 @@ export function can(
 
 const REASONS: Partial<Record<PermAction, string>> = {
   manageDivisions: 'Program lead only',
+  flagDraft: 'Pharmacists flag drafts from Epic',
   prepareGoLive: 'Program lead only',
   retire: 'Program lead or sponsor only',
   disable: 'Program lead or sponsor only',

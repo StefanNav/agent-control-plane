@@ -35,6 +35,15 @@
 
   --cs-font-sans: 'IBM Plex Sans', system-ui, sans-serif;
   --cs-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  /* E10's Epic stand-in: neutral cool greys from the frame, so it never reads as Countersign. */
+  --cs-ehr-bg: oklch(0.97 0.004 240);
+  --cs-ehr-bar: oklch(0.9 0.006 240);
+  --cs-ehr-band: oklch(1 0 0);
+  --cs-ehr-head: oklch(0.94 0.004 240);
+  --cs-ehr-edit: oklch(0.955 0.008 240);
+  --cs-ehr-line: oklch(0.89 0.006 240);
+  --cs-ehr-ink: oklch(0.25 0.01 240);
+  --cs-ehr-meta: oklch(0.48 0.01 240);
 }
 
 [data-theme="dark"] {
@@ -65,4 +74,12 @@
   --cs-lad-pass: oklch(0.52 0.006 90);
   --cs-lad-lock: oklch(0.3 0.005 90);
   color: var(--cs-ink);
+  --cs-ehr-bg: oklch(0.18 0.006 240);
+  --cs-ehr-bar: oklch(0.26 0.008 240);
+  --cs-ehr-band: oklch(0.21 0.006 240);
+  --cs-ehr-head: oklch(0.24 0.006 240);
+  --cs-ehr-edit: oklch(0.25 0.012 240);
+  --cs-ehr-line: oklch(0.3 0.008 240);
+  --cs-ehr-ink: oklch(0.93 0.006 240);
+  --cs-ehr-meta: oklch(0.7 0.008 240);
 }

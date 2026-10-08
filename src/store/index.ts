@@ -2,11 +2,12 @@ import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
-import { PERSONA_IDS, type Condition, type DemoState, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
+import { PERSONA_IDS, type Condition, type DemoState, type FlagReason, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
 import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, signMode, testResult, type SystemsChange } from './onboarding'
 import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems, shadowProgress } from './onboardingRules'
+import { applyFlag, applyFlagAnswer, type FlagAnswer } from './feedback'
 import { can, lockReason } from './permissions'
 import { applyAddRole, applyCreateDivision, applyDivisionSettings, applyInvite, applyRemoveRole, applyReturnToShadow, diffDivision, divisionSlug, ROLE_LABEL, roleDivision, type DivisionPatch, type NewDivisionInput, type RoleInput } from './settings'
 import { runAction, type ActionResult } from './runAction'
@@ -83,6 +84,10 @@ export interface DemoActions {
   removeRole: (personId: string, input: RoleInput) => ActionResult
   /** Add a person with one role (8b "Invite"). Program lead only. */
   invitePerson: (input: { name: string; title: string } & RoleInput) => ActionResult
+  /** Flag a draft from Epic in one action (10a); it reaches the agent's owner. Frontline pharmacists only. */
+  flagDraft: (draftId: string, input: { reason: FlagReason; note?: string }) => ActionResult
+  /** Answer a pharmacist's flag (R14): a fix in progress, not a defect, or a reply. */
+  answerFlag: (exceptionId: string, answer: FlagAnswer) => ActionResult
   /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
   startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
   /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
@@ -645,6 +650,37 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Invited', target: name, reason: `${ROLE_LABEL[input.role]} · ${s.divisions.find((d) => d.id === divisionId)?.name ?? 'All divisions'}` },
               mutate: (draft) => {
                 applyInvite(draft, input, draft.now)
+              },
+            })
+          },
+          flagDraft: (draftId, input) => {
+            const s = get()
+            const draft = s.epicDrafts.find((d) => d.id === draftId)
+            if (!draft) return { ok: false, reason: 'Draft not found' }
+            if (s.flags.some((f) => f.draftId === draftId && f.byId === s.personaId)) return { ok: false, reason: 'You already flagged this draft' }
+            const code = `FB-${String(Math.max(0, ...s.flags.map((f) => Number(f.code.slice(3)) || 0)) + 1).padStart(4, '0')}`
+            return act({
+              action: 'flagDraft',
+              ctx: { agentId: draft.agentId },
+              audit: { action: 'Flagged from Epic', target: code, ...(input.note?.trim() ? { reason: input.note.trim() } : {}) },
+              mutate: (draft) => {
+                applyFlag(draft, { draftId, ...input }, draft.personaId, draft.now)
+              },
+            })
+          },
+          answerFlag: (exceptionId, answer) => {
+            const { exception, error } = openException(exceptionId)
+            if (!exception) return error
+            const flag = get().flags.find((f) => f.exceptionId === exceptionId)
+            if (!flag) return { ok: false, reason: 'Not a flag' }
+            const text = answer.text.trim()
+            if (!text) return { ok: false, reason: answer.kind === 'notDefect' ? 'Say why it isn’t a defect' : `Write a note for ${flag.byName}` }
+            return act({
+              action: 'resolveException',
+              ctx: { agentId: exception.agentId },
+              audit: { action: answer.kind === 'reply' ? 'Replied to flag' : answer.kind === 'inProgress' ? 'Working on a fix' : 'Not a defect', target: flag.code, reason: text },
+              mutate: (draft) => {
+                applyFlagAnswer(draft, exceptionId, answer, draft.personaId, draft.now)
               },
             })
           },

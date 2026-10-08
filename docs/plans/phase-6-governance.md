@@ -610,7 +610,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - "Open trace" → `/operations/actions/<actionId>`
   - "Working on a fix…", "Not a defect…" and "Reply to Ana…" (each a short text form), plus Claim and Snooze
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **`seed.test.ts`:**
     - No string anywhere in `createSeed()` or the catalogue matches `/\b\d{2} Mar\b|v1\.4\.2/`. The test walks every string field; this pins Review focus 5.
     - The flag codes are unique, and the highest is FB-2290.
@@ -625,10 +625,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - Flag a problem → Send flag → "Flag FB-2291 sent to Marcus".
     - As Marcus, the inbox shows "Flag from Epic" and Needs me · 5. Open it → Working on a fix with a note.
     - Back as Ana, FB-2291 reads "In progress · Marcus".
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 10a (neutral EHR, our panel).
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(epic): flag a draft from Epic in one action"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 10a (neutral EHR, our panel).
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(epic): flag a draft from Epic in one action"`.
 
 ### Task 6.5: New version held at the gateway (9a)
 
