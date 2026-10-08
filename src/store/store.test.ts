@@ -537,3 +537,30 @@ describe('review fix: disable, pause and resume compose (Important #1)', () => {
     expect(store.getState().approveResume('med-rec', 'x')).toEqual({ ok: false, reason: 'No resume request' })
   })
 })
+
+describe('review fix: every pause can be resumed (Important #2, #3)', () => {
+  test('an activity pause resumes through the two-person rule', () => {
+    const store = fresh()
+    store.getState().pauseAgent('med-rec', { scope: 'activity' })
+    expect(store.getState().requestResume('med-rec', 'Cause found.')).toEqual({ ok: true })
+    store.getState().setPersona('priya')
+    expect(store.getState().approveResume('med-rec', 'Agreed.')).toEqual({ ok: true })
+    expect(store.getState().activities.find((a) => a.id === 'med-rec-admission')!.paused).toBeUndefined()
+    expect(store.getState().agents.find((a) => a.id === 'med-rec')!.pause).toBeUndefined()
+  })
+
+  test('the seeded paused Controlled Drug Agent resumes within scope', () => {
+    const store = fresh()
+    expect(store.getState().requestResume('controlled-drug', 'Checked; safe to restart.')).toEqual({ ok: true })
+    store.getState().setPersona('priya')
+    expect(store.getState().approveResume('controlled-drug', 'Agreed.')).toEqual({ ok: true })
+    expect(store.getState().agents.find((a) => a.id === 'controlled-drug')).toMatchObject({ lifecycle: 'live', judgment: { status: 'normal', label: 'Within scope' } })
+  })
+
+  test('a pause goes on the agent\'s open incident record (re-graded minor)', () => {
+    const store = fresh()
+    store.getState().openIncident('med-rec', { title: 'Dose changes', actionIds: ['act-88213'] })
+    store.getState().pauseAgent('med-rec', { scope: 'agent', reason: 'Until we know why.' })
+    expect(store.getState().incidents.at(-1)!.timeline.at(-1)).toMatchObject({ title: 'Marcus paused the agent', sub: '12 drafts to pharmacists' })
+  })
+})

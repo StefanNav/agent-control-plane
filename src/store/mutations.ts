@@ -43,6 +43,9 @@ export function applyPause(
       agent.judgment = { status: 'paused', label: `Paused by ${nameOf(s, by)}` }
     }
     s.logEvents.push({ id: `log-pause-${s.logEvents.length + 1}`, at, agentId: id, text: `${routed} drafts routed to pharmacists`, sub: `Paused by ${nameOf(s, by)}` })
+    // The reason field says it "goes on the incident record": an open incident gets the pause.
+    const incident = s.incidents.find((i) => i.agentId === id && i.state !== 'closed')
+    incident?.timeline.push({ at, title: `${nameOf(s, by)} paused ${input.scope === 'activity' ? 'one activity' : 'the agent'}`, sub: `${routed} drafts to pharmacists`, by })
   }
   return s
 }

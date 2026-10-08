@@ -428,7 +428,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                 }))
                 const target = draft.agents.find((a) => a.id === agentId)!
                 if (target.pausedAt && target.pausedBy)
-                  timeline.push({ at: target.pausedAt, title: `${name(target.pausedBy)} paused the agent`, sub: target.pause ? `${target.pause.routed} drafts to pharmacists` : undefined, by: target.pausedBy })
+                  timeline.push({ at: target.pausedAt, title: `${name(target.pausedBy)} paused ${target.pause?.scope === 'activity' ? 'one activity' : 'the agent'}`, sub: target.pause ? `${target.pause.routed} drafts to pharmacists` : undefined, by: target.pausedBy })
                 timeline.push({ at: draft.now, title: `${name(draft.personaId)} opened this incident`, sub: `Linked ${linked.length} ${linked.length === 1 ? 'action' : 'actions'}`, by: draft.personaId })
                 timeline.sort((a, b) => a.at.localeCompare(b.at))
                 draft.incidents.push({

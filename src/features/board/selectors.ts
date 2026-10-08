@@ -150,7 +150,8 @@ function agentRow(s: DemoState, a: Agent, index: number): AgentRowView {
     blocked: withdrawn ? '—' : count(m.blocked),
     trend: trendPoints(index, m.trend),
     ladder: LADDER[a.level],
-    level: LEVEL_NAME[a.level],
+    // One activity paused while the agent keeps working: the row says so beside the level.
+    level: `${LEVEL_NAME[a.level]}${s.activities.some((x) => x.agentId === a.id && x.paused) && a.lifecycle === 'live' ? ` · ${s.activities.filter((x) => x.agentId === a.id && x.paused).length} paused` : ''}`,
     grantor: personName(s, a.grantorId),
     reviewDate: formatDate(a.reviewDate),
   }
@@ -230,7 +231,10 @@ export function selectAgentOverview(s: DemoState, agentId: string) {
   const mainPrivilege = s.privileges.find((p) => p.agentId === a.id && p.level === a.level)
   const freshness = monitorFreshness(a.monitor.lastSeen, a.monitor.expectedIntervalMin, s.now)
   const rejected = m.rejected ?? (m.signedAsIs !== null && m.edited !== null ? Math.max(0, 100 - m.signedAsIs - m.edited) : null)
-  const pausedAt = a.lifecycle === 'paused' ? a.pausedAt : undefined
+  // Paused as a whole (with or without detail, e.g. a seeded pause) or one activity paused.
+  const pausedAt = a.lifecycle === 'paused' || (a.lifecycle === 'live' && a.pause?.scope === 'activity') ? a.pausedAt : undefined
+  const pauseScope = a.pause?.scope ?? 'agent'
+  const pausedActivity = a.pause?.scope === 'activity' ? s.activities.find((x) => x.id === a.pause!.activityId) : undefined
   const incident = s.incidents.find((i) => i.agentId === a.id && i.state !== 'closed')
   const pausedMinutes = pausedAt ? minutesBetween(pausedAt, s.now) : 0
   return {
@@ -238,26 +242,36 @@ export function selectAgentOverview(s: DemoState, agentId: string) {
     name: a.name,
     division: division?.name ?? '',
     divisionId: a.divisionId,
-    levelLine: pausedAt ? `Paused · since ${formatClock(pausedAt)}` : `${LEVEL_NAME[a.level]}${mainPrivilege?.grantedAt ? ` · since ${formatDate(mainPrivilege.grantedAt)}` : ''}`,
+    levelLine: pausedAt
+      ? pauseScope === 'activity'
+        ? `${LEVEL_NAME[a.level]} · one activity paused since ${formatClock(pausedAt)}`
+        : `Paused · since ${formatClock(pausedAt)}`
+      : `${LEVEL_NAME[a.level]}${mainPrivilege?.grantedAt ? ` · since ${formatDate(mainPrivilege.grantedAt)}` : ''}`,
     /** Retired for good (6f): the view says so in place of the controls. */
     retired: a.retirement ? { code: a.retirement.code, at: formatDate(a.retirement.at), by: personName(s, a.retirement.by), reason: a.retirement.reason } : null,
     /** The paused state (6d): who, when, what happened to the work, and how long it has been. */
-    paused:
-      pausedAt && a.pause
-        ? {
-            lead: `Paused by ${personName(s, a.pausedBy)} at ${formatClock(pausedAt)}.`,
-            text: `${a.pause.routed} drafts went to pharmacists. ${
-              a.divisionId === 'medications' ? 'New admissions on 7 West and 8 East are reconciled' : 'New work is handled'
-            } by hand until both of you approve a resume.`,
-            whilePaused: {
-              routed: `${a.pause.routed} at ${formatClock(pausedAt)}`,
+    paused: pausedAt
+      ? {
+          scope: pauseScope,
+          lead:
+            pauseScope === 'activity'
+              ? `${personName(s, a.pausedBy)} paused one activity at ${formatClock(pausedAt)}.`
+              : `Paused by ${personName(s, a.pausedBy)} at ${formatClock(pausedAt)}.`,
+          text:
+            pauseScope === 'activity'
+              ? `“${pausedActivity?.name}” stopped; the rest of ${a.name} keeps working. ${a.pause?.routed ?? 0} drafts went to pharmacists. It resumes when both of you approve.`
+              : `${a.pause ? `${a.pause.routed} drafts went to pharmacists. ` : ''}${
+                  a.divisionId === 'medications' ? 'New admissions on 7 West and 8 East are reconciled' : 'New work is handled'
+                } by hand until both of you approve a resume.`,
+          whilePaused: {
+              routed: a.pause ? `${a.pause.routed} at ${formatClock(pausedAt)}` : '—',
               byHand: `${Math.round((queueOf(a).perHour * pausedMinutes) / 60)} since`,
               incident: incident ? `${incident.code} · ${personName(s, incident.commanderId)}` : null,
               incidentId: incident?.id ?? null,
               pausedFor: formatAgo(pausedAt, s.now).replace(/ ago$/, ''),
             },
-          }
-        : null,
+        }
+      : null,
     idLine: `${a.version}${a.sop ? ` · SOP ${a.sop}` : ''} · ${a.code}`,
     judgment: a.judgment,
     lifecycle: a.lifecycle,

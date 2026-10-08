@@ -9,6 +9,8 @@ import { ACTIVITY_COLUMNS, RECENT_COLUMNS } from './columns'
 
 /** The agent view's Overview tab (4c); while paused, the 6d layout with the resume panel. */
 export function Overview({ view, resume = null }: { view: AgentOverview; resume?: ReactNode }) {
+  // Paused as a whole (6d) hides the working sections; one paused activity keeps them.
+  const stopped = Boolean(view.paused && view.paused.scope !== 'activity')
   return (
     <div className={styles.split}>
       <div className={styles.main}>
@@ -19,7 +21,7 @@ export function Overview({ view, resume = null }: { view: AgentOverview; resume?
         ) : null}
         {view.paused ? <Notice lead={view.paused.lead}>{view.paused.text}</Notice> : null}
         {view.paused ? resume : null}
-        {!view.paused && !view.retired && view.banner ? (
+        {!stopped && !view.retired && view.banner ? (
           <Notice
             mark={noticeMark(view.banner.status)}
             lead={view.banner.headline}
@@ -47,7 +49,7 @@ export function Overview({ view, resume = null }: { view: AgentOverview; resume?
             {view.banner.cause}
           </Notice>
         ) : null}
-        {view.paused ? null : <StatStrip stats={view.stats} />}
+        {stopped || view.retired ? null : <StatStrip stats={view.stats} />}
         <section className={styles.section}>
           <h2 className={styles.label}>Activities</h2>
           <Table
@@ -57,7 +59,7 @@ export function Overview({ view, resume = null }: { view: AgentOverview; resume?
             getRowId={(a) => a.id}
           />
         </section>
-        {view.paused ? null : (
+        {stopped ? null : (
           <section className={styles.section}>
             <div className={styles.sectionHead}>
               <h2 className={styles.label}>Recent actions</h2>
@@ -107,7 +109,7 @@ export function Overview({ view, resume = null }: { view: AgentOverview; resume?
             <div className={styles.cardSpacer} />
           </Card>
         ) : null}
-        {view.paused ? null : (
+        {stopped ? null : (
           <>
             <Card>
               <div className={styles.cardHead}>

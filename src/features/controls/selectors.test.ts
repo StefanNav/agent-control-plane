@@ -76,3 +76,15 @@ describe('resume panel (6d, 6e)', async () => {
     expect(selectResumePanel(createSeed(), 'marcus', 'med-rec')).toBeNull()
   })
 })
+
+test('the resume panel serves activity pauses and seeded pauses', async () => {
+  const { createDemoStore } = await import('../../store')
+  const { createMemoryStorage } = await import('../../store/storage')
+  const { selectResumePanel } = await import('./selectors')
+  const store = createDemoStore(createMemoryStorage())
+  store.getState().pauseAgent('med-rec', { scope: 'activity' })
+  const p = selectResumePanel(store.getState(), 'marcus', 'med-rec')!
+  expect(p.mode).toBe('request')
+  expect(p.returnsTo).toEqual([{ activity: 'Reconcile home medications at admission', level: 'Draft', status: 'normal' }])
+  expect(selectResumePanel(s, 'marcus', 'controlled-drug')).toMatchObject({ mode: 'request' })
+})

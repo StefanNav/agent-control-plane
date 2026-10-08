@@ -133,3 +133,20 @@ test('a disabled agent withdraws its numbers too', async () => {
   store.getState().disableAgent('renal-dosing', 'Vendor review.')
   expect(selectAgentRows(store.getState(), 'medications').find((r) => r.id === 'renal-dosing')).toMatchObject({ day: '—', signedAsIs: '—', edited: '—', blocked: '—' })
 })
+
+test('an activity pause shows on the agent view and the division row', async () => {
+  const { createDemoStore } = await import('../../store')
+  const { createMemoryStorage } = await import('../../store/storage')
+  const store = createDemoStore(createMemoryStorage())
+  store.getState().pauseAgent('med-rec', { scope: 'activity' })
+  const v = selectAgentOverview(store.getState(), 'med-rec')!
+  expect(v.levelLine).toBe('Draft · one activity paused since 09:52')
+  expect(v.paused).toMatchObject({ scope: 'activity', lead: 'Marcus paused one activity at 09:52.' })
+  expect(v.paused!.text).toMatch(/^“Reconcile home medications at admission” stopped; the rest of Med Rec Agent keeps working\./)
+  expect(selectAgentRows(store.getState(), 'medications').find((r) => r.id === 'med-rec')!.level).toBe('Draft · 1 paused')
+})
+
+test('a seeded pause without detail still shows as paused', () => {
+  const v = selectAgentOverview(s, 'controlled-drug')!
+  expect(v.paused).toMatchObject({ scope: 'agent', lead: 'Paused by Marcus at 16:10.', whilePaused: { routed: '—' } })
+})

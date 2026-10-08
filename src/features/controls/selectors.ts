@@ -125,7 +125,8 @@ export interface ResumePanelView {
 /** The resume panel on a paused agent (6d, 6e). Null when the agent isn't paused. */
 export function selectResumePanel(s: DemoState, personaId: PersonaId, agentId: string): ResumePanelView | null {
   const agent = s.agents.find((a) => a.id === agentId)
-  if (!agent || agent.lifecycle !== 'paused' || !agent.pausedAt) return null
+  const activityPause = agent?.lifecycle === 'live' && agent.pause?.scope === 'activity'
+  if (!agent || (agent.lifecycle !== 'paused' && !activityPause) || !agent.pausedAt) return null
   const request = s.resumeRequests.find((r) => r.agentId === agentId)
   const people = [
     { id: agent.ownerId, role: 'agent owner' },
@@ -174,7 +175,7 @@ export function selectResumePanel(s: DemoState, personaId: PersonaId, agentId: s
     stamp: request ? (mode === 'approve' ? `Requested ${formatClock(request.requestedAt)} · paused ${formatClock(agent.pausedAt)}` : `Requested ${formatClock(request.requestedAt)}`) : `Paused ${formatClock(agent.pausedAt)}`,
     needs,
     returnsTo: s.activities
-      .filter((a) => a.agentId === agentId)
+      .filter((a) => a.agentId === agentId && (!activityPause || a.paused))
       .map((a) => ({ activity: a.name, level: LEVEL[a.level], status: a.level === 'shadow' ? ('shadow' as const) : ('normal' as const) })),
     reasonLabel: mode === 'approve' ? `${requester}’s reason` : request ? `Reason · ${requester}` : 'Reason',
     quote: request ? `“${request.reason}”` : null,
