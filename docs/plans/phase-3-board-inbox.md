@@ -76,17 +76,17 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
 - **Divisions:** Revenue cycle's `page` (08:05, ack 08:06, Tom), `incidentId: 'inc-0029'`, `note` "9 drafts went to the auth team", and `resumeNeeds` Tom and Nina. Every division gets a `trend` from its row in 4a.
 - **Events:** the 5c digest's two "Changed yesterday" items, and 41 log events. Seed 6 representative rows (deploys, config reads, routine policy passes) and store the total as data.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - Medications has exactly four judgments needing a human (review, warn, warn, stale).
   - `exceptions.filter(e => e.ownerId === 'marcus' && open)` has length 4, with types `['Monitor stale', 'Review: 3 drafts', 'Edit rate rising', 'Question']`.
   - EXC-5512's detail has a 14-point trend and its breakdown sums to 32.
   - Med Rec activities are `[draft, shadow]`, and Discharge Meds has 2 activities.
   - ACT-88213 still has 8 steps.
   - The invariants from Phase 2 still pass, and `SEED_VERSION === 3`.
-- [ ] **Step 2: Run** `pnpm test src/data`. Expected: FAIL.
-- [ ] **Step 3: Implement.** Update the scenarios that referenced removed exception ids, and log the invented items in the BUILD_PLAN decision log.
-- [ ] **Step 4: Run** `pnpm check`. Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(data): board and inbox seed from E4 and E5"`.
+- [x] **Step 2: Run** `pnpm test src/data`. Expected: FAIL.
+- [x] **Step 3: Implement.** Update the scenarios that referenced removed exception ids, and log the invented items in the BUILD_PLAN decision log.
+- [x] **Step 4: Run** `pnpm check`. Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(data): board and inbox seed from E4 and E5"`.
 
 ### Task 3.2: Board and inbox selectors
 

@@ -136,3 +136,62 @@ test('agent owners, sponsors and tech owners hold those roles in the agent’s d
     expect(holds(a.techOwnerId, 'techOwner', a.divisionId), `${a.id} tech owner`).toBe(true)
   }
 })
+
+describe('E4 and E5 refinements', () => {
+  const open = (e: (typeof seed.exceptions)[number]) => e.state !== 'resolved' && e.state !== 'dismissed'
+
+  test('seed version 3', () => {
+    expect(SEED_VERSION).toBe(3)
+  })
+
+  test('Medications has exactly four agents needing a human', () => {
+    const statuses = seed.agents.filter((a) => a.divisionId === 'medications').map((a) => a.judgment.status)
+    expect(statuses.filter((st) => ['crit', 'warn', 'review', 'stale'].includes(st)).sort()).toEqual(['review', 'stale', 'warn', 'warn'])
+  })
+
+  test('Marcus owns the four items of 5a and is copied on two', () => {
+    const mine = seed.exceptions.filter((e) => e.ownerId === 'marcus' && open(e))
+    expect(mine.map((e) => e.type).sort()).toEqual(['Edit rate rising', 'Monitor stale', 'Question', 'Review: 3 drafts'])
+    expect(seed.exceptions.filter((e) => e.copied.includes('marcus') && e.ownerId !== 'marcus' && open(e))).toHaveLength(2)
+  })
+
+  test('the edit-rate detail carries the 14-day chart and the 32 edits', () => {
+    const detail = seed.exceptions.find((e) => e.code === 'EXC-5512')!.detail!
+    expect(detail.trend).toHaveLength(14)
+    expect(detail.trend!.at(-1)).toBe(19.2)
+    expect(detail.target).toBe(10)
+    expect(detail.breakdown!.reduce((sum, b) => sum + b.count, 0)).toBe(32)
+  })
+
+  test('activities match 4c and 4b', () => {
+    expect(seed.activities.filter((a) => a.agentId === 'med-rec').map((a) => a.level)).toEqual(['draft', 'shadow'])
+    expect(seed.activities.filter((a) => a.agentId === 'discharge-meds').map((a) => a.name)).toEqual([
+      'Draft discharge med list',
+      'Flag discharge interactions',
+    ])
+  })
+
+  test('Med Rec has its five recent actions; ACT-88213 keeps its trace', () => {
+    expect(seed.actions.filter((a) => a.agentId === 'med-rec').map((a) => a.code)).toEqual([
+      'ACT-88240',
+      'ACT-88213',
+      'ACT-88207',
+      'ACT-88199',
+      'ACT-88188',
+    ])
+    expect(seed.actions.find((a) => a.code === 'ACT-88213')!.steps).toHaveLength(8)
+  })
+
+  test('the log has 41 events and two changes from yesterday', () => {
+    expect(seed.logEvents).toHaveLength(41)
+    expect(seed.changeEvents).toHaveLength(2)
+  })
+
+  test('Revenue cycle carries its page, incident and resume rule', () => {
+    expect(seed.divisions.find((d) => d.id === 'revenue-cycle')).toMatchObject({
+      incidentId: 'inc-0029',
+      resumeNeeds: ['Tom', 'Nina'],
+      page: { at: '2026-12-08T08:05:00', ackAt: '2026-12-08T08:06:00', who: 'tom' },
+    })
+  })
+})

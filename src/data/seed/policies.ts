@@ -14,6 +14,7 @@ export const hardStops: HardStop[] = [
     agentId: 'med-rec',
     blocks30d: 7,
     actions30d: 8912,
+    firedToday: 3,
   },
   {
     id: 'hs-07',
@@ -27,6 +28,7 @@ export const hardStops: HardStop[] = [
     agentId: 'med-rec',
     blocks30d: 2,
     actions30d: 8912,
+    firedToday: 0,
   },
   {
     id: 'hs-11',
@@ -40,6 +42,7 @@ export const hardStops: HardStop[] = [
     agentId: 'med-rec',
     blocks30d: 0,
     actions30d: 8912,
+    firedToday: 0,
   },
 ]
 

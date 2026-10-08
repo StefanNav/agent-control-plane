@@ -27,13 +27,14 @@ test('runAction applies the change and logs who, what and when', () => {
     ctx: { divisionId: 'medications' },
     audit: { action: 'Claimed', target: 'EXC-5530' },
     mutate: (draft) => {
-      draft.exceptions[0]!.state = 'claimed'
+      draft.exceptions.find((e) => e.id === 'exc-5530')!.state = 'claimed'
     },
   })
+  const byId = (s: typeof state) => s.exceptions.find((e) => e.id === 'exc-5530')!
   expect(result).toEqual({ ok: true })
   expect(next).not.toBe(state)
-  expect(next.exceptions[0]!.state).toBe('claimed')
-  expect(state.exceptions[0]!.state).toBe('new')
+  expect(byId(next).state).toBe('claimed')
+  expect(byId(state).state).toBe('new')
   expect(next.audit).toEqual([{ id: 'aud-1', at: DEMO_NOW, who: 'marcus', action: 'Claimed', target: 'EXC-5530' }])
 })
 
@@ -131,10 +132,10 @@ describe('hydration rejects saved state that is not a full current snapshot (Rev
 describe('claiming an exception', () => {
   test('cannot claim what is already claimed or resolved; nothing changes or is logged', () => {
     const store = fresh()
-    const before = store.getState().exceptions.find((e) => e.id === 'exc-5527')!
-    expect(store.getState().claimException('exc-5527')).toEqual({ ok: false, reason: 'Already claimed' })
+    const before = store.getState().exceptions.find((e) => e.id === 'exc-5501')!
+    expect(store.getState().claimException('exc-5501')).toEqual({ ok: false, reason: 'Already claimed' })
     expect(store.getState().claimException('exc-5521')).toEqual({ ok: false, reason: 'Already resolved' })
-    expect(store.getState().exceptions.find((e) => e.id === 'exc-5527')!.claimedAt).toBe(before.claimedAt)
+    expect(store.getState().exceptions.find((e) => e.id === 'exc-5501')!.claimedAt).toBe(before.claimedAt)
     expect(store.getState().audit).toEqual([])
   })
   test('claiming makes you the owner', () => {

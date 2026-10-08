@@ -57,6 +57,10 @@ export interface AgentMetrics {
   edited: number | null
   blocked: number | null
   trend: Trend
+  /** Rejected share; when absent, derived as 100 − signed − edited. */
+  rejected?: number
+  /** Actions in the last 7 days; when absent, derived from `day`. */
+  weekActions?: number
 }
 
 /** When monitoring last heard from an agent and how often it should. */
@@ -73,6 +77,15 @@ export interface Division {
   sponsorId: string
   lapsePolicy: 'nothing' | 'shadow' | 'pause'
   monitor: { state: 'live' | 'delayed' | 'stale'; lastAt: string }
+  /** Seven-day acceptance trend for the hospital board. */
+  trend: Trend
+  /** Last page sent for this division (4a). */
+  page?: { at: string; ackAt?: string; who: string }
+  incidentId?: string
+  /** One-line consequence shown on the board, e.g. "9 drafts went to the auth team". */
+  note?: string
+  /** Who must co-sign a resume, e.g. ['Tom', 'Nina']. */
+  resumeNeeds?: string[]
 }
 
 /** An AI agent registered in AIMS. */
@@ -98,6 +111,12 @@ export interface Agent {
   monitor: MonitorState
   pausedBy?: string
   pausedAt?: string
+  /** Gateway node the agent's traffic passes through. */
+  gateway?: string
+  /** Today so far, for the agent view (4c). */
+  today?: { drafts: number; expected: number }
+  /** When the board last judged the agent. */
+  judgedAt?: string
 }
 
 /** One distinct job an agent does; autonomy is granted per activity. */
@@ -108,6 +127,8 @@ export interface Activity {
   level: Level
   reviewLevel: 'tightened' | 'normal' | 'reduced'
   branches: { id: string; name: string; favourable: boolean }[]
+  /** Today's volume line, e.g. "96 drafts" or "41 in shadow". */
+  today?: string
 }
 
 /** Lifecycle of a privilege record. */
@@ -127,7 +148,8 @@ export interface Privilege {
   evidence: string
   grantedBy?: string
   grantedAt?: string
-  reviewDate: string
+  /** Absent for Shadow privileges, which have no review date. */
+  reviewDate?: string
   state: PrivilegeState
   stepDownTriggers: string[]
   movedBy?: string
@@ -147,6 +169,7 @@ export interface HardStop {
   agentId: string
   blocks30d: number
   actions30d: number
+  firedToday: number
 }
 
 /** Advisory text in the agent's prompt; never safety-critical. */
@@ -176,22 +199,48 @@ export interface SystemGrant {
 /** Lifecycle of an exception in the inbox. */
 export type ExceptionState = 'new' | 'claimed' | 'overdue' | 'resolved' | 'dismissed'
 
+/** The richer content behind an exception in the inbox detail (5a, 5d). */
+export interface ExceptionDetail {
+  headline: string
+  trendLabel?: string
+  trendStart?: string
+  /** Daily values, oldest first. */
+  trend?: number[]
+  target?: number
+  breakdownLabel?: string
+  breakdown?: { label: string; count: number }[]
+  cause?: string
+  timeline?: { at: string; title: string; sub?: string }[]
+  silence?: string
+}
+
 /** Anything that needs a person: an action, an owner and a deadline. */
 export interface AgentException {
   id: string
   code: string
   status: Status
+  /** PRD exception types. */
+  kind: 'review' | 'question' | 'notify' | 'incident'
   type: string
   reason: string
+  /** Board phrasing, e.g. "3 drafts held by HS-04 v2". */
+  short?: string
   agentId: string
-  ruleTag: string
+  ruleTag?: string
+  /** Who raised a question, if a person did. */
+  from?: string
   raisedAt: string
   action: string
   actionSub: string
   ownerId: string
+  /** People kept informed; it shows under their "Waiting on others". */
+  copied: string[]
   claimedAt?: string
   deadline: string
   state: ExceptionState
+  snoozedUntil?: string
+  incidentId?: string
+  detail?: ExceptionDetail
   route: 'page' | 'inbox' | 'digest' | 'log'
   outcome?: string
   outcomeSub?: string
@@ -217,12 +266,35 @@ export interface TraceStep {
 export interface AgentAction {
   id: string
   code: string
+  /** When it happened. */
+  at: string
   title: string
   agentId: string
   agentVersion: string
   sop: string
   actingFor: string
+  /** Rule tag of the policy that blocked part of it, if any. */
+  blockedBy?: string
+  /** "Signed as is", "Edited 1 line, signed", "Waiting for review" */
+  reviewerOutcome: string
   steps: TraceStep[]
+}
+
+/** An informational event: kept in the log, never sent to anyone. */
+export interface LogEvent {
+  id: string
+  at: string
+  agentId?: string
+  text: string
+  sub?: string
+}
+
+/** A change from yesterday, summarised in the daily digest. */
+export interface ChangeEvent {
+  id: string
+  at: string
+  text: string
+  sub: string
 }
 
 /** A request to resume a paused agent; needs owner and sponsor. */
@@ -261,5 +333,7 @@ export interface DemoState {
   exceptions: AgentException[]
   actions: AgentAction[]
   resumeRequests: ResumeRequest[]
+  logEvents: LogEvent[]
+  changeEvents: ChangeEvent[]
   audit: AuditEntry[]
 }
