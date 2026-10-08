@@ -296,3 +296,46 @@ describe('pauseAgent (6b)', () => {
     expect(store.getState().audit.filter((a) => a.action === 'Paused')).toHaveLength(1)
   })
 })
+
+describe('fix one thing (6c)', () => {
+  const asSam = () => {
+    const store = fresh()
+    store.getState().setPersona('sam')
+    return store
+  }
+
+  test('Sam returns admission med rec to Shadow: PRV-0142 v3 closes, v4 is drafted for Priya', () => {
+    const store = asSam()
+    expect(store.getState().returnToShadow('med-rec-admission', 'Dose proposals on 3 admissions today.')).toEqual({ ok: true })
+    const st = store.getState()
+    expect(st.activities.find((a) => a.id === 'med-rec-admission')!.level).toBe('shadow')
+    expect(st.agents.find((a) => a.id === 'med-rec')!.level).toBe('shadow')
+    const versions = st.privileges.filter((p) => p.code === 'PRV-0142').map((p) => [p.version, p.state, p.level, p.proposedLevel])
+    expect(versions).toEqual([
+      [3, 'closed', 'draft', undefined],
+      [4, 'awaiting', 'shadow', 'draft'],
+    ])
+    expect(st.audit.at(-1)).toMatchObject({ who: 'sam', action: 'Returned to Shadow', target: 'AGT-0123', reason: 'Reconcile home medications at admission · Dose proposals on 3 admissions today.' })
+  })
+
+  test('a reason is required; Shadow can\'t go to Shadow; Jordan is refused', () => {
+    const store = asSam()
+    const before = dataOf(store.getState())
+    expect(store.getState().returnToShadow('med-rec-admission', '  ')).toEqual({ ok: false, reason: 'A reason is required' })
+    expect(store.getState().returnToShadow('med-rec-allergy', 'x')).toEqual({ ok: false, reason: 'Already in Shadow' })
+    expect(dataOf(store.getState())).toEqual(before)
+    const ro = fresh()
+    ro.getState().setPersona('jordan')
+    expect(ro.getState().returnToShadow('med-rec-admission', 'x')).toMatchObject({ ok: false })
+  })
+
+  test('revoking a tool removes one grant; an ungranted one is refused', () => {
+    const store = asSam()
+    expect(store.getState().revokeTool('med-rec', { system: 'Epic', verb: 'draft' }, 'Stop drafting while we look.')).toEqual({ ok: true })
+    expect(store.getState().grants.find((g) => g.agentId === 'med-rec' && g.system === 'Epic')!.cells.draft).toBe('none')
+    expect(store.getState().audit.at(-1)).toMatchObject({ action: 'Revoked tool', target: 'AGT-0123', reason: 'Epic · draft · Stop drafting while we look.' })
+    const before = dataOf(store.getState())
+    expect(store.getState().revokeTool('med-rec', { system: 'Epic', verb: 'write' }, 'x')).toEqual({ ok: false, reason: 'Not granted' })
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+})

@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
-import { PERSONA_IDS, type DemoState, type PersonaId } from '../data/types'
+import { PERSONA_IDS, type DemoState, type PersonaId, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause } from './mutations'
 import { runAction, type ActionResult } from './runAction'
@@ -45,6 +45,10 @@ export interface DemoActions {
   answerQuestion: (id: string, answer: 'yes' | 'no') => ActionResult
   /** Stop an activity, an agent, or every agent in its division at the gateway (6b). */
   pauseAgent: (agentId: string, input: PauseInput) => ActionResult
+  /** One activity back to Shadow; its privilege closes and a new version waits for the sponsor (6c). */
+  returnToShadow: (activityId: string, reason: string) => ActionResult
+  /** Remove one tool grant, a system × verb cell (6c). */
+  revokeTool: (agentId: string, grant: { system: string; verb: Verb }, reason: string) => ActionResult
 }
 
 export interface PauseInput {
@@ -172,6 +176,60 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               },
               mutate: (draft) => {
                 applyPause(draft, targets, { scope, ...(scope === 'activity' && activity ? { activityId: activity } : {}), ...(why ? { reason: why } : {}) }, draft.personaId)
+              },
+            })
+          },
+          returnToShadow: (activityId, reason) => {
+            const s = get()
+            const activity = s.activities.find((a) => a.id === activityId)
+            if (!activity) return { ok: false, reason: 'Not found' }
+            const why = reason.trim()
+            if (!why) return { ok: false, reason: 'A reason is required' }
+            if (activity.level === 'shadow') return { ok: false, reason: 'Already in Shadow' }
+            const agent = s.agents.find((a) => a.id === activity.agentId)!
+            return act({
+              action: 'returnToShadow',
+              ctx: { agentId: agent.id },
+              audit: { action: 'Returned to Shadow', target: agent.code, reason: `${activity.name} · ${why}` },
+              mutate: (draft) => {
+                const target = draft.activities.find((a) => a.id === activityId)!
+                const was = target.level
+                target.level = 'shadow'
+                const owner = draft.agents.find((a) => a.id === agent.id)!
+                const main = draft.activities.filter((a) => a.agentId === agent.id).find((a) => a.level !== 'shadow')
+                owner.level = main?.level ?? 'shadow'
+                const current = draft.privileges.find((p) => p.activityId === activityId && p.state !== 'closed')
+                if (!current) return
+                current.state = 'closed'
+                draft.privileges.push({
+                  ...current,
+                  id: `${current.id}-v${current.version + 1}`,
+                  version: current.version + 1,
+                  level: 'shadow',
+                  proposedLevel: was,
+                  state: 'awaiting',
+                  grantedBy: undefined,
+                  grantedAt: undefined,
+                  movedBy: draft.personaId,
+                  trigger: why,
+                })
+              },
+            })
+          },
+          revokeTool: (agentId, { system, verb }, reason) => {
+            const s = get()
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!agent) return { ok: false, reason: 'Not found' }
+            const why = reason.trim()
+            if (!why) return { ok: false, reason: 'A reason is required' }
+            const cell = s.grants.find((g) => g.agentId === agentId && g.system === system)?.cells[verb]
+            if (cell !== 'granted' && cell !== 'changed') return { ok: false, reason: 'Not granted' }
+            return act({
+              action: 'revokeTool',
+              ctx: { agentId },
+              audit: { action: 'Revoked tool', target: agent.code, reason: `${system} · ${verb} · ${why}` },
+              mutate: (draft) => {
+                draft.grants.find((g) => g.agentId === agentId && g.system === system)!.cells[verb] = 'none'
               },
             })
           },

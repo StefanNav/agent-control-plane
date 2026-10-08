@@ -280,7 +280,7 @@ These are the failure modes the spec implies that no screen test naturally cover
   - "Logs Sam · technical owner"
   - Revoke mode is composed: radio cards for each granted system × verb, then the same reason and log line.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **Store:**
     - Sam returns `med-rec-admission` to Shadow. PRV-0142 v3 is closed, v4 is awaiting, and the audit entry is written.
     - An empty reason is refused.
@@ -289,10 +289,10 @@ These are the failure modes the spec implies that no screen test naturally cover
     - Jordan is refused.
   - **Permissions:** Sam can `returnToShadow` med-rec, but not prior-auth.
   - **e2e:** as Sam, open the menu, choose Return to Shadow, enter a reason and confirm. The Activities tab shows Shadow for "Reconcile home medications", and History shows "Returned to Shadow".
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 6c.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(controls): return to Shadow and revoke a tool"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 6c.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(controls): return to Shadow and revoke a tool"`.
 
 ### Task 4.5: Two-person resume (6d, 6e)
 

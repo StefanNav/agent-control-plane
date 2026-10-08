@@ -1,5 +1,5 @@
 import type { RadioCardOption } from '../../design-system'
-import type { DemoState, PersonaId } from '../../data/types'
+import type { DemoState, Level, PersonaId, Verb } from '../../data/types'
 import { formatClock } from '../../lib/clock'
 import { queueOf } from '../../store/mutations'
 import { onBoard, personName } from '../board/selectors'
@@ -52,5 +52,58 @@ export function selectPausePreview(s: DemoState, personaId: PersonaId, agentId: 
     ],
     resumeRule: { lead: resumeNeeds(s, personaId, agent.ownerId, agent.sponsorId), text: 'both with a reason. Each activity returns to the level it had.' },
     audit: `Logs ${personName(s, personaId)} · ${formatClock(s.now)}`,
+  }
+}
+
+/** "technical owner": the viewer's relation to this agent, for audit stamps like "Logs Sam · technical owner". */
+export function roleOn(s: DemoState, personaId: PersonaId, agentId: string): string {
+  const agent = s.agents.find((a) => a.id === agentId)
+  if (agent?.ownerId === personaId) return 'agent owner'
+  if (agent?.sponsorId === personaId) return 'clinical sponsor'
+  if (agent?.techOwnerId === personaId) return 'technical owner'
+  const role = s.roles.find((r) => r.personId === personaId)?.role
+  return role === 'programLead' ? 'program lead' : (s.people.find((p) => p.id === personaId)?.title.toLowerCase() ?? '')
+}
+
+const LEVEL: Record<Level, string> = { shadow: 'Shadow', draft: 'Draft', supervised: 'Supervised', autonomous: 'Autonomous' }
+
+/** Fix one thing (6c): return one activity to Shadow, or revoke one tool grant. */
+export function selectFixOneThing(s: DemoState, personaId: PersonaId, agentId: string) {
+  const agent = s.agents.find((a) => a.id === agentId)!
+  const sponsor = personName(s, agent.sponsorId)
+  const current = (activityId: string) => s.privileges.find((p) => p.activityId === activityId && p.state !== 'closed')
+  const activities: RadioCardOption<string>[] = s.activities
+    .filter((a) => a.agentId === agentId)
+    .map((a) => {
+      const prv = current(a.id)
+      return a.level === 'shadow'
+        ? { value: a.id, title: a.name, description: 'Already in Shadow', disabled: true }
+        : { value: a.id, title: a.name, description: `${LEVEL[a.level]}${prv ? ` · signed by ${personName(s, prv.grantedBy)} · ${prv.code} v${prv.version}` : ''}` }
+    })
+  const grants = s.grants
+    .filter((g) => g.agentId === agentId)
+    .flatMap((g) =>
+      (Object.entries(g.cells) as [Verb, string][])
+        .filter(([, cell]) => cell === 'granted' || cell === 'changed')
+        .map(([verb]) => ({ value: `${g.system}|${verb}`, system: g.system, verb, title: `${g.system} · ${verb}`, description: g.detail })),
+    )
+  return {
+    description: `Change one tool or one activity. The rest of ${agent.name} keeps working.`,
+    audit: `Logs ${personName(s, personaId)} · ${roleOn(s, personaId, agentId)}`,
+    activities,
+    shadowEffects: [
+      `Drafts stop reaching pharmacists; ${queueOf(agent).inProgress} in progress go to the worklists.`,
+      'The agent keeps running in shadow, so evidence keeps coming.',
+      'The scorecard restarts against the same targets.',
+    ],
+    shadowRule: (activityId: string) => {
+      const prv = current(activityId)
+      return {
+        lead: `Back to Draft needs ${sponsor}’s signature again.`,
+        text: prv ? `${prv.code} v${prv.version} closes; a new version is drafted for ${sponsor} to sign.` : `A new privilege is drafted for ${sponsor} to sign.`,
+      }
+    },
+    grants,
+    revokeEffects: (title: string) => [`${agent.name} loses ${title} at the gateway.`, 'Everything else keeps working.', 'Granting it again goes back through tool approval.'],
   }
 }

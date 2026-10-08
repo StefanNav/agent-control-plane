@@ -147,14 +147,14 @@ test('keyboard: Enter on a division row selects it, and on an exception row open
   await expect(page).toHaveURL(/\/operations\/agents\/prior-auth/)
 })
 
-test('Controls are never dead: pause opens its dialog; flows still to come say where they live', async ({ page }) => {
+test('Controls are never dead: menu items and the panel link open their dialogs', async ({ page }) => {
   await page.goto('/operations/agents/med-rec')
   await page.getByRole('button', { name: 'Controls' }).click()
   await page.getByRole('menuitem', { name: /Return an activity to Shadow…/ }).click()
-  const pending = page.getByRole('region', { name: 'Pending control' })
-  await expect(pending).toContainText('impact preview')
-  await pending.getByRole('button', { name: 'Close' }).click()
-  await expect(pending).toHaveCount(0)
+  const fix = page.getByRole('dialog', { name: 'Fix one thing' })
+  await expect(fix).toBeVisible()
+  await fix.getByRole('button', { name: 'Cancel' }).click()
+  await expect(fix).toHaveCount(0)
 
   await page.goto('/operations/divisions/medications')
   await page.getByRole('complementary', { name: 'Selected agent' }).getByRole('link', { name: 'Pause agent' }).click()

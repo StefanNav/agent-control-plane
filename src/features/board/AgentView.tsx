@@ -6,6 +6,7 @@ import { NotFound } from '../../layout/NotFound'
 import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { useDemo } from '../../store'
 import { controlMenu, parseControl, type ControlId } from '../controls/controlMenu'
+import { FixOneThing } from '../controls/FixOneThing'
 import { PauseFlow } from '../controls/PauseFlow'
 import type { PauseScope } from '../controls/selectors'
 import {
@@ -139,7 +140,9 @@ export function AgentView() {
           initialScope={PAUSE_SCOPE[control]}
           onClose={() => setControl(null)}
         />
-      ) : control && !PAUSE_SCOPE[control] ? (
+      ) : (control === 'shadow' || control === 'revoke') && !stopped ? (
+        <FixOneThing agentId={agentId} initialMode={control} onClose={() => setControl(null)} />
+      ) : control && !PAUSE_SCOPE[control] && control !== 'shadow' && control !== 'revoke' ? (
         <section aria-label="Pending control" className={styles.pending}>
           <Notice
             lead={`${CONTROL_LEAD[control]} ${view.name}`}

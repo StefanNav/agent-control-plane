@@ -38,7 +38,8 @@ const MATRIX: Record<PermAction, Partial<Record<Role, Scope>>> = {
   signPrivilege: { sponsor: 'own' },
   approveGoLive: { committee: 'all' },
   pause: STOPPERS,
-  returnToShadow: STOPPERS,
+  // 6c and the "Enforce the limits" story: the technical owner may also return an activity to Shadow.
+  returnToShadow: { ...STOPPERS, techOwner: 'ownAgents' },
   revokeTool: BUILDERS,
   resume: { sponsor: 'own', owner: 'own' },
   disable: { programLead: 'all', sponsor: 'own' },
