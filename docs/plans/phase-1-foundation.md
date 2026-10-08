@@ -330,7 +330,7 @@ Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a
 
 Shell per route: `kiosk` for `/wall`; `prototype` for `/`, `/about`, `/about/components`, `/epic`; `app` for everything else.
 
-- [ ] **Step 1: Failing unit test** `src/app/routes.test.ts`
+- [x] **Step 1: Failing unit test** `src/app/routes.test.ts`
 
 ```ts
 const EXPECTED = [
@@ -362,15 +362,15 @@ test('redirect targets exist', () => {
 test('wall is kiosk; landing, about, epic are prototype; rest are app', () => { /* per spec */ })
 ```
 
-- [ ] **Step 2: Run; verify fail.**
-- [ ] **Step 3: Implement** `routes.ts`, `router.tsx` (group routes under three `AppShell` layout routes by `shell`; add redirect routes; `*` → `NotFound` in the `app` shell) and `Placeholder.tsx` (PageHeader with the route `title`; mono line `Frames 4a · 4d · 4f`; Notice "Built in Phase N. This placeholder lists the frames this route will show."). Wire `main.tsx`.
-- [ ] **Step 4: Run; verify pass.** `pnpm test src/app`
-- [ ] **Step 5: Playwright config and smoke test**
+- [x] **Step 2: Run; verify fail.**
+- [x] **Step 3: Implement** `routes.ts`, `router.tsx` (group routes under three `AppShell` layout routes by `shell`; add redirect routes; `*` → `NotFound` in the `app` shell) and `Placeholder.tsx` (PageHeader with the route `title`; mono line `Frames 4a · 4d · 4f`; Notice "Built in Phase N. This placeholder lists the frames this route will show."). Wire `main.tsx`.
+- [x] **Step 4: Run; verify pass.** `pnpm test src/app`
+- [x] **Step 5: Playwright config and smoke test**
   - `playwright.config.ts`: chromium only; viewport 1440×900; `webServer: { command: 'pnpm build && pnpm preview --port 4173 --strictPort', port: 4173, reuseExistingServer: !process.env.CI }`; `baseURL: 'http://localhost:4173'`.
   - `tests/e2e/routes.spec.ts`: for each `routeTable` entry, `page.goto(samplePath)` directly (no in-app navigation), collect `pageerror` and `console` errors, expect an `h1` to be visible and zero errors. Plus: `/no-such-page` shows "Page not found"; `/portfolio` ends at `/portfolio/privileges`.
   - `vercel.json`: `{ "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }`.
-- [ ] **Step 6: Run** `pnpm exec playwright install chromium && pnpm e2e` → all pass
-- [ ] **Step 7: Commit** `git commit -m "feat(app): route table, router, placeholders, route smoke test"`
+- [x] **Step 6: Run** `pnpm exec playwright install chromium && pnpm e2e` → all pass
+- [x] **Step 7: Commit** `git commit -m "feat(app): route table, router, placeholders, route smoke test"`
 
 ### Task 1.9: Primitives gallery (`/about/components`)
 

@@ -7,12 +7,14 @@ import './design-system/global.css'
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { RouterProvider } from 'react-router'
+import { router } from './app/router'
 import { installKeyboardFocusMode } from './design-system/focus'
 
 installKeyboardFocusMode()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <div>Agent Control Plane</div>
+    <RouterProvider router={router} />
   </StrictMode>,
 )
