@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { Button, Icon, LinkButton, Menu, Notice } from '../../design-system'
 import { StatusChip } from '../../components'
 import { addMinutes, formatClock, tomorrowAt } from '../../lib/clock'
+import type { DismissInput } from '../../store'
+import { DismissDialog } from './DismissDialog'
 import type { ExceptionDetailView } from './selectors'
 import { TrendChart } from './TrendChart'
 import styles from './inbox.module.css'
@@ -13,6 +16,10 @@ export interface ExceptionDetailProps {
   /** Null when the persona may act; otherwise why not. */
   locked: string | null
   onSnooze: (until: string) => void
+  /** Who a dismissal is logged as. */
+  actorName: string
+  /** True when the dismissal went through, so the dialog can close. */
+  onDismiss: (input: DismissInput) => boolean
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -22,7 +29,8 @@ const STATUS_COLOR: Record<string, string> = {
 }
 
 /** The selected exception (5a): what happened, the evidence, and what you can do about it. */
-export function ExceptionDetail({ detail, now, days, locked, onSnooze }: ExceptionDetailProps) {
+export function ExceptionDetail({ detail, now, days, locked, onSnooze, actorName, onDismiss }: ExceptionDetailProps) {
+  const [dismissing, setDismissing] = useState(false)
   const hour = addMinutes(now, 60)
   const morning = tomorrowAt(now, '07:00')
   const total = detail.breakdown.reduce((sum, row) => sum + row.count, 0)
@@ -108,12 +116,25 @@ export function ExceptionDetail({ detail, now, days, locked, onSnooze }: Excepti
               },
             ]}
           />
+          <Button variant="ghost" onClick={() => setDismissing(true)} disabled={Boolean(locked)} title={locked ?? undefined}>
+            Dismiss…
+          </Button>
         </span>
         <span className={styles.escalation}>
           {detail.escalated ? <Icon name="triangle" size={12} color="var(--cs-crit)" /> : null}
           {detail.escalationLine}
         </span>
       </div>
+      {dismissing ? (
+        <DismissDialog
+          detail={detail}
+          actorName={actorName}
+          onClose={() => setDismissing(false)}
+          onConfirm={(input) => {
+            if (onDismiss(input)) setDismissing(false)
+          }}
+        />
+      ) : null}
     </section>
   )
 }

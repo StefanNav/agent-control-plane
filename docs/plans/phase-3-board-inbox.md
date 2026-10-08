@@ -271,16 +271,16 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
 - foot note "Logged as Marcus · EXC-5512"
 - **Dismiss with reason**, blocked until the reason is filled
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - Store:
     - An empty reason is refused and nothing changes.
     - A valid dismissal sets the state and logs the reason.
     - Jordan is refused.
   - e2e: Dismiss… → the button is blocked; typing a reason enables it; confirming removes the item, the tab shows "Needs me · 3", and History on the agent view shows the dismissal.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(inbox): dismiss with a reason"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(inbox): dismiss with a reason"`.
 
 ### Task 3.9: Digest (5c), Log, Waiting on others
 

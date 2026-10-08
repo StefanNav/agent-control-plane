@@ -164,3 +164,45 @@ test('snoozeException refuses resolved items and unknown ids', () => {
   expect(store.getState().snoozeException('exc-5521', '2026-12-08T10:52:00')).toEqual({ ok: false, reason: 'Already resolved' })
   expect(store.getState().snoozeException('nope', '2026-12-08T10:52:00')).toEqual({ ok: false, reason: 'Not found' })
 })
+
+describe('dismissException', () => {
+  const input = { category: 'expected' as const, reason: 'Formulary update F-112 explains it.' }
+
+  test('an empty reason is refused and nothing changes', () => {
+    const store = fresh()
+    const before = dataOf(store.getState())
+    expect(store.getState().dismissException('exc-5512', { ...input, reason: '   ' })).toEqual({ ok: false, reason: 'A reason is required' })
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+
+  test('a valid dismissal closes the item and logs the reason', () => {
+    const store = fresh()
+    expect(store.getState().dismissException('exc-5512', input)).toEqual({ ok: true })
+    const exc = store.getState().exceptions.find((e) => e.id === 'exc-5512')!
+    expect(exc).toMatchObject({ state: 'dismissed', dismissReason: 'Formulary update F-112 explains it.', closedAt: DEMO_NOW })
+    expect(store.getState().audit.at(-1)).toMatchObject({
+      who: 'marcus',
+      action: 'Dismissed',
+      target: 'EXC-5512',
+      reason: 'Expected change · Formulary update F-112 explains it.',
+    })
+  })
+
+  test('tuning the rule is logged on the agent for the technical owner to confirm', () => {
+    const store = fresh()
+    store.getState().dismissException('exc-5512', { ...input, tune: 'Raise the MR-12 threshold for Renal Dosing Agent to 20 % until 11 Dec' })
+    expect(store.getState().logEvents.at(-1)).toMatchObject({
+      at: DEMO_NOW,
+      agentId: 'renal-dosing',
+      text: 'Raise the MR-12 threshold for Renal Dosing Agent to 20 % until 11 Dec',
+      sub: 'Requested by Marcus · Sam is asked to confirm',
+    })
+  })
+
+  test('read-only is refused', () => {
+    const store = fresh()
+    store.getState().setPersona('jordan')
+    expect(store.getState().dismissException('exc-5512', input)).toMatchObject({ ok: false })
+    expect(store.getState().exceptions.find((e) => e.id === 'exc-5512')!.state).toBe('new')
+  })
+})

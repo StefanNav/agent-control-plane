@@ -7,6 +7,7 @@ import { useDemo } from '../../store'
 import { can, lockReason } from '../../store/permissions'
 import { ExceptionDetail } from './ExceptionDetail'
 import { InboxItem } from './InboxItem'
+import { personName } from '../board/selectors'
 import { selectExceptionDetail, selectInbox, selectInboxHeader } from './selectors'
 import styles from './inbox.module.css'
 
@@ -20,6 +21,7 @@ export function InboxPage() {
   const navigate = useNavigate()
   const state = useDemo((s) => s)
   const snoozeException = useDemo((s) => s.snoozeException)
+  const dismissException = useDemo((s) => s.dismissException)
   const tab: Tab = TABS.find((t) => t === params.get('tab')) ?? 'needs'
   const inbox = useMemo(() => selectInbox(state, state.personaId), [state])
   const header = selectInboxHeader(state, state.personaId)
@@ -87,8 +89,13 @@ export function InboxPage() {
             days={days}
             locked={locked}
             onSnooze={(until) => {
-              const result = snoozeException(detail.id, until)
-              if (result.ok && selectedId === detail.id) navigate(`/operations/inbox${search}`)
+              if (snoozeException(detail.id, until).ok) navigate(`/operations/inbox${search}`)
+            }}
+            actorName={personName(state, state.personaId)}
+            onDismiss={(input) => {
+              const ok = dismissException(detail.id, input).ok
+              if (ok) navigate(`/operations/inbox${search}`)
+              return ok
             }}
           />
         ) : (

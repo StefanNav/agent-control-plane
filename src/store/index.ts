@@ -9,6 +9,23 @@ import { safeStorage } from './storage'
 
 export type { ActionResult } from './runAction'
 
+/** Why an exception was dismissed (5b); the category tunes the rule that raised it. */
+export type DismissCategory = 'expected' | 'duplicate' | 'noisy' | 'other'
+
+export const DISMISS_LABELS: Record<DismissCategory, string> = {
+  expected: 'Expected change',
+  duplicate: 'Duplicate',
+  noisy: 'Rule is too noisy',
+  other: 'Other',
+}
+
+export interface DismissInput {
+  category: DismissCategory
+  reason: string
+  /** A rule change to propose alongside, e.g. "Raise the MR-12 threshold … until 11 Dec". */
+  tune?: string
+}
+
 export interface DemoActions {
   setPersona: (id: PersonaId) => void
   /** Restore the seed: data, clock and persona. */
@@ -19,6 +36,8 @@ export interface DemoActions {
   claimException: (id: string) => ActionResult
   /** Hide an exception from the inbox until `until`; the deadline still stands. */
   snoozeException: (id: string, until: string) => ActionResult
+  /** Close an exception without acting on it. A reason is required; it is logged. */
+  dismissException: (id: string, input: DismissInput) => ActionResult
 }
 
 export type DemoStore = DemoState & DemoActions
@@ -92,6 +111,33 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Snoozed', target: exception.code, reason: `until ${formatClock(until)}` },
               mutate: (draft) => {
                 draft.exceptions.find((e) => e.id === id)!.snoozedUntil = until
+              },
+            })
+          },
+          dismissException: (id, { category, reason, tune }) => {
+            const { exception, error } = openException(id)
+            if (!exception) return error
+            const why = reason.trim()
+            if (!why) return { ok: false, reason: 'A reason is required' }
+            return act({
+              action: 'resolveException',
+              ctx: { agentId: exception.agentId },
+              audit: { action: 'Dismissed', target: exception.code, reason: `${DISMISS_LABELS[category]} · ${why}` },
+              mutate: (draft) => {
+                const target = draft.exceptions.find((e) => e.id === id)!
+                target.state = 'dismissed'
+                target.dismissReason = why
+                target.closedAt = draft.now
+                if (!tune) return
+                const agent = draft.agents.find((a) => a.id === exception.agentId)
+                const name = (personId?: string) => draft.people.find((p) => p.id === personId)?.name ?? 'the technical owner'
+                draft.logEvents.push({
+                  id: `log-tune-${draft.logEvents.length + 1}`,
+                  at: draft.now,
+                  agentId: exception.agentId,
+                  text: tune,
+                  sub: `Requested by ${name(draft.personaId)} · ${name(agent?.techOwnerId)} is asked to confirm`,
+                })
               },
             })
           },

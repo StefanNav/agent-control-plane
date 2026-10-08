@@ -122,6 +122,10 @@ export const exceptions: AgentException[] = [
         { label: 'Frequency changed', count: 6 },
         { label: 'Other', count: 3 },
       ],
+      tune: {
+        label: 'Raise the MR-12 threshold for Renal Dosing Agent to 20 % until 11 Dec',
+        help: 'Sam is asked to confirm. Reverts on 11 Dec, or when SOP v2.4 ships.',
+      },
       cause:
         'the renal dosing table changed on Monday (formulary update F-112). The agent still uses the old eGFR bands. Quality checks by an independent pharmacist agree with the edits.',
     },

@@ -213,6 +213,8 @@ export interface ExceptionDetail {
   cause?: string
   timeline?: { at: string; title: string; sub?: string }[]
   silence?: string
+  /** A rule change the dismiss dialog offers alongside (5b). */
+  tune?: { label: string; help: string }
 }
 
 /** Anything that needs a person: an action, an owner and a deadline. */

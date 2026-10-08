@@ -100,6 +100,9 @@ export function selectExceptionDetail(s: DemoState, id: string) {
     cause: e.detail?.cause,
     timeline: (e.detail?.timeline ?? []).map((t) => ({ at: formatClock(t.at), title: t.title, sub: t.sub })),
     silence: e.detail?.silence,
+    tune: e.detail?.tune,
+    /** The rule without its version, e.g. 'MR-12'. */
+    ruleName: e.ruleTag?.split(' ')[0],
     action: e.action,
     copied: e.copied.map((p) => personName(s, p)),
   }

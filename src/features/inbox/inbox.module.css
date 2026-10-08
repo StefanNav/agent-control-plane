@@ -304,3 +304,14 @@
   color: var(--cs-meta);
   text-align: right;
 }
+
+.dialogBody {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 5b's reason box: three lines (the primitive's default is 108). */
+.reasonBox {
+  min-height: 96px;
+}
