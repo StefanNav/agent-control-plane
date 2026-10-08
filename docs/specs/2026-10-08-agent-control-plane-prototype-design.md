@@ -320,7 +320,7 @@ Ana (frontline) has no console access; selecting her opens `/epic`. In the proto
 | 4f | Exceptions first | Dana | `/operations?view=exceptions` | 3 |
 | 5a | Inbox and detail | Marcus | `/operations/inbox/:exceptionId` | 3 |
 | 5b | Dismiss with a reason | Marcus | inbox, modal | 3 |
-| 5c | Daily digest at 07:00 (720 px) | Marcus | `/operations/inbox?tab=digest` | 3 |
+| 5c | Daily digest at 07:00 (720 px) | Marcus | `/operations/inbox?view=digest` | 3 |
 | 5d | Escalated to Priya | Priya | inbox, escalated item | 3 |
 | 6a | Control menu | Marcus | agent view, menu | 4 |
 | 6b | Impact preview (pause) | Marcus | agent view, modal | 4 |

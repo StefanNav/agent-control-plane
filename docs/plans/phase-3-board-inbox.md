@@ -331,10 +331,10 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
 
 ### Task 3.11: Journey test and checkpoint
 
-- [ ] **Step 1: e2e journey** (`tests/e2e/journeys.spec.ts`), "find the one problem among 20", as Marcus:
+- [x] **Step 1: e2e journey** (`tests/e2e/journeys.spec.ts`), "find the one problem among 20", as Marcus:
   - Board → Medications → the first row is Med Rec Agent (review) → its agent view shows the 3 held drafts.
   - Then the inbox → Edit rate rising → dismiss with a reason. The board's Medications count of agents needing a human stays at 4: dismissing closes the exception but doesn't change the agent's judgment. Assert that explicitly; it's the designed behaviour.
-- [ ] **Step 2: `pnpm check` and `pnpm e2e` green.**
+- [x] **Step 2: `pnpm check` and `pnpm e2e` green.**
 - [ ] **Step 3: Checkpoint** per the BUILD_PLAN protocol:
   - Push, then open the PR "Phase 3: Command Board and inbox" with `Closes #4`.
   - Run the fresh whole-branch review and apply its fixes test-first.
