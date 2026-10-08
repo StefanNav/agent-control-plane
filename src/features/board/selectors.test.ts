@@ -98,3 +98,8 @@ test('wall (4e): attention cards with three items each, the rest overflow; pause
   const paused = { ...s, audit: [...s.audit, { id: 'a-x', at: '2026-12-08T09:40:00', who: 'marcus' as const, action: 'Paused', target: 'Renal Dosing Agent' }] }
   expect(selectWall(paused).lastHour).toBe('3 hard stops fired · 2 pauses · 0 pages')
 })
+
+test('a paused agent withdraws its numbers, like a stale one (plan 3.4)', () => {
+  const rows = selectAgentRows(buildScenario('med-rec-paused'), 'medications')
+  expect(rows.find((r) => r.id === 'med-rec')).toMatchObject({ status: 'paused', day: '—', signedAsIs: '—', edited: '—', blocked: '—' })
+})
