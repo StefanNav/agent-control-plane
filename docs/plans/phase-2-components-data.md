@@ -202,7 +202,7 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
   - `readOnly` and `frontline` can never do anything mutating. `viewBoard` and `viewAudit` stay true for read-only.
 - `lockReason(action: PermAction): string`, e.g. `'Program lead only'` for `retire`/`disable`/`manageDivisions` and `'Read-only access'` otherwise. Used in locked menus.
 
-- [ ] **Step 1: Failing table-driven test.** One `test.each` row per cell of spec §7 for the six console personas, using `createSeed()` and `ctx = { divisionId: 'medications' }`. Plus:
+- [x] **Step 1: Failing table-driven test.** One `test.each` row per cell of spec §7 for the six console personas, using `createSeed()` and `ctx = { divisionId: 'medications' }`. Plus:
   - `can(s, 'marcus', 'pause', { divisionId: 'revenue-cycle' }) === false`
   - `can(s, 'sam', 'revokeTool', { agentId: 'med-rec' }) === true`
   - `can(s, 'sam', 'pause', { agentId: 'med-rec' }) === false`
@@ -211,10 +211,10 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
   - `can(s, 'jordan', 'viewAudit') === true`
   - `can(s, 'jordan', 'resolveException', ctx) === false`
   - `can(s, 'ana', 'viewBoard') === false`
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement.** Encode the matrix as data: `Record<PermAction, Partial<Record<Role, 'all' | 'own' | 'ownAgents' | false>>>`.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(store): permission matrix and can()"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement.** Encode the matrix as data: `Record<PermAction, Partial<Record<Role, 'all' | 'own' | 'ownAgents' | false>>>`.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(store): permission matrix and can()"`.
 
 ### Task 2.5: Store
 
