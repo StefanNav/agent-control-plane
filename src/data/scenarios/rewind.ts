@@ -3,6 +3,27 @@ import type { DemoState } from '../types'
 
 const later = (at: string) => (t: string | undefined) => Boolean(t && t > at)
 
+/** Remove agents and everything that belongs to them. */
+export function dropAgents(s: DemoState, ids: Set<string>): DemoState {
+  const keep = <T extends { agentId?: string }>(items: T[]) => items.filter((i) => !i.agentId || !ids.has(i.agentId))
+  const activities = new Set(s.activities.filter((a) => ids.has(a.agentId)).map((a) => a.id))
+  s.agents = s.agents.filter((a) => !ids.has(a.id))
+  s.activities = keep(s.activities)
+  s.privileges = keep(s.privileges)
+  s.grants = keep(s.grants)
+  s.hardStops = keep(s.hardStops)
+  s.instructions = keep(s.instructions)
+  s.onboardings = keep(s.onboardings)
+  s.scorecards = s.scorecards.filter((c) => !activities.has(c.activityId))
+  s.sampleCases = keep(s.sampleCases)
+  s.exceptions = keep(s.exceptions)
+  s.actions = keep(s.actions)
+  s.incidents = keep(s.incidents)
+  s.logEvents = keep(s.logEvents)
+  s.resumeRequests = keep(s.resumeRequests)
+  return s
+}
+
 /**
  * The hospital as it stood at `at` (ruling R1). Anything dated later disappears: exceptions,
  * actions, incidents, events, exports, pauses, intakes and onboardings started since (with their
@@ -24,9 +45,7 @@ export function rewindTo(s: DemoState, at: string): DemoState {
   s.resumeRequests = s.resumeRequests.filter((r) => !after(r.requestedAt))
   s.audit = s.audit.filter((e) => !after(e.at))
   s.intakeRequests = s.intakeRequests.filter((r) => !after(r.approvedAt))
-  const gone = new Set(s.onboardings.filter((r) => after(r.startedAt)).map((r) => r.agentId))
-  s.onboardings = s.onboardings.filter((r) => !gone.has(r.agentId))
-  s.agents = s.agents.filter((a) => !gone.has(a.id))
+  dropAgents(s, new Set(s.onboardings.filter((r) => after(r.startedAt)).map((r) => r.agentId)))
   for (const intake of s.intakeRequests) if (after(intake.startedAt)) delete intake.startedAt
 
   for (const agent of s.agents) {

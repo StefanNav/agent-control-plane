@@ -235,6 +235,16 @@ export function InventoryPage() {
                   width: '100px',
                   render: (r) => <span className={styles.mono}>{r.approved}</span>,
                 },
+                {
+                  id: 'open',
+                  header: '',
+                  width: '90px',
+                  render: (r) => (
+                    <LinkButton to={`/inventory/agents/${r.agentId}/onboarding/intake`} variant="ghost">
+                      Open
+                    </LinkButton>
+                  ),
+                },
               ]}
             />
           ) : (

@@ -575,3 +575,48 @@ test('Important #6: an export needs the audit right for every agent in it', () =
   expect(dataOf(store.getState())).toEqual(before)
   expect(store.getState().buildExport({ ...input, agentIds: ['med-rec'] })).toEqual({ ok: true })
 })
+
+describe('startOnboarding (1a, 2a) — Review focus 2, 3', () => {
+  const inIntake = (persona: 'dana' | 'jordan' | 'drlee' | 'marcus') => {
+    const store = fresh()
+    store.getState().loadScenario('onboarding-intake')
+    store.getState().setPersona(persona)
+    return store
+  }
+
+  test('Dana names Marcus and Sam and starts: AGT-0123 is a draft at v0.1', async () => {
+    const { recordItems } = await import('./onboardingRules')
+    const store = inIntake('dana')
+    expect(store.getState().startOnboarding('req-0093', { ownerId: 'marcus', techOwnerId: 'sam' })).toEqual({ ok: true })
+    const s = store.getState()
+    expect(s.agents.find((a) => a.id === 'med-rec')).toMatchObject({ code: 'AGT-0123', lifecycle: 'onboarding', ownerId: 'marcus', techOwnerId: 'sam', sponsorId: 'priya' })
+    const record = s.onboardings.find((r) => r.agentId === 'med-rec')!
+    expect(record).toMatchObject({ version: 1, startedBy: 'dana', startedAt: s.now, done: { intake: { at: s.now, by: 'dana' } } })
+    expect(record.job.purpose).toBe(s.intakeRequests.find((r) => r.id === 'req-0093')!.purpose)
+    expect(recordItems(s, 'med-rec')).toEqual({ done: 3, total: 10 })
+    expect(s.intakeRequests.find((r) => r.id === 'req-0093')!.startedAt).toBe(s.now)
+    expect(s.audit.at(-1)).toMatchObject({ who: 'dana', action: 'Started onboarding', target: 'AGT-0123' })
+  })
+
+  test('without a technical owner it is refused and nothing changes', () => {
+    const store = inIntake('dana')
+    const before = dataOf(store.getState())
+    expect(store.getState().startOnboarding('req-0093', { ownerId: 'marcus', techOwnerId: '' })).toEqual({ ok: false, reason: 'Choose a technical owner' })
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+
+  test('Jordan and Dr. Lee cannot start onboarding', () => {
+    for (const persona of ['jordan', 'drlee'] as const) {
+      const store = inIntake(persona)
+      const before = dataOf(store.getState())
+      expect(store.getState().startOnboarding('req-0093', { ownerId: 'marcus', techOwnerId: 'sam' }).ok).toBe(false)
+      expect(dataOf(store.getState())).toEqual(before)
+    }
+  })
+
+  test('a started intake cannot start again', () => {
+    const store = inIntake('dana')
+    store.getState().startOnboarding('req-0093', { ownerId: 'marcus', techOwnerId: 'sam' })
+    expect(store.getState().startOnboarding('req-0093', { ownerId: 'marcus', techOwnerId: 'sam' })).toEqual({ ok: false, reason: 'Already started' })
+  })
+})

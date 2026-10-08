@@ -2,12 +2,28 @@ import { createSeed } from '../seed'
 import { addMinutes } from '../../lib/clock'
 import { applyPause } from '../../store/mutations'
 import type { DemoState, Incident } from '../types'
+import { medRecAt } from './onboarding'
 
 /** Named starting points for stories and demos (spec §6.3). Later phases add their own. */
-export type ScenarioId = 'baseline' | 'med-rec-paused' | 'resume-requested' | 'awaiting-signature' | 'step-down-threshold' | 'stale-escalated'
+export type ScenarioId =
+  | 'baseline'
+  | 'med-rec-paused'
+  | 'resume-requested'
+  | 'awaiting-signature'
+  | 'step-down-threshold'
+  | 'stale-escalated'
+  | 'onboarding-intake'
 
 /** Every scenario id, for validating a `?scenario=` param. */
-export const SCENARIO_IDS: readonly ScenarioId[] = ['baseline', 'med-rec-paused', 'resume-requested', 'awaiting-signature', 'step-down-threshold', 'stale-escalated']
+export const SCENARIO_IDS: readonly ScenarioId[] = [
+  'baseline',
+  'med-rec-paused',
+  'resume-requested',
+  'awaiting-signature',
+  'step-down-threshold',
+  'stale-escalated',
+  'onboarding-intake',
+]
 
 /** The seed's live heartbeat (one minute before DEMO_NOW). */
 const LIVE = '2026-12-08T09:51:00'
@@ -127,6 +143,9 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
     Object.assign(s.exceptions.find((e) => e.id === 'exc-5530')!, { claimedAt: '2026-12-08T09:55:00', state: 'claimed' })
     return s
   },
+
+  // E1 1a / E2 2a: 01 Oct, REQ-0093 approved on 29 Sep and not started; Med Rec doesn't exist yet.
+  'onboarding-intake': medRecAt('intake'),
 }
 
 /** A fresh state for the scenario. */

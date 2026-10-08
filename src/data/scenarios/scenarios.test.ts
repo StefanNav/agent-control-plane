@@ -93,3 +93,14 @@ test('stale-escalated (5d): at 12:00 the unanswered stale monitor is escalated t
   expect(priya.needsMe[0]!.due).toBe('1 h 14 min late')
   expect(priya.waiting.map((i) => i.id)).toEqual(['exc-5512'])
 })
+
+test('onboarding-intake (1a, 2a): 01 Oct, REQ-0093 approved and not started; Med Rec doesn’t exist yet', async () => {
+  const { selectInventory } = await import('../../features/inventory/selectors')
+  const s = buildScenario('onboarding-intake')
+  expect(s.now).toBe('2026-10-01T09:05:00')
+  expect(s.agents.find((a) => a.id === 'med-rec')).toBeUndefined()
+  for (const items of [s.activities, s.privileges, s.grants, s.hardStops, s.instructions, s.onboardings, s.scorecards, s.sampleCases])
+    expect((items as Array<{ agentId?: string }>).filter((i) => i.agentId === 'med-rec')).toEqual([])
+  expect(s.intakeRequests.find((r) => r.id === 'req-0093')!.startedAt).toBeUndefined()
+  expect(selectInventory(s).counts).toMatchObject({ agents: 40, drafts: 0, intake: 1 })
+})

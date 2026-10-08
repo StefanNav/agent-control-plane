@@ -5,6 +5,7 @@ import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type DemoState, type Incident, type PersonaId, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
+import { applyStart } from './onboarding'
 import { can, lockReason } from './permissions'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
@@ -70,6 +71,8 @@ export interface DemoActions {
   closeIncident: (incidentId: string, reason: string) => ActionResult
   /** Build a records export for a survey or audit; it is logged (7d). */
   buildExport: (input: { agentIds: string[]; from: string; to: string; format: 'packet' | 'csv'; masked: boolean }) => ActionResult
+  /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
+  startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
 }
 
 export interface PauseInput {
@@ -531,6 +534,22 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Built export', target: code, reason: `${input.format === 'packet' ? 'PDF packet and CSV' : 'CSV'}${input.masked ? ' · identifiers masked' : ''}` },
               mutate: (draft) => {
                 draft.exports.push({ id: code.toLowerCase(), code, ...input, by: draft.personaId, at: draft.now })
+              },
+            })
+          },
+          startOnboarding: (intakeId, { ownerId, techOwnerId }) => {
+            const s = get()
+            const intake = s.intakeRequests.find((r) => r.id === intakeId)
+            if (!intake) return { ok: false, reason: 'Not found' }
+            if (intake.startedAt || s.agents.some((a) => a.id === intake.agentId)) return { ok: false, reason: 'Already started' }
+            if (!ownerId) return { ok: false, reason: 'Choose an agent owner' }
+            if (!techOwnerId) return { ok: false, reason: 'Choose a technical owner' }
+            return act({
+              action: 'startOnboarding',
+              ctx: { divisionId: intake.divisionId },
+              audit: { action: 'Started onboarding', target: intake.agentCode, reason: `From ${intake.code}` },
+              mutate: (draft) => {
+                applyStart(draft, intakeId, { ownerId, techOwnerId }, draft.personaId, draft.now)
               },
             })
           },

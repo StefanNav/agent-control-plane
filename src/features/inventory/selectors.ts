@@ -77,7 +77,7 @@ export function selectInventory(s: DemoState) {
         },
       ]
     })
-  const intake = s.intakeRequests.filter((r) => !r.startedAt).map((r) => ({ id: r.id, code: r.code, title: r.title, division: divisionName(r.divisionId), requestedBy: personName(s, r.requestedBy), approved: formatDate(r.approvedAt) }))
+  const intake = s.intakeRequests.filter((r) => !r.startedAt).map((r) => ({ id: r.id, agentId: r.agentId, code: r.code, title: r.title, division: divisionName(r.divisionId), requestedBy: personName(s, r.requestedBy), approved: formatDate(r.approvedAt) }))
   return {
     counts: { agents: s.agents.filter(onBoard).length, drafts: drafts.length, intake: intake.length, retired: retired.length },
     agents,

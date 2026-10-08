@@ -19,6 +19,7 @@ import {
   ScorecardTab,
 } from './agent-tabs/Tabs'
 import { Overview } from './agent-tabs/Overview'
+import { DraftAgentView } from './DraftAgentView'
 import { selectAgentOverview } from './selectors'
 
 const TABS = ['overview', 'activities', 'scorecard', 'actions', 'privileges', 'history'] as const
@@ -45,6 +46,8 @@ export function AgentView() {
   const [params, setParams] = useSearchParams()
   const state = useDemo((s) => s)
   const view = useMemo(() => selectAgentOverview(state, agentId), [state, agentId])
+  const draft = state.agents.find((a) => a.id === agentId && (a.lifecycle === 'onboarding' || a.lifecycle === 'inReview'))
+  if (draft) return <DraftAgentView agentId={draft.id} />
   if (!view) return <NotFound />
 
   const tab = (TABS.find((t) => t === params.get('tab')) ?? 'overview') as Tab
