@@ -130,3 +130,48 @@
 .level {
   color: var(--cs-text2);
 }
+
+/* 6b: numbered effects, each on its own ruled row. */
+.effects {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.effect {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  column-gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--cs-line);
+}
+
+.effectValue {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.effectBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 5px;
+}
+
+.effectLead {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.effectText {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.reasonShort {
+  min-height: 72px;
+}

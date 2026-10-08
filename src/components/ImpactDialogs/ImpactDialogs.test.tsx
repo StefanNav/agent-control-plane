@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { PauseDialog, ResumeDialog } from './ImpactDialogs'
 
-test('pause dialog: scope, effect and confirm', async () => {
+test('pause dialog (6b): scope, numbered effects, resume rule and confirm', async () => {
   const onScopeChange = vi.fn()
   const onConfirm = vi.fn()
   render(
@@ -15,8 +15,11 @@ test('pause dialog: scope, effect and confirm', async () => {
       ]}
       scope="agent"
       onScopeChange={onScopeChange}
-      effect={{ lead: '12 drafts in progress go back to pharmacists.', text: 'Nothing is lost.' }}
-      resumeRule={{ lead: 'Resuming needs Priya and Marcus.', text: 'Both, with a reason.' }}
+      effects={[
+        { value: '12', lead: 'drafts in progress go back to pharmacists', text: 'They appear in the 7 West and 8 East worklists within a minute.' },
+        { value: '~6', lead: 'admissions an hour reconciled by hand', text: 'Until the agent resumes. Charge pharmacists are told.' },
+      ]}
+      resumeRule={{ lead: 'Resuming needs Priya and you,', text: 'both with a reason. Each activity returns to the level it had.' }}
       reason=""
       onReasonChange={() => {}}
       audit="Logs Marcus · 09:47"
@@ -25,7 +28,13 @@ test('pause dialog: scope, effect and confirm', async () => {
     />,
   )
   expect(screen.getByRole('dialog', { name: 'Pause Med Rec Agent?' })).toBeInTheDocument()
-  expect(screen.getByText('12 drafts in progress go back to pharmacists.')).toBeInTheDocument()
+  expect(screen.getByText('Takes effect at the gateway within seconds. Nothing is lost.')).toBeInTheDocument()
+  const effects = screen.getAllByRole('listitem')
+  expect(effects.map((e) => e.textContent)).toEqual([
+    '12drafts in progress go back to pharmacistsThey appear in the 7 West and 8 East worklists within a minute.',
+    '~6admissions an hour reconciled by handUntil the agent resumes. Charge pharmacists are told.',
+  ])
+  expect(screen.getByText('Optional · goes on the incident record')).toBeInTheDocument()
   await userEvent.click(screen.getByRole('radio', { name: /This activity/ }))
   expect(onScopeChange).toHaveBeenCalledWith('activity')
   await userEvent.click(screen.getByRole('button', { name: 'Pause agent' }))

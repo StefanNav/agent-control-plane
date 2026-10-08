@@ -47,3 +47,20 @@ test('the pause dialog opens from the gallery', async ({ page }) => {
   await page.getByRole('button', { name: 'Open pause dialog' }).click()
   await expect(page.getByRole('dialog', { name: 'Pause Med Rec Agent?' })).toBeVisible()
 })
+
+test('in dark mode the hard-stop lock stays visible on its ink bar (Phase 2 deferred)', async ({ page }) => {
+  await page.goto('/about/components')
+  const dark = page.locator('[data-theme="dark"]').filter({ has: page.getByText('Hard stop · enforced at the gateway') }).first()
+  const label = dark.getByText('Hard stop · enforced at the gateway').first()
+  const text = await label.evaluate((el) => getComputedStyle(el).color)
+  const lock = await label.locator('svg path, svg rect').first().evaluate((el) => {
+    const c = el.getAttribute('stroke') ?? el.getAttribute('fill') ?? ''
+    const probe = document.createElement('span')
+    probe.style.color = c
+    el.closest('[data-theme]')!.appendChild(probe)
+    const resolved = getComputedStyle(probe).color
+    probe.remove()
+    return resolved
+  })
+  expect(lock).toBe(text)
+})

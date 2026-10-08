@@ -1,0 +1,136 @@
+/* Inventory (8c): a 940 px record table beside the selected record. */
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 40px;
+  align-items: start;
+  padding: 32px 40px 48px;
+}
+
+.single {
+  padding: 32px 40px 48px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.note,
+.meta {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.meta {
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.name {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.text2 {
+  color: var(--cs-text2);
+}
+
+.mono {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--cs-strong);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+}
+
+.panelHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 20px;
+}
+
+.panelTitle {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.block,
+.blockRuled {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  padding: 8px 20px;
+}
+
+.blockRuled {
+  padding-top: 16px;
+  border-top: 1px solid var(--cs-line);
+}
+
+/* The judgment chip sits 10 under its label (8c). */
+.blockRuled > :nth-child(2) {
+  align-self: flex-start;
+  margin-top: -6px;
+}
+
+.label {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cs-meta);
+}
+
+.kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.value {
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--cs-meta);
+  text-align: right;
+}
+
+.foot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.buttons {
+  display: flex;
+  gap: 10px;
+}

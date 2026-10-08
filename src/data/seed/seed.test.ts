@@ -13,7 +13,7 @@ test('five divisions with the board’s agent counts (41 agents)', () => {
     'patient-messages',
   ])
   const counts = Object.fromEntries(
-    seed.divisions.map((d) => [d.id, seed.agents.filter((a) => a.divisionId === d.id).length]),
+    seed.divisions.map((d) => [d.id, seed.agents.filter((a) => a.lifecycle !== 'retired' && a.divisionId === d.id).length]),
   )
   expect(counts).toEqual({
     'revenue-cycle': 6,
@@ -22,7 +22,8 @@ test('five divisions with the board’s agent counts (41 agents)', () => {
     'imaging-referrals': 4,
     'patient-messages': 3,
   })
-  expect(seed.agents).toHaveLength(41)
+  // 41 on the board, plus 6 retired agents kept on record (Phase 4).
+  expect(seed.agents).toHaveLength(47)
 })
 
 test('ids are unique within each collection', () => {
@@ -77,7 +78,7 @@ test('every reference resolves', () => {
 })
 
 test('Medications agents follow the division view, in order', () => {
-  const meds = seed.agents.filter((a) => a.divisionId === 'medications')
+  const meds = seed.agents.filter((a) => a.lifecycle !== 'retired' && a.divisionId === 'medications')
   const statuses = meds.map((a) => a.judgment.status)
   expect(statuses.slice(0, 5)).toEqual(['review', 'warn', 'warn', 'stale', 'normal'])
   expect(statuses.slice(-4)).toEqual(['paused', 'shadow', 'shadow', 'shadow'])
@@ -140,8 +141,8 @@ test('agent owners, sponsors and tech owners hold those roles in the agent’s d
 describe('E4 and E5 refinements', () => {
   const open = (e: (typeof seed.exceptions)[number]) => e.state !== 'resolved' && e.state !== 'dismissed'
 
-  test('seed version 4 (Phase 3 review round: closedBy on exceptions)', () => {
-    expect(SEED_VERSION).toBe(4)
+  test('seed version 5 (Phase 4: incidents, pause detail, inventory)', () => {
+    expect(SEED_VERSION).toBe(5)
   })
 
   test('Medications has exactly four agents needing a human', () => {
@@ -171,13 +172,14 @@ describe('E4 and E5 refinements', () => {
     ])
   })
 
-  test('Med Rec has its five recent actions; ACT-88213 keeps its trace', () => {
+  test('Med Rec has its five recent actions (4c) plus ACT-88171 (7a); ACT-88213 keeps its trace', () => {
     expect(seed.actions.filter((a) => a.agentId === 'med-rec').map((a) => a.code)).toEqual([
       'ACT-88240',
       'ACT-88213',
       'ACT-88207',
       'ACT-88199',
       'ACT-88188',
+      'ACT-88171',
     ])
     expect(seed.actions.find((a) => a.code === 'ACT-88213')!.steps).toHaveLength(8)
   })
@@ -193,5 +195,49 @@ describe('E4 and E5 refinements', () => {
       resumeNeeds: ['Tom', 'Nina'],
       page: { at: '2026-12-08T08:05:00', ackAt: '2026-12-08T08:06:00', who: 'tom' },
     })
+  })
+})
+
+describe('Phase 4: controls and audit data', () => {
+  const s = createSeed()
+  const byId = (id: string) => s.agents.find((a) => a.id === id)!
+
+  test('incidents: INC-0029 open on Prior Auth, INC-0030 closed; the next is INC-0031', async () => {
+    const { nextIncidentCode } = await import('../../store/mutations')
+    expect(s.incidents.map((i) => [i.code, i.agentId, i.state])).toEqual([
+      ['INC-0029', 'prior-auth', 'open'],
+      ['INC-0030', 'discharge-meds', 'closed'],
+    ])
+    expect(s.incidents[0]).toMatchObject({ commanderId: 'tom', harm: 'None reached a patient' })
+    expect(nextIncidentCode(s)).toBe('INC-0031')
+  })
+
+  test('six retired agents are on record; the next archive code is RET-07', async () => {
+    const { nextArchiveCode } = await import('../../store/mutations')
+    const retired = s.agents.filter((a) => a.lifecycle === 'retired')
+    expect(retired.map((a) => a.retirement!.code)).toEqual(['RET-01', 'RET-02', 'RET-03', 'RET-04', 'RET-05', 'RET-06'])
+    expect(nextArchiveCode(s)).toBe('RET-07')
+  })
+
+  test('the three blocked admissions from 7a', () => {
+    const blocked = s.actions.filter((a) => a.blockedBy === 'HS-04 v2').map((a) => [a.code, a.at, a.reviewerOutcome])
+    expect(blocked).toEqual([
+      ['ACT-88213', '2026-12-08T09:38:02', 'Edited 1 line, signed'],
+      ['ACT-88199', '2026-12-08T09:24:51', 'Edited 1 line, signed'],
+      ['ACT-88171', '2026-12-08T09:02:17', 'Edited 1 line, signed'],
+    ])
+    expect(s.stats24h.actionsToday).toBe(1912)
+  })
+
+  test('risk tiers from 8c and 6f; Med Rec queue from 6b', () => {
+    expect(['med-rec', 'allergy-recon', 'renal-dosing', 'duplicate-rx', 'prior-auth'].map((id) => byId(id).riskTier)).toEqual([3, 3, 3, 3, 3])
+    expect(['formulary-swap', 'iv-to-oral'].map((id) => byId(id).riskTier)).toEqual([2, 2])
+    expect(byId('med-rec').queue).toEqual({ inProgress: 12, awaitingReview: 4, perHour: 6 })
+  })
+
+  test('inventory records: 2 approved intakes, 3 onboarding drafts, 3 past exports', () => {
+    expect(s.intakeRequests).toHaveLength(2)
+    expect(s.onboardingDrafts.map((d) => d.agentName)).toEqual(['Discharge Summary Agent', 'Prior Auth Agent v2', 'Referral Triage Agent'])
+    expect(s.exports).toHaveLength(3)
   })
 })

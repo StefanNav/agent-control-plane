@@ -103,3 +103,71 @@ test('a paused agent withdraws its numbers, like a stale one (plan 3.4)', () => 
   const rows = selectAgentRows(buildScenario('med-rec-paused'), 'medications')
   expect(rows.find((r) => r.id === 'med-rec')).toMatchObject({ status: 'paused', day: '—', signedAsIs: '—', edited: '—', blocked: '—' })
 })
+
+test('retired agents leave every board count (Phase 4)', async () => {
+  const { onBoard } = await import('./selectors')
+  const summaries = selectDivisionSummaries(s)
+  expect(summaries.reduce((n, d) => n + d.agentCount, 0)).toBe(41)
+  expect(summaries.find((d) => d.id === 'medications')!.agentCount).toBe(20)
+  expect(selectAgentRows(s, 'medications')).toHaveLength(20)
+  expect(s.agents.filter(onBoard)).toHaveLength(41)
+  expect(s.agents.filter((a) => !onBoard(a)).every((a) => a.lifecycle === 'retired')).toBe(true)
+})
+
+test('a paused agent view reads like 6d: since when, why, and what happened to the work', () => {
+  const v = selectAgentOverview(buildScenario('med-rec-paused'), 'med-rec')!
+  expect(v.levelLine).toBe('Paused · since 09:47')
+  expect(v.paused).toMatchObject({
+    lead: 'Paused by Marcus at 09:47.',
+    text: '12 drafts went to pharmacists. New admissions on 7 West and 8 East are reconciled by hand until both of you approve a resume.',
+    whilePaused: { routed: '12 at 09:47', pausedFor: '5 min', incident: null },
+  })
+  expect(v.activities[0]!.level).toBe('Paused · was Draft')
+})
+
+test('a disabled agent withdraws its numbers too', async () => {
+  const { createDemoStore } = await import('../../store')
+  const { createMemoryStorage } = await import('../../store/storage')
+  const store = createDemoStore(createMemoryStorage())
+  store.getState().setPersona('dana')
+  store.getState().disableAgent('renal-dosing', 'Vendor review.')
+  expect(selectAgentRows(store.getState(), 'medications').find((r) => r.id === 'renal-dosing')).toMatchObject({ day: '—', signedAsIs: '—', edited: '—', blocked: '—' })
+})
+
+test('an activity pause shows on the agent view and the division row', async () => {
+  const { createDemoStore } = await import('../../store')
+  const { createMemoryStorage } = await import('../../store/storage')
+  const store = createDemoStore(createMemoryStorage())
+  store.getState().pauseAgent('med-rec', { scope: 'activity' })
+  const v = selectAgentOverview(store.getState(), 'med-rec')!
+  expect(v.levelLine).toBe('Draft · one activity paused since 09:52')
+  expect(v.paused).toMatchObject({ scope: 'activity', lead: 'Marcus paused one activity at 09:52.' })
+  expect(v.paused!.text).toMatch(/^“Reconcile home medications at admission” stopped; the rest of Med Rec Agent keeps working\./)
+  expect(selectAgentRows(store.getState(), 'medications').find((r) => r.id === 'med-rec')!.level).toBe('Draft · 1 paused')
+})
+
+test('a seeded pause without detail still shows as paused', () => {
+  const v = selectAgentOverview(s, 'controlled-drug')!
+  expect(v.paused).toMatchObject({ scope: 'agent', lead: 'Paused by Marcus at 16:10.', whilePaused: { routed: '—' } })
+})
+
+test('Important #7: the division\'s incident badge follows the incident record', async () => {
+  const { createDemoStore } = await import('../../store')
+  const { createMemoryStorage } = await import('../../store/storage')
+  const revenue = (st: Parameters<typeof selectDivisionSummaries>[0]) => selectDivisionSummaries(st).find((d) => d.id === 'revenue-cycle')!
+  expect(revenue(s)).toMatchObject({ incidentId: 'inc-0029', resumeNeeds: ['Tom', 'Nina'] })
+
+  const closed = createDemoStore(createMemoryStorage())
+  closed.getState().setPersona('dana')
+  closed.getState().completeCorrection('inc-0029', 'c1')
+  closed.getState().closeIncident('inc-0029', 'Merged-encounter check shipped.')
+  expect(revenue(closed.getState()).incidentId).toBeUndefined()
+  expect(revenue(closed.getState()).note).toBeUndefined()
+
+  const retired = createDemoStore(createMemoryStorage())
+  retired.getState().setPersona('dana')
+  retired.getState().retireAgent('prior-auth', { typedName: 'Prior Auth Agent', reason: 'Replaced by v2.' })
+  expect(revenue(retired.getState())).toMatchObject({ status: 'normal' })
+  expect(revenue(retired.getState()).incidentId).toBeUndefined()
+  expect(revenue(retired.getState()).resumeNeeds).toBeUndefined()
+})

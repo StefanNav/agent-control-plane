@@ -4,6 +4,7 @@ import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { formatClock } from '../../lib/clock'
 import { useDemo } from '../../store'
 import { selectInbox } from '../inbox/selectors'
+import { onBoard } from './selectors'
 import styles from './board.module.css'
 
 export type BoardView = 'table' | 'tiles' | 'exceptions'
@@ -14,8 +15,7 @@ export function BoardHeader({ view }: { view: BoardView }) {
   const [params] = useSearchParams()
   const now = useDemo((s) => s.now)
   const divisions = useDemo((s) => s.divisions.length)
-  const agents = useDemo((s) => s.agents.length)
-  const inboxCount = useDemo((s) => selectInbox(s, s.personaId).needsMe.length)
+  const agents = useDemo((s) => s.agents.filter(onBoard).length)
   const setView = (next: BoardView) => {
     const p = new URLSearchParams(params)
     if (next === 'table') p.delete('view')
@@ -43,18 +43,32 @@ export function BoardHeader({ view }: { view: BoardView }) {
           />
         </span>
       }
-      tabs={
-        <Tabs
-          ariaLabel="Operations"
-          current="board"
-          items={[
-            { id: 'board', label: 'Board', to: '/operations' },
-            { id: 'inbox', label: inboxCount ? `Inbox · ${inboxCount}` : 'Inbox', to: '/operations/inbox' },
-            { id: 'actions', label: 'Actions', to: '/operations/actions' },
-            { id: 'incidents', label: 'Incidents', to: '/operations/incidents' },
-          ]}
-        />
-      }
+      tabs={<OperationsTabs current="board" />}
+    />
+  )
+}
+
+/** Board · Inbox · Actions · Incidents: the Operations tabs, shared by its pages. */
+export function OperationsTabs({
+  current,
+}: {
+  current: 'board' | 'inbox' | 'actions' | 'incidents'
+}) {
+  const inboxCount = useDemo((s) => selectInbox(s, s.personaId).needsMe.length)
+  return (
+    <Tabs
+      ariaLabel="Operations"
+      current={current}
+      items={[
+        { id: 'board', label: 'Board', to: '/operations' },
+        {
+          id: 'inbox',
+          label: inboxCount ? `Inbox · ${inboxCount}` : 'Inbox',
+          to: '/operations/inbox',
+        },
+        { id: 'actions', label: 'Actions', to: '/operations/actions' },
+        { id: 'incidents', label: 'Incidents', to: '/operations/incidents' },
+      ]}
     />
   )
 }

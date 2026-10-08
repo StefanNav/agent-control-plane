@@ -1,6 +1,7 @@
 import { createSeed } from '../seed'
 import { addMinutes } from '../../lib/clock'
-import type { DemoState } from '../types'
+import { applyPause } from '../../store/mutations'
+import type { DemoState, Incident } from '../types'
 
 /** Named starting points for stories and demos (spec §6.3). Later phases add their own. */
 export type ScenarioId = 'baseline' | 'med-rec-paused' | 'resume-requested' | 'awaiting-signature' | 'step-down-threshold' | 'stale-escalated'
@@ -14,14 +15,11 @@ const LIVE = '2026-12-08T09:51:00'
 const medRec = (s: DemoState) => s.agents.find((a) => a.id === 'med-rec')!
 const admissionPrivilege = (s: DemoState) => s.privileges.find((p) => p.activityId === 'med-rec-admission')!
 
+const PAUSED_AT = '2026-12-08T09:47:00'
+
+/** 6b: Marcus paused the whole agent at 09:47, with a reason; 12 drafts went back to pharmacists. */
 function pauseMedRec(s: DemoState): DemoState {
-  Object.assign(medRec(s), {
-    lifecycle: 'paused',
-    pausedBy: 'marcus',
-    pausedAt: '2026-12-08T09:47:00',
-    judgment: { status: 'paused', label: 'Paused by Marcus' },
-  })
-  return s
+  return applyPause(s, ['med-rec'], { scope: 'agent', reason: 'HS-04 blocked 3 dose changes since 09:00. Pausing until we know why.' }, 'marcus', PAUSED_AT)
 }
 
 /** Move the demo clock; heartbeats that were live stay live at the new time. */
@@ -33,6 +31,40 @@ function advanceClock(s: DemoState, to: string): DemoState {
   return s
 }
 
+/** E7 7c's incident, as it stands at 11:58 (before Priya approves at 13:10). */
+const INC_0031: Incident = {
+  id: 'inc-0031',
+  code: 'INC-0031',
+  title: 'Dose changes proposed on admission drafts',
+  agentId: 'med-rec',
+  state: 'corrections',
+  openedAt: '2026-12-08T10:05:00',
+  openedBy: 'jordan',
+  commanderId: 'marcus',
+  harm: 'None reached a patient',
+  summary: 'Med Rec Agent proposed dose changes on 3 admissions between 09:02 and 09:38. HS-04 v2 blocked all 3; pharmacists kept the home doses.',
+  linkedActionIds: ['act-88213', 'act-88199', 'act-88171'],
+  rootCause: {
+    text: 'When a fill was newer than the home list, SOP v1.3.1 took the strength from the fill, not the formulary table. The agent then “corrected” the home dose to match the fill.',
+    by: 'sam',
+  },
+  corrections: [
+    { id: 'c1', text: 'SOP v1.3.2 reads strength from the formulary table', ownerId: 'sam', done: true, status: 'Deployed 11:52' },
+    { id: 'c2', text: 'Replay 23 cases, including the 3 linked', ownerId: 'marcus', done: true, status: 'HS-04 fired 0' },
+    { id: 'c3', text: 'HS-04 v2 unchanged: it worked', ownerId: 'sam', done: true, status: 'Reviewed' },
+    { id: 'c4', text: 'Add a “newer fill” case set to re-validation', sub: 'So a future SOP change is tested against it', ownerId: 'marcus', done: false, status: 'Due 15 Dec' },
+  ],
+  timeline: [
+    { at: '2026-12-08T09:02:00', title: 'First dose change blocked', sub: 'ACT-88171 · enc 4403' },
+    { at: '2026-12-08T09:38:00', title: 'Third dose change blocked', sub: 'ACT-88213 · enc 4417' },
+    { at: '2026-12-08T09:42:00', title: 'Exception to Marcus', sub: 'EXC-5530 · review' },
+    { at: '2026-12-08T09:47:00', title: 'Marcus paused the agent', sub: '12 drafts to pharmacists', by: 'marcus' },
+    { at: '2026-12-08T10:05:00', title: 'Jordan opened this incident', sub: 'Linked 3 actions', by: 'jordan' },
+    { at: '2026-12-08T11:40:00', title: 'Root cause found', sub: 'Sam', by: 'sam' },
+    { at: '2026-12-08T11:58:00', title: 'Resume requested', sub: 'Marcus', by: 'marcus' },
+  ],
+}
+
 /** Each scenario edits a fresh seed. */
 export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
   baseline: (s) => s,
@@ -40,18 +72,25 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
   // E6 6b: Marcus paused Med Rec Agent at 09:47.
   'med-rec-paused': pauseMedRec,
 
-  // E6 6d / component sheet 08: Marcus asks to resume 2 h 14 min after pausing; Priya hasn't approved yet.
-  // The clock stays at 09:52 so the rest of the hospital reads as live.
+  // E6 6d/6e and E7 7c: 11:58. Marcus paused at 09:47; Jordan opened INC-0031 at 10:05; Sam found the
+  // root cause and shipped SOP v1.3.2; Marcus asks to resume. Priya hasn't approved yet.
   'resume-requested': (s) => {
+    advanceClock(s, '2026-12-08T11:58:00')
     pauseMedRec(s)
-    medRec(s).pausedAt = '2026-12-08T07:38:00'
+    medRec(s).pause!.changes = [
+      { title: 'SOP v1.3.1 → v1.3.2', sub: 'Dose strength read from the formulary table', meta: 'Sam · 11:52' },
+      { title: 'Replay · 23 cases', sub: 'Today’s 3 blocked cases and 20 random admissions', meta: 'HS-04 fired 0' },
+      { title: 'Incident INC-0031', sub: 'Root cause recorded · 1 correction open', meta: 'Marcus' },
+    ]
+    s.incidents.push(INC_0031)
+    const reason =
+      'Dose mapping fixed in SOP v1.3.2: strengths now come from the formulary table, not the latest fill. Replayed today’s 3 blocked cases and 20 more; HS-04 fired 0 times.'
     s.resumeRequests.push({
       agentId: 'med-rec',
       requestedBy: 'marcus',
       requestedAt: s.now,
-      reason:
-        'Wrong-patient root cause fixed in v1.3.1: encounter match is now checked before and after drafting. 20 replayed cases clean.',
-      approvals: [],
+      reason,
+      approvals: [{ personId: 'marcus', reason, at: s.now }],
     })
     return s
   },

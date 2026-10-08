@@ -119,6 +119,28 @@ export interface Agent {
   today?: { drafts: number; expected: number }
   /** When the board last judged the agent. */
   judgedAt?: string
+  /** Work in flight, for the pause impact preview (6b). Derived from `metrics.day` when absent. */
+  queue?: { inProgress: number; awaitingReview: number; perHour: number }
+  /** Set while paused by a person (6b–6e); `pausedBy`/`pausedAt` say who and when. */
+  pause?: PauseDetail
+  /** Disabled: access revoked, record live (6f). */
+  disabled?: { at: string; by: string; reason: string }
+  /** Retired for good: archived, off every board (6f). */
+  retirement?: { at: string; by: string; code: string; reason: string }
+}
+
+/** What a pause covered and what to restore on resume. */
+export interface PauseDetail {
+  scope: 'activity' | 'agent' | 'division'
+  /** For an activity-scope pause. */
+  activityId?: string
+  reason?: string
+  /** Drafts in progress routed back to pharmacists. */
+  routed: number
+  /** The judgment to restore when both people approve a resume. */
+  wasJudgment: Judgment
+  /** What changed since the pause, for the approver (6e). */
+  changes?: { title: string; sub: string; meta: string }[]
 }
 
 /** One distinct job an agent does; autonomy is granted per activity. */
@@ -131,10 +153,12 @@ export interface Activity {
   branches: { id: string; name: string; favourable: boolean }[]
   /** Today's volume line, e.g. "96 drafts" or "41 in shadow". */
   today?: string
+  /** Paused on its own while the rest of the agent keeps working (6b "This activity"). */
+  paused?: boolean
 }
 
 /** Lifecycle of a privilege record. */
-export type PrivilegeState = 'awaiting' | 'active' | 'due' | 'lapsed' | 'steppedDown'
+export type PrivilegeState = 'awaiting' | 'active' | 'due' | 'lapsed' | 'steppedDown' | 'closed'
 
 /** A signed grant for one activity at one level, in one domain. */
 export interface Privilege {
@@ -283,11 +307,15 @@ export interface AgentAction {
   agentId: string
   agentVersion: string
   sop: string
+  /** "7f3a·c210" (7b). */
+  sopHash?: string
   actingFor: string
   /** Rule tag of the policy that blocked part of it, if any. */
   blockedBy?: string
   /** "Signed as is", "Edited 1 line, signed", "Waiting for review" */
   reviewerOutcome: string
+  /** The rules in force when it ran, so the audit reads it as it happened (7a, 7b). */
+  context?: { privilege: string; checks: number; conditions: string[] }
   steps: TraceStep[]
 }
 
@@ -315,6 +343,64 @@ export interface ResumeRequest {
   requestedAt: string
   reason: string
   approvals: { personId: string; reason: string; at: string }[]
+}
+
+/** An incident record (7c): who runs it, what happened, why, and what is being fixed. */
+export interface Incident {
+  id: string
+  code: string
+  title: string
+  agentId: string
+  state: 'open' | 'corrections' | 'closed'
+  openedAt: string
+  openedBy: string
+  commanderId: string
+  harm: string
+  summary: string
+  linkedActionIds: string[]
+  rootCause?: { text: string; by: string }
+  corrections: { id: string; text: string; sub?: string; ownerId: string; done: boolean; status: string }[]
+  timeline: { at: string; title: string; sub?: string; by?: string }[]
+  closedAt?: string
+}
+
+/** An approved request for a new agent, not yet in onboarding (Inventory → Intake). */
+export interface IntakeRequest {
+  id: string
+  code: string
+  title: string
+  divisionId: string
+  requestedBy: string
+  approvedAt: string
+}
+
+/** An agent being onboarded (Inventory → Drafts, 1i). Progress is out of 13. */
+export interface OnboardingDraft {
+  id: string
+  agentName: string
+  divisionId: string
+  requestCode: string
+  step: number
+  stepName: string
+  stepSub?: string
+  /** "Sam", "Review: final set" */
+  waitingOn: string
+  waitingOnId?: string
+  progress: number
+  lastChange: string
+}
+
+/** A records export built for a survey or audit (7d). */
+export interface ExportRecord {
+  id: string
+  code: string
+  agentIds: string[]
+  from: string
+  to: string
+  format: 'packet' | 'csv'
+  masked: boolean
+  by: string
+  at: string
 }
 
 /** One logged change: who, what, when, and why. */
@@ -346,7 +432,16 @@ export interface DemoState {
   resumeRequests: ResumeRequest[]
   logEvents: LogEvent[]
   changeEvents: ChangeEvent[]
-  /** Hospital-wide counts before today's activity (4f "Last 24 hours"). */
-  stats24h: { closedEarlier: number; medianCloseMin: number; lastHour: { hardStops: number; pauses: number; pages: number } }
+  incidents: Incident[]
+  intakeRequests: IntakeRequest[]
+  onboardingDrafts: OnboardingDraft[]
+  exports: ExportRecord[]
+  /** Hospital-wide counts before today's activity (4f "Last 24 hours"); `actionsToday` for 7a. */
+  stats24h: {
+    closedEarlier: number
+    medianCloseMin: number
+    lastHour: { hardStops: number; pauses: number; pages: number }
+    actionsToday: number
+  }
   audit: AuditEntry[]
 }

@@ -17,13 +17,16 @@ const MATRIX: Array<[PermAction, [boolean, boolean, boolean, boolean, boolean, b
   ['signPrivilege', [false, true, false, false, false, false]],
   ['approveGoLive', [false, false, false, false, true, false]],
   ['pause', [true, true, true, false, false, false]],
-  ['returnToShadow', [true, true, true, false, false, false]],
+  // 6c and the "Enforce the limits" story: the technical owner returns an activity to Shadow.
+  ['returnToShadow', [true, true, true, true, false, false]],
   ['revokeTool', [true, true, true, true, false, false]],
   ['resume', [false, true, true, false, false, false]],
   ['disable', [true, true, false, false, false, false]],
   ['retire', [true, true, false, false, false, false]],
   ['resolveException', [true, true, true, true, false, false]],
   ['viewAudit', [true, true, true, true, true, true]],
+  // 7a: opening an incident is the one thing read-only Jordan can create.
+  ['openIncident', [true, true, true, true, true, true]],
   ['manageDivisions', [true, false, false, false, false, false]],
 ]
 
@@ -77,4 +80,9 @@ test('Dana keeps the program lead column of §7 everywhere', () => {
       expect(can(s, 'dana', action, ctx), `${action} ${ctx?.divisionId ?? 'no context'}`).toBe(false)
     }
   }
+})
+
+test('Sam returns activities to Shadow on agents Sam owns technically, nobody else\'s (6c)', () => {
+  expect(can(s, 'sam', 'returnToShadow', { agentId: 'med-rec' })).toBe(true)
+  expect(can(s, 'sam', 'returnToShadow', { agentId: 'prior-auth' })).toBe(false)
 })

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Button, Field, Icon, Modal, RadioCardGroup, Textarea, type RadioCardOption } from '../../design-system'
+import { Button, Field, Icon, Modal, Notice, RadioCardGroup, Textarea, type RadioCardOption } from '../../design-system'
 import styles from './ImpactDialogs.module.css'
 
 export interface PauseDialogProps<Scope extends string> {
@@ -8,14 +8,18 @@ export interface PauseDialogProps<Scope extends string> {
   scopes: RadioCardOption<Scope>[]
   scope: Scope
   onScopeChange: (scope: Scope) => void
-  /** What happens to queued work, e.g. lead "12 drafts in progress go back to pharmacists." */
-  effect: { lead: string; text: string }
-  /** e.g. lead "Resuming needs Priya and Marcus." */
+  /** What happens to queued work (6b), e.g. value "12", lead "drafts in progress go back to pharmacists". */
+  effects: { value: string; lead: string; text: string }[]
+  /** e.g. lead "Resuming needs Priya and you," */
   resumeRule: { lead: string; text: string }
   reason: string
   onReasonChange: (reason: string) => void
   /** "Logs Marcus · 09:47" */
   audit: string
+  /** Why the store refused, shown above the reason. */
+  error?: string | null
+  /** The viewer may not pause here: the confirm button shows the designed locked state with this reason. */
+  locked?: string
   onCancel: () => void
   onConfirm: () => void
 }
@@ -27,12 +31,15 @@ export function PauseDialog<Scope extends string>(props: PauseDialogProps<Scope>
       open={props.open}
       onClose={props.onCancel}
       title={`Pause ${props.agentName}?`}
-      description="Takes effect at the gateway within seconds."
+      description="Takes effect at the gateway within seconds. Nothing is lost."
       audit={props.audit}
+      width={620}
       actions={
         <>
-          <Button onClick={props.onCancel}>Cancel</Button>
-          <Button variant="primary" icon={<Icon name="paused" color="var(--cs-on-acc)" />} onClick={props.onConfirm}>
+          <Button variant="ghost" onClick={props.onCancel}>
+            Cancel
+          </Button>
+          <Button variant="primary" locked={props.locked} onClick={props.onConfirm}>
             Pause agent
           </Button>
         </>
@@ -41,19 +48,33 @@ export function PauseDialog<Scope extends string>(props: PauseDialogProps<Scope>
       <Section label="Scope">
         <RadioCardGroup name="pause-scope" aria-label="Scope" value={props.scope} onChange={props.onScopeChange} options={props.scopes} />
       </Section>
-      <div className={styles.impact}>
-        <span className={styles.label}>What happens</span>
-        <span className={styles.lead}>{props.effect.lead}</span>
-        <span className={styles.text}>{props.effect.text}</span>
-        <div className={styles.rule}>
-          <span className={styles.ruleLead}>{props.resumeRule.lead}</span>
-          <span className={styles.text}>{props.resumeRule.text}</span>
-        </div>
-      </div>
-      <Field label="Reason" htmlFor="pause-reason" hint="Optional">
+      <Section label="What happens">
+        <ul className={styles.effects}>
+          {props.effects.map((effect) => (
+            <li key={effect.lead} className={styles.effect}>
+              <span className={styles.effectValue}>{effect.value}</span>
+              <span className={styles.effectBody}>
+                <span className={styles.effectLead}>{effect.lead}</span>
+                <span className={styles.effectText}>{effect.text}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </Section>
+      <Notice mark="lock" lead={props.resumeRule.lead}>
+        {props.resumeRule.text}
+      </Notice>
+      {props.error ? (
+        <Notice mark="crit" lead="Not paused.">
+          {props.error}
+        </Notice>
+      ) : null}
+      <Field label="Reason" htmlFor="pause-reason" hint="Optional · goes on the incident record">
         <Textarea
           id="pause-reason"
-          placeholder="Why are you pausing? Helps the incident record."
+          rows={2}
+          className={styles.reasonShort}
+          placeholder="Why are you pausing?"
           value={props.reason}
           onChange={(event) => props.onReasonChange(event.target.value)}
         />
@@ -112,7 +133,7 @@ export function ResumeDialog(props: ResumeDialogProps) {
             <li key={person.name} className={styles.need}>
               <span className={styles.who}>
                 <span className={person.done ? styles.signed : styles.pending}>
-                  {person.done ? <Icon name="check" size={11} color="var(--cs-on-acc)" /> : null}
+                  {person.done ? <Icon name="check" size={11} color="var(--cs-raised)" /> : null}
                 </span>
                 <span className={styles.name}>{person.name}</span>
               </span>

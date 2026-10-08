@@ -34,6 +34,7 @@ const STATES: Record<PrivilegeState, { mark: ReactNode; tone: string; action: Bu
   due: { mark: <Icon name="diamond" color="var(--cs-warn)" />, tone: styles.warn!, action: 'secondary' },
   lapsed: { mark: <Icon name="shadow" color="var(--cs-icon)" />, tone: styles.plain!, action: 'secondary' },
   steppedDown: { mark: <Icon name="diamond" color="var(--cs-warn)" />, tone: styles.warn!, action: 'ghost' },
+  closed: { mark: null, tone: styles.plain!, action: 'ghost' },
 }
 
 /** Activity, domain, level, grantor, evidence and review date (component 04). */

@@ -1,11 +1,16 @@
 import { useMemo, type ReactNode } from 'react'
 import { useParams, useSearchParams } from 'react-router'
 import { StatusChip } from '../../components'
-import { Button, Icon, LinkButton, Menu, Notice, Tabs } from '../../design-system'
+import { Button, Icon, LinkButton, Menu, Tabs } from '../../design-system'
 import { NotFound } from '../../layout/NotFound'
 import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { useDemo } from '../../store'
-import { can, lockReason } from '../../store/permissions'
+import { controlMenu, parseControl, type ControlId } from '../controls/controlMenu'
+import { FixOneThing } from '../controls/FixOneThing'
+import { PauseFlow } from '../controls/PauseFlow'
+import { ResumePanel } from '../controls/ResumePanel'
+import { RetireDialog } from '../inventory/RetireDialog'
+import type { PauseScope } from '../controls/selectors'
 import {
   ActionsTab,
   ActivitiesTab,
@@ -14,7 +19,6 @@ import {
   ScorecardTab,
 } from './agent-tabs/Tabs'
 import { Overview } from './agent-tabs/Overview'
-import styles from './agent-tabs/agent.module.css'
 import { selectAgentOverview } from './selectors'
 
 const TABS = ['overview', 'activities', 'scorecard', 'actions', 'privileges', 'history'] as const
@@ -28,15 +32,12 @@ const LABELS: Record<Tab, string> = {
   history: 'History',
 }
 
-/** The agent controls. Their dialogs (impact preview, then confirm) arrive in Phase 4. */
-const CONTROLS = {
-  pause: 'Pause',
-  shadow: 'Return one activity to Shadow on',
-  revoke: 'Revoke a tool from',
-  disable: 'Disable',
-  retire: 'Retire',
-} as const
-type Control = keyof typeof CONTROLS
+/** The pause controls and the scope each opens with (6b). */
+const PAUSE_SCOPE: Partial<Record<ControlId, PauseScope>> = {
+  'pause-activity': 'activity',
+  'pause-agent': 'agent',
+  'pause-division': 'division',
+}
 
 /** One agent: activities, privileges, metrics and recent actions in one place (4c). */
 export function AgentView() {
@@ -47,8 +48,13 @@ export function AgentView() {
   if (!view) return <NotFound />
 
   const tab = (TABS.find((t) => t === params.get('tab')) ?? 'overview') as Tab
-  const control = (Object.keys(CONTROLS) as Control[]).find((c) => c === params.get('control'))
-  const setControl = (next: Control | null) =>
+  const control = parseControl(params.get('control'))
+  const agent = state.agents.find((a) => a.id === agentId)
+  /** Paused or retired: the header offers only "Open in Inventory" (6d). */
+  const stopped = agent?.lifecycle === 'paused' || agent?.lifecycle === 'retired'
+  /** Pause and narrow fixes apply only to a working agent (not paused, disabled or retired). */
+  const live = agent?.lifecycle === 'live'
+  const setControl = (next: ControlId | null) =>
     setParams(
       (prev) => {
         const p = new URLSearchParams(prev)
@@ -58,13 +64,9 @@ export function AgentView() {
       },
       { replace: true },
     )
-  const allowed = (action: Parameters<typeof can>[2]) =>
-    can(state, state.personaId, action, { agentId })
-  const lock = (action: Parameters<typeof can>[2]) =>
-    allowed(action) ? undefined : lockReason(action, state.personaId)
 
   const content: Record<Tab, ReactNode> = {
-    overview: <Overview view={view} />,
+    overview: <Overview view={view} resume={<ResumePanel agentId={agentId} />} />,
     activities: <ActivitiesTab agentId={agentId} />,
     scorecard: <ScorecardTab />,
     actions: <ActionsTab agentId={agentId} />,
@@ -86,62 +88,25 @@ export function AgentView() {
         }
         actions={
           <>
-            <Menu
-              align="right"
-              trigger={({ toggle, ref, open }) => (
-                <Button ref={ref} onClick={toggle} aria-expanded={open} aria-haspopup="menu">
-                  Controls
-                  <Icon name="chevron" size={10} />
-                </Button>
-              )}
-              groups={[
-                {
-                  label: 'Scope first',
-                  items: [
-                    {
-                      id: 'pause',
-                      onSelect: () => setControl('pause'),
-                      label: 'Pause agent',
-                      sub: lock('pause') ?? 'Takes effect at the gateway within seconds',
-                      locked: !allowed('pause'),
-                    },
-                    {
-                      id: 'shadow',
-                      onSelect: () => setControl('shadow'),
-                      label: 'Return one activity to Shadow',
-                      sub: lock('returnToShadow') ?? 'The rest of the agent keeps working',
-                      locked: !allowed('returnToShadow'),
-                    },
-                    {
-                      id: 'revoke',
-                      onSelect: () => setControl('revoke'),
-                      label: 'Revoke a tool',
-                      sub: lock('revokeTool') ?? 'Remove one tool grant',
-                      locked: !allowed('revokeTool'),
-                    },
-                  ],
-                },
-                {
-                  label: 'Program lead',
-                  items: [
-                    {
-                      id: 'disable',
-                      onSelect: () => setControl('disable'),
-                      label: 'Disable agent',
-                      sub: lock('disable') ?? 'Revokes access; records kept',
-                      locked: !allowed('disable'),
-                    },
-                    {
-                      id: 'retire',
-                      onSelect: () => setControl('retire'),
-                      label: 'Retire agent',
-                      sub: lock('retire') ?? 'Permanent; needs typed confirmation',
-                      locked: !allowed('retire'),
-                    },
-                  ],
-                },
-              ]}
-            />
+            {stopped ? null : (
+              <Menu
+                align="right"
+                width={302}
+                trigger={({ toggle, ref, open }) => (
+                  <Button ref={ref} onClick={toggle} aria-expanded={open} aria-haspopup="menu">
+                    Controls
+                    <Icon name="chevron" size={10} />
+                  </Button>
+                )}
+                groups={controlMenu(state, state.personaId, agentId).map((group) => ({
+                  label: group.label,
+                  items: group.items.map((item) => ({
+                    ...item,
+                    onSelect: () => setControl(item.control),
+                  })),
+                }))}
+              />
+            )}
             <LinkButton to={`/inventory/agents/${agentId}`}>Open in Inventory</LinkButton>
           </>
         }
@@ -160,20 +125,17 @@ export function AgentView() {
           />
         }
       />
-      {control ? (
-        <section aria-label="Pending control" className={styles.pending}>
-          <Notice
-            lead={`${CONTROLS[control]} ${view.name}`}
-            actions={
-              <Button variant="ghost" size="sm" onClick={() => setControl(null)}>
-                Close
-              </Button>
-            }
-          >
-            opens an impact preview first: what stops, what keeps running and who is told, then asks
-            you to confirm. That flow is built in Phase 4 of this prototype.
-          </Notice>
-        </section>
+      {control && PAUSE_SCOPE[control] && live ? (
+        <PauseFlow
+          agentId={agentId}
+          agentName={view.name}
+          initialScope={PAUSE_SCOPE[control]}
+          onClose={() => setControl(null)}
+        />
+      ) : (control === 'shadow' || control === 'revoke') && live ? (
+        <FixOneThing agentId={agentId} initialMode={control} onClose={() => setControl(null)} />
+      ) : (control === 'disable' || control === 'retire') && agent?.lifecycle !== 'retired' ? (
+        <RetireDialog agentId={agentId} initialMode={control} onClose={() => setControl(null)} />
       ) : null}
       {content[tab]}
     </>

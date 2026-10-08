@@ -7,7 +7,7 @@ import {
   formatDue,
   minutesBetween,
 } from '../../lib/clock'
-import { personName } from '../board/selectors'
+import { onBoard, personName } from '../board/selectors'
 
 export const isOpen = (e: AgentException) => e.state !== 'resolved' && e.state !== 'dismissed'
 export const isOverdue = (e: AgentException, now: string) => isOpen(e) && e.deadline < now
@@ -231,7 +231,7 @@ const OUT_OF_SCOPE: Status[] = ['crit', 'warn', 'review']
 export function selectDigest(s: DemoState, personaId: PersonaId) {
   const { divisionId } = selectInboxHeader(s, personaId)
   const division = s.divisions.find((d) => d.id === divisionId)
-  const agents = s.agents.filter((a) => !divisionId || a.divisionId === divisionId)
+  const agents = s.agents.filter((a) => onBoard(a) && (!divisionId || a.divisionId === divisionId))
   const within = agents.filter((a) => !OUT_OF_SCOPE.includes(a.judgment.status)).length
   const pages = s.divisions.filter((d) => (!divisionId || d.id === divisionId) && d.page).length
   const open = s.exceptions.filter((e) => isOpen(e) && !isSnoozed(e, s.now))

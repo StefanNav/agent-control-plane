@@ -1,5 +1,11 @@
 import type { AgentAction } from '../types'
 
+/** Privilege and checks in force on 08 Dec, recorded with each action (7a, 7b). */
+const CONTEXT: Record<string, AgentAction['context']> = {
+  'med-rec': { privilege: 'PRV-0142 v3 · Draft', checks: 4, conditions: ['C1 · pharmacist signs'] },
+  'discharge-meds': { privilege: 'PRV-0127 v2 · Draft', checks: 1, conditions: ['C1 · pharmacist signs'] },
+}
+
 /** A recent action shown in a list; only ACT-88213 has its full trace (E7 7b). */
 function recent(code: string, at: string, agentId: string, title: string, actingFor: string, reviewerOutcome: string, blockedBy?: string): AgentAction {
   return {
@@ -9,10 +15,11 @@ function recent(code: string, at: string, agentId: string, title: string, acting
     title,
     agentId,
     agentVersion: agentId === 'med-rec' ? 'v1.3.0' : 'v2.0.1',
-    sop: agentId === 'med-rec' ? 'v1.3' : 'v2.0',
+    sop: agentId === 'med-rec' ? 'v1.3.1' : 'v2.0',
     actingFor,
     reviewerOutcome,
     ...(blockedBy ? { blockedBy } : {}),
+    ...(CONTEXT[agentId] ? { context: CONTEXT[agentId] } : {}),
     steps: [],
   }
 }
@@ -27,10 +34,12 @@ export const actions: AgentAction[] = [
     title: 'Draft med list · encounter 4417',
     agentId: 'med-rec',
     agentVersion: 'v1.3.0',
-    sop: 'v1.3',
+    sop: 'v1.3.1',
+    sopHash: '7f3a·c210',
     actingFor: 'Ana R., PharmD · 7 West',
     blockedBy: 'HS-04 v2',
     reviewerOutcome: 'Edited 1 line, signed',
+    context: CONTEXT['med-rec'],
     steps: [
       { at: '2026-12-08T09:38:02.114', kind: 'input', title: 'Admission to 7 West · encounter 4417', detail: 'MRN ••4821 · triggered by ADT A01 · assigned pharmacist Ana R.' },
       { at: '2026-12-08T09:38:02.870', kind: 'tool', title: 'epic.read_home_meds(enc 4417)', detail: '9 medications · 212 ms' },
@@ -48,9 +57,12 @@ export const actions: AgentAction[] = [
       { at: '2026-12-08T09:38:05.104', kind: 'output', title: 'Draft med list · 9 lines, 1 flagged', detail: 'Pended to the 7 West pharmacist worklist' },
       { at: '2026-12-08T09:44:31.000', kind: 'reviewer', title: 'Edited 1 line, signed', detail: 'Ana R., PharmD · kept metoprolol at 25 mg · 6 min 26 s after output' },
     ],
-  },  recent('ACT-88207', '2026-12-08T09:31:00', 'med-rec', 'Draft med list · enc 4415', 'Jo K., PharmD · 8 East', 'Signed as is'),
-  recent('ACT-88199', '2026-12-08T09:24:00', 'med-rec', 'Draft med list · enc 4412', 'Jo K., PharmD · 8 East', 'Waiting for review', 'HS-04 v2'),
+  },
+  recent('ACT-88207', '2026-12-08T09:31:00', 'med-rec', 'Draft med list · enc 4415', 'Jo K., PharmD · 8 East', 'Signed as is'),
+  recent('ACT-88199', '2026-12-08T09:24:51', 'med-rec', 'Draft med list · enc 4412', 'Jo K., PharmD · 8 East', 'Edited 1 line, signed', 'HS-04 v2'),
   recent('ACT-88188', '2026-12-08T09:12:00', 'med-rec', 'Draft med list · enc 4409', 'Ana R., PharmD · 7 West', 'Signed as is'),
+  // The first of today's three blocked admissions (7a).
+  recent('ACT-88171', '2026-12-08T09:02:17', 'med-rec', 'Draft med list · enc 4403', 'Ana R., PharmD · 7 West', 'Edited 1 line, signed', 'HS-04 v2'),
   recent('ACT-88236', '2026-12-08T09:41:07', 'discharge-meds', 'Draft med list · enc 5120', 'Ana R., PharmD · 7 West', 'Signed as is'),
   recent('ACT-88231', '2026-12-08T09:36:52', 'discharge-meds', 'Draft med list · enc 5117', 'Ana R., PharmD · 7 West', 'Edited'),
 ]
