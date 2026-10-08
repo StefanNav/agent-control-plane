@@ -8,5 +8,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    // Process CSS so `?raw` imports and CSS Module class names are real in tests.
+    css: true,
   },
 })

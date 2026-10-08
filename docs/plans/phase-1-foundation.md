@@ -139,7 +139,7 @@ git commit -m "chore: scaffold Vite + React + TS app with check gate"
 
 Light values go on `:root`; dark values on `[data-theme="dark"]`. Every colour is written `oklch(L C H)`.
 
-- [ ] **Step 1: Write the failing token test** in `src/design-system/tokens.test.ts`
+- [x] **Step 1: Write the failing token test** in `src/design-system/tokens.test.ts`
 
 Import the file as text (`import css from './tokens.css?raw'`). Split it into the `:root { … }` block and the `[data-theme="dark"] { … }` block. A table in the test lists every light and dark pair above (except the `--cs-fill` dark value, which is asserted only to exist). Assertions:
 
@@ -156,7 +156,7 @@ test('dark --cs-fill is defined', () => {
 ```
 with entries such as `['--cs-ink', 'oklch(0.21 0.004 90)']` and `['--cs-acc-fill', 'oklch(0.43 0.15 268)']` (dark).
 
-- [ ] **Step 2: Write the failing focus test** in `src/design-system/focus.test.ts`
+- [x] **Step 2: Write the failing focus test** in `src/design-system/focus.test.ts`
 
 ```ts
 test('Tab turns keyboard mode on, mousedown turns it off', () => {
@@ -171,20 +171,20 @@ test('arrow keys also turn keyboard mode on', () => { /* ArrowDown → 'true' */
 test('cleanup removes listeners', () => { /* after stop(), Tab leaves dataset.keyboard undefined */ })
 ```
 
-- [ ] **Step 3: Run both; verify they fail**
+- [x] **Step 3: Run both; verify they fail**
 
 Run: `pnpm test src/design-system`
 Expected: FAIL (missing file / missing export)
 
-- [ ] **Step 4: Implement**
+- [x] **Step 4: Implement**
   - `tokens.css` per the table.
   - `type.module.css`: one class per row of the handoff Typography table (`pageTitle` 24/32 600 −0.01em; `statValue` 20/28 600; `sectionTitle` 18/24 600; `body` 16/24; `ui` 14/20; `dense` 13/18; `meta` 12/16 `--cs-meta`; `mono` Plex Mono 12/16; `label` Mono 12/16 600 uppercase +0.05em `--cs-meta`; `wordmark` 14 600 +0.04em).
   - `global.css`: `body { margin:0; background: var(--cs-bg); color: var(--cs-ink); font-family: 'IBM Plex Sans', sans-serif; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased }`; `button { font: inherit }`; `:root:not([data-keyboard]) *:focus { outline: none }`; `:root[data-keyboard] :focus-visible { outline: 2px solid var(--cs-focus); outline-offset: 1px }`; `@media (prefers-reduced-motion: reduce) { * { transition: none !important } }`.
   - `focus.ts`: `installKeyboardFocusMode(doc = document)` listens for `keydown` (Tab, ArrowUp/Down/Left/Right) → `dataset.keyboard = 'true'`; `mousedown` → delete; returns cleanup.
   - `main.tsx`: import `@fontsource/ibm-plex-sans/400.css`, `/600.css`, same for mono; then `tokens.css`, `global.css`; call `installKeyboardFocusMode()`.
 
-- [ ] **Step 5: Run; verify pass.** Run: `pnpm test src/design-system` → PASS
-- [ ] **Step 6: Commit** `git commit -m "feat(ds): Countersign tokens, type roles, global styles, keyboard focus mode"`
+- [x] **Step 5: Run; verify pass.** Run: `pnpm test src/design-system` → PASS
+- [x] **Step 6: Commit** `git commit -m "feat(ds): Countersign tokens, type roles, global styles, keyboard focus mode"`
 
 ### Task 1.3: Icon set
 

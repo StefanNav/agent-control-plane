@@ -1,0 +1,62 @@
+/* Type roles from docs/design-handoff.md → "Typography". Plex 400/600 only. */
+.pageTitle {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+}
+
+.statValue {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.body {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.ui {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.dense {
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.meta {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.mono {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.label {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cs-meta);
+}
+
+.wordmark {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
