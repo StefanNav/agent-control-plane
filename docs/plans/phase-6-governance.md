@@ -1009,7 +1009,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     2. **Sam** can revoke a Discharge Meds tool.
     3. **Dana** removes it, and Sam's control is locked again.
 - [x] **Step 2:** `pnpm check` and `pnpm e2e` green.
-- [ ] **Step 3: Checkpoint** per the BUILD_PLAN protocol:
+- [x] **Step 3: Checkpoint** per the BUILD_PLAN protocol:
   - Push, then open the PR "Phase 6: Governance and fast follows" with `Closes #7`.
   - Run the fresh whole-branch review and apply its fixes test-first.
   - Visual QA of 8a, 8b, 9a, 9b, 10a, 10b, 11a and 11b against their scenarios; tick them in the frame tracker.

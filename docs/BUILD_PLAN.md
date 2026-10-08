@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 6: Governance and fast follows (◐ in progress) |
+| **Current phase** | Phase 6: Governance and fast follows (⏸ at checkpoint, awaiting Stefan's review) |
 | **Branch** | `phase-6-governance` |
-| **Last completed** | Phase 5 approved and squash-merged (PR #15) (2026-10-08) |
-| **Next task** | Phase 6 Task 6.1: division settings, lapse policy and escalation chain (seed v7) |
+| **Last completed** | Phase 6 built, fresh-reviewed and fixed; PR #16 open (2026-10-08) |
+| **Next task** | Stefan reviews PR #16 on the preview → squash-merge → Phase 7 Task 7.0 (write `docs/plans/phase-7-autonomy.md`; read Phase 6's handoff notes first) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none open |
+| **Latest preview** | https://agent-control-plane-git-phase-6-governance-stefannavs-projects.vercel.app (PR [#16](https://github.com/StefanNav/agent-control-plane/pull/16); behind Vercel login) |
 
 ### How to resume in a new session
 
@@ -94,7 +94,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 3 | Command Board and inbox | ☑ Merged | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | [#13](https://github.com/StefanNav/agent-control-plane/pull/13) | [phase-3-board-inbox.md](plans/phase-3-board-inbox.md) |
 | 4 | Controls and audit | ☑ Merged | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | [#14](https://github.com/StefanNav/agent-control-plane/pull/14) | [phase-4-controls-audit.md](plans/phase-4-controls-audit.md) |
 | 5 | Onboarding and go-live | ☑ Merged | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | [#15](https://github.com/StefanNav/agent-control-plane/pull/15) | [phase-5-onboarding.md](plans/phase-5-onboarding.md) |
-| 6 | Governance and fast follows | ◐ In progress | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | – | [phase-6-governance.md](plans/phase-6-governance.md) |
+| 6 | Governance and fast follows | ⏸ At checkpoint | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | [#16](https://github.com/StefanNav/agent-control-plane/pull/16) | [phase-6-governance.md](plans/phase-6-governance.md) |
 | 7 | Earned autonomy | ☐ Not started | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | – | to write (Task 7.0) |
 | 8 | Stories and portfolio layer | ☐ Not started | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | – | to write (Task 8.0) |
 | 9 | Polish and launch | ☐ Not started | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | – | to write (Task 9.0) |
@@ -416,18 +416,54 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 **Goal:** Divisions and access, change detection, clinician feedback, reviewer behaviour (E8, E9, E10, E11).
 
 - [x] 6.0 Write `docs/plans/phase-6-governance.md`; commit
-- [ ] 6.1 Division settings 8a (owner, sponsor, lapse policy that acts on save and when the clock moves, escalation chain; seed v7)
-- [ ] 6.2 New division and split (composed from 8a; the board takes a sixth division)
-- [ ] 6.3 People and roles 8b (Sam gets a second division; `can()` results follow the role change; add, remove, invite)
-- [ ] 6.4 Epic stand-in `/epic`: flag in one action 10a (reason prefilled from Ana's edit; the flag reaches Marcus's inbox)
-- [ ] 6.5 New version held at the gateway 9a (v1.5.0; re-validate before it serves; `change-detected-v150`)
-- [ ] 6.6 "Fixed in v1.5.0" 10b (`?day=later`, scenario `epic-fixed-later`)
-- [ ] 6.7 Unregistered caller 9b (flagged to Dana; start onboarding from REQ-0081)
-- [ ] 6.8 Reviewer behaviour 11a and drill into 6 North 11b (by unit and shift, never by named pharmacist; Priya signs the sampling change)
-- [ ] 6.9 E2E journeys (flag → v1.5.0 → fixed; access follows accountability); checkpoint
+- [x] 6.1 Division settings 8a (owner, sponsor, lapse policy that acts on save and when the clock moves, escalation chain; seed v7)
+- [x] 6.2 New division and split (composed from 8a; the board takes a sixth division)
+- [x] 6.3 People and roles 8b (Sam gets a second division; `can()` results follow the role change; add, remove, invite)
+- [x] 6.4 Epic stand-in `/epic`: flag in one action 10a (reason prefilled from Ana's edit; the flag reaches Marcus's inbox)
+- [x] 6.5 New version held at the gateway 9a (v1.5.0; re-validate before it serves; `change-detected-v150`)
+- [x] 6.6 "Fixed in v1.5.0" 10b (`?day=later`, scenario `epic-fixed-later`)
+- [x] 6.7 Unregistered caller 9b (flagged to Dana; start onboarding from REQ-0081)
+- [x] 6.8 Reviewer behaviour 11a and drill into 6 North 11b (by unit and shift, never by named pharmacist; Priya signs the sampling change)
+- [x] 6.9 E2E journeys (flag → v1.5.0 → fixed; access follows accountability); checkpoint
 
 **Done when:** frames 8a, 8b, 9a, 9b, 10a, 10b, 11a, 11b built and visually checked.
-**Handoff notes:** _written at the end of the phase._
+**Handoff notes (Phase 6 → Phase 7)**
+
+- **What exists**
+  - Settings (E8):
+    - `/settings/divisions/:id` (8a): owner, sponsor, lapse policy, grace, escalation chain; `?tab=agents` (composed); `?split=1` / `?new=1` open the composed new-division modal
+    - `/settings/people` (8b, `?person=`): roles add / remove / invite; the capability list is `can()` on the chosen role alone
+  - Changes (E9.1): the agent view's Changes tab (9a) for agents with a change record; `src/store/changes.ts` (`applyDeploy`, `applyReplay`, `applySystemsSignOff`, `applyHardStopApproval`, `applyAccept`, `withdrawExpiredChanges`); catalogue `V150`
+  - Gateway (E9.2): `/inventory/unregistered(/:callerId)` (9b, `?tab=low|dismissed`); `state.callers`; Dana's caller items; REQ-0081 → `discharge-huddle` (AGT-0180)
+  - Epic (E10): `/epic` (10a, 10b; `?day=later` loads `epic-fixed-later`); `state.epicDrafts`, `state.flags`; flag items `kind: 'flag'` in the owner's inbox
+  - Reviewers (E11): `/operations/reviewers` (11a, `?division=`, `?weeks=4`) and `/:unitId` (11b, `?respond=`); catalogue `REVIEWER_STATS`; `state.reviewChanges`; the division tab strip `DivisionTabs` (Board · Reviewer behaviour) on 4b, 11a, 11b
+  - Store actions (all on `runAction`): `updateDivisionSettings`, `createDivision`, `addRole`, `removeRole`, `invitePerson`, `flagDraft`, `answerFlag`, `dismissFixNotice`, `startReplay`, `signOffSystems`, `approveChangeHardStop`, `acceptChange`, `blockCaller`, `dismissCaller`, `messageCallerOwner`, `proposeReviewChange`, `signReviewChange`, `declineReviewChange`, `shareReviewerFinding`
+  - New `PermAction`s: `flagDraft` (frontline), `revalidateChange` (owner), `decideCaller` (program lead), `proposeReviewChange` (owner, program lead), `signReviewChange` (sponsor); `manageDivisions` is now used; technical owners gain `pause`
+- **Time model (R1).** v2 frames are re-dated with `fromMarch(iso, E10_SHIFT | E11_SHIFT)` (`src/data/seed/redate.ts`). Phase 7's E12–E15 (also "March 2027") should follow the same rule: put each frame's "today" on the day it is shown and shift its other dates.
+- **The clock** (`src/data/scenarios/clock.ts`): `advanceClock` keeps live heartbeats live however often it moves, then raises overdue reviews, applies lapse policies and withdraws expired held builds (each idempotent). `settleBefore(s, day)` marks earlier items handled for scenarios that skip days.
+- **Seed v7:** division `graceDays` and `escalation`; role `since`; flags FB-2277…FB-2290; Epic draft DR-88412 and ACT-88209; three unregistered callers plus 7 low-volume and 12 dismissed; REQ-0081.
+- **Review fixes (fresh reviewer, all test-first; 2 minors re-graded up):**
+  - I1: after a grace period the lapse acts at 17:00 when the overdue item falls due (so 9a at 09:52 shows Duplicate Rx still at Draft, lapsing that evening); a grace change moves open deadlines; 3d's notice follows the policy and says what happened once it acted.
+  - I2: a technical-owner role can't be removed while the person is named technical owner of agents in that division.
+  - I3: items from a non-persona or with no agent name their source (no "—" or "undefined"); hand-offs with a link have no "goes to" line.
+  - I4: `Privilege.lapsedAt` marks that the policy acted, so a resume or a later save doesn't pause again.
+  - I5: items about a unit carry `divisionId` and follow role changes; a split hands the moved agents' owner and sponsor items over.
+  - M6 (re-graded): someone left with no role reads "No division".
+  - M9 (re-graded): October rewinds drop later callers, flags, Epic drafts, changes and review changes.
+- **Deferred minors** (see the session's final message for the full list): empty-slug names; "Priya told" as a shared log row; same-save sponsor + escalation edit; snoozing agent-less items; three a11y nits (nested <main> on /epic, `htmlFor` in read-only settings, 9a's check state visual only); 9a's timeline without days; one reason text for every unit's proposal; week-old leftovers after the skip; "In progress · <owner>" names the current owner; lapses act on disabled agents; two comments glued to braces.
+- **Gotchas**
+  - Exceptions with `agentId: ''` (caller and unit items): every list that looks up the agent must tolerate it (the 4f board filters them out).
+  - `advanceClock(s, to)` captures the old clock first; `applyLapses(s, from)` uses it to date a lapse.
+  - Scenarios that skip days call `settleBefore` so last week's items don't sit overdue.
+  - The Epic page lives in the prototype shell: no TopNav, and `?scenario=` still works there.
+
+- **What Phase 7 needs to know**
+  - E13's sampling queue and review levels: 11b's signed "sampling" change leaves `state.reviewChanges` entries (`until` = +14 days); the 6 North rate reads 20 % while it runs. The "Sampling" division tab is left for Phase 7 to add to `DivisionTabs`.
+  - E15 step-down: PRV-0142's "New version" trigger must not fire for a build accepted through re-validation (R10). 11a's "7 West and 8 East: see the step-down in E15" line was left out; add it when a step-down exists.
+  - Items about a caller or a unit have `agentId: ''`; the Exceptions-first board skips them. Any new list of exceptions that looks up the agent must do the same.
+  - `can()` and `lockReason()` take any person id.
+
+
 
 ## Phase 7: Earned autonomy
 
@@ -520,14 +556,14 @@ Tick **Built** when the screen exists at its route; tick **QA'd** after the side
 | 3b | Sample case | `/operations/agents/med-rec/cases/:id` | 5 | ☑ | ☑ |
 | 3c | Sign the privilege | `/inventory/privileges/prv-0142/sign` | 5 | ☑ | ☑ |
 | 3d | My privileges | `/portfolio/privileges` | 5 | ☑ | ☑ |
-| 8a | Division settings | `/settings/divisions/medications` | 6 | ☐ | ☐ |
-| 8b | People and roles | `/settings/people` | 6 | ☐ | ☐ |
-| 9a | Version held at gateway | agent view | 6 | ☐ | ☐ |
-| 9b | Unregistered caller | `/inventory/unregistered/:id` | 6 | ☐ | ☐ |
-| 10a | Flag from Epic | `/epic` | 6 | ☐ | ☐ |
-| 10b | Fixed in v1.5.0 | `/epic?day=later` | 6 | ☐ | ☐ |
-| 11a | Reviewer behaviour | `/operations/reviewers` | 6 | ☐ | ☐ |
-| 11b | Drill into 6 North | `/operations/reviewers/6-north` | 6 | ☐ | ☐ |
+| 8a | Division settings | `/settings/divisions/medications` | 6 | ☑ | ☑ |
+| 8b | People and roles | `/settings/people` | 6 | ☑ | ☑ |
+| 9a | Version held at gateway | `/operations/agents/med-rec?tab=changes` (`change-detected-v150`) | 6 | ☑ | ☑ |
+| 9b | Unregistered caller | `/inventory/unregistered(/:id)` | 6 | ☑ | ☑ |
+| 10a | Flag from Epic | `/epic` | 6 | ☑ | ☑ |
+| 10b | Fixed in v1.5.0 | `/epic?day=later` | 6 | ☑ | ☑ |
+| 11a | Reviewer behaviour | `/operations/reviewers` | 6 | ☑ | ☑ |
+| 11b | Drill into 6 North | `/operations/reviewers/6-north` | 6 | ☑ | ☑ |
 | 12a | RUAIH coverage | `/reports/evidence` | 7 | ☐ | ☐ |
 | 12b | Export packet | `/reports/evidence/med-rec` | 7 | ☐ | ☐ |
 | 13a | Review level and rules | `/portfolio/activities/:id` | 7 | ☐ | ☐ |
@@ -598,6 +634,16 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-08 | `rewindTo` keeps other agents' privileges but rolls a later signing back one cycle at a time; boards calm; export facts hold only from 08 Dec | R1, review fixes I4/I5 |
 | 2026-10-08 | `awaiting-signature` now runs at 06 Nov 09:52 by replay | R17, replaces Phase 2's compromise |
 | 2026-10-08 | My privileges lists everything the sponsor signed (17); renewals re-sign at the same level and close the overdue exception; overdue reviews are raised when a scenario moves the clock | R13, 3d |
+| 2026-10-08 | v2 frames (E9–E11, drawn March 2027) are re-dated: each frame's "today" becomes the day it is shown (10a, 9b, 11a, 11b at 08 Dec; 9a 15 Dec; 10b 17 Dec); other dates shift with it via `fromMarch`. Live Med Rec stays v1.3.0 · SOP v1.3.1; v1.5.0 is the held build | Phase 6 R1; one hospital, one clock |
+| 2026-10-08 | Ana's live flag is FB-2291 (seed flags stop at FB-2290); the eye-drops flag becomes FB-2286 | R2 |
+| 2026-10-08 | Settings act: the lapse policy applies on save and whenever the clock moves (Duplicate Rx lapses on 15 Dec); escalation follows the division's chain (first past the deadline, then the second after 4 h); a lapsed privilege is re-signed through 3c's renewal | R4 |
+| 2026-10-08 | Changing a division's owner or sponsor moves the role, the agents and their open items; FYIs ("Priya told", "Share with Priya") are log events with a `to` list | R5, R18 |
+| 2026-10-08 | Roles decide scope: a technical-owner role in a division covers its agents, and the named technical owner may act on their agent; technical owners may pause (8b) | R7 |
+| 2026-10-08 | 9a: Med Rec already reads Pyxis, so v1.5.0's systems change is a wider Epic read; the replay finishes at once; a held build sets "Re-validation needed"; skipping days settles last week's items | R9–R12 |
+| 2026-10-08 | Epic stand-in uses its own `--cs-ehr-*` tokens; the stand-in's buttons only explain they belong to Epic; Ana's draft trace is ACT-88209 | R13 |
+| 2026-10-08 | 9b's intake is REQ-0081 "Discharge Huddle Summary Agent" (AGT-0180), so 8c reads "Intake · 3"; caller and sampling items have no agent and stay off the agent boards | R3, R16 |
+| 2026-10-08 | Reviewer behaviour sits behind a division tab strip (Board · Reviewer behaviour) on 4b, 11a and 11b; 4 or 8 weeks; Priya signs sampling changes on 11b | R17 |
+
 
 ## Session log
 
@@ -618,3 +664,4 @@ One row per working session. Newest last.
 | 2026-10-08 | 4 | Stefan approved; PR #14 squash-merged; #5 closed | Phase 5 Task 5.0 (new session) |
 | 2026-10-08 | 5 | Built Phase 5 (seed v6, onboarding records and rewind, 1a–1i, 2a–2d, 3a–3d, journey e2e) with side-by-side visual checks. Fresh review: 1 Critical + 7 Important fixed test-first, docs updated; 11 minors deferred (see handoff notes). PR #15 open | Stefan reviews Phase 5 → merge → Phase 6 Task 6.0 |
 | 2026-10-08 | 5 | Stefan approved; PR #15 squash-merged; #6 closed | Phase 6 Task 6.0 |
+| 2026-10-08 | 6 | Built Phase 6 (seed v7, division settings and split, people and roles, Epic flag and fix, v1.5.0 held at the gateway, unregistered callers, reviewer behaviour, 2 journeys) with side-by-side visual checks. Fresh review: 5 Important + 2 re-graded fixed test-first; 11 minors deferred (see handoff notes). PR #16 open | Stefan reviews Phase 6 → merge → Phase 7 Task 7.0 |
