@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 2: Components and data (◐ in progress) |
+| **Current phase** | Phase 2: Components and data (⏸ at checkpoint, awaiting Stefan's review of PR #12) |
 | **Branch** | `phase-2-components-data` |
-| **Last completed** | Phase 1 approved and squash-merged (PR #11), production deploys from `main` (2026-10-08) |
-| **Next task** | Phase 2 Task 2.1 in [`docs/plans/phase-2-components-data.md`](plans/phase-2-components-data.md) |
-| **Blockers** | None |
+| **Last completed** | Phase 2 Tasks 2.0–2.10, fresh review fixes applied (2026-10-08) |
+| **Next task** | After Stefan approves: squash-merge [PR #12](https://github.com/StefanNav/agent-control-plane/pull/12), close #3, set Phase 2 ☑ Merged, then Phase 3 Task 3.0 (write `docs/plans/phase-3-board-inbox.md`) |
+| **Blockers** | Stefan reviewing Phase 2 |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none open |
+| **Latest preview** | PR #12 → Vercel preview (behind Vercel login) |
 
 ### How to resume in a new session
 
@@ -90,7 +90,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 |---|---|---|---|---|---|---|
 | 0 | Setup | ☑ Merged | `main` | [#1](https://github.com/StefanNav/agent-control-plane/issues/1) | no PR (docs on `main`) | [phase-0-setup.md](plans/phase-0-setup.md) |
 | 1 | Foundation | ☑ Merged | `phase-1-foundation` | [#2](https://github.com/StefanNav/agent-control-plane/issues/2) | [#11](https://github.com/StefanNav/agent-control-plane/pull/11) | [phase-1-foundation.md](plans/phase-1-foundation.md) |
-| 2 | Components and data | ◐ In progress | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | – | [phase-2-components-data.md](plans/phase-2-components-data.md) |
+| 2 | Components and data | ⏸ At checkpoint | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | [#12](https://github.com/StefanNav/agent-control-plane/pull/12) | [phase-2-components-data.md](plans/phase-2-components-data.md) |
 | 3 | Command Board and inbox | ☐ Not started | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | – | to write (Task 3.0) |
 | 4 | Controls and audit | ☐ Not started | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | – | to write (Task 4.0) |
 | 5 | Onboarding and go-live | ☐ Not started | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | – | to write (Task 5.0) |
@@ -176,19 +176,55 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 **Goal:** The 10 Countersign product components and the whole mock data layer, with persona switching working.
 
 - [x] 2.0 Write `docs/plans/phase-2-components-data.md`; commit
-- [ ] 2.1 Domain types `src/data/types.ts` (spec §6.1; settle field shapes by reading the frames; log choices)
-- [ ] 2.2 Clock and formatters `src/lib/clock.ts`, `src/lib/format.ts`: `DEMO_NOW`, `formatClock`, `formatDay`, `formatRelative` ("in 48 min", "Overdue 12 min"), `formatMs` (`09:38:04.512`); tests use frame values
-- [ ] 2.3 Seed `src/data/seed/*`: people, role assignments, 5 divisions, 41 agents (Medications fully detailed), activities, privileges, hard stops, grants, exceptions, actions, incidents; invariant tests (counts 6/20/8/4/3, referential integrity, unique IDs)
-- [ ] 2.4 Permissions `src/store/permissions.ts`: `can(personaId, action, ctx)`; table-driven test mirroring spec §7
-- [ ] 2.5 Store `src/store/*`: Zustand + persist (versioned key, migrate-to-seed), persona slice, audit log, actions guarded by `can()`; **Review focus 1, 2, 5 tests**
-- [ ] 2.6 Scenarios `src/data/scenarios/*`: registry + `loadScenario(id)`; one test per scenario from spec §6.3
-- [ ] 2.7 Product components 01–05: StatusChip, AgentRow, ExceptionItem, PrivilegeCard, AutonomyLadder (design handoff data rules as tests)
-- [ ] 2.8 Product components 06–10: HardStopCard + InstructionCard, SystemsVerbsGrid, PauseDialog + ResumeDialog, ActionTrace, MonitorHealth
-- [ ] 2.9 Gallery: components section in light and dark (`data-theme="dark"` wrapper)
-- [ ] 2.10 Prototype bar: PersonaSwitcher, Reset demo; TopNav avatar from persona; persona landing routes (spec §4.4); checkpoint
+- [x] 2.1 Domain types `src/data/types.ts` (spec §6.1; settle field shapes by reading the frames; log choices)
+- [x] 2.2 Clock and formatters `src/lib/clock.ts`, `src/lib/format.ts`: `DEMO_NOW`, `formatClock`, `formatDay`, `formatRelative` ("in 48 min", "Overdue 12 min"), `formatMs` (`09:38:04.512`); tests use frame values
+- [x] 2.3 Seed `src/data/seed/*`: people, role assignments, 5 divisions, 41 agents (Medications fully detailed), activities, privileges, hard stops, grants, exceptions, actions, incidents; invariant tests (counts 6/20/8/4/3, referential integrity, unique IDs)
+- [x] 2.4 Permissions `src/store/permissions.ts`: `can(personaId, action, ctx)`; table-driven test mirroring spec §7
+- [x] 2.5 Store `src/store/*`: Zustand + persist (versioned key, migrate-to-seed), persona slice, audit log, actions guarded by `can()`; **Review focus 1, 2, 5 tests**
+- [x] 2.6 Scenarios `src/data/scenarios/*`: registry + `loadScenario(id)`; one test per scenario from spec §6.3
+- [x] 2.7 Product components 01–05: StatusChip, AgentRow, ExceptionItem, PrivilegeCard, AutonomyLadder (design handoff data rules as tests)
+- [x] 2.8 Product components 06–10: HardStopCard + InstructionCard, SystemsVerbsGrid, PauseDialog + ResumeDialog, ActionTrace, MonitorHealth
+- [x] 2.9 Gallery: components section in light and dark (`data-theme="dark"` wrapper)
+- [x] 2.10 Prototype bar: PersonaSwitcher, Reset demo; TopNav avatar from persona; persona landing routes (spec §4.4); checkpoint
 
 **Done when:** gallery matches `designs/Countersign Components.dc.html` side by side in light and dark; switching persona changes avatar and lock states; Reset demo restores seed.
-**Handoff notes:** _written at the end of the phase._
+**Handoff notes (2026-10-08):**
+- **What exists**
+  - `src/data/`: `types.ts` (the domain model; `DemoState` is everything), `seed/` (`createSeed()`, `SEED_VERSION = 1`) and `scenarios/` (`buildScenario(id)`: baseline, med-rec-paused, resume-requested, awaiting-signature, step-down-threshold).
+  - `src/lib/`: `clock.ts` (`DEMO_NOW` and formatters that take an explicit `now`) and `trend.ts` (`trendPoints(index, { end, drift })` reproduces the design's sparklines).
+  - `src/store/`:
+    - `index.ts`: `useDemo` (the app store), `createDemoStore(storage)` for tests, and `dataOf()`.
+    - `runAction.ts`: the only way to change state; it checks `can()` and writes the audit log.
+    - `permissions.ts`: `can(state, personaId, action, ctx)` and `lockReason()`.
+    - `storage.ts`: `safeStorage` (localStorage with a memory fallback) and `createMemoryStorage()`.
+    - `selectors.ts`: `selectPersona` and `selectCan`.
+  - `src/components/`: the 10 product components, all pure and exported from `src/components/index.ts`, each with a view-model type (`AgentRowView`, `ExceptionView`, `PrivilegeCardView`, `ActionTraceView`, …).
+  - `src/prototype/`: `personas.ts` (`PERSONAS` with landing routes), `PersonaSwitcher`, the wired `PrototypeBar`, and `ComponentGallery` (`fixtures.tsx` holds the component-sheet data verbatim).
+- **How to show data on a screen:** write a selector that maps domain objects to a component's view model, formatting times with `src/lib/clock.ts` against `state.now`. Keep components pure.
+- **How to add a state change:** add a method to `DemoActions` in `src/store/index.ts` that calls `act({ action, ctx, audit, mutate })`, with a failing store test first. If the seed or `DemoState` shape changes, bump `SEED_VERSION`.
+- **Review fixes (fresh reviewer, all test-first)**
+  - Saved state is used only if it's a full snapshot of the current seed version with a known persona.
+  - `claimException` refuses already-claimed or resolved items and makes the claimer the owner.
+  - `can()` fails closed on unknown agents.
+  - Dana keeps exactly the program-lead column: new sponsors Hana (Imaging referrals) and Owen (Patient messages).
+  - Omar is technical owner outside Medications.
+  - `resume-requested` keeps the 09:52 clock (paused at 07:38). `SEED_VERSION` is 2.
+- **Deferred to later phases:** in dark mode, white icons on ink surfaces (the hard-stop lock and the resume dialog's "done" check) should use `--cs-raised`. Persona names live in both the seed and `PERSONAS`. An ESLint `no-restricted-imports` rule could keep `src/components` free of store imports.
+- **Seed facts**
+  - The 20 Medications agents are verbatim from the division view's `AG` array.
+  - The other 21 agents are invented, except Prior Auth Agent and Discharge Summary Agent.
+  - Baseline privileges follow the 08 Dec division view.
+  - Inbox times are aligned to 09:52. Phase 3 refines exceptions against the E5 frames and bumps `SEED_VERSION`.
+- **Gotchas**
+  - After renaming a module's file extension, restart the Vite dev server, or it keeps resolving the old path and the page goes blank.
+  - Chrome serializes custom-property colours differently from computed colours, so tests should compare resolved colours.
+  - `Menu` sets its own ink and focus colour, so it reads correctly inside the dark prototype bar.
+  - Board-density table rows are exactly 32 px with no vertical padding.
+- **What Phase 3 needs**
+  - Selectors for the hospital board (division summaries), the division rows (`AgentRowView` from agents, activities and privileges, with `trendPoints(index, metrics.trend)`) and the inbox groups (`ExceptionView`, overdue computed from `state.now`).
+  - Entity "Not found" for unknown ids (Review focus 4).
+  - Consider roving tabindex for long boards.
+  - Match the E5 frames' copy and times.
 
 ## Phase 3: Command Board and inbox
 
@@ -229,6 +265,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 ## Phase 5: Onboarding and go-live
 
 **Goal:** Intake to signed privilege (E1, E2, E3).
+**Note from the Phase 2 review:** the permission matrix needs three additions here. Add a `requestGoLive` action for owners. Make committee go-live approval tier-aware (medium and high only). Decide whether Sam's "technical only" exception scope differs from "own agents".
 
 - [ ] 5.0 Write `docs/plans/phase-5-onboarding.md`; commit
 - [ ] 5.1 Onboarding wizard shell (6 steps: Intake, Job description, Systems and verbs, Tools and hard stops, Sponsor approval, Ready for review; marks derived from the record) + intake 1a + name the humans 2a (all four required; span-of-control warning above 7 activities)
@@ -368,7 +405,7 @@ Tick **Built** when the screen exists at its route; tick **QA'd** after the side
 | 14b | Board decides | `/portfolio/promotions/:id` | 7 | ☐ | ☐ |
 | 15a | Threshold breach | agent view | 7 | ☐ | ☐ |
 | 15b | Version change | `/portfolio/activities/:a/branches/:b` | 7 | ☐ | ☐ |
-| C | Component sheet (light + dark) | `/about/components` | 2 | ◐ primitives (Phase 1) | ☐ |
+| C | Component sheet (light + dark) | `/about/components` | 2 | ☑ | ☑ (Phase 2 visual pass) |
 
 ---
 
@@ -395,6 +432,8 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-08 | Seed: agents outside Medications are invented except Prior Auth Agent (E4) and Discharge Summary Agent (PRD); Prior Auth's rule tag `PA-11 v1` is invented | Frames name only Medications agents |
 | 2026-10-08 | Seed: baseline privileges come from the 08 Dec division view (one per Medications activity; PRV-0142 v3 Med Rec active, PRV-0127 v2, PRV-0098 v4 overdue, PRV-0131 v3); the component sheet's awaiting / lapsed / stepped-down cards (dated Oct) live in gallery fixtures and scenarios | The sheet is dated early Oct; the demo clock is 08 Dec |
 | 2026-10-08 | Seed: inbox times aligned to the 09:52 clock (sheet uses 09:42); Phase 3 refines against E5 | One consistent "now" |
+| 2026-10-08 | Invented people: Tom (Revenue cycle manager), Nina (Director of Revenue Cycle), Elena (Discharge services manager), Ravi (Imaging operations manager), Grace (Patient access manager), Hana (Director of Imaging, sponsor), Owen (Director of Patient Access, sponsor), Omar (Integration analyst, technical owner outside Medications) | Every division needs named owner, sponsor and technical owner; frames name only owners |
+| 2026-10-08 | Claiming an exception makes the claimer its owner; claimed or resolved items can't be re-claimed | Phase 2 review: "Needs me" must follow who took it |
 | 2026-10-08 | Forbidden-terms check: real company name lives only in local `.git/info/forbidden-terms`; Phase 0 history was rewritten (before any push) to remove a leaked mention | A plan step had quoted the name literally |
 
 ## Session log
@@ -408,3 +447,4 @@ One row per working session. Newest last.
 | 2026-10-08 | 0 | Fresh review: 3 Important fixed (Phase 1 Task 1.1 vs create-vite 9.2, CI pnpm version, PR issue number) + 4 minors fixed; Stefan approved; #1 closed | Phase 1 Task 1.1 |
 | 2026-10-08 | 1 | Built Phase 1 (scaffold, tokens, icons, 24 primitives, layout, route table, gallery, CI, Vercel). Fresh review: 4 Important + 3 re-graded fixed test-first; 3 minors deferred (menu hover-on-focus look, row Tab stops, dark checkbox fill). PR #11 open | Stefan reviews Phase 1 → merge → Phase 2 Task 2.0 |
 | 2026-10-08 | 1 | Stefan approved; PR #11 squash-merged; #2 closed | Phase 2 Task 2.0 |
+| 2026-10-08 | 2 | Built Phase 2 (types, clock, seed, permissions, store, scenarios, 10 product components, gallery light + dark, persona switcher, reset). Visual pass vs component sheet. Fresh review: 3 Important + 3 re-graded fixed test-first; 4 minors deferred. PR #12 open | Stefan reviews Phase 2 → merge → Phase 3 Task 3.0 |
