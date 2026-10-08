@@ -4,6 +4,9 @@
 }
 
 .panel {
+  /* A menu sets its own ink and focus colour, so it reads the same wherever it opens (e.g. the dark prototype bar). */
+  --cs-focus: var(--cs-ink);
+  color: var(--cs-ink);
   position: absolute;
   top: calc(100% + 4px);
   left: 0;

@@ -479,17 +479,17 @@ Later phases append their own types (job descriptions, scorecards, incidents, et
 - Reset demo calls `useDemo.getState().reset()` and navigates to `/operations/divisions/medications`.
 - `AppShell` passes the persona's initial to `TopNav`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - Unit: `PERSONAS` has 7 entries, and every `landing` matches a route in `routeTable`.
   - e2e:
     - Open `/operations` and choose Jordan in the switcher. The URL becomes `/operations/actions`, the avatar shows "J", and the bar reads "Viewing as Jordan".
     - Reloading keeps Jordan (persisted).
     - Reset demo returns the bar to Marcus.
     - Choosing Ana lands on `/epic`.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** `pnpm check` and `pnpm e2e`. Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(prototype): persona switcher and reset demo"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** `pnpm check` and `pnpm e2e`. Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(prototype): persona switcher and reset demo"`.
 - [ ] **Step 6: Checkpoint** per the `docs/BUILD_PLAN.md` checkpoint protocol:
   - Push, then open the PR "Phase 2: Components and data" with `Closes #3`.
   - Run the fresh whole-branch review and apply its fixes test-first.
