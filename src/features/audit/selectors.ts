@@ -23,8 +23,9 @@ export interface ActionRow {
   reviewer: string
 }
 
-/** Policy checks on an action: the agent's hard stops plus its privilege condition (C1), if any. */
+/** Policy checks on an action: as recorded with it, else the agent's hard stops plus its privilege condition (C1), if any. */
 function checksFor(s: DemoState, a: AgentAction): number {
+  if (a.context) return a.context.checks
   const stops = s.hardStops.filter((h) => h.agentId === a.agentId).length
   const conditions = s.privileges.some((p) => p.agentId === a.agentId && p.state !== 'closed' && p.conditions.length) ? 1 : 0
   return stops + conditions
@@ -77,8 +78,9 @@ export function selectTrace(s: DemoState, actionId: string) {
   }
   const policySteps = a.steps.filter((step) => step.kind === 'policyPassed' || step.kind === 'policyBlocked')
   const rows: [string, string][] = policySteps.map((step) => [step.ruleTag ?? step.title, step.kind === 'policyBlocked' ? 'blocked' : 'passed'])
-  // C1 on the privilege: a pharmacist signs every draft; the reviewer step shows it held.
-  if (privilege?.conditions.length && a.steps.some((step) => step.kind === 'reviewer')) rows.push(['C1 · pharmacist signs', 'passed'])
+  // Conditions in force when it ran (C1: a pharmacist signs every draft); the reviewer step shows it held.
+  const conditions = a.context?.conditions ?? (privilege?.conditions.length ? ['C1 · pharmacist signs'] : [])
+  if (a.steps.some((step) => step.kind === 'reviewer')) for (const c of conditions) rows.push([c, 'passed'])
   const exception = s.exceptions.find((e) => e.agentId === a.agentId && a.blockedBy && e.ruleTag === a.blockedBy)
   const sameRule = a.blockedBy
     ? s.actions.filter((x) => x.id !== a.id && x.blockedBy === a.blockedBy && x.at.slice(0, 10) === a.at.slice(0, 10)).map((x) => x.code).sort()
@@ -92,7 +94,7 @@ export function selectTrace(s: DemoState, actionId: string) {
       ['Agent', `${agent?.name} ${a.agentVersion}`],
       ['SOP', `${a.sop}${a.sopHash ? ` · hash ${a.sopHash}` : ''}`],
       ['Acting for', actingFor],
-      ['Privilege', privilege ? `${privilege.code} v${privilege.version} · ${privilege.level === 'draft' ? 'Draft' : privilege.level}` : '—'],
+      ['Privilege', a.context?.privilege ?? (privilege ? `${privilege.code} v${privilege.version} · ${privilege.level === 'draft' ? 'Draft' : privilege.level}` : '—')],
     ] as [string, string][],
     policy: rows.length ? { summary: `${rows.length} checked · ${rows.filter(([, r]) => r === 'blocked').length} blocked`, rows } : null,
     linked: {

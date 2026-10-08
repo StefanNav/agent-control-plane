@@ -118,3 +118,16 @@ describe('7d contents, counted from the record', () => {
     expect(selectExportContents(store.getState(), ['med-rec']).at(-1)).toEqual(['Pauses and resumes', '1 · with both reasons'])
   })
 })
+
+test('Important #4: past actions read as they happened, whatever changes today', () => {
+  const store = createDemoStore(createMemoryStorage())
+  store.getState().setPersona('sam')
+  store.getState().returnToShadow('med-rec-admission', 'Keep evidence flowing.')
+  store.getState().setPersona('dana')
+  store.getState().retireAgent('med-rec', { typedName: 'Med Rec Agent', reason: 'Replaced.' })
+  const st = store.getState()
+  expect(selectActions(st, { agentId: 'med-rec', policy: 'blocked' }).rows[0]!.policy).toBe('blocked · 3 passed')
+  const t = selectTrace(st, 'act-88213')!
+  expect(t.who.find(([k]) => k === 'Privilege')).toEqual(['Privilege', 'PRV-0142 v3 · Draft'])
+  expect(t.policy!.summary).toBe('4 checked · 1 blocked')
+})

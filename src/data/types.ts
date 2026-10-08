@@ -314,6 +314,8 @@ export interface AgentAction {
   blockedBy?: string
   /** "Signed as is", "Edited 1 line, signed", "Waiting for review" */
   reviewerOutcome: string
+  /** The rules in force when it ran, so the audit reads it as it happened (7a, 7b). */
+  context?: { privilege: string; checks: number; conditions: string[] }
   steps: TraceStep[]
 }
 

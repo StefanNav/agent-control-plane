@@ -1,5 +1,11 @@
 import type { AgentAction } from '../types'
 
+/** Privilege and checks in force on 08 Dec, recorded with each action (7a, 7b). */
+const CONTEXT: Record<string, AgentAction['context']> = {
+  'med-rec': { privilege: 'PRV-0142 v3 · Draft', checks: 4, conditions: ['C1 · pharmacist signs'] },
+  'discharge-meds': { privilege: 'PRV-0127 v2 · Draft', checks: 1, conditions: ['C1 · pharmacist signs'] },
+}
+
 /** A recent action shown in a list; only ACT-88213 has its full trace (E7 7b). */
 function recent(code: string, at: string, agentId: string, title: string, actingFor: string, reviewerOutcome: string, blockedBy?: string): AgentAction {
   return {
@@ -13,6 +19,7 @@ function recent(code: string, at: string, agentId: string, title: string, acting
     actingFor,
     reviewerOutcome,
     ...(blockedBy ? { blockedBy } : {}),
+    ...(CONTEXT[agentId] ? { context: CONTEXT[agentId] } : {}),
     steps: [],
   }
 }
@@ -32,6 +39,7 @@ export const actions: AgentAction[] = [
     actingFor: 'Ana R., PharmD · 7 West',
     blockedBy: 'HS-04 v2',
     reviewerOutcome: 'Edited 1 line, signed',
+    context: CONTEXT['med-rec'],
     steps: [
       { at: '2026-12-08T09:38:02.114', kind: 'input', title: 'Admission to 7 West · encounter 4417', detail: 'MRN ••4821 · triggered by ADT A01 · assigned pharmacist Ana R.' },
       { at: '2026-12-08T09:38:02.870', kind: 'tool', title: 'epic.read_home_meds(enc 4417)', detail: '9 medications · 212 ms' },
