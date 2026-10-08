@@ -1,6 +1,6 @@
-import type { AgentRowView, LadderState } from '../../components'
+import type { AgentRowView, LadderState, PrivilegeCardView } from '../../components'
 import type { Agent, AgentException, DemoState, Level, Status } from '../../data/types'
-import { formatAge, formatAgo, formatClock, formatClockSeconds, formatDate, minutesBetween } from '../../lib/clock'
+import { formatAge, formatAgo, formatClock, formatClockSeconds, formatDate, formatRelative, minutesBetween } from '../../lib/clock'
 import { trendPoints } from '../../lib/trend'
 
 /** Statuses that need a human. */
@@ -256,7 +256,7 @@ export function selectAgentOverview(s: DemoState, agentId: string) {
         id: x.id,
         code: x.code,
         at: formatClock(x.at),
-        title: x.title,
+        title: x.title.replace('encounter ', 'enc '),
         actingFor: shortName(x.actingFor),
         policy: x.blockedBy ? `${x.blockedBy} · blocked` : 'Passed',
         blocked: Boolean(x.blockedBy),
@@ -318,4 +318,71 @@ export function selectLast24h(s: DemoState) {
     pauses: String(s.agents.filter((a) => a.lifecycle === 'paused').length),
     closed: `${s.stats24h.closedEarlier + closedToday} · median ${s.stats24h.medianCloseMin} min`,
   }
+}
+
+const PRIVILEGE_STATUS = {
+  awaiting: () => 'Awaiting signature',
+  active: () => 'Active',
+  due: (s: DemoState, review?: string) => (review && review < s.now ? 'Review overdue' : `Review due ${review ? formatRelative(review, s.now) : ''}`.trim()),
+  lapsed: () => 'Lapsed to Shadow',
+  steppedDown: (_s: DemoState, _r?: string, trigger?: string) => `Stepped down${trigger ? ` by ${trigger}` : ''}`,
+} as const
+
+const PRIVILEGE_ACTION: Record<string, string> = {
+  awaiting: 'Review and sign',
+  active: 'Open record',
+  due: 'Start review',
+  lapsed: 'Re-sign',
+  steppedDown: 'Review evidence',
+}
+
+/** An agent's privileges as Privilege cards (component 04). */
+export function selectPrivilegeCards(s: DemoState, agentId: string): PrivilegeCardView[] {
+  const agent = s.agents.find((a) => a.id === agentId)
+  if (!agent) return []
+  return s.privileges
+    .filter((p) => p.agentId === agentId)
+    .map((p) => {
+      const act = s.activities.find((a) => a.id === p.activityId)
+      const level = p.state === 'awaiting' ? 'shadow' : p.level
+      const ladder: LadderState[] = LADDER[level].map((st, i) =>
+        p.proposedLevel && ['shadow', 'draft', 'supervised', 'autonomous'][i] === p.proposedLevel ? 'proposed' : st,
+      )
+      return {
+        state: p.state,
+        statusLabel: PRIVILEGE_STATUS[p.state](s, p.reviewDate, p.movedBy),
+        code: `${p.code} v${p.version}`,
+        title: act?.name ?? '',
+        scope: `${agent.name} · ${p.domain}`,
+        ladder,
+        ladderCaption: p.proposedLevel ? `${LEVEL_NAME[level]} now · ${LEVEL_NAME[p.proposedLevel]} proposed` : `${LEVEL_NAME[p.level]}${p.grantedAt ? ` since ${formatDate(p.grantedAt)}` : ''}`,
+        rows: [
+          { key: 'Granted by', value: p.grantedBy ? `${personName(s, p.grantedBy)}${p.grantedAt ? ` · ${formatDate(p.grantedAt)}` : ''}` : 'Awaiting signature' },
+          { key: 'Evidence', value: p.evidence },
+          { key: 'Conditions', value: p.conditions.length ? p.conditions.join(' · ') : 'None' },
+          { key: 'Review', value: p.reviewDate ? `${formatDate(p.reviewDate)} · ${formatRelative(p.reviewDate, s.now).replace('Overdue', 'overdue')}` : '—' },
+        ],
+        footnote:
+          p.state === 'due'
+            ? 'Lapses to Shadow if not re-signed'
+            : p.state === 'active'
+              ? `${p.stepDownTriggers.length} step-down ${p.stepDownTriggers.length === 1 ? 'trigger' : 'triggers'} armed`
+              : p.state === 'steppedDown'
+                ? 'Back to Draft needs a signature again'
+                : '',
+        actionLabel: PRIVILEGE_ACTION[p.state]!,
+      }
+    })
+}
+
+/** What happened to this agent: logged changes (audit) and routine events, newest first. */
+export function selectAgentHistory(s: DemoState, agentId: string) {
+  const agent = s.agents.find((a) => a.id === agentId)
+  if (!agent) return []
+  const codes = new Set([agent.code, agent.name, ...s.exceptions.filter((e) => e.agentId === agentId).map((e) => e.code)])
+  const audit = s.audit
+    .filter((a) => codes.has(a.target))
+    .map((a) => ({ id: a.id, at: a.at, text: `${a.action} ${a.target}`, sub: `${personName(s, a.who)}${a.reason ? ` · ${a.reason}` : ''}` }))
+  const log = s.logEvents.filter((e) => e.agentId === agentId).map((e) => ({ id: e.id, at: e.at, text: e.text, sub: e.sub ?? '' }))
+  return [...audit, ...log].sort((a, b) => b.at.localeCompare(a.at)).map((e) => ({ ...e, time: formatClock(e.at) }))
 }

@@ -195,15 +195,15 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
   - **History** (composed): its audit entries and log events as `LogRow`s.
 - An unknown agent renders NotFound (**Review focus 4**).
 
-- [ ] **Step 1: Failing e2e:**
+- [x] **Step 1: Failing e2e:**
   - `/operations/agents/med-rec` shows the "3 drafts held by HS-04 v2 need a pharmacist decision." banner, the stats "89.6 %" and "8.9 %", and the activities "Reconcile home medications" (Draft) and "Flag allergy conflicts" (Shadow).
   - The ACT-88213 link goes to `/operations/actions/act-88213`.
   - `?tab=privileges` shows a privilege card.
   - `/operations/agents/nope` shows "Page not found".
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against E4 4c.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(board): agent view with tabs"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against E4 4c.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(board): agent view with tabs"`.
 
 ### Task 3.6: Wall display (4e)
 

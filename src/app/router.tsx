@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router'
+import { AgentView } from '../features/board/AgentView'
 import { DivisionView } from '../features/board/DivisionView'
 import { HospitalBoard } from '../features/board/HospitalBoard'
 import { NotFound } from '../layout/NotFound'
@@ -15,6 +16,7 @@ const PAGES: Record<string, ReactNode> = {
   '/about/components': <ComponentGallery />,
   '/operations': <HospitalBoard />,
   '/operations/divisions/:divisionId': <DivisionView />,
+  '/operations/agents/:agentId': <AgentView />,
 }
 
 function childrenFor(shell: ShellKind): RouteObject[] {

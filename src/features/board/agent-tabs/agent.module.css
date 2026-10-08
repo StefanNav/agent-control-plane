@@ -1,0 +1,166 @@
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  column-gap: 40px;
+  align-items: start;
+  padding: 32px 40px 48px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px 40px 48px;
+}
+
+.main,
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.side {
+  gap: 16px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.label {
+  margin: 0;
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cs-meta);
+}
+
+.allLink {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-ink);
+  text-underline-offset: 3px;
+}
+
+.rowTitle {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.mono {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+}
+
+.meta {
+  color: var(--cs-meta);
+}
+
+.text2 {
+  color: var(--cs-text2);
+}
+
+.traceLink {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  color: var(--cs-ink);
+  text-underline-offset: 3px;
+}
+
+.cardHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 20px;
+}
+
+.cardTitle {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.cardSub {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.cardRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 10px;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 20px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.cardRow:has(> .dot) {
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+}
+
+.ink {
+  color: var(--cs-ink);
+}
+
+.cardValue {
+  font-size: 12px;
+  color: var(--cs-meta);
+  text-align: right;
+}
+
+.cardValueInk {
+  font-size: 14px;
+  color: var(--cs-ink);
+  text-align: right;
+}
+
+.cardSpacer {
+  height: 8px;
+}
+
+.cardFoot {
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+  text-wrap: pretty;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cs-icon);
+}
+
+.dotLate {
+  background: var(--cs-text2);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}

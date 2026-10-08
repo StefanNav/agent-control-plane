@@ -90,3 +90,33 @@ test.describe('division view (4b)', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible()
   })
 })
+
+test.describe('agent view (4c)', () => {
+  test('Med Rec Agent: banner, stats, activities and recent actions', async ({ page }) => {
+    const errors = collectErrors(page)
+    await page.goto('/operations/agents/med-rec')
+    await expect(page.getByRole('heading', { level: 1, name: 'Med Rec Agent' })).toBeVisible()
+    await expect(page.getByText('3 drafts held by HS-04 v2 need a pharmacist decision.')).toBeVisible()
+    await expect(page.getByText('89.6 %')).toBeVisible()
+    await expect(page.getByText('8.9 %')).toBeVisible()
+    const activities = page.getByRole('table', { name: 'Activities' })
+    await expect(activities).toContainText('Reconcile home medications at admission')
+    await expect(activities).toContainText('Shadow')
+    await page.getByRole('link', { name: 'ACT-88213' }).click()
+    await expect(page).toHaveURL(/\/operations\/actions\/act-88213$/)
+    expect(errors).toEqual([])
+  })
+
+  test('tabs: privileges and history', async ({ page }) => {
+    await page.goto('/operations/agents/med-rec?tab=privileges')
+    await expect(page.getByText('PRV-0142 v3')).toBeVisible()
+    await page.getByRole('link', { name: 'History' }).click()
+    await expect(page).toHaveURL(/tab=history/)
+    await expect(page.getByText('Policy check passed · HS-11 v1').first()).toBeVisible()
+  })
+
+  test('Review focus 4: an unknown agent is not found', async ({ page }) => {
+    await page.goto('/operations/agents/nope')
+    await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible()
+  })
+})
