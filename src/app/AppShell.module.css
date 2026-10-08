@@ -1,0 +1,6 @@
+/* Designed at 1440; layouts flex down to 1280, narrower windows scroll horizontally. */
+.shell {
+  min-width: 1280px;
+  min-height: 100vh;
+  background: var(--cs-bg);
+}

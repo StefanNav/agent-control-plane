@@ -304,13 +304,13 @@ Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a
 - `AppShell(props: { shell: 'app' | 'prototype' | 'kiosk' })`: the app container has `min-width: 1280px` (narrower windows scroll horizontally; the <1024 desktop gate comes in Phase 8). `app` = PrototypeBar + TopNav + `<Outlet/>`; `prototype` = PrototypeBar + `<Outlet/>`; `kiosk` = `<Outlet/>` only. TopNav `current` comes from the deepest route `handle.nav` (`useMatches`).
 - `NotFound()`: inside the shell; `h1` "Page not found"; one line "This page isn't part of the prototype."; link "Go to the Command Board" → `/operations`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - TopNav: five links in `NAV_ITEMS` order with exact labels; `current='operations'` → Operations has `aria-current="page"`, others don't; avatar shows the initial; "Lakeshore Health" visible.
   - PageHeader: `title` renders as the only `h1`; `people` renders "Owner" then "Marcus"; `actions` render.
-- [ ] **Step 2: Run; verify fail.**
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run; verify pass.**
-- [ ] **Step 5: Commit** `git commit -m "feat(layout): top nav, page header, body layouts, app shell, prototype bar"`
+- [x] **Step 2: Run; verify fail.**
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run; verify pass.**
+- [x] **Step 5: Commit** `git commit -m "feat(layout): top nav, page header, body layouts, app shell, prototype bar"`
 
 ### Task 1.8: Route table, router, placeholders, route smoke test
 
