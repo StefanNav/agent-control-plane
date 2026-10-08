@@ -26,9 +26,10 @@
   justify-content: center;
 }
 
+/* Deep indigo in both modes, so the white check keeps its contrast in dark. */
 .checked {
-  background: var(--cs-acc);
-  border-color: var(--cs-acc);
+  background: var(--cs-acc-fill);
+  border-color: var(--cs-acc-fill);
 }
 
 .text {

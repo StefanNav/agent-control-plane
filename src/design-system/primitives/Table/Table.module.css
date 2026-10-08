@@ -58,6 +58,8 @@
 
 .board {
   min-height: 32px;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .text14 {

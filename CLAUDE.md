@@ -49,6 +49,7 @@ View the designs: `pnpm designs` (after Phase 1) or `cd designs && python3 -m ht
 - **Colour semantics:** indigo = primary action and current/selected; teal = review waiting only; amber/red = warning/critical only; healthy = grey. Every status is colour + shape + word. Dashed = no data (stale) only. No gradients, emoji or coloured left-border cards.
 - **Copy:** verbatim from the frames. Sample names, IDs, counts and dates also from the frames.
 - **Time:** the demo clock is Tue 08 Dec 2026, 09:52. Never call `Date.now()` in product code; use `src/lib/clock.ts`.
+- **State:** the mock hospital lives in the Zustand store (`src/store`). Change it only through store actions built on `runAction` (it checks `can()` and writes the audit log). Bump `SEED_VERSION` in `src/data/seed/index.ts` whenever seed data or `DemoState` changes, so saved state from older versions resets itself.
 - **Undesigned screens** (a tab with no frame) are composed only from existing primitives and components, and marked "composed" in the build plan.
 - **Tests:** test-first for logic (store, permissions, scenarios, clock, story engine). Playwright for route and story smoke. Visual fidelity is checked by side-by-side screenshots at 1440 px against the frames at each checkpoint.
 

@@ -1,0 +1,177 @@
+.trace {
+  display: flex;
+  flex-direction: column;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--cs-line);
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.title {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.code,
+.mono {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.meta {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-meta);
+}
+
+.steps {
+  margin: 0;
+  padding: 20px 20px 4px;
+  list-style: none;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 104px 24px minmax(0, 1fr);
+  column-gap: 12px;
+}
+
+.time {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--cs-meta);
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.line {
+  flex: 1;
+  width: 1px;
+  margin-top: 6px;
+  background: var(--cs-line);
+}
+
+.inputMark {
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  border: 1.5px solid var(--cs-text2);
+}
+
+.toolMark {
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--cs-icon);
+}
+
+.iconMark {
+  margin-top: 4px;
+}
+
+.outputMark {
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  background: var(--cs-ink);
+}
+
+.reviewerMark {
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--cs-ink);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-bottom: 20px;
+}
+
+.kind {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cs-meta);
+}
+
+.blockedKind {
+  color: var(--cs-crit);
+  font-weight: 600;
+}
+
+.stepTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.monoTitle {
+  font-family: var(--cs-font-mono);
+}
+
+.strongTitle {
+  font-weight: 600;
+}
+
+.detail {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.decision {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 720px;
+  margin-top: 4px;
+  padding: 10px 12px;
+  background: var(--cs-sunk);
+  border: 1px solid var(--cs-line);
+  border-radius: 3px;
+}
+
+.decisionText {
+  font-size: 13px;
+  line-height: 18px;
+  text-wrap: pretty;
+}

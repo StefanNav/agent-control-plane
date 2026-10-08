@@ -1,0 +1,140 @@
+.hardStop {
+  display: flex;
+  flex-direction: column;
+  background: var(--cs-fill);
+  border: 1.5px solid var(--cs-ink);
+  border-radius: 2px;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--cs-ink);
+  color: var(--cs-raised);
+}
+
+.barLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.barCode {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+}
+
+.title {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.description {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-text2);
+  text-wrap: pretty;
+}
+
+.facts {
+  margin: 0;
+  padding-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  column-gap: 12px;
+}
+
+.fact dt {
+  color: var(--cs-meta);
+}
+
+.fact dd {
+  margin: 0;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--cs-line-strong);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-text2);
+}
+
+.instruction {
+  display: flex;
+  flex-direction: column;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+}
+
+.instructionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 10px 12px 10px 16px;
+}
+
+.instructionLabel {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-meta);
+}
+
+.well {
+  margin: 0 16px;
+  padding: 14px 16px;
+  border-radius: 4px;
+  background: var(--cs-sunk);
+  font-size: 16px;
+  line-height: 24px;
+  text-wrap: pretty;
+}
+
+.instructionFacts {
+  padding: 14px 16px 4px;
+}
+
+.instructionFacts .facts {
+  padding-top: 0;
+}
+
+.guidance {
+  padding: 10px 16px 14px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+  text-wrap: pretty;
+}

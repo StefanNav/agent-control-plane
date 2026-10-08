@@ -72,3 +72,72 @@
 .cardPadX {
   padding: 0 16px;
 }
+
+.sub {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.subTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.chipRows {
+  display: flex;
+  flex-direction: column;
+}
+
+.chipRow {
+  display: grid;
+  grid-template-columns: 280px 340px 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+}
+
+.chipRows .chipRow + .chipRow {
+  border-top: 1px solid var(--cs-line);
+}
+
+.darkPanel .chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 0;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.darkPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  background: var(--cs-bg);
+  border-radius: 6px;
+}
+
+.monoInline,
+.monoWarn {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.monoWarn {
+  color: var(--cs-warn-text);
+  font-weight: 600;
+}

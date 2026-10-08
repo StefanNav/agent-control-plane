@@ -1,6 +1,8 @@
 import { Outlet, useMatches } from 'react-router'
 import { TopNav } from '../layout/TopNav/TopNav'
+import { personaById } from '../prototype/personas'
 import { PrototypeBar } from '../prototype/PrototypeBar/PrototypeBar'
+import { useDemo } from '../store'
 import type { NavSection, RouteHandle, ShellKind } from './nav'
 import styles from './AppShell.module.css'
 
@@ -15,11 +17,12 @@ function useCurrentSection(): NavSection | null {
 
 export function AppShell({ shell }: { shell: ShellKind }) {
   const current = useCurrentSection()
+  const initial = personaById(useDemo((s) => s.personaId)).initial
   if (shell === 'kiosk') return <Outlet />
   return (
     <div className={styles.shell}>
       <PrototypeBar />
-      {shell === 'app' ? <TopNav current={current} avatarInitial="M" /> : null}
+      {shell === 'app' ? <TopNav current={current} avatarInitial={initial} /> : null}
       <main>
         <Outlet />
       </main>

@@ -11,6 +11,8 @@ export interface ModalProps {
   children: ReactNode
   /** Mono audit stamp in the footer, e.g. "Logs Marcus · 09:47". */
   audit?: ReactNode
+  /** Plain status line in the footer instead of an audit stamp, e.g. "Stays paused until Priya approves". */
+  footNote?: ReactNode
   actions: ReactNode
   /** Default 600. */
   width?: number
@@ -24,7 +26,7 @@ const FOCUSABLE =
  * Tab cycles inside it, and focus that lands outside is pulled back in.
  * The scrim does not close it, so a half-typed reason is never lost by a stray click.
  */
-export function Modal({ open, onClose, title, description, children, audit, actions, width = 600 }: ModalProps) {
+export function Modal({ open, onClose, title, description, children, audit, footNote, actions, width = 600 }: ModalProps) {
   const titleId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
   const close = useEffectEvent(onClose)
@@ -100,7 +102,7 @@ export function Modal({ open, onClose, title, description, children, audit, acti
         </div>
         <div className={styles.body}>{children}</div>
         <div className={styles.foot}>
-          <span className={styles.audit}>{audit}</span>
+          {footNote ? <span className={styles.footNote}>{footNote}</span> : <span className={styles.audit}>{audit}</span>}
           <span className={styles.actions}>{actions}</span>
         </div>
       </div>

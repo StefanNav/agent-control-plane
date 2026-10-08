@@ -36,3 +36,9 @@ test('endDot={false} hides the dot', () => {
   const { container } = render(<Sparkline values={[0, 10, 5]} endDot={false} />)
   expect(container.querySelector('circle')).toBeNull()
 })
+
+test('a fixed domain maps values onto it instead of their own range', async () => {
+  const { sparklinePath } = await import('./sparklinePath')
+  expect(sparklinePath([75, 100], 72, 20, [75, 100])).toBe('M2 18L70 2')
+  expect(sparklinePath([80, 90], 72, 20, [75, 100])).toBe('M2 14.8L70 8.4')
+})
