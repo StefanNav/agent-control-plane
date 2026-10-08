@@ -169,16 +169,16 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
 - Clicking a row selects it; Enter or double-click opens the agent view.
 - An unknown division renders NotFound.
 
-- [ ] **Step 1: Failing e2e:**
+- [x] **Step 1: Failing e2e:**
   - Marcus's landing route shows 20 rows, with Med Rec Agent first and its chip reading "Review: 3 drafts".
   - The Formulary Swap row shows "No data for 3h".
   - Clicking Discharge Meds shows its panel with "Flag discharge interactions".
   - Pressing Enter on the focused Med Rec row goes to `/operations/agents/med-rec`.
   - `/operations/divisions/nope` shows "Page not found".
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against `DivisionView.dc.html`.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(board): division view with agent panel"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against `DivisionView.dc.html`.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(board): division view with agent panel"`.
 
 ### Task 3.5: Agent view (4c) and its tabs
 

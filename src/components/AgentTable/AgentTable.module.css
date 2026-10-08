@@ -67,3 +67,8 @@
 .grantor {
   color: var(--cs-strong);
 }
+
+.privilegeTight {
+  grid-template-columns: 38px 44px 44px auto;
+  column-gap: 6px;
+}

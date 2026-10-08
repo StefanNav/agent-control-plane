@@ -56,3 +56,37 @@ test('the view toggle switches layouts', async ({ page }) => {
   await page.getByRole('button', { name: 'Exceptions first' }).click()
   await expect(page).toHaveURL(/view=exceptions/)
 })
+
+test.describe('division view (4b)', () => {
+  test('Marcus sees his 20 agents, judgment first', async ({ page }) => {
+    const errors = collectErrors(page)
+    await page.goto('/operations/divisions/medications')
+    await expect(page.getByRole('heading', { level: 1, name: 'Medications' })).toBeVisible()
+    await expect(page.getByText('20 agents · 4 need a human · owner Marcus · sponsor Priya')).toBeVisible()
+    const rows = page.getByRole('table', { name: 'Medications agents' }).locator('[data-row-id]')
+    await expect(rows).toHaveCount(20)
+    await expect(rows.first()).toContainText('Med Rec Agent')
+    await expect(rows.first()).toContainText('Review: 3 drafts')
+    await expect(page.getByRole('table', { name: 'Medications agents' }).getByText('No data for 3h')).toBeVisible()
+    expect(errors).toEqual([])
+  })
+
+  test('selecting an agent fills the panel; Enter opens the agent', async ({ page }) => {
+    await page.goto('/operations/divisions/medications')
+    await page.getByRole('table', { name: 'Medications agents' }).getByText('Discharge Meds Agent').click()
+    const panel = page.getByRole('complementary', { name: 'Selected agent' })
+    await expect(panel).toContainText('Flag discharge interactions')
+    await expect(panel).toContainText('1,964')
+    await page.getByRole('table', { name: 'Medications agents' }).locator('[data-row-id="med-rec"]').focus()
+    await page.keyboard.press('Enter')
+    await expect(page).toHaveURL(/\/operations\/agents\/med-rec$/)
+  })
+
+  test('Work 4 exceptions goes to the inbox; unknown divisions are not found', async ({ page }) => {
+    await page.goto('/operations/divisions/medications')
+    await page.getByRole('link', { name: /Work 4 exceptions/ }).click()
+    await expect(page).toHaveURL(/\/operations\/inbox/)
+    await page.goto('/operations/divisions/nope')
+    await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible()
+  })
+})
