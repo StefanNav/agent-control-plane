@@ -620,3 +620,59 @@ describe('startOnboarding (1a, 2a) — Review focus 2, 3', () => {
     expect(store.getState().startOnboarding('req-0093', { ownerId: 'marcus', techOwnerId: 'sam' })).toEqual({ ok: false, reason: 'Already started' })
   })
 })
+
+describe('updateJob (1b) — Review focus 3', () => {
+  const at = (scenario: 'onboarding-at-5-of-7' | 'baseline', persona: 'marcus' | 'jordan' | 'drlee' | 'sam') => {
+    const store = fresh()
+    store.getState().loadScenario(scenario)
+    store.getState().setPersona(persona)
+    return store
+  }
+
+  test('Marcus finishes the job description: three triggers and the inaccuracy target, done 04 Oct at v0.5', async () => {
+    const { stepStates, recordItems } = await import('./onboardingRules')
+    const store = at('onboarding-at-5-of-7', 'marcus')
+    const result = store.getState().updateJob('med-rec', {
+      escalation: ['Home list and fill history disagree', 'Patient on dialysis', 'More than 15 home medications'],
+      targets: { agreement: 90, omitted: 3, inaccurate: 2 },
+    })
+    expect(result).toEqual({ ok: true })
+    const s = store.getState()
+    const record = s.onboardings.find((r) => r.agentId === 'med-rec')!
+    expect(record.version).toBe(5)
+    expect(record.savedAt).toBe(s.now)
+    expect(record.done.job).toEqual({ at: s.now, by: 'marcus' })
+    expect(stepStates(s, 'med-rec')[1]!.sub).toBe('Marcus · done 04 Oct')
+    expect(recordItems(s, 'med-rec')).toEqual({ done: 8, total: 13 })
+    expect(s.audit.at(-1)).toMatchObject({ who: 'marcus', action: 'Edited job description', target: 'AGT-0123', reason: 'Escalation triggers, Success criteria' })
+  })
+
+  test('Jordan and Dr. Lee cannot edit; Sam can (spec §7: the technical owner edits the job too)', () => {
+    for (const persona of ['jordan', 'drlee'] as const) {
+      const store = at('onboarding-at-5-of-7', persona)
+      const before = dataOf(store.getState())
+      expect(store.getState().updateJob('med-rec', { purpose: 'Something else.' }).ok).toBe(false)
+      expect(dataOf(store.getState())).toEqual(before)
+    }
+    expect(at('onboarding-at-5-of-7', 'sam').getState().updateJob('med-rec', { escalation: ['Patient on dialysis'] })).toEqual({ ok: true })
+  })
+
+  test('a frozen record refuses edits', () => {
+    const store = at('baseline', 'marcus')
+    const before = dataOf(store.getState())
+    expect(store.getState().updateJob('med-rec', { purpose: 'Something else.' })).toEqual({ ok: false, reason: 'Frozen at v1.0 · with AIMS Review' })
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+
+  test('never items become hard stops (R10): library matches take the library code, others are plain language', () => {
+    const store = at('baseline', 'marcus')
+    store.getState().updateJob('culture-followup', { never: ['Change a dose', 'Discharge a patient'] })
+    const limits = () => store.getState().onboardings.find((r) => r.agentId === 'culture-followup')!.limits
+    expect(limits().map((l) => [l.code, l.library ?? 'plain', l.title, l.ownerId])).toEqual([
+      ['HS-04', 'DOSE-CHANGE-01', 'Never change a dose', 'sam'],
+      ['HS-12', 'plain', 'Never discharge a patient', 'sam'],
+    ])
+    store.getState().updateJob('culture-followup', { never: ['Discharge a patient'] })
+    expect(limits().map((l) => l.code)).toEqual(['HS-12'])
+  })
+})

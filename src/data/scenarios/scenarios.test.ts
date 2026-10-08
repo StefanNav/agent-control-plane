@@ -104,3 +104,26 @@ test('onboarding-intake (1a, 2a): 01 Oct, REQ-0093 approved and not started; Med
   expect(s.intakeRequests.find((r) => r.id === 'req-0093')!.startedAt).toBeUndefined()
   expect(selectInventory(s).counts).toMatchObject({ agents: 40, drafts: 0, intake: 1 })
 })
+
+test('onboarding-at-5-of-7 (1b, 1i): Marcus left the job description at 5 of 7 on 03 Oct 16:42', async () => {
+  const { stepStates, recordItems, jobFields } = await import('../../store/onboardingRules')
+  const { selectInventory } = await import('../../features/inventory/selectors')
+  const s = buildScenario('onboarding-at-5-of-7')
+  expect(s.now).toBe('2026-10-04T08:41:00')
+  const record = s.onboardings.find((r) => r.agentId === 'med-rec')!
+  expect(record).toMatchObject({ version: 4, savedAt: '2026-10-03T16:42:00', startedAt: '2026-10-01T09:12:00' })
+  expect(jobFields(s, 'med-rec').filter((f) => f.done)).toHaveLength(5)
+  expect(record.limits.map((l) => l.code)).toEqual(['HS-04', 'HS-07', 'HS-11'])
+  expect(recordItems(s, 'med-rec')).toEqual({ done: 6, total: 13 })
+  expect(stepStates(s, 'med-rec').map((st) => st.sub)).toEqual([
+    'Dana · done 01 Oct',
+    'Marcus · 5 of 7',
+    'Marcus · not started',
+    'Sam · 0 of 3',
+    'Priya · opens when 2–4 are done',
+    'AIMS Review',
+  ])
+  expect(selectInventory(s).drafts).toEqual([
+    expect.objectContaining({ name: 'Med Rec Agent', request: 'REQ-0093', step: '2 · Job description', stepSub: 'Escalation triggers, inaccuracy target', waitingOnId: 'marcus', progress: '6 of 13', lastChange: '03 Oct 16:42', field: 'escalation' }),
+  ])
+})

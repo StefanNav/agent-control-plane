@@ -9,6 +9,7 @@ import { formatClock, formatDate } from '../../lib/clock'
 import { useDemo } from '../../store'
 import { onboardingContext, personName, STEP_NAMES, STEP_ORDER, type StepId } from '../../store/onboardingRules'
 import { IntakeStep } from './IntakeStep'
+import { JobStep } from './JobStep'
 import { Rail } from './Rail'
 import { selectOnboardingHeader } from './selectors'
 import { StepCard } from './StepCard'
@@ -28,6 +29,7 @@ export function OnboardingPage() {
   const number = `0${STEP_ORDER.indexOf(step) + 1}`
   let content: ReactNode
   if (step === 'intake') content = <IntakeStep agentId={agentId} />
+  else if (record && step === 'job') content = <JobStep agentId={agentId} />
   else if (!record) {
     content = (
       <Split

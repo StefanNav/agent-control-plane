@@ -13,6 +13,7 @@ export type ScenarioId =
   | 'step-down-threshold'
   | 'stale-escalated'
   | 'onboarding-intake'
+  | 'onboarding-at-5-of-7'
 
 /** Every scenario id, for validating a `?scenario=` param. */
 export const SCENARIO_IDS: readonly ScenarioId[] = [
@@ -23,6 +24,7 @@ export const SCENARIO_IDS: readonly ScenarioId[] = [
   'step-down-threshold',
   'stale-escalated',
   'onboarding-intake',
+  'onboarding-at-5-of-7',
 ]
 
 /** The seed's live heartbeat (one minute before DEMO_NOW). */
@@ -146,6 +148,9 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
 
   // E1 1a / E2 2a: 01 Oct, REQ-0093 approved on 29 Sep and not started; Med Rec doesn't exist yet.
   'onboarding-intake': medRecAt('intake'),
+
+  // E1 1b / 1i: 04 Oct 08:41, Marcus returns to the job description he left at 5 of 7.
+  'onboarding-at-5-of-7': medRecAt('job-5-of-7'),
 }
 
 /** A fresh state for the scenario. */

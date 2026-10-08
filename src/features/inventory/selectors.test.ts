@@ -72,6 +72,7 @@ test('Drafts (1i) are the records being onboarded: Culture Follow-up waits on Ma
       waitingOn: 'Marcus',
       waitingOnId: 'marcus',
       progress: '4 of 10',
+      items: { done: 4, total: 10 },
       lastChange: '07 Dec 15:30',
       field: 'never',
       stepId: 'job',

@@ -81,3 +81,7 @@ export const nextArchiveCode = (s: DemoState) =>
 
 /** "PRV-0144" after PRV-0143: the next privilege record (ruling R11). */
 export const nextPrivilegeCode = (s: DemoState) => nextCode(s.privileges.map((p) => p.code), 'PRV-', 4)
+
+/** "HS-12": the next hard-stop code after the library's, every agent's and every record's (ruling R10). */
+export const nextHardStopCode = (s: DemoState, extra: string[] = [], library: string[] = []) =>
+  nextCode([...s.hardStops.map((h) => h.code), ...s.onboardings.flatMap((r) => r.limits.map((l) => l.code)), ...library, ...extra], 'HS-', 2)

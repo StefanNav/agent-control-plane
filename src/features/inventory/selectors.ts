@@ -71,6 +71,7 @@ export function selectInventory(s: DemoState) {
           waitingOn: personName(s, open.waitingOn),
           waitingOnId: open.waitingOn,
           progress: `${items.done} of ${items.total}`,
+          items,
           lastChange: `${formatDate(r.savedAt)} ${formatClock(r.savedAt)}`,
           field: open.step === 'job' ? firstMissingField(s, r.agentId) : null,
           stepId: open.step,

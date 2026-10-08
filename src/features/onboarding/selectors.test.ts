@@ -41,3 +41,18 @@ test('1a: what carries over from REQ-0093, and what starting does', () => {
   ])
   expect(selectIntakeStep(s, 'nope')).toBeNull()
 })
+
+test('1b: Marcus is welcomed back at the first missing field; the side panel says what is blocked', async () => {
+  const { selectJobStep } = await import('./selectors')
+  const s5 = buildScenario('onboarding-at-5-of-7')
+  const job = selectJobStep(s5, 'med-rec', 'marcus')!
+  expect(job.welcome).toEqual({
+    title: 'Welcome back, Marcus',
+    text: 'You left this draft on 03 Oct at 16:42 with 5 of 7 fields done. It’s open at the first missing one, Escalation triggers.',
+    saved: 'Autosaved 16:42 · v0.4',
+  })
+  expect(job.blocked).toEqual({ left: 7, next: [{ field: 'escalation', label: 'Escalation triggers' }, { field: 'criteria', label: 'inaccuracy target' }] })
+  expect(job.alsoNeeded).toEqual(['Systems and verbs · Marcus', '3 hard stops · Sam'])
+  expect(job.never.map((n) => n.becomes)).toEqual(['HS-04', 'HS-07', 'HS-11', 'ORG-POL-02'])
+  expect(selectJobStep(s5, 'med-rec', 'sam')!.welcome).toBeNull()
+})

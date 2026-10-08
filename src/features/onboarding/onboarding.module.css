@@ -231,3 +231,358 @@
   display: flex;
   flex-direction: column;
 }
+
+/* Job description (1b): field blocks, lists, chips and the criteria table. */
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scroll-margin-top: 120px;
+}
+
+.blockHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.blockLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.tag {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  color: var(--cs-text2);
+  background: var(--cs-fill);
+  border-radius: 2px;
+  padding: 1px 5px;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+  white-space: nowrap;
+}
+
+.missing {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.box {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  flex: none;
+  box-sizing: border-box;
+  border: 1.5px solid var(--cs-ink);
+  border-radius: 2px;
+}
+
+.help {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 64px;
+  box-sizing: border-box;
+  padding: 8px 16px;
+}
+
+.listRow + .listRow {
+  border-top: 1px solid var(--cs-line);
+}
+
+.listMain {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.listName {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-ink);
+}
+
+.listSub {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.listRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+  white-space: nowrap;
+}
+
+.listRightMeta {
+  composes: listRight;
+  color: var(--cs-meta);
+}
+
+.inline {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.inline > :first-child {
+  flex: 1;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  font-size: 14px;
+  color: var(--cs-ink);
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 3px;
+}
+
+.suggestion {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--cs-strong);
+  background: var(--cs-bg);
+  border: 1px solid var(--cs-line);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.suggestion:hover {
+  background: var(--cs-hover);
+}
+
+.welcome {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 16px 20px;
+  background: var(--cs-fill);
+  border-radius: 6px;
+}
+
+.welcome > .monoMeta {
+  white-space: nowrap;
+}
+
+.welcomeText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.welcomeText strong {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.criteria {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px 120px 160px;
+  align-items: center;
+  column-gap: 16px;
+}
+
+.criteriaHead {
+  composes: criteria;
+  height: 32px;
+  padding: 0 16px;
+  background: var(--cs-bg);
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cs-meta);
+  border-radius: 6px 6px 0 0;
+}
+
+.criteriaRow {
+  composes: criteria;
+  min-height: 56px;
+  padding: 0 16px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.direction {
+  color: var(--cs-text2);
+}
+
+.target {
+  width: 120px;
+}
+
+.target input {
+  font-weight: 600;
+}
+
+.domain {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px 16px;
+  font-size: 14px;
+  color: var(--cs-meta);
+}
+
+/* Side checklist (1b–1g). */
+.progress {
+  padding: 0 20px 12px;
+}
+
+.checks {
+  margin: 0;
+  padding: 0 0 8px;
+  list-style: none;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+  color: var(--cs-text2);
+  background: none;
+  border: 0;
+  text-decoration: none;
+}
+
+.checkIcon {
+  display: inline-flex;
+  width: 12px;
+  justify-content: center;
+}
+
+.checkLabel {
+  flex: 1;
+}
+
+.checkRight {
+  font-size: 12px;
+  color: var(--cs-meta);
+}
+
+.checkOpen {
+  color: var(--cs-ink);
+}
+
+.checkCurrent {
+  background: var(--cs-sel);
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+a.check:hover {
+  background: var(--cs-hover);
+}
+
+.also {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.sendFoot {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.sendFoot > button,
+.sendFoot > a {
+  width: 100%;
+  justify-content: center;
+}
+
+.sendFoot strong {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.textLink {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

@@ -23,7 +23,7 @@ export const STEP_NAMES: Record<StepId, string> = {
 }
 export const STEP_ORDER: StepId[] = ['intake', 'job', 'systems', 'tools', 'approval', 'review']
 
-const FIELD_NAMES: Record<JobFieldId, string> = {
+export const FIELD_NAMES: Record<JobFieldId, string> = {
   purpose: 'Purpose',
   activities: 'Activities',
   never: 'Never list',
@@ -31,6 +31,17 @@ const FIELD_NAMES: Record<JobFieldId, string> = {
   escalation: 'Escalation triggers',
   criteria: 'Success criteria',
   domain: 'Rollout domain',
+}
+
+/** Which job field each JobDraft key fills. */
+export const JOB_KEY_FIELD: Record<string, JobFieldId> = {
+  purpose: 'purpose',
+  activities: 'activities',
+  never: 'never',
+  actingFor: 'actingFor',
+  escalation: 'escalation',
+  targets: 'criteria',
+  domain: 'domain',
 }
 
 const VERBS: Verb[] = ['read', 'draft', 'write', 'submit', 'sign', 'order']

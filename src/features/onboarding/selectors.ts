@@ -1,6 +1,7 @@
+import { ORG_NEVER, ORG_POL_02 } from '../../data/seed/catalogue'
 import type { DemoState, Domain } from '../../data/types'
-import { formatDate } from '../../lib/clock'
-import { onboardingContext, personName } from '../../store/onboardingRules'
+import { formatClock, formatDate } from '../../lib/clock'
+import { FIELD_NAMES, firstMissingField, jobFields, limitsProgress, onboardingContext, openStep, personName, recordItems, systemsProgress, type JobFieldId } from '../../store/onboardingRules'
 import { onBoard } from '../board/selectors'
 
 /** The span-of-control guideline: past this many directly supervised activities, exceptions wait (2a). */
@@ -126,5 +127,66 @@ export function selectOnboardingHeader(s: DemoState, agentId: string) {
       { role: 'Division', name: division },
     ],
     saved: frozen ? null : record.savedAt,
+  }
+}
+
+/** Step 2, the job description (1b): fields, what's missing, and the welcome back. */
+export function selectJobStep(s: DemoState, agentId: string, viewer: string) {
+  const { record, template, intake, people } = onboardingContext(s, agentId)
+  if (!record) return null
+  const fields = jobFields(s, agentId)
+  const done = fields.filter((f) => f.done).length
+  const items = recordItems(s, agentId)
+  const open = openStep(s, agentId)
+  const first = firstMissingField(s, agentId)
+  const { job } = record
+
+  const next = fields.flatMap((f): { field: JobFieldId; label: string }[] => {
+    if (f.done) return []
+    if (f.id !== 'criteria') return [{ field: f.id, label: FIELD_NAMES[f.id] }]
+    const missing = template.criteria.filter((c) => (job.targets[c.id] ?? null) === null)
+    return missing.length === template.criteria.length ? [{ field: 'criteria', label: FIELD_NAMES.criteria }] : missing.map((c) => ({ field: 'criteria' as const, label: `${c.short} target` }))
+  })
+  const systems = systemsProgress(s, agentId)
+  const limits = limitsProgress(record)
+  const alsoNeeded = [
+    ...(systems.complete ? [] : [`Systems and verbs · ${personName(s, people.owner)}`]),
+    ...(limits.total && limits.tested === limits.total ? [] : [`${limits.total ? `${limits.total} hard stops` : 'Hard stops'} · ${personName(s, people.tech)}`]),
+  ]
+  const welcome =
+    open?.step === 'job' && open.waitingOn === viewer && record.savedAt.slice(0, 10) < s.now.slice(0, 10) && first
+      ? {
+          title: `Welcome back, ${personName(s, viewer)}`,
+          text: `You left this draft on ${formatDate(record.savedAt)} at ${formatClock(record.savedAt)} with ${done} of 7 fields done. It’s open at the first missing one, ${FIELD_NAMES[first]}.`,
+          saved: `Autosaved ${formatClock(record.savedAt)} · v0.${record.version}`,
+        }
+      : null
+  return {
+    agentName: s.agents.find((a) => a.id === agentId)?.name ?? '',
+    owner: personName(s, people.owner),
+    sponsor: personName(s, people.sponsor),
+    tech: personName(s, people.tech),
+    requestCode: intake?.code ?? '',
+    frozen: Boolean(record.frozenAt),
+    done,
+    fields,
+    first,
+    items,
+    welcome,
+    blocked: { left: items.total - items.done, next },
+    alsoNeeded,
+    job,
+    never: [
+      ...job.never.map((text) => {
+        const limit = record.limits.find((l) => l.from === text)
+        return { text, becomes: limit?.code ?? '', plain: !limit?.library, locked: false }
+      }),
+      { text: ORG_NEVER, becomes: ORG_POL_02, plain: false, locked: true },
+    ],
+    criteria: template.criteria.map((c) => ({ ...c, target: job.targets[c.id] ?? null })),
+    actingForOptions: template.actingForOptions,
+    actingForNote: template.actingForNote,
+    suggestionsLabel: template.suggestionsLabel,
+    suggestions: template.escalationSuggestions.filter((t) => !job.escalation.some((e) => e.toLowerCase() === t.toLowerCase())),
   }
 }
