@@ -490,7 +490,7 @@ These are the failure modes the spec implies that no screen test naturally cover
   - Timeline, with "Add an entry" (an inline field)
 - **Composed list at `/operations/incidents`:** the Operations tabs and a table.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **Store:**
     - Closing INC-0031 in `resume-requested` is refused with 'Corrections still open (1)'.
     - Adding an entry as Jordan works; an empty entry is refused.
@@ -499,10 +499,10 @@ These are the failure modes the spec implies that no screen test naturally cover
     - In `resume-requested`, `/operations/incidents/inc-0031` shows "Commander Marcus", "ROOT CAUSE · SAM" and 4 corrections, with Close incident locked.
     - `/operations/incidents/nope` is NotFound.
     - The board's and inbox's "Open incident INC-0029" links land on its record.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 7c.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(audit): incident record and list"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 7c.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(audit): incident record and list"`.
 
 ### Task 4.9: Export for a surveyor (7d)
 

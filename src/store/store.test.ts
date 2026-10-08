@@ -459,3 +459,31 @@ test('openIncident needs a title', () => {
   const store = fresh()
   expect(store.getState().openIncident('med-rec', { title: ' ', actionIds: [] })).toEqual({ ok: false, reason: 'A title is required' })
 })
+
+describe('incident record (7c)', () => {
+  const at1158 = (persona: 'marcus' | 'jordan' | 'sam') => {
+    const store = fresh()
+    store.getState().loadScenario('resume-requested')
+    store.getState().setPersona(persona)
+    return store
+  }
+
+  test('the commander can\'t close while a correction is open; finishing it, then closing, works', () => {
+    const store = at1158('marcus')
+    expect(store.getState().closeIncident('inc-0031', 'All corrections done.')).toEqual({ ok: false, reason: 'Corrections still open (1)' })
+    expect(store.getState().completeCorrection('inc-0031', 'c4')).toEqual({ ok: true })
+    expect(store.getState().incidents.find((i) => i.id === 'inc-0031')!.corrections.find((c) => c.id === 'c4')).toMatchObject({ done: true, status: 'Done 11:58' })
+    expect(store.getState().closeIncident('inc-0031', 'All corrections done.')).toEqual({ ok: true })
+    expect(store.getState().incidents.find((i) => i.id === 'inc-0031')).toMatchObject({ state: 'closed', closedAt: '2026-12-08T11:58:00' })
+    expect(store.getState().audit.at(-1)).toMatchObject({ who: 'marcus', action: 'Closed incident', target: 'INC-0031' })
+  })
+
+  test('only the correction\'s owner, the commander or the program lead completes a correction; Jordan adds entries', () => {
+    const jordan = at1158('jordan')
+    expect(jordan.getState().completeCorrection('inc-0031', 'c4')).toEqual({ ok: false, reason: 'Only Marcus or the commander can mark it done' })
+    expect(jordan.getState().addIncidentEntry('inc-0031', 'Spoke with 7 West charge pharmacist.')).toEqual({ ok: true })
+    expect(jordan.getState().incidents.find((i) => i.id === 'inc-0031')!.timeline.at(-1)).toMatchObject({ title: 'Spoke with 7 West charge pharmacist.', sub: 'Jordan' })
+    expect(jordan.getState().addIncidentEntry('inc-0031', '  ')).toEqual({ ok: false, reason: 'An entry needs text' })
+    expect(at1158('sam').getState().closeIncident('inc-0031', 'x')).toMatchObject({ ok: false })
+  })
+})

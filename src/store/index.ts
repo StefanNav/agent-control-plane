@@ -61,6 +61,12 @@ export interface DemoActions {
   retireAgent: (agentId: string, input: { typedName: string; reason: string }) => ActionResult
   /** Open an incident for an agent with the actions it concerns (7a, 7b); anyone who can view the audit may. */
   openIncident: (agentId: string, input: { title: string; actionIds: string[] }) => ActionResult
+  /** Add a line to an incident's timeline (7c "Add an entry"). */
+  addIncidentEntry: (incidentId: string, text: string) => ActionResult
+  /** Mark a correction done: its owner, the commander or the program lead. */
+  completeCorrection: (incidentId: string, correctionId: string) => ActionResult
+  /** Close once every correction is done: the commander or the program lead (7c). */
+  closeIncident: (incidentId: string, reason: string) => ActionResult
 }
 
 export interface PauseInput {
@@ -423,6 +429,71 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                   corrections: [],
                   timeline,
                 })
+              },
+            })
+          },
+          addIncidentEntry: (incidentId, text) => {
+            const s = get()
+            const incident = s.incidents.find((i) => i.id === incidentId)
+            if (!incident) return { ok: false, reason: 'Not found' }
+            const what = text.trim()
+            if (!what) return { ok: false, reason: 'An entry needs text' }
+            return act({
+              action: 'openIncident',
+              ctx: { agentId: incident.agentId },
+              audit: { action: 'Added incident entry', target: incident.code, reason: what },
+              mutate: (draft) => {
+                const name = draft.people.find((p) => p.id === draft.personaId)?.name ?? draft.personaId
+                draft.incidents.find((i) => i.id === incidentId)!.timeline.push({ at: draft.now, title: what, sub: name, by: draft.personaId })
+              },
+            })
+          },
+          completeCorrection: (incidentId, correctionId) => {
+            const s = get()
+            const incident = s.incidents.find((i) => i.id === incidentId)
+            const correction = incident?.corrections.find((c) => c.id === correctionId)
+            if (!incident || !correction) return { ok: false, reason: 'Not found' }
+            if (correction.done) return { ok: false, reason: 'Already done' }
+            const lead = s.roles.some((r) => r.personId === s.personaId && r.role === 'programLead')
+            if (s.personaId !== correction.ownerId && s.personaId !== incident.commanderId && !lead) {
+              const owner = s.people.find((p) => p.id === correction.ownerId)?.name ?? 'its owner'
+              return { ok: false, reason: `Only ${owner} or the commander can mark it done` }
+            }
+            return act({
+              action: 'openIncident',
+              ctx: { agentId: incident.agentId },
+              audit: { action: 'Completed correction', target: incident.code, reason: correction.text },
+              mutate: (draft) => {
+                const target = draft.incidents.find((i) => i.id === incidentId)!.corrections.find((c) => c.id === correctionId)!
+                target.done = true
+                target.status = `Done ${formatClock(draft.now)}`
+              },
+            })
+          },
+          closeIncident: (incidentId, reason) => {
+            const s = get()
+            const incident = s.incidents.find((i) => i.id === incidentId)
+            if (!incident) return { ok: false, reason: 'Not found' }
+            if (incident.state === 'closed') return { ok: false, reason: 'Already closed' }
+            const lead = s.roles.some((r) => r.personId === s.personaId && r.role === 'programLead')
+            if (s.personaId !== incident.commanderId && !lead) {
+              const commander = s.people.find((p) => p.id === incident.commanderId)?.name ?? 'The commander'
+              return { ok: false, reason: `Only ${commander} (commander) or the program lead can close it` }
+            }
+            const open = incident.corrections.filter((c) => !c.done).length
+            if (open) return { ok: false, reason: `Corrections still open (${open})` }
+            const why = reason.trim()
+            if (!why) return { ok: false, reason: 'A reason is required' }
+            return act({
+              action: 'openIncident',
+              ctx: { agentId: incident.agentId },
+              audit: { action: 'Closed incident', target: incident.code, reason: why },
+              mutate: (draft) => {
+                const target = draft.incidents.find((i) => i.id === incidentId)!
+                const name = draft.people.find((p) => p.id === draft.personaId)?.name ?? draft.personaId
+                target.state = 'closed'
+                target.closedAt = draft.now
+                target.timeline.push({ at: draft.now, title: 'Incident closed', sub: name, by: draft.personaId })
               },
             })
           },

@@ -8,6 +8,8 @@ import { InboxPage } from '../features/inbox/InboxPage'
 import { InventoryPage } from '../features/inventory/InventoryPage'
 import { ActionsPage } from '../features/audit/ActionsPage'
 import { ActionTracePage } from '../features/audit/ActionTracePage'
+import { IncidentPage } from '../features/audit/IncidentPage'
+import { IncidentsPage } from '../features/audit/IncidentsPage'
 import { NotFound } from '../layout/NotFound'
 import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
 import { AppShell } from './AppShell'
@@ -27,6 +29,8 @@ const PAGES: Record<string, ReactNode> = {
   '/inventory': <InventoryPage />,
   '/operations/actions': <ActionsPage />,
   '/operations/actions/:actionId': <ActionTracePage />,
+  '/operations/incidents': <IncidentsPage />,
+  '/operations/incidents/:incidentId': <IncidentPage />,
   '/wall': <WallDisplay />,
 }
 

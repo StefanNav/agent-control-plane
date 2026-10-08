@@ -1,6 +1,6 @@
 import type { ActionTraceView } from '../../components'
 import type { AgentAction, DemoState } from '../../data/types'
-import { formatClockSeconds, formatDate, formatMs } from '../../lib/clock'
+import { formatAgo, formatClock, formatClockSeconds, formatDate, formatMs } from '../../lib/clock'
 import { personName, shortName } from '../board/selectors'
 
 export interface ActionFilters {
@@ -102,4 +102,87 @@ export function selectTrace(s: DemoState, actionId: string) {
     /** For "Open incident": every action blocked by the same rule today, this one included. */
     sameRuleIds: a.blockedBy ? s.actions.filter((x) => x.blockedBy === a.blockedBy && x.at.slice(0, 10) === a.at.slice(0, 10)).map((x) => x.id) : [a.id],
   }
+}
+
+const STATE_LABEL = { open: 'Investigating', corrections: 'Corrections', closed: 'Closed' } as const
+
+/** The incident record (7c): who runs it, what happened, why, what is being fixed, and when. Null when unknown. */
+export function selectIncident(s: DemoState, personaId: string, incidentId: string) {
+  const inc = s.incidents.find((i) => i.id === incidentId)
+  if (!inc) return null
+  const agent = s.agents.find((a) => a.id === inc.agentId)
+  const open = inc.corrections.filter((c) => !c.done).length
+  const commander = personName(s, inc.commanderId)
+  const sponsor = personName(s, agent?.sponsorId)
+  const pausedAt = inc.timeline.find((t) => t.title.endsWith('paused the agent'))?.at
+  const resumedAt = inc.timeline.find((t) => t.title === 'Resume approved')?.at
+  const paused =
+    agent?.lifecycle === 'paused' && agent.pausedAt
+      ? ` The agent has been paused for ${formatAgo(agent.pausedAt, s.now).replace(/ ago$/, '')}.`
+      : pausedAt && resumedAt
+        ? ` The agent was paused for ${formatAgo(pausedAt, resumedAt).replace(/ ago$/, '')}.`
+        : ''
+  const lead = s.roles.some((r) => r.personId === personaId && r.role === 'programLead')
+  return {
+    id: inc.id,
+    code: inc.code,
+    title: inc.title,
+    agentId: inc.agentId,
+    state: inc.state,
+    statusLine: `${STATE_LABEL[inc.state]} · opened ${formatClock(inc.openedAt)}`,
+    chip:
+      inc.state === 'closed'
+        ? { status: 'normal' as const, label: `Closed · ${formatDate(inc.closedAt ?? s.now)}` }
+        : { status: 'warn' as const, label: open ? `Open · ${open} ${open === 1 ? 'correction' : 'corrections'} left` : 'Open' },
+    people: [
+      { role: 'Commander', name: commander },
+      { role: 'Opened by', name: personName(s, inc.openedBy) },
+      { role: 'Sponsor', name: sponsor },
+      { role: 'Technical', name: personName(s, agent?.techOwnerId) },
+      { role: 'Harm', name: inc.harm },
+    ],
+    summary: `${inc.summary}${paused}`,
+    linked: inc.linkedActionIds.flatMap((id) => {
+      const a = s.actions.find((x) => x.id === id)
+      return a ? [row(s, a)] : []
+    }),
+    rootCause: inc.rootCause?.text ?? null,
+    rootCauseBy: inc.rootCause ? personName(s, inc.rootCause.by) : null,
+    corrections: inc.corrections.map((c) => ({
+      id: c.id,
+      text: c.text,
+      sub: c.sub ?? null,
+      owner: personName(s, c.ownerId),
+      status: c.status,
+      done: c.done,
+      canComplete: !c.done && inc.state !== 'closed' && (personaId === c.ownerId || personaId === inc.commanderId || lead),
+    })),
+    close:
+      inc.state === 'closed'
+        ? null
+        : {
+            lead: open ? `${open} ${open === 1 ? 'correction' : 'corrections'} open.` : 'Corrections done.',
+            text: `${commander} closes the incident when it’s done; ${sponsor} is told.`,
+            allowed: open === 0 && (personaId === inc.commanderId || lead),
+          },
+    timelineSub: resumedAt ? 'From the first block to resume' : 'From the first block',
+    timeline: inc.timeline.map((t) => ({ at: formatClock(t.at), title: t.title, sub: t.sub ?? '' })),
+  }
+}
+
+/** The incidents list (composed): open ones first, then by when they opened. */
+export function selectIncidents(s: DemoState) {
+  return [...s.incidents]
+    .sort((a, b) => Number(a.state === 'closed') - Number(b.state === 'closed') || b.openedAt.localeCompare(a.openedAt))
+    .map((i) => ({
+      id: i.id,
+      code: i.code,
+      title: i.title,
+      agent: s.agents.find((a) => a.id === i.agentId)?.name ?? '',
+      state: STATE_LABEL[i.state],
+      status: i.state === 'closed' ? ('normal' as const) : ('warn' as const),
+      commander: personName(s, i.commanderId),
+      opened: `${formatDate(i.openedAt)} ${formatClock(i.openedAt)}`,
+      linked: String(i.linkedActionIds.length),
+    }))
 }

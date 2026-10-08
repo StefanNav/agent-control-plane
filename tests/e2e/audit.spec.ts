@@ -39,3 +39,18 @@ test('Review focus 5: an unknown action is not found; a trace-less action says s
   await page.goto('/operations/actions/act-88240')
   await expect(page.getByText('No step-level trace was kept for this action.')).toBeVisible()
 })
+
+test('incident record (7c) in resume-requested: people, root cause, corrections, Close locked', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/operations/incidents/inc-0031?scenario=resume-requested')
+  await expect(page.getByRole('heading', { name: 'Dose changes proposed on admission drafts' })).toBeVisible()
+  await expect(page.getByText('Root cause · Sam')).toBeVisible()
+  await expect(page.getByRole('table', { name: 'Corrections' }).getByRole('row')).toHaveCount(4)
+  await expect(page.getByRole('button', { name: 'Close incident' })).toHaveAttribute('aria-disabled', 'true')
+  await page.goto('/operations/incidents/nope')
+  await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible()
+  await page.goto('/operations/incidents')
+  await page.getByRole('link', { name: 'INC-0029' }).click()
+  await expect(page.getByRole('heading', { name: 'Appeal drafted for the wrong encounter' })).toBeVisible()
+  expect(errors).toEqual([])
+})
