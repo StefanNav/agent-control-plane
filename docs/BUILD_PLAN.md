@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 5: Onboarding and go-live (⏸ at checkpoint, awaiting Stefan's review) |
-| **Branch** | `phase-5-onboarding` |
-| **Last completed** | Phase 5 built, fresh-reviewed and fixed; PR #15 open (2026-10-08) |
-| **Next task** | Stefan reviews PR #15 on the preview → squash-merge → Phase 6 Task 6.0 (write `docs/plans/phase-6-governance.md`; read Phase 5's handoff notes first) |
+| **Current phase** | Phase 6: Governance and fast follows (☐ not started) |
+| **Branch** | `phase-6-governance` (create from `main`) |
+| **Last completed** | Phase 5 approved and squash-merged (PR #15) (2026-10-08) |
+| **Next task** | Phase 6 Task 6.0: write `docs/plans/phase-6-governance.md` (read Phase 5's handoff notes first) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | https://agent-control-plane-git-phase-5-onboarding-stefannavs-projects.vercel.app (PR [#15](https://github.com/StefanNav/agent-control-plane/pull/15); behind Vercel login) |
+| **Latest preview** | none open |
 
 ### How to resume in a new session
 
@@ -93,7 +93,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 2 | Components and data | ☑ Merged | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | [#12](https://github.com/StefanNav/agent-control-plane/pull/12) | [phase-2-components-data.md](plans/phase-2-components-data.md) |
 | 3 | Command Board and inbox | ☑ Merged | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | [#13](https://github.com/StefanNav/agent-control-plane/pull/13) | [phase-3-board-inbox.md](plans/phase-3-board-inbox.md) |
 | 4 | Controls and audit | ☑ Merged | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | [#14](https://github.com/StefanNav/agent-control-plane/pull/14) | [phase-4-controls-audit.md](plans/phase-4-controls-audit.md) |
-| 5 | Onboarding and go-live | ⏸ At checkpoint | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | [#15](https://github.com/StefanNav/agent-control-plane/pull/15) | [phase-5-onboarding.md](plans/phase-5-onboarding.md) |
+| 5 | Onboarding and go-live | ☑ Merged | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | [#15](https://github.com/StefanNav/agent-control-plane/pull/15) | [phase-5-onboarding.md](plans/phase-5-onboarding.md) |
 | 6 | Governance and fast follows | ☐ Not started | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | – | to write (Task 6.0) |
 | 7 | Earned autonomy | ☐ Not started | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | – | to write (Task 7.0) |
 | 8 | Stories and portfolio layer | ☐ Not started | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | – | to write (Task 8.0) |
@@ -614,3 +614,4 @@ One row per working session. Newest last.
 | 2026-10-08 | 4 | Built Phase 4 (seed v5, control menu, pause, fix one thing, two-person resume, inventory, retire, action list and trace, incidents, export, journey e2e) with measured visual checks per frame. Fresh review: 7 Important + 4 re-graded fixed test-first; minors deferred (see handoff notes). PR #14 open | Stefan reviews Phase 4 → merge → Phase 5 Task 5.0 |
 | 2026-10-08 | 4 | Stefan approved; PR #14 squash-merged; #5 closed | Phase 5 Task 5.0 (new session) |
 | 2026-10-08 | 5 | Built Phase 5 (seed v6, onboarding records and rewind, 1a–1i, 2a–2d, 3a–3d, journey e2e) with side-by-side visual checks. Fresh review: 1 Critical + 7 Important fixed test-first, docs updated; 11 minors deferred (see handoff notes). PR #15 open | Stefan reviews Phase 5 → merge → Phase 6 Task 6.0 |
+| 2026-10-08 | 5 | Stefan approved; PR #15 squash-merged; #6 closed | Phase 6 Task 6.0 |
