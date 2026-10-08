@@ -103,3 +103,13 @@ test('a paused agent withdraws its numbers, like a stale one (plan 3.4)', () => 
   const rows = selectAgentRows(buildScenario('med-rec-paused'), 'medications')
   expect(rows.find((r) => r.id === 'med-rec')).toMatchObject({ status: 'paused', day: '—', signedAsIs: '—', edited: '—', blocked: '—' })
 })
+
+test('retired agents leave every board count (Phase 4)', async () => {
+  const { onBoard } = await import('./selectors')
+  const summaries = selectDivisionSummaries(s)
+  expect(summaries.reduce((n, d) => n + d.agentCount, 0)).toBe(41)
+  expect(summaries.find((d) => d.id === 'medications')!.agentCount).toBe(20)
+  expect(selectAgentRows(s, 'medications')).toHaveLength(20)
+  expect(s.agents.filter(onBoard)).toHaveLength(41)
+  expect(s.agents.filter((a) => !onBoard(a)).every((a) => a.lifecycle === 'retired')).toBe(true)
+})

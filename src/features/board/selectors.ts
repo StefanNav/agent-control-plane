@@ -6,6 +6,9 @@ import { trendPoints } from '../../lib/trend'
 /** Statuses that need a human. */
 export const ATTENTION: Status[] = ['crit', 'warn', 'review', 'stale']
 
+/** Retired agents are archived: they leave every board, division, tile and wall count. */
+export const onBoard = (a: Agent) => a.lifecycle !== 'retired'
+
 /** Board order: critical, then anything needing a human, then fine, paused, shadow. Ties keep seed order. */
 export function severityRank(status: Status): number {
   return { crit: 0, warn: 1, review: 1, stale: 1, normal: 2, paused: 3, shadow: 4 }[status]
@@ -64,7 +67,7 @@ export interface DivisionSummary {
 /** One row per division for the hospital board (4a, 4d, 4e), needing-a-human first. */
 export function selectDivisionSummaries(s: DemoState): DivisionSummary[] {
   const summaries = s.divisions.map((d): DivisionSummary => {
-    const agents = s.agents.filter((a) => a.divisionId === d.id)
+    const agents = s.agents.filter((a) => onBoard(a) && a.divisionId === d.id)
     const attentionAgents = agents.filter((a) => ATTENTION.includes(a.judgment.status))
     const counts: Partial<Record<Status, number>> = {}
     for (const a of attentionAgents) counts[a.judgment.status] = (counts[a.judgment.status] ?? 0) + 1
@@ -155,7 +158,7 @@ function agentRow(s: DemoState, a: Agent, index: number): AgentRowView {
 /** The division board's rows, judgment first (4b). */
 export function selectAgentRows(s: DemoState, divisionId: string): AgentRowView[] {
   return s.agents
-    .filter((a) => a.divisionId === divisionId)
+    .filter((a) => onBoard(a) && a.divisionId === divisionId)
     .map((a, i) => ({ row: agentRow(s, a, i), i }))
     .sort((a, b) => severityRank(a.row.status) - severityRank(b.row.status) || a.i - b.i)
     .map(({ row }) => row)
@@ -252,8 +255,10 @@ export function selectAgentOverview(s: DemoState, agentId: string) {
       { label: 'Hard stops fired', value: String(fired), sub: firedRules.length ? `today · all ${firedRules.join(', ')}` : 'today' },
     ],
     activities: activitiesOf(s, a.id).map((act, i) => ({ ...act, trend: trendPoints(i + 3, m.trend) })),
+    // 4c lists the five newest; the Actions tab and 7a have the rest.
     recent: s.actions
       .filter((x) => x.agentId === a.id)
+      .slice(0, 5)
       .map((x) => ({
         id: x.id,
         code: x.code,
@@ -317,7 +322,7 @@ export function selectLast24h(s: DemoState) {
   const closedToday = s.exceptions.filter((e) => !isOpen(e) && e.closedAt && formatDate(e.closedAt) === today).length
   return {
     pages: paged.length ? `${paged.length} · ${paged.map((d) => `${personName(s, d.page!.who)}, ${formatClock(d.page!.at)}`).join('; ')}` : '0',
-    pauses: String(s.agents.filter((a) => a.lifecycle === 'paused').length),
+    pauses: String(s.agents.filter((a) => onBoard(a) && a.lifecycle === 'paused').length),
     closed: `${s.stats24h.closedEarlier + closedToday} · median ${s.stats24h.medianCloseMin} min`,
   }
 }
@@ -328,6 +333,7 @@ const PRIVILEGE_STATUS = {
   due: (s: DemoState, review?: string) => (review && review < s.now ? 'Review overdue' : `Review due ${review ? formatRelative(review, s.now) : ''}`.trim()),
   lapsed: () => 'Lapsed to Shadow',
   steppedDown: (_s: DemoState, _r?: string, trigger?: string) => `Stepped down${trigger ? ` by ${trigger}` : ''}`,
+  closed: () => 'Closed',
 } as const
 
 const PRIVILEGE_ACTION: Record<string, string> = {

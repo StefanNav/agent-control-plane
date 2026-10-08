@@ -141,7 +141,7 @@ These are the failure modes the spec implies that no screen test naturally cover
   - Marcus's request and reason are recorded.
   - This replaces Phase 2's 07:38/09:52 compromise; `advanceClock` makes that compromise unnecessary.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **Seed:**
     - `SEED_VERSION` is 5.
     - INC-0029 and INC-0030 exist, and `nextIncidentCode(seed)` is 'INC-0031'.
@@ -154,10 +154,10 @@ These are the failure modes the spec implies that no screen test naturally cover
     - In `resume-requested`, now is 11:58 and Med Rec is paused by Marcus at 09:47 with `pause.routed` 12.
     - INC-0031 has 3 of 4 corrections done.
     - The resume request has Marcus's reason and Marcus's approval only.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement.** Make `applyPause` and `applyResume` pure, operating on a draft state, so the scenarios use them now and the store uses them in Tasks 4.3 and 4.5.
-- [ ] **Step 4: Run** `pnpm check`. Expected: PASS. Update any Phase 2 or 3 test that pinned `resume-requested`'s old clock, and ledger it.
-- [ ] **Step 5: Commit** with `git commit -m "feat(data): incidents, pause detail, inventory and seed v5"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement.** Make `applyPause` and `applyResume` pure, operating on a draft state, so the scenarios use them now and the store uses them in Tasks 4.3 and 4.5.
+- [x] **Step 4: Run** `pnpm check`. Expected: PASS. Update any Phase 2 or 3 test that pinned `resume-requested`'s old clock, and ledger it.
+- [x] **Step 5: Commit** with `git commit -m "feat(data): incidents, pause detail, inventory and seed v5"`.
 
 ### Task 4.2: Locked buttons and the control menu (6a)
 

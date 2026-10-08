@@ -48,9 +48,12 @@ export const actions: AgentAction[] = [
       { at: '2026-12-08T09:38:05.104', kind: 'output', title: 'Draft med list · 9 lines, 1 flagged', detail: 'Pended to the 7 West pharmacist worklist' },
       { at: '2026-12-08T09:44:31.000', kind: 'reviewer', title: 'Edited 1 line, signed', detail: 'Ana R., PharmD · kept metoprolol at 25 mg · 6 min 26 s after output' },
     ],
-  },  recent('ACT-88207', '2026-12-08T09:31:00', 'med-rec', 'Draft med list · enc 4415', 'Jo K., PharmD · 8 East', 'Signed as is'),
-  recent('ACT-88199', '2026-12-08T09:24:00', 'med-rec', 'Draft med list · enc 4412', 'Jo K., PharmD · 8 East', 'Waiting for review', 'HS-04 v2'),
+  },
+  recent('ACT-88207', '2026-12-08T09:31:00', 'med-rec', 'Draft med list · enc 4415', 'Jo K., PharmD · 8 East', 'Signed as is'),
+  recent('ACT-88199', '2026-12-08T09:24:51', 'med-rec', 'Draft med list · enc 4412', 'Jo K., PharmD · 8 East', 'Edited 1 line, signed', 'HS-04 v2'),
   recent('ACT-88188', '2026-12-08T09:12:00', 'med-rec', 'Draft med list · enc 4409', 'Ana R., PharmD · 7 West', 'Signed as is'),
+  // The first of today's three blocked admissions (7a).
+  recent('ACT-88171', '2026-12-08T09:02:17', 'med-rec', 'Draft med list · enc 4403', 'Ana R., PharmD · 7 West', 'Edited 1 line, signed', 'HS-04 v2'),
   recent('ACT-88236', '2026-12-08T09:41:07', 'discharge-meds', 'Draft med list · enc 5120', 'Ana R., PharmD · 7 West', 'Signed as is'),
   recent('ACT-88231', '2026-12-08T09:36:52', 'discharge-meds', 'Draft med list · enc 5117', 'Ana R., PharmD · 7 West', 'Edited'),
 ]

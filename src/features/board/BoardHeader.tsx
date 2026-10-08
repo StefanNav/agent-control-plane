@@ -4,6 +4,7 @@ import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { formatClock } from '../../lib/clock'
 import { useDemo } from '../../store'
 import { selectInbox } from '../inbox/selectors'
+import { onBoard } from './selectors'
 import styles from './board.module.css'
 
 export type BoardView = 'table' | 'tiles' | 'exceptions'
@@ -14,7 +15,7 @@ export function BoardHeader({ view }: { view: BoardView }) {
   const [params] = useSearchParams()
   const now = useDemo((s) => s.now)
   const divisions = useDemo((s) => s.divisions.length)
-  const agents = useDemo((s) => s.agents.length)
+  const agents = useDemo((s) => s.agents.filter(onBoard).length)
   const inboxCount = useDemo((s) => selectInbox(s, s.personaId).needsMe.length)
   const setView = (next: BoardView) => {
     const p = new URLSearchParams(params)

@@ -4,7 +4,7 @@ import { StatusChip } from '../../components'
 import { Card, Table, type Column } from '../../design-system'
 import { cx } from '../../lib/cx'
 import { useDemo } from '../../store'
-import { selectLast24h, selectOpenExceptions, type DivisionSummary } from './selectors'
+import { onBoard, selectLast24h, selectOpenExceptions, type DivisionSummary } from './selectors'
 import { StatusCounts } from './StatusCounts'
 import styles from './board.module.css'
 
@@ -48,7 +48,7 @@ export function ExceptionsFirst({ divisions }: { divisions: DivisionSummary[] })
           <button type="button" className={cx(styles.stripCell, !divisionFilter && styles.stripOn)} onClick={() => setDivisionFilter(null)}>
             <span className={styles.stripHead}>
               <span className={styles.stripName}>All divisions</span>
-              <span className={styles.metaSmall}>{state.agents.length} agents</span>
+              <span className={styles.metaSmall}>{state.agents.filter(onBoard).length} agents</span>
             </span>
             <StatusCounts counts={allCounts} compact />
           </button>

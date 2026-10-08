@@ -41,9 +41,19 @@ const MEDICATIONS: Array<[id: string, code: string, row: Row]> = [
   ['opioid-taper', 'AGT-0144', ['shadow', 'Shadow', 'SC-03 v1', 'Opioid Taper Agent', 'v0.7.4', '22', '—', '—', '0', 'Shadow', 'Dr. Lee', '16 Dec', 82, 0.6]],
 ]
 
+/** Risk tiers from the inventory (8c) and retire dialog (6f). */
+const TIER: Record<string, 1 | 2 | 3> = {
+  'med-rec': 3,
+  'allergy-recon': 3,
+  'renal-dosing': 3,
+  'duplicate-rx': 3,
+  'formulary-swap': 2,
+  'iv-to-oral': 2,
+}
+
 /** Values the agent view (4c) and division panel (4b) show beyond the board row. */
 const EXTRA: Record<string, Partial<Agent>> = {
-  'med-rec': { sop: 'v1.3.1', today: { drafts: 96, expected: 140 } },
+  'med-rec': { sop: 'v1.3.1', today: { drafts: 96, expected: 140 }, queue: { inProgress: 12, awaitingReview: 4, perHour: 6 } },
   'discharge-meds': { judgedAt: '2026-12-08T09:41:00' },
 }
 
@@ -60,7 +70,7 @@ function medicationsAgent([id, code, row]: (typeof MEDICATIONS)[number]): Agent 
     ownerId: 'marcus',
     techOwnerId: 'sam',
     sponsorId: 'priya',
-    riskTier: id === 'med-rec' ? 2 : 1,
+    riskTier: TIER[id] ?? 1,
     lifecycle: status === 'paused' ? 'paused' : 'live',
     level: level.toLowerCase() as Level,
     grantorId: grantor === 'Priya' ? 'priya' : 'drlee',
@@ -121,6 +131,7 @@ function otherAgent(divisionId: string, ownerId: string, sponsorId: string, leve
 const priorAuth: Agent = {
   ...otherAgent('revenue-cycle', 'tom', 'nina', 'draft', 'normal')(['prior-auth', 'AGT-0151', 'Prior Auth Agent', 'v2.3.0', 57, 89.5, 8.8, 90, 0.3]),
   lifecycle: 'paused',
+  riskTier: 3,
   judgment: { status: 'crit', label: 'Wrong-patient draft · paused', ruleTag: 'PA-11 v1' },
   pausedBy: 'tom',
   pausedAt: '2026-12-08T08:12:00',
