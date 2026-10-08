@@ -27,7 +27,13 @@ View the designs: `pnpm designs` (after Phase 1) or `cd designs && python3 -m ht
 ## Brand and the real company name
 
 - The brand is **Signal**, a stand-in for the real company in the source docs. Use it in the prototype layer (prototype bar, landing, About, page title, README). The product's top-nav wordmark stays "AIMS" as designed.
-- The real company name must never appear in the repo or on the site. Before every push run `git grep -il -f .git/info/forbidden-terms` (must print nothing). That terms file is local-only; if it's missing, ask Stefan for the terms rather than guessing.
+- The real company name must never appear in the repo or on the site. Before every push run this (it checks tracked files and unpushed commit messages; it must print nothing):
+
+  ```bash
+  T="$(git rev-parse --git-common-dir)/info/forbidden-terms"; git grep -il -f "$T"; git log origin/main..HEAD --format=%B | grep -il -f "$T"
+  ```
+
+  The terms file is local-only (it lives in the git common dir, so the command also works from a worktree). If it's missing, ask Stefan for the terms rather than guessing, and don't push until you have them.
 
 ## Commands (available from Phase 1)
 

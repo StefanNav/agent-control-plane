@@ -73,7 +73,7 @@ Expected: `0`
 
 - [x] **Step 2: Prove the company name is absent from tracked files**
 
-Run: `git grep -il -f .git/info/forbidden-terms ; echo "exit=$?"` (the terms file is local-only, never committed; recreate it from the source docs if missing)
+Run: `git grep -il -f "$(git rev-parse --git-common-dir)/info/forbidden-terms" ; echo "exit=$?"` (the terms file is local-only, never committed; if it's missing, ask Stefan for the terms)
 Expected: no file names, `exit=1`
 
 - [x] **Step 3: Create and push**
@@ -150,4 +150,4 @@ git commit -m "docs: Phase 0 checkpoint"
 git push
 ```
 
-- [ ] **Step 3: STOP. Ask Stefan to review** the repo page, the issues/milestones, and `docs/BUILD_PLAN.md` on GitHub. After approval: close the Phase 0 issue, set Phase 0 to ☑ Merged in BUILD_PLAN, commit + push.
+- [ ] **Step 3: STOP. Ask Stefan to review** the repo page, the issues/milestones, and `docs/BUILD_PLAN.md` on GitHub. After approval: close the Phase 0 issue (#1) and remove its `checkpoint` label, tick 0.5 and set Phase 0 to ☑ Merged in BUILD_PLAN, point Start here at Phase 1 Task 1.1, commit + push.

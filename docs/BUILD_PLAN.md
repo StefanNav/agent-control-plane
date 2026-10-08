@@ -6,7 +6,7 @@
 
 **Architecture:** Static Vite + React + TypeScript SPA. Countersign tokens as CSS custom properties with CSS Modules per component; a Zustand store holds the mock hospital (persisted, versioned, scenario presets); React Router maps the designed nav. Vercel deploys `main` publicly and every PR to a preview URL.
 
-**Tech stack:** Node 24, pnpm, Vite, React 19, TypeScript (strict), React Router v7, Zustand, CSS Modules, @fontsource IBM Plex Sans/Mono, Vitest + Testing Library, Playwright, GitHub Actions, Vercel.
+**Tech stack:** Node 24, pnpm, Vite, React 19, TypeScript (strict), React Router v8, Zustand, CSS Modules, @fontsource IBM Plex Sans/Mono, Vitest + Testing Library, Playwright, GitHub Actions, Vercel.
 
 **Spec:** [`docs/specs/2026-10-08-agent-control-plane-prototype-design.md`](specs/2026-10-08-agent-control-plane-prototype-design.md). Read it before your first task. This plan says *what to do next*; the spec says *what and why*.
 
@@ -21,7 +21,7 @@ Update this block every time a session stops, even mid-phase.
 | **Current phase** | Phase 0: Setup (⏸ at checkpoint, awaiting Stefan's review) |
 | **Branch** | `main` (pushed to `origin`) |
 | **Last completed** | Phase 0 Tasks 0.1–0.4: repo public, 10 milestones, labels, 10 phase issues (2026-10-08) |
-| **Next task** | After Stefan approves Phase 0: Phase 1, Task 1.1 in [`docs/plans/phase-1-foundation.md`](plans/phase-1-foundation.md) (creates branch `phase-1-foundation`) |
+| **Next task** | After Stefan approves Phase 0: finish Phase 0 Task 0.5 Step 3 (close #1, remove its `checkpoint` label, set Phase 0 ☑ Merged, push), then Phase 1 Task 1.1 in [`docs/plans/phase-1-foundation.md`](plans/phase-1-foundation.md) (creates branch `phase-1-foundation`) |
 | **Blockers** | Stefan reviewing Phase 0 (repo, issues, plan on GitHub) |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | none yet (first deploy in Phase 1) |
@@ -45,8 +45,8 @@ Each phase gets a step-by-step plan in `docs/plans/phase-N-<slug>.md`, written i
 
 Every task implicitly includes these. Values are verbatim from the spec.
 
-- **Never commit** `reference/source-docs/` or any `.docx`. Never name the real company the source docs were written for, anywhere in the repo or site. The brand is **Signal** (stand-in; spec D7). Before every push, `git grep -il -f .git/info/forbidden-terms` must print nothing (the terms file is local-only).
-- Stack is fixed: Vite, React 19, TypeScript strict, React Router v7, Zustand, CSS Modules + `src/design-system/tokens.css`. **No UI component library, no icon library, no Tailwind.**
+- **Never commit** `reference/source-docs/` or any `.docx`. Never name the real company the source docs were written for, anywhere in the repo or site. The brand is **Signal** (stand-in; spec D7). Before every push, run the forbidden-terms check in `CLAUDE.md` ("Brand and the real company name"); it must print nothing.
+- Stack is fixed: Vite, React 19, TypeScript strict, React Router v8, Zustand, CSS Modules + `src/design-system/tokens.css`. **No UI component library, no icon library, no Tailwind.**
 - Fonts: IBM Plex Sans and IBM Plex Mono, weights **400 and 600 only**, via `@fontsource`.
 - Colours only through `--cs-*` tokens (OKLCH, values from `docs/design-handoff.md` "Design tokens"). Indigo = primary action and current/selected. Teal = review waiting only. Amber/red = warning/critical only. Healthy = grey. No gradients, no emoji, no coloured left-border cards.
 - Every status pairs colour + shape + word. Dashed border means "no data" (stale) only.
@@ -119,7 +119,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 - Repo: https://github.com/StefanNav/agent-control-plane (public, default branch `main`, topics set). Phase 0 worked directly on `main`; from Phase 1 every phase uses a branch and a PR.
 - Tracking: milestones 1–10 and issues #1–#10 are Phases 0–9 in order (**issue number = phase + 1**). Labels: `phase-0`…`phase-9`, `checkpoint`, `design-qa`. When ticking a phase task, tick it here and in that phase's issue body.
 - The design handoff now lives at `docs/design-handoff.md`; the root `README.md` is an interim project README (Phase 9 replaces it).
-- Brand is **Signal** (spec D7). The real company name is listed only in local `.git/info/forbidden-terms`; run `git grep -il -f .git/info/forbidden-terms` before every push (must print nothing). A fresh clone won't have that file: ask Stefan.
+- Brand is **Signal** (spec D7). The real company name is listed only in the local, never-committed `info/forbidden-terms` file in the git common dir; run the check in `CLAUDE.md` before every push (must print nothing). A fresh clone won't have that file: ask Stefan.
 - History was rewritten once, before the first push, to remove a leaked mention. Nothing after the first push has been rewritten; never rewrite pushed history.
 - Gotcha: the Bash tool's shell is zsh, where arrays start at 1. Wrap scripts that use arrays in `bash -c '…'`.
 - Vercel isn't linked yet; that's Phase 1 Task 1.10.
@@ -358,6 +358,8 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-08 | Desktop only; gate below 1024 px (D6) | Designs are 1440 px |
 | 2026-10-08 | Rolling-wave planning: each phase writes its detailed plan file as task N.0 | Later phases depend on interfaces built earlier |
 | 2026-10-08 | Brand is **Signal**, a stand-in for the real company (spec D7). Top-nav wordmark stays "AIMS" | Stefan's call; keeps the real name out while giving the prototype a brand |
+| 2026-10-08 | React Router **v8** instead of the spec's v7: v8.4 is current and still exports every API the plan uses (`createBrowserRouter`, `RouterProvider`, `matchPath`, `useMatches`, `Link`, `MemoryRouter`) | Start a new project on the current major |
+| 2026-10-08 | Phase 1 Task 1.1 updated for create-vite 9.2 (template now ships oxlint, no `eslint.config.js`, no `vite-env.d.ts`, `types: ["vite/client"]`): swap oxlint for the ESLint stack, keep `vite/client` in `types`, set `packageManager: pnpm@11.5.1` for CI | Found in the Phase 0 review |
 | 2026-10-08 | Forbidden-terms check: real company name lives only in local `.git/info/forbidden-terms`; Phase 0 history was rewritten (before any push) to remove a leaked mention | A plan step had quoted the name literally |
 
 ## Session log

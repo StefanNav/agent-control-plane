@@ -6,7 +6,7 @@
 
 **Architecture:** Vite + React 19 + TS strict SPA. `src/design-system` holds tokens (CSS custom properties) and domain-free primitives, each a folder with `Name.tsx` + `Name.module.css` + `Name.test.tsx`, exported from `src/design-system/index.ts`. `src/app/routes.ts` is a data table of every route; the router, placeholder pages and Playwright smoke test all read from it.
 
-**Tech stack:** pnpm, Vite, React 19, TypeScript, React Router v7 (`react-router` package), Vitest + jsdom + Testing Library, Playwright, ESLint + Prettier, GitHub Actions, Vercel.
+**Tech stack:** pnpm, Vite, React 19, TypeScript, React Router v8 (`react-router` package), Vitest + jsdom + Testing Library, Playwright, ESLint + Prettier, GitHub Actions, Vercel.
 
 **Spec:** `docs/specs/2026-10-08-agent-control-plane-prototype-design.md` (§4.1, §5, §5.5 routes). **Design source:** `docs/design-handoff.md` (Design tokens, Typography, Spacing, Shared primitives, Icons) and `reference/cs-build.js` (exact primitive specs). Read both before Task 1.2.
 
@@ -25,7 +25,7 @@ See `docs/BUILD_PLAN.md` → Global constraints. Most relevant here: no UI/icon 
 ### Task 1.1: Scaffold the app and the `pnpm check` gate
 
 **Files:**
-- Create: `package.json`, `pnpm-lock.yaml`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `eslint.config.js`, `.prettierrc.json`, `.prettierignore`, `src/main.tsx`, `src/vite-env.d.ts`, `src/test/setup.ts`, `src/lib/cx.ts`
+- Create: `package.json`, `pnpm-lock.yaml`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `eslint.config.js` (written by hand; the template ships oxlint instead), `.prettierrc.json`, `.prettierignore`, `src/main.tsx`, `src/test/setup.ts`, `src/lib/cx.ts`
 - Test: `src/lib/cx.test.ts`
 
 **Interfaces:**
@@ -37,22 +37,24 @@ Run: `git checkout -b phase-1-foundation`
 
 - [ ] **Step 2: Scaffold outside the repo and copy in**
 
-The repo root is not empty, so scaffold in the scratchpad: `pnpm create vite@latest acp-scaffold --template react-ts`. Copy `package.json`, `index.html`, `vite.config.ts`, `tsconfig*.json`, `eslint.config.js`, `src/main.tsx`, `src/vite-env.d.ts` into the repo root. Do **not** copy its `README.md`, `.gitignore`, `public/vite.svg`, `src/App.*`, `src/assets/`, `src/index.css`. Set `"name": "agent-control-plane"`, `"private": true`.
+The repo root is not empty, so scaffold in the scratchpad: `pnpm create vite@latest acp-scaffold --template react-ts`. Copy `package.json`, `index.html`, `vite.config.ts`, `tsconfig*.json`, `src/main.tsx` into the repo root. Do **not** copy its `README.md`, `_gitignore`, `_oxlintrc.json`, `public/`, `src/App.*`, `src/assets/`, `src/index.css`. (create-vite 9.2 ships oxlint, no `eslint.config.js` and no `vite-env.d.ts`; `"types": ["vite/client"]` in `tsconfig.app.json` replaces the latter.) Set `"name": "agent-control-plane"`, `"private": true`, `"packageManager": "pnpm@11.5.1"` (CI's `pnpm/action-setup` reads it).
 
 - [ ] **Step 3: Install dependencies**
 
 ```bash
 pnpm add react-router zustand @fontsource/ibm-plex-sans @fontsource/ibm-plex-mono
+pnpm remove oxlint
 pnpm add -D vitest jsdom @testing-library/react @testing-library/user-event @testing-library/jest-dom \
-  @playwright/test prettier eslint-config-prettier serve
+  @playwright/test prettier serve \
+  eslint @eslint/js typescript-eslint eslint-plugin-react-hooks eslint-plugin-react-refresh globals eslint-config-prettier
 ```
 Record the installed major versions of react, react-router, vite, vitest in the BUILD_PLAN decision log.
 
 - [ ] **Step 4: Configure**
-  - `tsconfig.app.json`: `"strict": true`, `"noUncheckedIndexedAccess": true`, `"types": ["vitest/globals", "@testing-library/jest-dom"]`.
+  - `tsconfig.app.json`: `"strict": true`, `"noUncheckedIndexedAccess": true`, `"types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]` (keep `vite/client`: CSS Module and `?raw` imports need it).
   - `vite.config.ts`: `test: { environment: 'jsdom', globals: true, setupFiles: ['src/test/setup.ts'], include: ['src/**/*.test.{ts,tsx}'] }`.
   - `src/test/setup.ts`: `import '@testing-library/jest-dom/vitest'`.
-  - `eslint.config.js`: add `eslint-config-prettier`; ignore `dist`, `designs`, `reference`, `playwright-report`, `test-results`.
+  - `eslint.config.js` (flat config): `tseslint.config(` ignores `dist`, `designs`, `reference`, `playwright-report`, `test-results`, `.superpowers`; then `js.configs.recommended`, `...tseslint.configs.recommended`; then for `**/*.{ts,tsx}`: `languageOptions.globals = globals.browser`, plugins `react-hooks` and `react-refresh`, rules `...reactHooks.configs.recommended.rules` and `'react-refresh/only-export-components': ['warn', { allowConstantExport: true }]`; last, `eslint-config-prettier` `)`.
   - `.prettierrc.json`: `{ "singleQuote": true, "semi": false, "printWidth": 100 }`; `.prettierignore`: `designs/`, `reference/`, `pnpm-lock.yaml`, `dist/`.
   - `index.html`: `<title>Signal · Agent Control Plane</title>`, `lang="en"`.
   - `package.json` scripts:
@@ -410,7 +412,7 @@ If `git connect` says the Vercel GitHub app lacks access to the repo, ask Stefan
 
 - [ ] **Step 4: Open the PR**
 
-`gh pr create --title "Phase 1: Foundation" --body` with: the Phase 1 checklist, `Closes #<Phase 1 issue>`, and a note that the Vercel preview link appears below. Verify CI is green and the Vercel bot posts a preview URL.
+`gh pr create --title "Phase 1: Foundation" --body` with: the Phase 1 checklist, `Closes #2` (issue numbers are phase + 1), and a note that the Vercel preview link appears below. Verify CI is green and the Vercel bot posts a preview URL.
 
 - [ ] **Step 5: Visual check.** On the preview URL at 1440×900, screenshot `/operations` (shell + placeholder) and `/about/components`. Compare buttons, fields, table, tabs, wizard steps and modal against `designs/Countersign Components.dc.html` and the handoff specs (`pnpm designs` → `http://localhost:4599`). Fix differences; commit.
 - [ ] **Step 6: Deep-link check on the preview.** Open `<preview>/operations/agents/med-rec` directly and refresh; it must load (no Vercel 404).

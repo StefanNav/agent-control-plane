@@ -146,7 +146,7 @@ Switching persona changes:
 |---|---|---|
 | Build | Vite + React 19 + TypeScript (strict) | Static SPA, no server needed |
 | Package manager | pnpm (Node 24) | Installed locally |
-| Routing | React Router v7 (`createBrowserRouter`) | Real URLs, nested layouts |
+| Routing | React Router v8 (`createBrowserRouter`; the spec originally said v7, see the build plan decision log) | Real URLs, nested layouts |
 | State | Zustand + `persist` middleware | Small, typed, easy scenario loading |
 | Styling | CSS custom properties (tokens) + CSS Modules | 1:1 with the design handoff's exact pixel specs |
 | Fonts | `@fontsource/ibm-plex-sans`, `@fontsource/ibm-plex-mono` (400, 600) | Self-hosted, no external font request |
