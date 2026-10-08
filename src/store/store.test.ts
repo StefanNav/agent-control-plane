@@ -339,3 +339,64 @@ describe('fix one thing (6c)', () => {
     expect(dataOf(store.getState())).toEqual(before)
   })
 })
+
+describe('two-person resume (6d, 6e) — Review focus 1', () => {
+  const scenario = (persona: 'marcus' | 'priya' | 'dana' | 'jordan') => {
+    const store = fresh()
+    store.getState().loadScenario('resume-requested')
+    store.getState().setPersona(persona)
+    return store
+  }
+
+  test('Priya approves Marcus\'s request: the agent is live again with its judgment, audited Resumed', () => {
+    const store = scenario('priya')
+    expect(store.getState().approveResume('med-rec', 'Root cause fixed and replayed clean.')).toEqual({ ok: true })
+    const st = store.getState()
+    const agent = st.agents.find((a) => a.id === 'med-rec')!
+    expect(agent.lifecycle).toBe('live')
+    expect(agent.judgment).toMatchObject({ status: 'review', label: 'Review: 3 drafts' })
+    expect(agent.pause).toBeUndefined()
+    expect(st.resumeRequests).toHaveLength(0)
+    expect(st.audit.at(-1)).toMatchObject({ who: 'priya', action: 'Resumed', target: 'AGT-0123', reason: 'Root cause fixed and replayed clean.' })
+    expect(st.incidents.find((i) => i.code === 'INC-0031')!.timeline.at(-1)).toMatchObject({ title: 'Resume approved', sub: 'Priya' })
+  })
+
+  test('the requester can\'t approve their own request; nothing changes', () => {
+    const store = scenario('marcus')
+    const before = dataOf(store.getState())
+    expect(store.getState().approveResume('med-rec', 'Looks fine.')).toEqual({ ok: false, reason: 'You already approved; the other person must' })
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+
+  test('Dana can\'t approve; nobody approves without a request or a reason', () => {
+    const dana = scenario('dana')
+    expect(dana.getState().approveResume('med-rec', 'x')).toMatchObject({ ok: false })
+    const priya = fresh()
+    priya.getState().setPersona('priya')
+    expect(priya.getState().approveResume('med-rec', 'x')).toEqual({ ok: false, reason: 'No resume request' })
+    expect(scenario('priya').getState().approveResume('med-rec', '  ')).toEqual({ ok: false, reason: 'A reason is required' })
+  })
+
+  test('requesting needs a paused agent, a reason, and no open request', () => {
+    const store = fresh()
+    expect(store.getState().requestResume('med-rec', 'x')).toEqual({ ok: false, reason: 'Not paused' })
+    store.getState().pauseAgent('med-rec', { scope: 'agent' })
+    expect(store.getState().requestResume('med-rec', ' ')).toEqual({ ok: false, reason: 'A reason is required' })
+    expect(store.getState().requestResume('med-rec', 'Fixed in SOP v1.3.2.')).toEqual({ ok: true })
+    expect(store.getState().resumeRequests[0]).toMatchObject({ agentId: 'med-rec', requestedBy: 'marcus', approvals: [{ personId: 'marcus' }] })
+    expect(store.getState().audit.at(-1)).toMatchObject({ action: 'Requested resume', target: 'AGT-0123' })
+    expect(store.getState().requestResume('med-rec', 'Again.')).toEqual({ ok: false, reason: 'A resume request is already open' })
+  })
+
+  test('only the requester withdraws; the other person declines with a reason', () => {
+    expect(scenario('priya').getState().withdrawResume('med-rec')).toEqual({ ok: false, reason: 'Only Marcus can withdraw this request' })
+    const marcus = scenario('marcus')
+    expect(marcus.getState().withdrawResume('med-rec')).toEqual({ ok: true })
+    expect(marcus.getState().resumeRequests).toHaveLength(0)
+    const priya = scenario('priya')
+    expect(priya.getState().declineResume('med-rec', 'Wait for the new case set.')).toEqual({ ok: true })
+    expect(priya.getState().resumeRequests).toHaveLength(0)
+    expect(priya.getState().agents.find((a) => a.id === 'med-rec')!.lifecycle).toBe('paused')
+    expect(priya.getState().audit.at(-1)).toMatchObject({ action: 'Declined resume', reason: 'Wait for the new case set.' })
+  })
+})

@@ -56,3 +56,27 @@ test('fix one thing (6c): Sam returns admission med rec to Shadow', async ({ pag
   await expect(page.getByText('Returned to Shadow AGT-0123')).toBeVisible()
   expect(errors).toEqual([])
 })
+
+test('two-person resume (6d, 6e): Marcus waits, Priya approves, the agent is live again', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/operations/agents/med-rec?scenario=resume-requested')
+  const panel = page.getByRole('region', { name: 'Resume' })
+  await expect(panel).toContainText('Requested 11:58')
+  await expect(panel).toContainText('Stays paused until Priya approves. Both of you see this request.')
+  await expect(panel.getByRole('button', { name: 'Resume' })).toHaveAttribute('aria-disabled', 'true')
+
+  await page.getByRole('button', { name: /^Viewing as/ }).click()
+  await page.getByRole('menuitem', { name: /Priya/ }).click()
+  await page.goto('/operations/agents/med-rec')
+  await expect(panel).toContainText('Marcus asks to resume Med Rec Agent')
+  await expect(panel).toContainText('Marcus’s reason')
+  await expect(panel).toContainText('SOP v1.3.1 → v1.3.2')
+  await panel.getByRole('textbox', { name: /Your reason/ }).fill('Root cause fixed and replayed clean.')
+  await panel.getByRole('button', { name: 'Approve and resume' }).click()
+  await expect(panel).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Controls' })).toBeVisible()
+
+  await page.goto('/operations/agents/med-rec?tab=history')
+  await expect(page.getByText('Resumed AGT-0123')).toBeVisible()
+  expect(errors).toEqual([])
+})

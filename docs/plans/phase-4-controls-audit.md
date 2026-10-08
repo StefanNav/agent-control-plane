@@ -332,7 +332,7 @@ These are the failure modes the spec implies that no screen test naturally cover
   - "Approve and resume", "Decline", and "Resumes at the gateway within seconds"
 - Fix the Phase 2 deferred dark-mode issue: the resume dialog's white "done" check on ink must use `--cs-raised`.
 
-- [ ] **Step 1: Failing tests (Review focus 1)**
+- [x] **Step 1: Failing tests (Review focus 1)**
   - Marcus requests; Priya approves → the agent is live, the judgment is restored, and audit has `'Resumed'`.
   - Marcus approving his own request is refused, and nothing changes.
   - Dana approving is refused.
@@ -340,10 +340,10 @@ These are the failure modes the spec implies that no screen test naturally cover
   - Requesting on a live agent is refused.
   - Withdraw by Priya is refused.
   - **e2e:** in `resume-requested`, as Priya: the panel shows "Requested 11:58" → Approve → "Your reason" → Approve and resume. The board's Medications has no paused agent, and History shows "Resumed".
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 6d and 6e.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(controls): two-person resume"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 6d and 6e.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(controls): two-person resume"`.
 
 ### Task 4.6: Inventory (8c) and disable or retire (6f)
 

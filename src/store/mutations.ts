@@ -50,8 +50,9 @@ export function applyPause(
 /** Undo a pause once both people have approved: judgment, levels and lifecycle come back. */
 export function applyResume(s: DemoState, agentId: string, approvedBy: string): DemoState {
   const agent = s.agents.find((a) => a.id === agentId)
-  if (!agent?.pause) return s
-  agent.judgment = agent.pause.wasJudgment
+  if (!agent || (!agent.pause && agent.lifecycle !== 'paused')) return s
+  // Seeded pauses carry no detail; they come back within scope.
+  agent.judgment = agent.pause?.wasJudgment ?? { status: 'normal', label: 'Within scope' }
   if (agent.lifecycle === 'paused') agent.lifecycle = 'live'
   for (const activity of s.activities) if (activity.agentId === agentId) delete activity.paused
   delete agent.pause

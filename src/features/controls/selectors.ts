@@ -107,3 +107,79 @@ export function selectFixOneThing(s: DemoState, personaId: PersonaId, agentId: s
     revokeEffects: (title: string) => [`${agent.name} loses ${title} at the gateway.`, 'Everything else keeps working.', 'Granting it again goes back through tool approval.'],
   }
 }
+
+export interface ResumePanelView {
+  /** `request`: the owner or sponsor may ask; `waiting`: the requester waits (6d); `approve`: the other person decides (6e); `readonly`: everyone else. */
+  mode: 'request' | 'waiting' | 'approve' | 'readonly'
+  title: string
+  stamp: string
+  needs: { who: string; status: string; done: boolean; current: boolean }[]
+  returnsTo: { activity: string; level: string; status: 'normal' | 'shadow' }[]
+  reasonLabel: string
+  quote: string | null
+  changes: { title: string; sub: string; meta: string }[]
+  statusLine: string
+}
+
+/** The resume panel on a paused agent (6d, 6e). Null when the agent isn't paused. */
+export function selectResumePanel(s: DemoState, personaId: PersonaId, agentId: string): ResumePanelView | null {
+  const agent = s.agents.find((a) => a.id === agentId)
+  if (!agent || agent.lifecycle !== 'paused' || !agent.pausedAt) return null
+  const request = s.resumeRequests.find((r) => r.agentId === agentId)
+  const people = [
+    { id: agent.ownerId, role: 'agent owner' },
+    { id: agent.sponsorId, role: 'clinical sponsor' },
+  ]
+  const isParty = people.some((p) => p.id === personaId)
+  const approvedAt = (id: string) => request?.approvals.find((a) => a.personId === id)?.at
+  const pending = people.find((p) => !approvedAt(p.id))
+  const requester = request ? personName(s, request.requestedBy) : ''
+  const mode: ResumePanelView['mode'] = !request
+    ? isParty
+      ? 'request'
+      : 'readonly'
+    : approvedAt(personaId)
+      ? 'waiting'
+      : isParty
+        ? 'approve'
+        : 'readonly'
+  const needs = people.map((p) => {
+    const at = approvedAt(p.id)
+    const you = p.id === personaId
+    return {
+      who: `${personName(s, p.id)} · ${p.role}`,
+      status: at
+        ? `${request?.requestedBy === p.id ? 'requested' : 'approved'} ${formatClock(at)}`
+        : request
+          ? you
+            ? 'you · deciding now'
+            : `approval pending · told ${formatClock(request.requestedAt)}`
+          : you
+            ? 'you · asking now'
+            : 'told when you ask',
+      done: Boolean(at),
+      current: !at && (request ? true : you),
+    }
+  })
+  const incident = s.incidents.find((i) => i.agentId === agentId && i.state !== 'closed')
+  const changes = [...(agent.pause?.changes ?? [])]
+  if (incident && !changes.some((c) => c.title.includes(incident.code))) {
+    const open = incident.corrections.filter((c) => !c.done).length
+    changes.push({ title: `Incident ${incident.code}`, sub: `${incident.rootCause ? 'Root cause recorded' : 'Root cause pending'} · ${open} ${open === 1 ? 'correction' : 'corrections'} open`, meta: personName(s, incident.commanderId) })
+  }
+  return {
+    mode,
+    title: mode === 'approve' ? `${requester} asks to resume ${agent.name}` : 'Request to resume',
+    stamp: request ? (mode === 'approve' ? `Requested ${formatClock(request.requestedAt)} · paused ${formatClock(agent.pausedAt)}` : `Requested ${formatClock(request.requestedAt)}`) : `Paused ${formatClock(agent.pausedAt)}`,
+    needs,
+    returnsTo: s.activities
+      .filter((a) => a.agentId === agentId)
+      .map((a) => ({ activity: a.name, level: LEVEL[a.level], status: a.level === 'shadow' ? ('shadow' as const) : ('normal' as const) })),
+    reasonLabel: mode === 'approve' ? `${requester}’s reason` : request ? `Reason · ${requester}` : 'Reason',
+    quote: request ? `“${request.reason}”` : null,
+    changes,
+    statusLine: request
+      ? `Stays paused until ${pending ? personName(s, pending.id) : 'both'} ${pending ? 'approves' : 'approve'}. Both of you see this request.`
+      : `Resuming needs ${personName(s, agent.sponsorId)} and ${personName(s, agent.ownerId)}, both with a reason.`,
+  }
+}

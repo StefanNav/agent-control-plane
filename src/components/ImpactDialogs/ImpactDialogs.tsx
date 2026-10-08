@@ -131,7 +131,7 @@ export function ResumeDialog(props: ResumeDialogProps) {
             <li key={person.name} className={styles.need}>
               <span className={styles.who}>
                 <span className={person.done ? styles.signed : styles.pending}>
-                  {person.done ? <Icon name="check" size={11} color="var(--cs-on-acc)" /> : null}
+                  {person.done ? <Icon name="check" size={11} color="var(--cs-raised)" /> : null}
                 </span>
                 <span className={styles.name}>{person.name}</span>
               </span>

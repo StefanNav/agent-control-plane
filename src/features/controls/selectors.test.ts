@@ -43,3 +43,36 @@ test('fix one thing (6c) for Med Rec as Sam', async () => {
   })
   expect(f.grants.map((g) => g.title)).toEqual(['Epic · read', 'Epic · draft', 'Pharmacy worklist · read', 'Pharmacy worklist · draft', 'Pharmacy worklist · write', 'Pyxis · read', 'Teams · write'])
 })
+
+describe('resume panel (6d, 6e)', async () => {
+  const { buildScenario } = await import('../../data/scenarios')
+  const { selectResumePanel } = await import('./selectors')
+  const at1158 = buildScenario('resume-requested')
+
+  test('Marcus waits (6d)', () => {
+    const p = selectResumePanel(at1158, 'marcus', 'med-rec')!
+    expect(p).toMatchObject({ mode: 'waiting', title: 'Request to resume', stamp: 'Requested 11:58', reasonLabel: 'Reason · Marcus', statusLine: 'Stays paused until Priya approves. Both of you see this request.' })
+    expect(p.needs).toEqual([
+      { who: 'Marcus · agent owner', status: 'requested 11:58', done: true, current: false },
+      { who: 'Priya · clinical sponsor', status: 'approval pending · told 11:58', done: false, current: true },
+    ])
+    expect(p.returnsTo).toEqual([
+      { activity: 'Reconcile home medications at admission', level: 'Draft', status: 'normal' },
+      { activity: 'Flag allergy conflicts', level: 'Shadow', status: 'shadow' },
+    ])
+  })
+
+  test('Priya decides (6e)', () => {
+    const p = selectResumePanel(at1158, 'priya', 'med-rec')!
+    expect(p).toMatchObject({ mode: 'approve', title: 'Marcus asks to resume Med Rec Agent', stamp: 'Requested 11:58 · paused 09:47', reasonLabel: 'Marcus’s reason' })
+    expect(p.needs[1]).toMatchObject({ who: 'Priya · clinical sponsor', status: 'you · deciding now', current: true })
+    expect(p.changes.map((c) => c.title)).toEqual(['SOP v1.3.1 → v1.3.2', 'Replay · 23 cases', 'Incident INC-0031'])
+  })
+
+  test('before any request, the owner sees the request form; others read only', () => {
+    const paused = buildScenario('med-rec-paused')
+    expect(selectResumePanel(paused, 'marcus', 'med-rec')).toMatchObject({ mode: 'request', title: 'Request to resume' })
+    expect(selectResumePanel(paused, 'jordan', 'med-rec')).toMatchObject({ mode: 'readonly' })
+    expect(selectResumePanel(createSeed(), 'marcus', 'med-rec')).toBeNull()
+  })
+})

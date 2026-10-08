@@ -22,7 +22,7 @@ export function HardStopCard({ code, title, description, rows, footer }: HardSto
     <div className={styles.hardStop}>
       <div className={styles.bar}>
         <span className={styles.barLabel}>
-          <Icon name="lock" color="var(--cs-on-acc)" />
+          <Icon name="lock" color="var(--cs-raised)" />
           Hard stop · enforced at the gateway
         </span>
         <span className={styles.barCode}>{code}</span>

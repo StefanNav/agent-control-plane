@@ -4,7 +4,7 @@ import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type DemoState, type PersonaId, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
-import { applyPause } from './mutations'
+import { applyPause, applyResume } from './mutations'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
 
@@ -49,6 +49,12 @@ export interface DemoActions {
   returnToShadow: (activityId: string, reason: string) => ActionResult
   /** Remove one tool grant, a system × verb cell (6c). */
   revokeTool: (agentId: string, grant: { system: string; verb: Verb }, reason: string) => ActionResult
+  /** Ask to resume a paused agent; the owner and the sponsor must both agree, each with a reason (6d). */
+  requestResume: (agentId: string, reason: string) => ActionResult
+  /** The second person's approval; with both, the agent resumes at the gateway (6e). */
+  approveResume: (agentId: string, reason: string) => ActionResult
+  declineResume: (agentId: string, reason: string) => ActionResult
+  withdrawResume: (agentId: string) => ActionResult
 }
 
 export interface PauseInput {
@@ -61,6 +67,13 @@ export interface PauseInput {
 export type DemoStore = DemoState & DemoActions
 
 const DATA_KEYS = Object.keys(createSeed()) as Array<keyof DemoState>
+
+/** Add a line to the agent's open incident timeline, if it has one (7c). */
+function incidentEntry(draft: DemoState, agentId: string, title: string) {
+  const incident = draft.incidents.find((i) => i.agentId === agentId && i.state !== 'closed')
+  const name = draft.people.find((p) => p.id === draft.personaId)?.name ?? draft.personaId
+  incident?.timeline.push({ at: draft.now, title, sub: name, by: draft.personaId })
+}
 
 /**
  * Saved state is used only if it is a full snapshot of the current seed version with a known
@@ -230,6 +243,82 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Revoked tool', target: agent.code, reason: `${system} · ${verb} · ${why}` },
               mutate: (draft) => {
                 draft.grants.find((g) => g.agentId === agentId && g.system === system)!.cells[verb] = 'none'
+              },
+            })
+          },
+          requestResume: (agentId, reason) => {
+            const s = get()
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!agent) return { ok: false, reason: 'Not found' }
+            if (agent.lifecycle !== 'paused' && !agent.pause) return { ok: false, reason: 'Not paused' }
+            const why = reason.trim()
+            if (!why) return { ok: false, reason: 'A reason is required' }
+            if (s.resumeRequests.some((r) => r.agentId === agentId)) return { ok: false, reason: 'A resume request is already open' }
+            return act({
+              action: 'resume',
+              ctx: { agentId },
+              audit: { action: 'Requested resume', target: agent.code, reason: why },
+              mutate: (draft) => {
+                draft.resumeRequests.push({ agentId, requestedBy: draft.personaId, requestedAt: draft.now, reason: why, approvals: [{ personId: draft.personaId, reason: why, at: draft.now }] })
+                incidentEntry(draft, agentId, 'Resume requested')
+              },
+            })
+          },
+          approveResume: (agentId, reason) => {
+            const s = get()
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!agent) return { ok: false, reason: 'Not found' }
+            const request = s.resumeRequests.find((r) => r.agentId === agentId)
+            if (!request) return { ok: false, reason: 'No resume request' }
+            const why = reason.trim()
+            if (!why) return { ok: false, reason: 'A reason is required' }
+            if (request.approvals.some((a) => a.personId === s.personaId)) return { ok: false, reason: 'You already approved; the other person must' }
+            const needed = [agent.ownerId, agent.sponsorId]
+            const approved = new Set([...request.approvals.map((a) => a.personId), s.personaId])
+            const complete = needed.every((p) => approved.has(p))
+            return act({
+              action: 'resume',
+              ctx: { agentId },
+              audit: { action: complete ? 'Resumed' : 'Approved resume', target: agent.code, reason: why },
+              mutate: (draft) => {
+                draft.resumeRequests.find((r) => r.agentId === agentId)!.approvals.push({ personId: draft.personaId, reason: why, at: draft.now })
+                if (complete) applyResume(draft, agentId, draft.personaId)
+              },
+            })
+          },
+          declineResume: (agentId, reason) => {
+            const s = get()
+            const agent = s.agents.find((a) => a.id === agentId)
+            const request = s.resumeRequests.find((r) => r.agentId === agentId)
+            if (!agent || !request) return { ok: false, reason: 'No resume request' }
+            const why = reason.trim()
+            if (!why) return { ok: false, reason: 'A reason is required' }
+            if (request.requestedBy === s.personaId) return { ok: false, reason: 'Withdraw your own request instead' }
+            return act({
+              action: 'resume',
+              ctx: { agentId },
+              audit: { action: 'Declined resume', target: agent.code, reason: why },
+              mutate: (draft) => {
+                draft.resumeRequests = draft.resumeRequests.filter((r) => r.agentId !== agentId)
+                incidentEntry(draft, agentId, 'Resume declined')
+              },
+            })
+          },
+          withdrawResume: (agentId) => {
+            const s = get()
+            const agent = s.agents.find((a) => a.id === agentId)
+            const request = s.resumeRequests.find((r) => r.agentId === agentId)
+            if (!agent || !request) return { ok: false, reason: 'No resume request' }
+            if (request.requestedBy !== s.personaId) {
+              const name = s.people.find((p) => p.id === request.requestedBy)?.name ?? 'the requester'
+              return { ok: false, reason: `Only ${name} can withdraw this request` }
+            }
+            return act({
+              action: 'resume',
+              ctx: { agentId },
+              audit: { action: 'Withdrew resume request', target: agent.code },
+              mutate: (draft) => {
+                draft.resumeRequests = draft.resumeRequests.filter((r) => r.agentId !== agentId)
               },
             })
           },

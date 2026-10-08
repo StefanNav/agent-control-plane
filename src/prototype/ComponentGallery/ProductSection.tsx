@@ -241,6 +241,16 @@ export function DarkSection() {
           <Checkbox checked onChange={() => {}} label="Tested" />
           <MonitorHealth state="live" at="09:42:17" />
         </div>
+        <HardStopCard
+          code="HS-04 v2"
+          title="Never change a dose"
+          description="If a draft changes a dose, the gateway keeps the original dose and flags the line for the pharmacist."
+          rows={[
+            { key: 'Owner', value: 'Sam · technical owner' },
+            { key: 'Last 30 days', value: 'Blocked 7 of 8,912 actions' },
+          ]}
+          footer="The agent can't edit or talk past this rule."
+        />
       </div>
     </section>
   )

@@ -8,6 +8,7 @@ import { useDemo } from '../../store'
 import { controlMenu, parseControl, type ControlId } from '../controls/controlMenu'
 import { FixOneThing } from '../controls/FixOneThing'
 import { PauseFlow } from '../controls/PauseFlow'
+import { ResumePanel } from '../controls/ResumePanel'
 import type { PauseScope } from '../controls/selectors'
 import {
   ActionsTab,
@@ -74,7 +75,7 @@ export function AgentView() {
     )
 
   const content: Record<Tab, ReactNode> = {
-    overview: <Overview view={view} />,
+    overview: <Overview view={view} resume={<ResumePanel agentId={agentId} />} />,
     activities: <ActivitiesTab agentId={agentId} />,
     scorecard: <ScorecardTab />,
     actions: <ActionsTab agentId={agentId} />,
