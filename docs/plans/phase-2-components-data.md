@@ -72,9 +72,9 @@ See `docs/BUILD_PLAN.md` → Global constraints. Added from this phase on:
 
 Later phases append their own types (job descriptions, scorecards, incidents, etc.) to this file and to `DemoState`, bumping `SEED_VERSION`.
 
-- [ ] **Step 1: Write `src/data/types.ts`** with the exports above, each with a one-line doc comment.
-- [ ] **Step 2: Verify** with `pnpm typecheck`. Expected: passes.
-- [ ] **Step 3: Commit** with `git commit -m "feat(data): domain types"`.
+- [x] **Step 1: Write `src/data/types.ts`** with the exports above, each with a one-line doc comment.
+- [x] **Step 2: Verify** with `pnpm typecheck`. Expected: passes.
+- [x] **Step 3: Commit** with `git commit -m "feat(data): domain types"`.
 
 ### Task 2.2: Demo clock, formatters, trend points
 
