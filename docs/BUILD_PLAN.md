@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 4: Controls and audit (◐ in progress) |
+| **Current phase** | Phase 4: Controls and audit (◐ at checkpoint, awaiting Stefan's review) |
 | **Branch** | `phase-4-controls-audit` |
-| **Last completed** | Phase 3 approved and squash-merged (PR #13) (2026-10-08) |
-| **Next task** | Phase 4 Task 4.0: write [`docs/plans/phase-4-controls-audit.md`](plans/phase-4-controls-audit.md) |
+| **Last completed** | Phase 4 built, fresh review fixed; PR [#14](https://github.com/StefanNav/agent-control-plane/pull/14) open (2026-10-08) |
+| **Next task** | Stefan reviews PR #14 → squash-merge → Phase 5 Task 5.0 (write `docs/plans/phase-5-onboarding.md`) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none open |
+| **Latest preview** | Vercel preview on PR [#14](https://github.com/StefanNav/agent-control-plane/pull/14) (behind Vercel login) |
 
 ### How to resume in a new session
 
@@ -92,7 +92,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 1 | Foundation | ☑ Merged | `phase-1-foundation` | [#2](https://github.com/StefanNav/agent-control-plane/issues/2) | [#11](https://github.com/StefanNav/agent-control-plane/pull/11) | [phase-1-foundation.md](plans/phase-1-foundation.md) |
 | 2 | Components and data | ☑ Merged | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | [#12](https://github.com/StefanNav/agent-control-plane/pull/12) | [phase-2-components-data.md](plans/phase-2-components-data.md) |
 | 3 | Command Board and inbox | ☑ Merged | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | [#13](https://github.com/StefanNav/agent-control-plane/pull/13) | [phase-3-board-inbox.md](plans/phase-3-board-inbox.md) |
-| 4 | Controls and audit | ◐ In progress | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | – | to write (Task 4.0) |
+| 4 | Controls and audit | ◐ Checkpoint | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | [#14](https://github.com/StefanNav/agent-control-plane/pull/14) | to write (Task 4.0) |
 | 5 | Onboarding and go-live | ☐ Not started | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | – | to write (Task 5.0) |
 | 6 | Governance and fast follows | ☐ Not started | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | – | to write (Task 6.0) |
 | 7 | Earned autonomy | ☐ Not started | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | – | to write (Task 7.0) |
@@ -271,19 +271,55 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 **Goal:** Stop easy, resume deliberate; any action can be reconstructed (E6, E7, 8c).
 
 - [x] 4.0 Write `docs/plans/phase-4-controls-audit.md`; commit
-- [ ] 4.1 Data: incidents, pause detail, inventory records, ACT-88171, tiers; `resume-requested` at 11:58 (`SEED_VERSION` 5)
-- [ ] 4.2 Locked buttons (designed locked state) and the control menu 6a
-- [ ] 4.3 Pause with impact preview 6b; board, division and agent views agree
-- [ ] 4.4 Fix one thing 6c: return an activity to Shadow, revoke a tool
-- [ ] 4.5 Two-person resume 6d, 6e (stays paused until both; each reason logged)
-- [ ] 4.6 Inventory 8c (Drafts rows from 1i; Intake and Retired composed); disable or retire 6f (typed confirmation)
-- [ ] 4.7 Action list 7a and action trace 7b; open an incident
-- [ ] 4.8 Incidents list (composed) and incident record 7c
-- [ ] 4.9 Export for a surveyor 7d
-- [ ] 4.10 E2E journey "stop easy, resume deliberate"; checkpoint
+- [x] 4.1 Data: incidents, pause detail, inventory records, ACT-88171, tiers; `resume-requested` at 11:58 (`SEED_VERSION` 5)
+- [x] 4.2 Locked buttons (designed locked state) and the control menu 6a
+- [x] 4.3 Pause with impact preview 6b; board, division and agent views agree
+- [x] 4.4 Fix one thing 6c: return an activity to Shadow, revoke a tool
+- [x] 4.5 Two-person resume 6d, 6e (stays paused until both; each reason logged)
+- [x] 4.6 Inventory 8c (Drafts rows from 1i; Intake and Retired composed); disable or retire 6f (typed confirmation)
+- [x] 4.7 Action list 7a and action trace 7b; open an incident
+- [x] 4.8 Incidents list (composed) and incident record 7c
+- [x] 4.9 Export for a surveyor 7d
+- [x] 4.10 E2E journey "stop easy, resume deliberate"; checkpoint
 
 **Done when:** frames 6a–6f, 7a–7d, 8c built and visually checked.
-**Handoff notes:** _written at the end of the phase._
+**Handoff notes (Phase 4 → Phase 5)**
+
+- **What exists**
+  - Agent view controls (6a–6f): `AgentView` mounts the dialogs from `?control=pause-activity|pause-agent|pause-division|shadow|revoke|disable|retire` (`pause` is an alias). Only a live agent offers pause and narrow fixes; a disabled one offers only Retire.
+  - The resume panel (6d/6e) is inline on the agent view for any pause, including activity pauses and seeded pauses without detail.
+  - New pages: `/inventory` (8c; Drafts rows from 1i, Intake and Retired composed), `/operations/actions` (7a), `/operations/actions/:id` (7b), `/operations/incidents` (composed), `/operations/incidents/:id` (7c), `/reports/export` (7d).
+  - Store actions: `pauseAgent`, `returnToShadow`, `revokeTool`, `requestResume`/`approveResume`/`declineResume`/`withdrawResume`, `disableAgent`, `retireAgent`, `openIncident`, `addIncidentEntry`, `completeCorrection`, `closeIncident`, `buildExport`. Shared pure mutations in `src/store/mutations.ts`.
+  - Seed v5: incidents (INC-0029 open, INC-0030 closed), pause detail, six retired agents (RET-01..06), intakes, drafts, exports, `stats24h.actionsToday`, actions that carry their own `context` (privilege, checks, conditions).
+  - Design system: `Button locked` (designed locked state, reason via aria-describedby), `FilterPill` passes button props (menu trigger), `ActionTrace layout="rows"` (7b), `PauseDialog` follows 6b.
+- **Review fixes (fresh reviewer, all test-first):**
+  - Disable, pause and resume compose: disabled agents can't be paused, and disable or retire clears any pause and resume request.
+  - Activity pauses and seeded pauses show, and can be resumed.
+  - A pause is written to the agent's open incident.
+  - Past actions read as they happened.
+  - A retired agent's header says Retired.
+  - Exports need the audit right for every agent.
+  - The board's incident badge and resume line are derived from data.
+  - Dialogs opened by URL are read only for personas without the right.
+  - Smaller fixes: disabled agents withdraw their numbers; the single-activity menu reads "Its one activity".
+- **Deferred minors:**
+  - A few refusals in the incident page are swallowed (the controls only show to allowed personas).
+  - Incident close/complete permissions sit outside `can()`.
+  - 7d's period doesn't filter its contents.
+  - The Fix-one-thing mode switch uses Tabs semantics.
+  - A division pause needs one resume per agent.
+  - The other party isn't told of a resume request in the inbox.
+  - 7b doesn't show existing linked incidents.
+  - Activity- or division-level disable (story E6.4) isn't built.
+- **What Phase 5 needs**
+  - Onboarding owns 1i: "Continue" to the first missing field and the Drafts tab's visual check; the drafts are `state.onboardingDrafts`.
+  - `returnToShadow` drafts a v+1 privilege in state `awaiting` (Shadow, proposed Draft) for the sponsor. Phase 5's signing (3c) should pick it up.
+  - `requestGoLive`, the committee tier rule (risk tiers are now seeded from 8c) and Sam's "technical only" scope are still open from Phase 2.
+  - `/inventory/agents/:id` (2d) is linked from the inventory record panel and the agent view's "Open in Inventory".
+- **Gotchas**
+  - Every pause goes through `applyPause`, which writes a `log-pause-*` event. The export counts pauses from those events.
+  - A `useDemo` selector must return state, a primitive or an object already in state, never a freshly built array (React #185 loop).
+  - In React 19, `ref` is an ordinary prop; that's how `FilterPill` becomes a Menu trigger.
 
 ## Phase 5: Onboarding and go-live
 
@@ -384,17 +420,17 @@ Tick **Built** when the screen exists at its route; tick **QA'd** after the side
 | 5b | Dismiss with a reason | inbox modal | 3 | ☑ | ☑ |
 | 5c | Daily digest | `/operations/inbox?view=digest` | 3 | ☑ | ☑ |
 | 5d | Escalated to Priya | inbox item | 3 | ☑ | ☑ |
-| 6a | Control menu | agent view | 4 | ☐ | ☐ |
-| 6b | Impact preview | agent view modal | 4 | ☐ | ☐ |
-| 6c | Return activity to Shadow | agent view modal | 4 | ☐ | ☐ |
-| 6d | Resume requested | agent view | 4 | ☐ | ☐ |
-| 6e | Priya approves resume | agent view modal | 4 | ☐ | ☐ |
-| 6f | Disable or retire | `/inventory` modal | 4 | ☐ | ☐ |
-| 7a | Action list | `/operations/actions` | 4 | ☐ | ☐ |
-| 7b | Action trace | `/operations/actions/act-88213` | 4 | ☐ | ☐ |
-| 7c | Incident record | `/operations/incidents/:id` | 4 | ☐ | ☐ |
-| 7d | Export for a surveyor | `/reports/export` | 4 | ☐ | ☐ |
-| 8c | Inventory linked to ops | `/inventory` | 4 | ☐ | ☐ |
+| 6a | Control menu | agent view | 4 | ☑ | ☑ |
+| 6b | Impact preview | agent view modal | 4 | ☑ | ☑ |
+| 6c | Return activity to Shadow | agent view modal | 4 | ☑ | ☑ |
+| 6d | Resume requested | agent view | 4 | ☑ | ☑ |
+| 6e | Priya approves resume | agent view panel | 4 | ☑ | ☑ |
+| 6f | Disable or retire | `/inventory` modal | 4 | ☑ | ☑ |
+| 7a | Action list | `/operations/actions` | 4 | ☑ | ☑ |
+| 7b | Action trace | `/operations/actions/act-88213` | 4 | ☑ | ☑ |
+| 7c | Incident record | `/operations/incidents/:id` | 4 | ☑ | ☑ |
+| 7d | Export for a surveyor | `/reports/export` | 4 | ☑ | ☑ |
+| 8c | Inventory linked to ops | `/inventory` | 4 | ☑ | ☑ |
 | 1a | Start from intake | `…/onboarding/intake` | 5 | ☐ | ☐ |
 | 1b | Job description | `…/onboarding/job` | 5 | ☐ | ☐ |
 | 1c | Systems and verbs | `…/onboarding/systems` | 5 | ☐ | ☐ |
@@ -468,6 +504,13 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-08 | Buttons for later flows set `?control=` on the agent view and say where the flow lives (Phase 4) | "Never dead" rule; one place to wire the dialogs |
 | 2026-10-08 | Questions are answered in the inbox (`answerQuestion`: Answer yes / Answer no) | The digest's "Answer" link needed a destination; no frame shows it (composed) |
 | 2026-10-08 | Product copy avoids gendered pronouns ("It reached their inbox…") | Names don't tell us pronouns |
+| 2026-10-08 | Frames and stories beat the PRD matrix where they're more specific: the technical owner may return an activity to Shadow (6c); the menu says "Program lead or sponsor" because §7 lets sponsors disable and retire | One consistent permission model |
+| 2026-10-08 | A pause doesn't open an incident; incidents are opened explicitly (7a: Jordan opens INC-0031). A pause is written to an already-open incident | Matches 7c's timeline |
+| 2026-10-08 | Resume needs the agent's owner and sponsor, each with a reason; the requester can't approve; disabled or retired agents can't be paused or resumed | Two-person rule, and stops that compose |
+| 2026-10-08 | `resume-requested` runs at 11:58 with the pause at 09:47 (6d/6e verbatim); `advanceClock` keeps live heartbeats live | Replaces Phase 2's 07:38/09:52 compromise |
+| 2026-10-08 | Retired agents stay in `state.agents` (lifecycle retired) and leave every board through `onBoard()`; retiring closes open exceptions | One record, one filter |
+| 2026-10-08 | Actions carry their own context (privilege, checks, conditions) so the audit never recomputes the past from today's state | "Any action can be reconstructed" |
+| 2026-10-08 | Counts come from data when a frame's number conflicts (7 tool grants, Drafts · 3, by-hand counts, hard-stop tests, export contents) | Realism over copying frame literals |
 
 ## Session log
 
@@ -484,3 +527,4 @@ One row per working session. Newest last.
 | 2026-10-08 | 2 | Stefan approved; PR #12 squash-merged; #3 closed | Phase 3 Task 3.0 |
 | 2026-10-08 | 3 | Built Phase 3 (seed v3→4, board and inbox selectors, 4a–4f, 5a–5d, journey e2e) with measured visual checks per frame. Fresh review: 5 Important + 2 re-graded fixed test-first; minors deferred (see handoff notes). PR #13 open | Stefan reviews Phase 3 → merge → Phase 4 Task 4.0 |
 | 2026-10-08 | 3 | Stefan approved (frame departures for realism and UX welcomed); PR #13 squash-merged; #4 closed | Phase 4 Task 4.0 |
+| 2026-10-08 | 4 | Built Phase 4 (seed v5, control menu, pause, fix one thing, two-person resume, inventory, retire, action list and trace, incidents, export, journey e2e) with measured visual checks per frame. Fresh review: 7 Important + 4 re-graded fixed test-first; minors deferred (see handoff notes). PR #14 open | Stefan reviews Phase 4 → merge → Phase 5 Task 5.0 |
