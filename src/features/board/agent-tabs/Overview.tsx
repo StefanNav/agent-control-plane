@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { noticeMark } from '../../../components'
 import { Card, LinkButton, Notice, RuleTag, StatStrip, Table } from '../../../design-system'
 import { cx } from '../../../lib/cx'
 import type { AgentOverview } from '../selectors'
@@ -12,7 +13,7 @@ export function Overview({ view }: { view: AgentOverview }) {
       <div className={styles.main}>
         {view.banner ? (
           <Notice
-            mark={view.banner.status === 'crit' ? 'crit' : view.banner.status === 'warn' ? 'warn' : 'review'}
+            mark={noticeMark(view.banner.status)}
             lead={view.banner.headline}
             actions={
               <>

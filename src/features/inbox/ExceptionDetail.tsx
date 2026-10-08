@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button, Icon, LinkButton, Menu, Notice } from '../../design-system'
-import { StatusChip } from '../../components'
+import { noticeMark, StatusChip } from '../../components'
 import { addMinutes, formatClock, tomorrowAt } from '../../lib/clock'
 import type { DismissInput } from '../../store'
 import { DismissDialog } from './DismissDialog'
@@ -96,7 +96,7 @@ export function ExceptionDetail({
       ) : null}
 
       {detail.cause ? (
-        <Notice mark="warn" lead="Likely cause:">
+        <Notice mark={noticeMark(detail.status)} lead="Likely cause:">
           {detail.cause}
         </Notice>
       ) : null}
