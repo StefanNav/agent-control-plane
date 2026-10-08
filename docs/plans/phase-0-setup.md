@@ -25,21 +25,21 @@ The root `README.md` is currently the design handoff. Move it under `docs/` so t
 - Create: `README.md`
 - Modify: `docs/specs/2026-10-08-agent-control-plane-prototype-design.md` (§3 sources table), `docs/BUILD_PLAN.md` (Global constraints mention "README"), `CLAUDE.md` (Key docs)
 
-- [ ] **Step 1: Move the file with history**
+- [x] **Step 1: Move the file with history**
 
 Run: `git mv README.md docs/design-handoff.md`
 
-- [ ] **Step 2: Fix relative paths inside the moved file**
+- [x] **Step 2: Fix relative paths inside the moved file**
 
 The handoff refers to `designs/…` and `reference/…` from the repo root. Add one line under its title: `> Moved from the repo root. Paths below (designs/, reference/) are relative to the repo root.` Do not change any other content.
 
-- [ ] **Step 3: Update references**
+- [x] **Step 3: Update references**
 
 In the spec §3 table, the BUILD_PLAN global constraints, and `CLAUDE.md`, replace references to the handoff `README.md` with `docs/design-handoff.md`. Leave references to the future portfolio README alone.
 
 Verify: `grep -rn "README" docs CLAUDE.md` shows only (a) `docs/design-handoff.md` references, (b) Phase 9's "portfolio README" task, (c) this plan.
 
-- [ ] **Step 4: Write the interim project `README.md`**
+- [x] **Step 4: Write the interim project `README.md`**
 
 Contents (short; Phase 9 replaces it):
 - Title: `Agent Control Plane: clickable prototype`
@@ -48,7 +48,7 @@ Contents (short; Phase 9 replaces it):
 - Links: spec, design handoff, `designs/` (how to view: `cd designs && python3 -m http.server 4599`).
 - No company names from the source docs.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A README.md docs CLAUDE.md
@@ -60,7 +60,7 @@ git commit -m "docs: move design handoff under docs/, add project README"
 Written during the planning session on 2026-10-08. Verify it is current after Task 0.1's path change.
 
 - [x] **Step 1: `CLAUDE.md` exists at the repo root with: start-here protocol, key docs, commands, conventions, checkpoint protocol**
-- [ ] **Step 2: Confirm the Key docs section points at `docs/design-handoff.md`** (done in Task 0.1 Step 3)
+- [x] **Step 2: Confirm the Key docs section points at `docs/design-handoff.md`** (done in Task 0.1 Step 3)
 
 ### Task 0.3: Create the public GitHub repo
 

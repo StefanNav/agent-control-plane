@@ -42,7 +42,7 @@ Build a front-end-only, clickable prototype of **Agent Control Plane**, the oper
 
 | Source | Use it for |
 |---|---|
-| `README.md` (design handoff) | Tokens, type scale, spacing, primitive specs, the 10 components, interaction rules, data model, open issues |
+| `docs/design-handoff.md` (design handoff; was the root `README.md`) | Tokens, type scale, spacing, primitive specs, the 10 components, interaction rules, data model, open issues |
 | `designs/*.dc.html` | Exact layout, copy and values per frame. Serve with `npx serve designs` (or `python3 -m http.server` from `designs/`) and inspect with devtools |
 | `reference/cs-build.js` | The most compact, exact statement of tokens and primitives. Read before building primitives |
 | `reference/epics-and-stories.txt` | Stories and acceptance criteria (E1–E21) |
@@ -146,9 +146,9 @@ Switching persona changes:
 | Package manager | pnpm (Node 24) | Installed locally |
 | Routing | React Router v7 (`createBrowserRouter`) | Real URLs, nested layouts |
 | State | Zustand + `persist` middleware | Small, typed, easy scenario loading |
-| Styling | CSS custom properties (tokens) + CSS Modules | 1:1 with the README's exact pixel specs |
+| Styling | CSS custom properties (tokens) + CSS Modules | 1:1 with the design handoff's exact pixel specs |
 | Fonts | `@fontsource/ibm-plex-sans`, `@fontsource/ibm-plex-mono` (400, 600) | Self-hosted, no external font request |
-| Icons | Inline SVG from the README paths | No icon library; exact shapes |
+| Icons | Inline SVG from the design handoff's paths | No icon library; exact shapes |
 | Unit tests | Vitest + Testing Library | Store, permissions, scenarios, clock, story engine |
 | E2E smoke | Playwright | Every route renders; every story completes |
 | CI | GitHub Actions | typecheck, lint, unit, build, e2e on every PR |
@@ -193,8 +193,8 @@ docs/             BUILD_PLAN.md, specs/
 
 ### 5.4 Styling
 
-- `tokens.css` defines every README token as a CSS custom property in OKLCH (`--cs-ink`, `--cs-line`, `--cs-acc`, …), light on `:root` and dark under `[data-theme="dark"]`.
-- Type roles become utility classes or CSS Module composes (`.pageTitle`, `.label`, `.mono`, …) matching the README table.
+- `tokens.css` defines every design-handoff token as a CSS custom property in OKLCH (`--cs-ink`, `--cs-line`, `--cs-acc`, …), light on `:root` and dark under `[data-theme="dark"]`.
+- Type roles become utility classes or CSS Module composes (`.pageTitle`, `.label`, `.mono`, …) matching the design handoff's Typography table.
 - Global: `font-variant-numeric: tabular-nums`, antialiasing, keyboard-only focus rings (shown after Tab/Arrow, hidden on mousedown), 150 ms row background transition disabled under `prefers-reduced-motion`.
 - Colour semantics are enforced in review: indigo = primary/current, teal = review waiting only, amber/red = warning/critical only, healthy = grey. No gradients, no emoji, no coloured left-border cards.
 
@@ -243,7 +243,7 @@ Routes use readable entity slugs from the seed (for example `med-rec`, `medicati
 
 ### 6.1 Types (`src/data/types.ts`)
 
-From the README model, extended for the flows:
+From the design handoff's data model, extended for the flows:
 
 - `Person { id, name, initial, title }` and `RoleAssignment { personId, divisionId | 'all', role }`, where `role` is one of `programLead | sponsor | owner | techOwner | committee | readOnly | frontline`.
 - `Division { id, name, ownerId, sponsorId, lapsePolicy, agentIds[] }`
@@ -424,7 +424,7 @@ Each phase ends at a checkpoint: a PR with a Vercel preview URL that Stefan revi
 | D4 | E4 alternatives | Table is the default board; tiles and exceptions-first are a View toggle; wall display is `/wall` |
 | D5 | Undesigned tabs | Composed from existing primitives only, flagged "composed" (§5.5) |
 | D6 | Viewport | Desktop only; gate below 1024 px (§4.7) |
-| O1 | Ring overload (README issue 1) | Build as designed; check the wall display at Phase 9; if solid vs dashed fails at 12 px, stale becomes a dashed square |
+| O1 | Ring overload (design handoff issue 1) | Build as designed; check the wall display at Phase 9; if solid vs dashed fails at 12 px, stale becomes a dashed square |
 | O2 | Wall display scale (issue 2) | `/wall` uses its own larger type scale taken from frame 4e |
-| O3 | Dialog elevation (issue 3) | Use the modal shadow, as the README says |
+| O3 | Dialog elevation (issue 3) | Use the modal shadow, as the design handoff says |
 | O4 | E16–E21 (issue 4) | Out of scope |

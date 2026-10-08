@@ -48,7 +48,7 @@ Every task implicitly includes these. Values are verbatim from the spec.
 - **Never commit** `reference/source-docs/` or any `.docx`. Never name the company the source docs were written for, anywhere in the repo or site.
 - Stack is fixed: Vite, React 19, TypeScript strict, React Router v7, Zustand, CSS Modules + `src/design-system/tokens.css`. **No UI component library, no icon library, no Tailwind.**
 - Fonts: IBM Plex Sans and IBM Plex Mono, weights **400 and 600 only**, via `@fontsource`.
-- Colours only through `--cs-*` tokens (OKLCH, values from README "Design tokens"). Indigo = primary action and current/selected. Teal = review waiting only. Amber/red = warning/critical only. Healthy = grey. No gradients, no emoji, no coloured left-border cards.
+- Colours only through `--cs-*` tokens (OKLCH, values from `docs/design-handoff.md` "Design tokens"). Indigo = primary action and current/selected. Teal = review waiting only. Amber/red = warning/critical only. Healthy = grey. No gradients, no emoji, no coloured left-border cards.
 - Every status pairs colour + shape + word. Dashed border means "no data" (stale) only.
 - `font-variant-numeric: tabular-nums` globally. Monitoring screens 13 px; forms and signing 16 px with 44 px fields.
 - Copy is final: take it verbatim from the frames in `designs/`. Sample values (names, IDs, counts, dates) also come from the frames.
@@ -147,7 +147,7 @@ Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting
 - [ ] 2.4 Permissions `src/store/permissions.ts`: `can(personaId, action, ctx)`; table-driven test mirroring spec §7
 - [ ] 2.5 Store `src/store/*`: Zustand + persist (versioned key, migrate-to-seed), persona slice, audit log, actions guarded by `can()`; **Review focus 1, 2, 5 tests**
 - [ ] 2.6 Scenarios `src/data/scenarios/*`: registry + `loadScenario(id)`; one test per scenario from spec §6.3
-- [ ] 2.7 Product components 01–05: StatusChip, AgentRow, ExceptionItem, PrivilegeCard, AutonomyLadder (README data rules as tests)
+- [ ] 2.7 Product components 01–05: StatusChip, AgentRow, ExceptionItem, PrivilegeCard, AutonomyLadder (design handoff data rules as tests)
 - [ ] 2.8 Product components 06–10: HardStopCard + InstructionCard, SystemsVerbsGrid, PauseDialog + ResumeDialog, ActionTrace, MonitorHealth
 - [ ] 2.9 Gallery: components section in light and dark (`data-theme="dark"` wrapper)
 - [ ] 2.10 Prototype bar: PersonaSwitcher, Reset demo; TopNav avatar from persona; persona landing routes (spec §4.4); checkpoint

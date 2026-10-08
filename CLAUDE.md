@@ -16,7 +16,7 @@ A clickable, front-end-only prototype of **Agent Control Plane**: the operations
 | `docs/BUILD_PLAN.md` | Progress: phases, task checklists, frame tracker, decision log, session log |
 | `docs/plans/phase-N-*.md` | Step-by-step instructions for one phase |
 | `docs/specs/2026-10-08-agent-control-plane-prototype-design.md` | What and why: scope, visitor experience, architecture, routes, data model, permissions, frame inventory |
-| `README.md` (until Phase 0 moves it to `docs/design-handoff.md`) | Design handoff: tokens, type, primitives, the 10 components, interaction rules |
+| `docs/design-handoff.md` | Design handoff: tokens, type, primitives, the 10 components, interaction rules |
 | `reference/cs-build.js` | Exact token and primitive specs (wins over the handoff for E2–E15 detail) |
 | `designs/*.dc.html` | The frames. Copy, layout and values come from here |
 | `reference/epics-and-stories.txt` | Stories and acceptance criteria |
