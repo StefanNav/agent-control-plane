@@ -110,7 +110,7 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
   - `InboxItemView = { id, status, type, agent, ruleTag, due: string, reason, action, escalated?: string }`
 - `selectExceptionDetail(s, id): ExceptionDetailView | null`
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - The board puts Revenue cycle and Medications first. Medications' counts are `{ warn: 2, review: 1, stale: 1 }`, and Discharge's judgment is "Within scope".
   - The Medications rows start with Med Rec Agent (the review). Formulary Swap shows "—" for every metric.
   - `selectAgentOverview(s, 'nope')` is `null`.
@@ -118,10 +118,10 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
   - With `now = 2026-12-08T12:00:00`, EXC-5508 is escalated and appears in Priya's "Needs me" with "1 h 14 min late".
   - A snoozed item leaves "Needs me" until its time, then comes back.
   - `monitorFreshness` returns stale for Formulary Swap and live for Med Rec.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** `pnpm check`. Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(board): selectors for board and inbox"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** `pnpm check`. Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(board): selectors for board and inbox"`.
 
 ### Task 3.3: Hospital board (4a), tiles (4d), exceptions first (4f)
 

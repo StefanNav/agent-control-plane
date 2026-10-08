@@ -65,3 +65,33 @@ export function formatRelative(target: string, now: string): string {
 export function formatAgo(then: string, now: string): string {
   return `${span(Math.max(0, minutesBetween(then, now)))} ago`
 }
+
+/** Board age: '10 min', '1 h 47', '3 h 06', '7 d'. */
+export function formatAge(from: string, now: string): string {
+  const minutes = Math.max(0, minutesBetween(from, now))
+  if (minutes < 60) return `${minutes} min`
+  if (minutes < 24 * 60) return `${Math.floor(minutes / 60)} h ${pad(minutes % 60)}`
+  return `${Math.floor(minutes / (24 * 60))} d`
+}
+
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+/** Calendar days from now's date to the target's date. */
+function dayOffset(target: string, now: string): number {
+  const a = at(now)
+  const b = at(target)
+  const start = new Date(a.getFullYear(), a.getMonth(), a.getDate()).getTime()
+  const end = new Date(b.getFullYear(), b.getMonth(), b.getDate()).getTime()
+  return Math.round((end - start) / (24 * 60 * 60000))
+}
+
+/** Inbox deadline: 'Due 10:46', 'Due tomorrow', 'Due Friday', 'Due 15 Dec', or '1 h 14 min late'. */
+export function formatDue(deadline: string, now: string): string {
+  const minutes = minutesBetween(now, deadline)
+  if (minutes < 0) return `${span(-minutes)} late`
+  const days = dayOffset(deadline, now)
+  if (days === 0) return `Due ${formatClock(deadline)}`
+  if (days === 1) return 'Due tomorrow'
+  if (days < 7) return `Due ${WEEKDAYS[at(deadline).getDay()]}`
+  return `Due ${formatDate(deadline)}`
+}
