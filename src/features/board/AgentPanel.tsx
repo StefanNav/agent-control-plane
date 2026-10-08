@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { StatusChip } from '../../components'
 import { Icon, LinkButton, RuleTag } from '../../design-system'
 import { cx } from '../../lib/cx'
@@ -10,7 +11,9 @@ export function AgentPanel({ panel: p }: { panel: AgentPanelView }) {
     <aside aria-label="Selected agent" className={styles.panel}>
       <div className={styles.block}>
         <span className={styles.label}>Selected agent</span>
-        <span className={styles.agentName}>{p.name}</span>
+        <Link to={`/operations/agents/${p.id}`} className={cx(styles.agentName, styles.agentLink)}>
+          {p.name}
+        </Link>
         <span className={styles.mono}>{p.idLine}</span>
         <span className={styles.judgment}>
           <StatusChip status={p.status} label={p.label} />
