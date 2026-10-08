@@ -150,3 +150,24 @@ test('a seeded pause without detail still shows as paused', () => {
   const v = selectAgentOverview(s, 'controlled-drug')!
   expect(v.paused).toMatchObject({ scope: 'agent', lead: 'Paused by Marcus at 16:10.', whilePaused: { routed: '—' } })
 })
+
+test('Important #7: the division\'s incident badge follows the incident record', async () => {
+  const { createDemoStore } = await import('../../store')
+  const { createMemoryStorage } = await import('../../store/storage')
+  const revenue = (st: Parameters<typeof selectDivisionSummaries>[0]) => selectDivisionSummaries(st).find((d) => d.id === 'revenue-cycle')!
+  expect(revenue(s)).toMatchObject({ incidentId: 'inc-0029', resumeNeeds: ['Tom', 'Nina'] })
+
+  const closed = createDemoStore(createMemoryStorage())
+  closed.getState().setPersona('dana')
+  closed.getState().completeCorrection('inc-0029', 'c1')
+  closed.getState().closeIncident('inc-0029', 'Merged-encounter check shipped.')
+  expect(revenue(closed.getState()).incidentId).toBeUndefined()
+  expect(revenue(closed.getState()).note).toBeUndefined()
+
+  const retired = createDemoStore(createMemoryStorage())
+  retired.getState().setPersona('dana')
+  retired.getState().retireAgent('prior-auth', { typedName: 'Prior Auth Agent', reason: 'Replaced by v2.' })
+  expect(revenue(retired.getState())).toMatchObject({ status: 'normal' })
+  expect(revenue(retired.getState()).incidentId).toBeUndefined()
+  expect(revenue(retired.getState()).resumeNeeds).toBeUndefined()
+})

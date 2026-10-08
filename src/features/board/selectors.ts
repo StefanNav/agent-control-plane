@@ -121,6 +121,7 @@ export function selectDivisionSummaries(s: DemoState): DivisionSummary[] {
       .filter((e) => e.kind !== 'incident')
       .sort((a, b) => a.deadline.localeCompare(b.deadline))
     const next = open.find((e) => e.deadline >= s.now)
+    const incident = s.incidents.find((i) => i.state !== 'closed' && agents.some((a) => a.id === i.agentId))
     return {
       id: d.id,
       name: d.name,
@@ -136,9 +137,10 @@ export function selectDivisionSummaries(s: DemoState): DivisionSummary[] {
         ? `${plural(agents.length, 'agent', 'agents')} in shadow · nothing reaches patients`
         : `No open exceptions${d.closedThisWeek ? ` · ${d.closedThisWeek} closed this week` : ''}`,
       ...(d.page ? { page: d.page } : {}),
-      ...(d.incidentId ? { incidentId: d.incidentId } : {}),
-      ...(d.note ? { note: d.note } : {}),
-      ...(d.resumeNeeds ? { resumeNeeds: d.resumeNeeds } : {}),
+      // Derived, not seeded: incidents close and agents retire (Phase 4).
+      ...(incident ? { incidentId: incident.id } : {}),
+      ...(d.note && incident?.id === d.incidentId ? { note: d.note } : {}),
+      ...(d.resumeNeeds && agents.some((a) => a.lifecycle === 'paused') ? { resumeNeeds: d.resumeNeeds } : {}),
       attention: attentionAgents.map((a) => {
         const e = attentionException(s, a.id)
         return {
