@@ -48,3 +48,13 @@ test('Review focus 3: a retired agent leaves every board and count, but its view
   expect(selectInventory(st).counts).toMatchObject({ agents: 40, retired: 7 })
   expect(selectAgentOverview(st, 'iv-to-oral')).toMatchObject({ retired: { code: 'RET-07' } })
 })
+
+test('Important #5: a newly retired agent\'s header agrees with the Retired notice', () => {
+  const store = createDemoStore(createMemoryStorage())
+  store.getState().setPersona('dana')
+  store.getState().retireAgent('med-rec', { typedName: 'Med Rec Agent', reason: 'Replaced.' })
+  expect(selectAgentOverview(store.getState(), 'med-rec')).toMatchObject({
+    levelLine: 'Retired · RET-07 · 08 Dec',
+    judgment: { status: 'normal', label: 'Retired' },
+  })
+})

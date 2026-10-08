@@ -399,6 +399,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                 clearPause(draft, agentId)
                 target.retirement = { at: draft.now, by: draft.personaId, code: nextArchiveCode(draft), reason: why }
                 target.lifecycle = 'retired'
+                target.judgment = { status: 'normal', label: 'Retired' }
                 revokeAll(draft, agentId)
                 for (const p of draft.privileges) if (p.agentId === agentId) p.state = 'closed'
                 for (const e of draft.exceptions)
