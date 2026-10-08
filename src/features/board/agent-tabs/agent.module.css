@@ -164,3 +164,8 @@
   gap: 16px;
   align-items: start;
 }
+
+/* A control chosen from the Controls menu before its dialog exists (Phase 4). */
+.pending {
+  padding: 24px 40px 0;
+}

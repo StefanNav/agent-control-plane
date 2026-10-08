@@ -140,7 +140,7 @@ export function ExceptionDetail({
             <Button onClick={onAnswer} disabled={Boolean(locked)} title={locked ?? undefined}>
               Answer myself
             </Button>
-            <LinkButton to={`/operations/agents/${detail.agentId}`} variant="ghost">
+            <LinkButton to={`/operations/agents/${detail.agentId}?control=pause`} variant="ghost">
               Pause {detail.agentName}
             </LinkButton>
           </span>
@@ -151,7 +151,7 @@ export function ExceptionDetail({
             <LinkButton to={`/operations/agents/${detail.agentId}`} variant="primary">
               Investigate
             </LinkButton>
-            <LinkButton to={`/operations/agents/${detail.agentId}?tab=activities`}>
+            <LinkButton to={`/operations/agents/${detail.agentId}?control=shadow`}>
               Return to Shadow
             </LinkButton>
             <Menu

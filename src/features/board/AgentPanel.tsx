@@ -71,7 +71,7 @@ export function AgentPanel({ panel: p }: { panel: AgentPanelView }) {
         )}
       </div>
       <div className={styles.panelFoot}>
-        <LinkButton to={`/operations/agents/${p.id}`} icon={<Icon name="paused" color="var(--cs-icon)" />}>
+        <LinkButton to={`/operations/agents/${p.id}?control=pause`} icon={<Icon name="paused" color="var(--cs-icon)" />}>
           Pause agent
         </LinkButton>
         <LinkButton to={p.recent[0] ? `/operations/actions/${p.recent[0].id}` : `/operations/agents/${p.id}?tab=actions`} variant="ghost">

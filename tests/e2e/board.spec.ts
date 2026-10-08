@@ -146,3 +146,19 @@ test('keyboard: Enter on a division row selects it, and on an exception row open
   await page.keyboard.press('Enter')
   await expect(page).toHaveURL(/\/operations\/agents\/prior-auth/)
 })
+
+test('Controls are never dead: choosing one says where its flow lives', async ({ page }) => {
+  await page.goto('/operations/agents/med-rec')
+  await page.getByRole('button', { name: 'Controls' }).click()
+  await page.getByRole('menuitem', { name: /Pause agent/ }).click()
+  await expect(page).toHaveURL(/control=pause/)
+  const pending = page.getByRole('region', { name: 'Pending control' })
+  await expect(pending).toContainText('Pause Med Rec Agent')
+  await expect(pending).toContainText('impact preview')
+  await pending.getByRole('button', { name: 'Close' }).click()
+  await expect(pending).toHaveCount(0)
+
+  await page.goto('/operations/divisions/medications')
+  await page.getByRole('complementary', { name: 'Selected agent' }).getByRole('link', { name: 'Pause agent' }).click()
+  await expect(page.getByRole('region', { name: 'Pending control' })).toContainText('Pause Med Rec Agent')
+})
