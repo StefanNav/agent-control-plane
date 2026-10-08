@@ -492,7 +492,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - `/settings/people?person=sam` selects a person (default the first row).
 - **Invite modal:** Name, Title, Role, Division → "Send invite". The new person appears in the table.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **`permissions.test.ts`:**
     - Sam can't `revokeTool` on `discharge-meds`.
     - After `applyAddRole(sam, techOwner, discharge)` he can, and still can't on `prior-auth`.
@@ -510,10 +510,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - **e2e:**
     - As Dana, `/settings/people?person=sam` → Add a role → Technical owner, Discharge → Add role. The roles list shows "Technical owner · Discharge".
     - Then as Sam, `/operations/agents/discharge-meds` → Controls → "Revoke a tool…" is enabled.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 8b.
-- [ ] **Step 4: Run.** Expected: PASS. Earlier permission e2e (6a for Marcus, 6c for Sam) is still green.
-- [ ] **Step 5: Commit** with `git commit -m "feat(settings): people and roles decide what each person can do"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 8b.
+- [x] **Step 4: Run.** Expected: PASS. Earlier permission e2e (6a for Marcus, 6c for Sam) is still green.
+- [x] **Step 5: Commit** with `git commit -m "feat(settings): people and roles decide what each person can do"`.
 
 ### Task 6.4: The Epic stand-in and a flag in one action (10a)
 

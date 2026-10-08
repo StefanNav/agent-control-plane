@@ -8,7 +8,7 @@ import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mu
 import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, signMode, testResult, type SystemsChange } from './onboarding'
 import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems, shadowProgress } from './onboardingRules'
 import { can, lockReason } from './permissions'
-import { applyCreateDivision, applyDivisionSettings, applyReturnToShadow, diffDivision, divisionSlug, type DivisionPatch, type NewDivisionInput } from './settings'
+import { applyAddRole, applyCreateDivision, applyDivisionSettings, applyInvite, applyRemoveRole, applyReturnToShadow, diffDivision, divisionSlug, ROLE_LABEL, roleDivision, type DivisionPatch, type NewDivisionInput, type RoleInput } from './settings'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
 
@@ -77,6 +77,12 @@ export interface DemoActions {
   updateDivisionSettings: (divisionId: string, patch: DivisionPatch) => ActionResult
   /** A new division, or a split of `from` with the agents that move (8a, composed). Program lead only. */
   createDivision: (input: NewDivisionInput, from?: string) => ActionResult
+  /** Give a person a role in a division (8b "Add a role"). Program lead only. */
+  addRole: (personId: string, input: RoleInput) => ActionResult
+  /** Take a role away (composed "Remove"); never the last program lead or a division's named owner or sponsor. */
+  removeRole: (personId: string, input: RoleInput) => ActionResult
+  /** Add a person with one role (8b "Invite"). Program lead only. */
+  invitePerson: (input: { name: string; title: string } & RoleInput) => ActionResult
   /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
   startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
   /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
@@ -587,6 +593,58 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Created division', target: name, ...(parent ? { reason: `Split from ${parent.name} · ${input.agentIds.length} ${input.agentIds.length === 1 ? 'agent' : 'agents'}` } : {}) },
               mutate: (draft) => {
                 applyCreateDivision(draft, { ...input, name }, from ?? null, draft.personaId, draft.now)
+              },
+            })
+          },
+          addRole: (personId, input) => {
+            const s = get()
+            const person = s.people.find((p) => p.id === personId)
+            if (!person) return { ok: false, reason: 'Person not found' }
+            const divisionId = roleDivision(input)
+            const division = s.divisions.find((d) => d.id === divisionId)
+            if (divisionId !== 'all' && !division) return { ok: false, reason: 'Choose a division' }
+            const where = division?.name ?? 'all divisions'
+            if (s.roles.some((r) => r.personId === personId && r.divisionId === divisionId && r.role === input.role)) return { ok: false, reason: `${person.name} already has that role in ${where}` }
+            return act({
+              action: 'manageDivisions',
+              audit: { action: 'Added role', target: person.name, reason: `${ROLE_LABEL[input.role]} · ${division?.name ?? 'All divisions'}` },
+              mutate: (draft) => {
+                applyAddRole(draft, personId, input, draft.now)
+              },
+            })
+          },
+          removeRole: (personId, input) => {
+            const s = get()
+            const person = s.people.find((p) => p.id === personId)
+            if (!person) return { ok: false, reason: 'Person not found' }
+            const divisionId = roleDivision(input)
+            if (!s.roles.some((r) => r.personId === personId && r.divisionId === divisionId && r.role === input.role)) return { ok: false, reason: `${person.name} doesn’t have that role` }
+            if (input.role === 'programLead' && s.roles.filter((r) => r.role === 'programLead').length === 1) return { ok: false, reason: 'Lakeshore needs a program lead' }
+            const division = s.divisions.find((d) => d.id === divisionId)
+            const possessive = (name: string) => (name.endsWith('s') ? `${name}’` : `${name}’s`)
+            if (division && input.role === 'owner' && division.ownerId === personId)
+              return { ok: false, reason: `${person.name} is ${possessive(division.name)} division owner. Choose another owner in Division settings first.` }
+            if (division && input.role === 'sponsor' && division.sponsorId === personId)
+              return { ok: false, reason: `${person.name} is ${possessive(division.name)} clinical sponsor. Choose another sponsor in Division settings first.` }
+            return act({
+              action: 'manageDivisions',
+              audit: { action: 'Removed role', target: person.name, reason: `${ROLE_LABEL[input.role]} · ${division?.name ?? 'All divisions'}` },
+              mutate: (draft) => {
+                applyRemoveRole(draft, personId, input)
+              },
+            })
+          },
+          invitePerson: (input) => {
+            const s = get()
+            const name = input.name.trim()
+            if (!name) return { ok: false, reason: 'Name the person' }
+            const divisionId = roleDivision(input)
+            if (divisionId !== 'all' && !s.divisions.some((d) => d.id === divisionId)) return { ok: false, reason: 'Choose a division' }
+            return act({
+              action: 'manageDivisions',
+              audit: { action: 'Invited', target: name, reason: `${ROLE_LABEL[input.role]} · ${s.divisions.find((d) => d.id === divisionId)?.name ?? 'All divisions'}` },
+              mutate: (draft) => {
+                applyInvite(draft, input, draft.now)
               },
             })
           },

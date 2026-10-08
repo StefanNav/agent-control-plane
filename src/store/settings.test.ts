@@ -159,3 +159,45 @@ describe('a new division, or a split (R6)', () => {
     expect(store.getState().audit.at(-1)).toMatchObject({ action: 'Created division', target: 'Surgical', reason: 'Split from Medications · 3 agents' })
   })
 })
+
+describe('people and roles (8b)', () => {
+  test('Dana adds and removes a role; a hospital-wide role is always "all"', () => {
+    const store = fresh()
+    store.getState().setPersona('dana')
+    expect(store.getState().addRole('sam', { role: 'techOwner', divisionId: 'discharge' })).toEqual({ ok: true })
+    expect(store.getState().roles).toContainEqual({ personId: 'sam', divisionId: 'discharge', role: 'techOwner', since: AT })
+    expect(store.getState().addRole('sam', { role: 'techOwner', divisionId: 'discharge' })).toEqual({ ok: false, reason: 'Sam already has that role in Discharge' })
+    expect(store.getState().addRole('elena', { role: 'readOnly', divisionId: 'discharge' })).toEqual({ ok: true })
+    expect(store.getState().roles).toContainEqual(expect.objectContaining({ personId: 'elena', divisionId: 'all', role: 'readOnly' }))
+    expect(store.getState().removeRole('sam', { role: 'techOwner', divisionId: 'discharge' })).toEqual({ ok: true })
+    expect(store.getState().audit.at(-1)).toMatchObject({ action: 'Removed role', target: 'Sam', reason: 'Technical owner · Discharge' })
+  })
+
+  test('the last program lead and a division’s named owner or sponsor cannot be removed', () => {
+    const store = fresh()
+    store.getState().setPersona('dana')
+    const before = dataOf(store.getState())
+    expect(store.getState().removeRole('dana', { role: 'programLead', divisionId: 'all' })).toEqual({ ok: false, reason: 'Lakeshore needs a program lead' })
+    expect(store.getState().removeRole('marcus', { role: 'owner', divisionId: 'medications' })).toEqual({
+      ok: false,
+      reason: 'Marcus is Medications’ division owner. Choose another owner in Division settings first.',
+    })
+    expect(store.getState().removeRole('priya', { role: 'sponsor', divisionId: 'discharge' }).ok).toBe(false)
+    expect(store.getState().removeRole('sam', { role: 'owner', divisionId: 'medications' })).toEqual({ ok: false, reason: 'Sam doesn’t have that role' })
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+
+  test('Dana invites a person with a role; only Dana may change roles', () => {
+    const store = fresh()
+    store.getState().setPersona('dana')
+    expect(store.getState().invitePerson({ name: ' ', title: '', role: 'frontline', divisionId: 'medications' })).toEqual({ ok: false, reason: 'Name the person' })
+    expect(store.getState().invitePerson({ name: 'Kofi Osei', title: 'Hospitalist', role: 'frontline', divisionId: 'discharge' })).toEqual({ ok: true })
+    expect(store.getState().people.at(-1)).toEqual({ id: 'kofi-osei', name: 'Kofi Osei', initial: 'K', title: 'Hospitalist' })
+    expect(store.getState().roles.at(-1)).toEqual({ personId: 'kofi-osei', divisionId: 'discharge', role: 'frontline', since: AT })
+    store.getState().setPersona('marcus')
+    const before = dataOf(store.getState())
+    expect(store.getState().addRole('sam', { role: 'techOwner', divisionId: 'discharge' }).ok).toBe(false)
+    expect(store.getState().removeRole('ana', { role: 'frontline', divisionId: 'medications' }).ok).toBe(false)
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+})

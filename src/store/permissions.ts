@@ -41,7 +41,8 @@ const MATRIX: Record<PermAction, Partial<Record<Role, Scope>>> = {
   approveGoLive: { committee: 'all' },
   // 3a: the owner asks the sponsor to sign the move out of Shadow.
   requestGoLive: { owner: 'own' },
-  pause: STOPPERS,
+  // 8b: the technical owner "pauses" (Tools · hard stops · pauses); frames beat the PRD matrix (R7).
+  pause: { ...STOPPERS, techOwner: 'ownAgents' },
   // 6c and the "Enforce the limits" story: the technical owner may also return an activity to Shadow.
   returnToShadow: { ...STOPPERS, techOwner: 'ownAgents' },
   revokeTool: BUILDERS,
@@ -62,9 +63,9 @@ export interface PermContext {
 
 /**
  * Can this person take this action here? Roles are per division ('all' spans every one).
- * With an agent in context, its division applies, and "own agents" means agents the
- * person is technical owner of. Without context, a role held anywhere counts. Any person
- * with a role may be asked, not only the seven personas (8b).
+ * With an agent in context, its division applies: a role there covers its agents, and a
+ * technical owner may also act on an agent they are named on. Without context, a role held
+ * anywhere counts. Any person with a role may be asked, not only the seven personas (8b).
  */
 export function can(
   state: Pick<DemoState, 'roles' | 'agents'>,
@@ -83,8 +84,10 @@ export function can(
     const scope = allowed[assignment.role]
     if (!scope) return false
     if (scope === 'all' || assignment.divisionId === 'all' || !divisionId) return true
-    if (assignment.divisionId !== divisionId) return false
-    return scope === 'own' || !agent || agent.techOwnerId === personaId
+    // A role in the agent's division covers every agent in it (8b: Sam gets a second division, R7).
+    if (assignment.divisionId === divisionId) return true
+    // The named technical owner may act on their agent whatever division their role is in.
+    return scope === 'ownAgents' && agent?.techOwnerId === personaId
   })
 }
 

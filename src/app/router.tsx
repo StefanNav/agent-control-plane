@@ -19,6 +19,7 @@ import { PacketPage } from '../features/review/PacketPage'
 import { RecordPage } from '../features/review/RecordPage'
 import { RiskTierPage } from '../features/review/RiskTierPage'
 import { DivisionSettingsPage } from '../features/settings/DivisionSettingsPage'
+import { PeoplePage } from '../features/settings/PeoplePage'
 import { NotFound } from '../layout/NotFound'
 import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
 import { AppShell } from './AppShell'
@@ -50,6 +51,7 @@ const PAGES: Record<string, ReactNode> = {
   '/portfolio/privileges': <MyPrivilegesPage />,
   '/wall': <WallDisplay />,
   '/settings/divisions/:divisionId': <DivisionSettingsPage />,
+  '/settings/people': <PeoplePage />,
 }
 
 function childrenFor(shell: ShellKind): RouteObject[] {

@@ -200,3 +200,46 @@ export function applyCreateDivision(s: DemoState, input: NewDivisionInput, from:
   })
   return s
 }
+
+/** Roles that span every division: they are always held in 'all' (8b). */
+export const HOSPITAL_WIDE: Role[] = ['programLead', 'committee', 'readOnly']
+
+/** Role names as 8b's ROLE column writes them. */
+export const ROLE_LABEL: Record<Role, string> = {
+  programLead: 'AI program lead',
+  committee: 'AI review board chair',
+  readOnly: 'Risk manager',
+  sponsor: 'Clinical sponsor',
+  owner: 'Agent owner',
+  techOwner: 'Technical owner',
+  frontline: 'Pharmacist',
+}
+
+export interface RoleInput {
+  role: Role
+  divisionId: string
+}
+
+/** Where a role is held: hospital-wide roles are always 'all'. */
+export const roleDivision = ({ role, divisionId }: RoleInput) => (HOSPITAL_WIDE.includes(role) ? 'all' : divisionId)
+
+export function applyAddRole(s: DemoState, personId: string, input: RoleInput, at: string): DemoState {
+  grant(s, personId, roleDivision(input), input.role, at)
+  return s
+}
+
+export function applyRemoveRole(s: DemoState, personId: string, input: RoleInput): DemoState {
+  const divisionId = roleDivision(input)
+  s.roles = s.roles.filter((r) => !(r.personId === personId && r.divisionId === divisionId && r.role === input.role))
+  return s
+}
+
+/** A new person with one role (8b "Invite"); their id comes from their name. */
+export function applyInvite(s: DemoState, input: { name: string; title: string } & RoleInput, at: string): DemoState {
+  const name = input.name.trim()
+  const base = divisionSlug(name)
+  let id = base
+  for (let n = 2; s.people.some((p) => p.id === id); n++) id = `${base}-${n}`
+  s.people.push({ id, name, initial: name.charAt(0).toUpperCase(), title: input.title.trim() })
+  return applyAddRole(s, id, input, at)
+}

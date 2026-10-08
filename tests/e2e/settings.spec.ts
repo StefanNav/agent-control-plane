@@ -53,3 +53,28 @@ test('split (R6): Dana moves two agents into a new division; the board shows six
   await expect(page.getByText('All · 6')).toBeVisible()
   expect(errors).toEqual([])
 })
+
+test('people and roles (8b): Dana gives Sam a second division; Sam’s controls there unlock', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/operations')
+  await viewAs(page, 'Sam')
+  await page.goto('/operations/agents/discharge-summary')
+  await page.getByRole('button', { name: 'Controls' }).click()
+  await expect(page.getByRole('menuitem', { name: /Revoke a tool…/ })).toHaveAttribute('aria-disabled', 'true')
+  await page.keyboard.press('Escape')
+
+  await viewAs(page, 'Dana')
+  await page.goto('/settings/people?person=sam')
+  await expect(page.getByRole('table', { name: 'People and roles' })).toContainText('Tools · hard stops · pauses')
+  await page.getByRole('combobox', { name: 'Role for Sam' }).selectOption({ label: 'Technical owner' })
+  await page.getByRole('combobox', { name: 'Division for Sam' }).selectOption({ label: 'Discharge' })
+  await expect(page.getByText('As technical owner, Sam can')).toBeVisible()
+  await page.getByRole('button', { name: 'Add role' }).click()
+  await expect(page.getByRole('complementary', { name: 'Sam' })).toContainText('Technical owner · Discharge')
+
+  await viewAs(page, 'Sam')
+  await page.goto('/operations/agents/discharge-summary')
+  await page.getByRole('button', { name: 'Controls' }).click()
+  await expect(page.getByRole('menuitem', { name: /Revoke a tool…/ })).not.toHaveAttribute('aria-disabled', 'true')
+  expect(errors).toEqual([])
+})

@@ -1,9 +1,9 @@
 import { TIER_RULES } from '../../data/seed/catalogue'
-import type { DemoState, Division, LapsePolicy } from '../../data/types'
+import type { DemoState, Division, LapsePolicy, Role, RoleAssignment } from '../../data/types'
 import { addDays, formatDate, minutesBetween } from '../../lib/clock'
 import { personName } from '../../store/onboardingRules'
-import { can } from '../../store/permissions'
-import { diffDivision, type DivisionPatch } from '../../store/settings'
+import { can, type PermAction } from '../../store/permissions'
+import { diffDivision, ROLE_LABEL, roleDivision, type DivisionPatch, type RoleInput } from '../../store/settings'
 import { onBoard } from '../board/selectors'
 import { SPAN_GUIDELINE } from '../onboarding/selectors'
 
@@ -166,5 +166,91 @@ export function selectNewDivision(s: DemoState, from: string | null, draft: { ow
       ? `${personName(s, parent.ownerId)} keeps ${spanOf(s, parent.ownerId) - moving} activities${draft.ownerId ? ` · ${personName(s, draft.ownerId)} takes ${moving}` : ''}`
       : null,
     button: parent ? `Create division and move ${picked} ${picked === 1 ? 'agent' : 'agents'}` : 'Create division',
+  }
+}
+
+const ROLE_ORDER: Role[] = ['programLead', 'committee', 'readOnly', 'sponsor', 'owner', 'techOwner', 'frontline']
+
+/** What each role does, verbatim from 8b's CAN column. */
+const CAN_SUMMARY: Record<Role, string> = {
+  programLead: 'Everything, including disable and retire',
+  committee: 'Committee decisions',
+  readOnly: 'Read only · opens incidents',
+  sponsor: 'Signs privileges · approves resume',
+  owner: 'Supervises · pauses · requests resume',
+  techOwner: 'Tools · hard stops · pauses',
+  frontline: 'Works in Epic · no console access',
+}
+
+/** 8b's capability lines (the frame's six, then three more), each decided by `can()` (R8). */
+const CAPABILITIES: { label: string; actions: PermAction[] }[] = [
+  { label: 'Grant and revoke tools', actions: ['configureTools', 'revokeTool'] },
+  { label: 'Write and test hard stops', actions: ['configureTools'] },
+  { label: 'Pause, return an activity to Shadow', actions: ['pause', 'returnToShadow'] },
+  { label: 'Sign privileges', actions: ['signPrivilege'] },
+  { label: 'Approve a resume', actions: ['resume'] },
+  { label: 'Disable or retire agents', actions: ['disable', 'retire'] },
+  { label: 'Edit job descriptions', actions: ['editJobDescription'] },
+  { label: 'Decide go-live in committee', actions: ['approveGoLive'] },
+  { label: 'Manage divisions and roles', actions: ['manageDivisions'] },
+]
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+/** 8b: everyone with a role, the selected person's roles, and what a role would let them do. */
+export function selectPeople(s: DemoState, selectedId: string | null, adding: RoleInput | null, viewerId: string) {
+  const divisionName = (id: string) => (id === 'all' ? 'All divisions' : (s.divisions.find((d) => d.id === id)?.name ?? id))
+  const byName = [...s.divisions].sort((a, b) => a.name.localeCompare(b.name))
+  /** Where an assignment sorts: hospital-wide, then Medications, then other divisions by name; frontline last. */
+  const key = (r: RoleAssignment) => {
+    const role = ROLE_ORDER.indexOf(r.role)
+    if (r.role === 'frontline') return 10_000
+    if (r.divisionId === 'all') return role
+    const division = r.divisionId === 'medications' ? 0 : 1 + byName.findIndex((d) => d.id === r.divisionId)
+    return 100 * (division + 1) + role
+  }
+  const assignments = (personId: string) => s.roles.filter((r) => r.personId === personId).sort((a, b) => key(a) - key(b))
+  const rows = peopleWithRoles(s)
+    .map((p) => ({ p, held: assignments(p.id) }))
+    .sort((a, b) => key(a.held[0]!) - key(b.held[0]!))
+    .map(({ p, held }) => ({
+      id: p.id,
+      name: p.name,
+      role: [...new Set(held.map((r) => ROLE_LABEL[r.role]))].join(', '),
+      division: held.some((r) => r.divisionId === 'all') ? 'All divisions' : [...new Set(held.map((r) => divisionName(r.divisionId)))].join(', ') || '—',
+      can: CAN_SUMMARY[held[0]!.role],
+    }))
+  const editable = can(s, viewerId, 'manageDivisions')
+  const person = s.people.find((p) => p.id === (selectedId ?? rows[0]?.id))
+  const held = person ? assignments(person.id) : []
+  // The role the capability list describes: the one being added, else the person's first.
+  const preview: RoleInput | null = adding ?? (held[0] ? { role: held[0].role, divisionId: held[0].divisionId } : null)
+  const only = preview ? { roles: [{ personId: person?.id ?? '', divisionId: roleDivision(preview), role: preview.role, since: s.now }], agents: s.agents } : null
+  const since = (iso: string) => `since ${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`
+  return {
+    rows,
+    count: rows.length,
+    editable,
+    roleOptions: ROLE_ORDER.map((r) => ({ value: r, label: ROLE_LABEL[r] })),
+    divisionOptions: s.divisions.map((d) => ({ value: d.id, label: d.name })),
+    person: person
+      ? {
+          id: person.id,
+          name: person.name,
+          title: person.title,
+          roles: held.map((r) => ({
+            role: r.role,
+            divisionId: r.divisionId,
+            label: `${ROLE_LABEL[r.role]} · ${divisionName(r.divisionId)}`,
+            since: since(r.since),
+            removable: editable,
+          })),
+          capsHead: preview ? `As ${ROLE_LABEL[preview.role].replace(/^[A-Z][a-z]/, (m) => m.toLowerCase())}, ${person.name} can` : '',
+          caps:
+            preview && only
+              ? CAPABILITIES.map((c) => ({ label: c.label, ok: c.actions.every((a) => can(only, person.id, a, { divisionId: roleDivision(preview) === 'all' ? undefined : roleDivision(preview) })) }))
+              : [],
+        }
+      : null,
   }
 }

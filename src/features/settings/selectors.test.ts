@@ -1,5 +1,5 @@
 import { createSeed } from '../../data/seed'
-import { selectDivisionSettings, selectNewDivision } from './selectors'
+import { selectDivisionSettings, selectNewDivision, selectPeople } from './selectors'
 
 test('8a reads from data: counts, span and the lapse preview for the seed policy', () => {
   const view = selectDivisionSettings(createSeed(), 'medications', {}, 'dana')!
@@ -54,4 +54,39 @@ test('the split modal lists the division’s agents, most activities first, and 
   expect(view.line).toBe('Marcus keeps 20 activities · Elena takes 2')
   expect(view.button).toBe('Create division and move 2 agents')
   expect(selectNewDivision(createSeed(), null, { ownerId: 'elena', agentIds: [] })).toMatchObject({ title: 'New division', agents: [], line: null, button: 'Create division' })
+})
+
+test('8b: everyone with a role, hospital-wide first, then Medications, then by division, frontline last', () => {
+  const view = selectPeople(createSeed(), 'sam', null, 'dana')
+  expect(view.rows).toHaveLength(16)
+  expect(view.rows.slice(0, 6).map((r) => [r.name, r.role, r.division, r.can])).toEqual([
+    ['Dana', 'AI program lead', 'All divisions', 'Everything, including disable and retire'],
+    ['Dr. Lee', 'AI review board chair', 'All divisions', 'Committee decisions'],
+    ['Jordan', 'Risk manager', 'All divisions', 'Read only · opens incidents'],
+    ['Priya', 'Clinical sponsor', 'Medications, Discharge', 'Signs privileges · approves resume'],
+    ['Marcus', 'Agent owner', 'Medications', 'Supervises · pauses · requests resume'],
+    ['Sam', 'Technical owner', 'Medications', 'Tools · hard stops · pauses'],
+  ])
+  expect(view.rows.at(-1)).toMatchObject({ name: 'Ana R., PharmD', role: 'Pharmacist', division: 'Medications', can: 'Works in Epic · no console access' })
+  expect(view.rows.findIndex((r) => r.name === 'Elena')).toBeLessThan(view.rows.findIndex((r) => r.name === 'Tom'))
+})
+
+test('8b: Sam’s panel previews what Technical owner · Discharge allows', () => {
+  const view = selectPeople(createSeed(), 'sam', { role: 'techOwner', divisionId: 'discharge' }, 'dana')
+  expect(view.person).toMatchObject({ name: 'Sam', title: 'Integration analyst' })
+  expect(view.person!.roles).toEqual([{ role: 'techOwner', divisionId: 'medications', label: 'Technical owner · Medications', since: 'since Mar 2026', removable: true }])
+  expect(view.person!.capsHead).toBe('As technical owner, Sam can')
+  expect(view.person!.caps.map((c) => [c.label, c.ok])).toEqual([
+    ['Grant and revoke tools', true],
+    ['Write and test hard stops', true],
+    ['Pause, return an activity to Shadow', true],
+    ['Sign privileges', false],
+    ['Approve a resume', false],
+    ['Disable or retire agents', false],
+    ['Edit job descriptions', true],
+    ['Decide go-live in committee', false],
+    ['Manage divisions and roles', false],
+  ])
+  expect(view.editable).toBe(true)
+  expect(selectPeople(createSeed(), 'sam', null, 'marcus').editable).toBe(false)
 })
