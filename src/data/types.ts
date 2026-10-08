@@ -243,6 +243,8 @@ export interface AgentException {
   /** People kept informed; it shows under their "Waiting on others". */
   copied: string[]
   claimedAt?: string
+  /** When someone handed it to a new owner; an assigned item is no longer escalated. */
+  assignedAt?: string
   deadline: string
   state: ExceptionState
   snoozedUntil?: string

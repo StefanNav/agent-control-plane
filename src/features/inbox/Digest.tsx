@@ -45,7 +45,11 @@ export function Digest({ digest, settingsTo }: DigestProps) {
           {digest.needs.map((item) => (
             <div key={item.id} className={styles.row}>
               <span className={styles.rowText}>
-                {item.status === 'normal' ? <span className={styles.meta}>{item.label}</span> : <StatusChip status={item.status} label={item.label} />}
+                {item.status === 'normal' ? (
+                  <span className={styles.meta}>{item.label}</span>
+                ) : (
+                  <StatusChip status={item.status} label={item.label} />
+                )}
                 <span className={styles.text}>{item.text}</span>
                 <span className={styles.meta}>{item.due}</span>
               </span>
@@ -71,13 +75,14 @@ export function Digest({ digest, settingsTo }: DigestProps) {
         <section className={styles.section} aria-label="In the log">
           <h3 className={styles.label}>In the log, not here · {digest.logTotal} events</h3>
           <p className={styles.logLine}>
-            Deploys, config reads and routine policy passes. <Link to="/operations/inbox?tab=log">Open the log</Link>
+            Deploys, config reads and routine policy passes.{' '}
+            <Link to="/operations/inbox?tab=log">Open the log</Link>
           </p>
         </section>
 
         <footer className={styles.foot}>
-          Critical exceptions page you as they happen. This digest covers warnings, reviews and questions. Change what reaches you in{' '}
-          <Link to={settingsTo}>Delivery settings</Link>.
+          Critical exceptions page you as they happen. This digest covers warnings, reviews and
+          questions. Change what reaches you in <Link to={settingsTo}>Delivery settings</Link>.
         </footer>
       </div>
     </article>

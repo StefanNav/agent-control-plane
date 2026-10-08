@@ -38,6 +38,8 @@ export interface DemoActions {
   snoozeException: (id: string, until: string) => ActionResult
   /** Close an exception without acting on it. A reason is required; it is logged. */
   dismissException: (id: string, input: DismissInput) => ActionResult
+  /** Hand an exception to someone else; the previous owner and you stay copied. */
+  assignException: (id: string, personId: string) => ActionResult
 }
 
 export type DemoStore = DemoState & DemoActions
@@ -111,6 +113,24 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Snoozed', target: exception.code, reason: `until ${formatClock(until)}` },
               mutate: (draft) => {
                 draft.exceptions.find((e) => e.id === id)!.snoozedUntil = until
+              },
+            })
+          },
+          assignException: (id, personId) => {
+            const { exception, error } = openException(id)
+            if (!exception) return error
+            const person = get().people.find((p) => p.id === personId)
+            if (!person) return { ok: false, reason: 'Unknown person' }
+            return act({
+              action: 'resolveException',
+              ctx: { agentId: exception.agentId },
+              audit: { action: 'Assigned', target: exception.code, reason: `to ${person.name}` },
+              mutate: (draft) => {
+                const target = draft.exceptions.find((e) => e.id === id)!
+                const keep = [target.ownerId, draft.personaId].filter((p) => p !== personId)
+                target.copied = [...new Set([...target.copied.filter((p) => p !== personId), ...keep])]
+                target.ownerId = personId
+                target.assignedAt = draft.now
               },
             })
           },

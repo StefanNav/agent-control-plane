@@ -108,8 +108,27 @@
   color: var(--cs-ink);
 }
 
-.late {
-  color: var(--cs-crit);
+/* Escalated (5d): the source gets its own line under the chip; the lateness stays top right. */
+.itemTopStacked {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  row-gap: 8px;
+  align-items: start;
+}
+
+.itemTopStacked > :first-child {
+  grid-column: 1;
+}
+
+.itemTopStacked .source {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.itemTopStacked .due {
+  grid-column: 2;
+  grid-row: 1;
+  line-height: 22px;
 }
 
 .reason {
@@ -244,20 +263,20 @@
 }
 
 .timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
   margin: 0;
-  padding: 0;
+  padding: 0 20px 6px;
   list-style: none;
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
   font-size: 14px;
   line-height: 20px;
 }
 
 .timeline li {
   display: grid;
-  grid-template-columns: 56px minmax(0, 1fr);
+  grid-template-columns: 64px minmax(0, 1fr);
   gap: 12px;
+  padding: 8px 0;
 }
 
 .timelineAt {
@@ -274,6 +293,7 @@
 
 .timelineSub {
   display: block;
+  margin-top: 2px;
   font-size: 13px;
   line-height: 18px;
   color: var(--cs-meta);

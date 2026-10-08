@@ -320,14 +320,14 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
 - "What silence means here"
 - Assign to Sam / Answer myself / Pause Formulary Swap Agent (goes to the agent view)
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - The scenario puts EXC-5508 in Priya's "Needs me", escalated.
   - Store: assigning to Sam sets `ownerId: 'sam'` and logs it.
   - e2e: load the scenario through the store (test helper `page.evaluate` → `localStorage` seed via a `?scenario=` query param supported in dev and prod), view as Priya, open the inbox and see "1 h 14 min late". "Assign to Sam" removes it from Priya's list.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement.** Add a `?scenario=<id>` URL param to `AppShell` that calls `loadScenario` once. Phase 8 stories will reuse it.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(inbox): escalation to the sponsor"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement.** Add a `?scenario=<id>` URL param to `AppShell` that calls `loadScenario` once. Phase 8 stories will reuse it.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(inbox): escalation to the sponsor"`.
 
 ### Task 3.11: Journey test and checkpoint
 

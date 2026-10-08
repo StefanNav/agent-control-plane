@@ -4,8 +4,8 @@ import { personName } from '../board/selectors'
 
 export const isOpen = (e: AgentException) => e.state !== 'resolved' && e.state !== 'dismissed'
 export const isOverdue = (e: AgentException, now: string) => isOpen(e) && e.deadline < now
-/** Past its deadline with nobody on it: it goes to the division's sponsor. */
-export const isEscalated = (e: AgentException, now: string) => isOverdue(e, now) && !e.claimedAt && e.kind !== 'incident'
+/** Past its deadline with nobody on it: it goes to the division's sponsor until someone claims or reassigns it. */
+export const isEscalated = (e: AgentException, now: string) => isOverdue(e, now) && !e.claimedAt && !e.assignedAt && e.kind !== 'incident'
 const isSnoozed = (e: AgentException, now: string) => Boolean(e.snoozedUntil && e.snoozedUntil > now)
 
 export interface InboxItemView {
@@ -75,6 +75,10 @@ export function selectExceptionDetail(s: DemoState, id: string) {
   const sponsor = personName(s, sponsorOf(s, e))
   const owner = personName(s, e.ownerId)
   const escalated = isEscalated(e, s.now)
+  const lastSeen = agent?.monitor.lastSeen
+  const silentFor = e.status === 'stale' && lastSeen ? formatAgo(lastSeen, s.now).replace(' ago', '') : null
+  const reminder = e.detail?.timeline?.find((t) => t.title.startsWith('Reminder') && t.at <= s.now)
+  const techOwner = agent?.techOwnerId
   return {
     id: e.id,
     code: e.code,
@@ -84,8 +88,19 @@ export function selectExceptionDetail(s: DemoState, id: string) {
     state: e.state,
     agentId: e.agentId,
     agentName: agent?.name ?? '',
-    headline: e.detail?.headline ?? e.reason,
-    meta: [e.code, e.ruleTag, `raised ${formatClock(e.raisedAt)}`, dueWithDay(e.deadline, s.now).replace(/^Due/, 'due'), owner].filter(Boolean).join(' · '),
+    headline: `${e.detail?.headline ?? e.reason}${silentFor ? ` for ${silentFor}` : ''}`,
+    meta: (escalated
+      ? [e.code, e.ruleTag, `raised ${formatClock(e.raisedAt)}`, `due ${formatClock(e.deadline)}`, `escalated ${formatClock(e.deadline)}`]
+      : [e.code, e.ruleTag, `raised ${formatClock(e.raisedAt)}`, dueWithDay(e.deadline, s.now).replace(/^Due/, 'due'), owner]
+    )
+      .filter(Boolean)
+      .join(' · '),
+    /** Why it reached the sponsor (5d); no gendered pronouns in product copy. */
+    escalationNotice: escalated
+      ? `${owner} is the owner. It reached their inbox at ${formatClock(e.raisedAt)}${reminder ? `, with a reminder at ${formatClock(reminder.at)}` : ''}, and they're still copied.`
+      : null,
+    techOwnerId: techOwner,
+    techOwnerName: techOwner ? personName(s, techOwner) : undefined,
     escalated,
     escalationLine: escalated ? `Escalated to ${sponsor} at ${formatClock(e.deadline)}` : `Not handled by ${formatClock(e.deadline)} → goes to ${sponsor}`,
     ownerName: owner,
@@ -96,7 +111,7 @@ export function selectExceptionDetail(s: DemoState, id: string) {
     breakdownLabel: e.detail?.breakdownLabel,
     breakdown: e.detail?.breakdown ?? [],
     cause: e.detail?.cause,
-    timeline: (e.detail?.timeline ?? []).map((t) => ({ at: formatClock(t.at), title: t.title, sub: t.sub })),
+    timeline: (e.detail?.timeline ?? []).filter((t) => t.at <= s.now).map((t) => ({ at: formatClock(t.at), title: t.title, sub: t.sub })),
     silence: e.detail?.silence,
     tune: e.detail?.tune,
     /** The rule without its version, e.g. 'MR-12'. */

@@ -1,4 +1,6 @@
-import { Outlet, useMatches } from 'react-router'
+import { useEffect } from 'react'
+import { Outlet, useMatches, useSearchParams } from 'react-router'
+import { SCENARIO_IDS, type ScenarioId } from '../data/scenarios'
 import { TopNav } from '../layout/TopNav/TopNav'
 import { personaById } from '../prototype/personas'
 import { PrototypeBar } from '../prototype/PrototypeBar/PrototypeBar'
@@ -15,7 +17,27 @@ function useCurrentSection(): NavSection | null {
   return null
 }
 
+/** `?scenario=<id>` loads a named scenario once, then drops the param (stories and tests use it). */
+function useScenarioParam() {
+  const [params, setParams] = useSearchParams()
+  const loadScenario = useDemo((s) => s.loadScenario)
+  const requested = params.get('scenario')
+  useEffect(() => {
+    if (requested === null) return
+    if (SCENARIO_IDS.includes(requested as ScenarioId)) loadScenario(requested as ScenarioId)
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('scenario')
+        return next
+      },
+      { replace: true },
+    )
+  }, [requested, loadScenario, setParams])
+}
+
 export function AppShell({ shell }: { shell: ShellKind }) {
+  useScenarioParam()
   const current = useCurrentSection()
   const initial = personaById(useDemo((s) => s.personaId)).initial
   if (shell === 'kiosk') return <Outlet />

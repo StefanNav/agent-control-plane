@@ -206,3 +206,15 @@ describe('dismissException', () => {
     expect(store.getState().exceptions.find((e) => e.id === 'exc-5512')!.state).toBe('new')
   })
 })
+
+test('assignException hands the item to someone else, keeps the previous owner copied and logs it', () => {
+  const store = fresh()
+  store.getState().loadScenario('stale-escalated')
+  store.getState().setPersona('priya')
+  expect(store.getState().assignException('exc-5508', 'sam')).toEqual({ ok: true })
+  const exc = store.getState().exceptions.find((e) => e.id === 'exc-5508')!
+  expect(exc.ownerId).toBe('sam')
+  expect(exc.assignedAt).toBe('2026-12-08T12:00:00')
+  expect(exc.copied).toEqual(expect.arrayContaining(['marcus', 'priya']))
+  expect(store.getState().audit.at(-1)).toMatchObject({ who: 'priya', action: 'Assigned', target: 'EXC-5508', reason: 'to Sam' })
+})

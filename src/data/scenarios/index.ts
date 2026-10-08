@@ -1,8 +1,15 @@
 import { createSeed } from '../seed'
+import { addMinutes } from '../../lib/clock'
 import type { DemoState } from '../types'
 
 /** Named starting points for stories and demos (spec §6.3). Later phases add their own. */
-export type ScenarioId = 'baseline' | 'med-rec-paused' | 'resume-requested' | 'awaiting-signature' | 'step-down-threshold'
+export type ScenarioId = 'baseline' | 'med-rec-paused' | 'resume-requested' | 'awaiting-signature' | 'step-down-threshold' | 'stale-escalated'
+
+/** Every scenario id, for validating a `?scenario=` param. */
+export const SCENARIO_IDS: readonly ScenarioId[] = ['baseline', 'med-rec-paused', 'resume-requested', 'awaiting-signature', 'step-down-threshold', 'stale-escalated']
+
+/** The seed's live heartbeat (one minute before DEMO_NOW). */
+const LIVE = '2026-12-08T09:51:00'
 
 const medRec = (s: DemoState) => s.agents.find((a) => a.id === 'med-rec')!
 const admissionPrivilege = (s: DemoState) => s.privileges.find((p) => p.activityId === 'med-rec-admission')!
@@ -14,6 +21,15 @@ function pauseMedRec(s: DemoState): DemoState {
     pausedAt: '2026-12-08T09:47:00',
     judgment: { status: 'paused', label: 'Paused by Marcus' },
   })
+  return s
+}
+
+/** Move the demo clock; heartbeats that were live stay live at the new time. */
+function advanceClock(s: DemoState, to: string): DemoState {
+  const heartbeat = addMinutes(to, -1)
+  for (const agent of s.agents) if (agent.monitor.lastSeen === LIVE) agent.monitor.lastSeen = heartbeat
+  for (const division of s.divisions) if (division.monitor.state === 'live') division.monitor.lastAt = heartbeat
+  s.now = to
   return s
 }
 
@@ -62,6 +78,14 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
       movedBy: 'MR-12 v1',
       trigger: 'Edit rate above 15% for 3 days',
     })
+    return s
+  },
+
+  // E5 5d: 12:00. Nobody answered the stale-monitor item by 10:46, so it escalated to Priya;
+  // Marcus claimed the Med Rec review at 09:55, so that one did not.
+  'stale-escalated': (s) => {
+    advanceClock(s, '2026-12-08T12:00:00')
+    Object.assign(s.exceptions.find((e) => e.id === 'exc-5530')!, { claimedAt: '2026-12-08T09:55:00', state: 'claimed' })
     return s
   },
 }

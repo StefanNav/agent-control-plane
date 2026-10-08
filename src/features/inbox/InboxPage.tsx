@@ -30,6 +30,8 @@ export function InboxPage() {
   const state = useDemo((s) => s)
   const snoozeException = useDemo((s) => s.snoozeException)
   const dismissException = useDemo((s) => s.dismissException)
+  const assignException = useDemo((s) => s.assignException)
+  const claimException = useDemo((s) => s.claimException)
   const tab: Tab = TABS.find((t) => t === params.get('tab')) ?? 'needs'
   const inbox = useMemo(() => selectInbox(state, state.personaId), [state])
   const header = selectInboxHeader(state, state.personaId)
@@ -135,6 +137,10 @@ export function InboxPage() {
                 if (snoozeException(detail.id, until).ok) navigate(`/operations/inbox${search}`)
               }}
               actorName={personName(state, state.personaId)}
+              onAssign={(personId) => {
+                if (assignException(detail.id, personId).ok) navigate(`/operations/inbox${search}`)
+              }}
+              onAnswer={() => claimException(detail.id)}
               onDismiss={(input) => {
                 const ok = dismissException(detail.id, input).ok
                 if (ok) navigate(`/operations/inbox${search}`)

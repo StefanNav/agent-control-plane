@@ -23,11 +23,19 @@ const FLOOR = H - 6
 const HEADROOM = 0.26 * H
 
 /** A single-series line against a dashed target (5a): one axis, no legend, hover and keyboard readout. */
-export function TrendChart({ label, values, days, target, unit = '%', accent = 'var(--cs-warn)' }: TrendChartProps) {
+export function TrendChart({
+  label,
+  values,
+  days,
+  target,
+  unit = '%',
+  accent = 'var(--cs-warn)',
+}: TrendChartProps) {
   const [active, setActive] = useState<number | null>(null)
   const top = Math.max(...values, target ?? 0)
   const k = top > 0 ? (FLOOR - HEADROOM) / top : 0
-  const x = (i: number) => PAD_X + (values.length > 1 ? (i * (W - 2 * PAD_X)) / (values.length - 1) : 0)
+  const x = (i: number) =>
+    PAD_X + (values.length > 1 ? (i * (W - 2 * PAD_X)) / (values.length - 1) : 0)
   const y = (v: number) => FLOOR - v * k
   const points = values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')
   const last = values.length - 1
@@ -47,7 +55,14 @@ export function TrendChart({ label, values, days, target, unit = '%', accent = '
   }
 
   const summary = `${label}: ${fmt(values[0] ?? 0)} on ${days[0]} to ${fmt(values[last] ?? 0)} today${target !== undefined ? `, target ${fmt(target)}` : ''}`
-  const tip = active === null ? null : { left: (x(active) / W) * 100, day: active === last ? 'Today' : days[active], value: values[active] ?? 0 }
+  const tip =
+    active === null
+      ? null
+      : {
+          left: (x(active) / W) * 100,
+          day: active === last ? 'Today' : days[active],
+          value: values[active] ?? 0,
+        }
 
   return (
     <figure className={styles.figure}>
@@ -68,14 +83,52 @@ export function TrendChart({ label, values, days, target, unit = '%', accent = '
           onKeyDown={onKeyDown}
         >
           {target !== undefined ? (
-            <line x1={0} x2={W} y1={y(target)} y2={y(target)} stroke="var(--cs-icon)" strokeWidth={1} strokeDasharray="4 3" />
+            <line
+              x1={0}
+              x2={W}
+              y1={y(target)}
+              y2={y(target)}
+              stroke="var(--cs-icon)"
+              strokeWidth={1}
+              strokeDasharray="4 3"
+            />
           ) : null}
-          {active !== null ? <line x1={x(active)} x2={x(active)} y1={0} y2={H} stroke="var(--cs-line-strong)" strokeWidth={1} /> : null}
-          <polyline points={points} fill="none" stroke="var(--cs-text2)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+          {active !== null ? (
+            <line
+              x1={x(active)}
+              x2={x(active)}
+              y1={0}
+              y2={H}
+              stroke="var(--cs-line-strong)"
+              strokeWidth={1}
+            />
+          ) : null}
+          <polyline
+            points={points}
+            fill="none"
+            stroke="var(--cs-text2)"
+            strokeWidth={2}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
           {active !== null && active !== last ? (
-            <circle cx={x(active)} cy={y(values[active] ?? 0)} r={4} fill="var(--cs-text2)" stroke="var(--cs-raised)" strokeWidth={2} />
+            <circle
+              cx={x(active)}
+              cy={y(values[active] ?? 0)}
+              r={4}
+              fill="var(--cs-text2)"
+              stroke="var(--cs-raised)"
+              strokeWidth={2}
+            />
           ) : null}
-          <circle cx={x(last)} cy={y(values[last] ?? 0)} r={4} fill={accent} stroke="var(--cs-raised)" strokeWidth={2} />
+          <circle
+            cx={x(last)}
+            cy={y(values[last] ?? 0)}
+            r={4}
+            fill={accent}
+            stroke="var(--cs-raised)"
+            strokeWidth={2}
+          />
         </svg>
         {tip ? (
           <span className={styles.tip} style={{ left: `${tip.left}%` }} aria-hidden="true">

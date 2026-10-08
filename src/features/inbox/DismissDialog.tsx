@@ -40,7 +40,13 @@ export function DismissDialog({ detail, actorName, onClose, onConfirm }: Dismiss
           <Button
             variant={ready ? 'primary' : 'blocked'}
             aria-disabled={!ready}
-            onClick={() => onConfirm({ category, reason, tune: tune && detail.tune ? detail.tune.label : undefined })}
+            onClick={() =>
+              onConfirm({
+                category,
+                reason,
+                tune: tune && detail.tune ? detail.tune.label : undefined,
+              })
+            }
           >
             Dismiss with reason
           </Button>
@@ -69,7 +75,14 @@ export function DismissDialog({ detail, actorName, onClose, onConfirm }: Dismiss
             placeholder="What explains it? Name the change, ticket or person."
           />
         </Field>
-        {detail.tune ? <Checkbox checked={tune} onChange={setTune} label={detail.tune.label} description={detail.tune.help} /> : null}
+        {detail.tune ? (
+          <Checkbox
+            checked={tune}
+            onChange={setTune}
+            label={detail.tune.label}
+            description={detail.tune.help}
+          />
+        ) : null}
       </div>
     </Modal>
   )
