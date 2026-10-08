@@ -247,3 +247,27 @@
   font-weight: 600;
   color: var(--cs-ink);
 }
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0 20px 16px;
+  list-style: none;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.conditionLine {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.evidenceHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}

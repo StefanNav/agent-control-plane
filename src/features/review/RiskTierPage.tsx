@@ -133,7 +133,7 @@ export function RiskTierPage() {
           </StepCard>
         }
         side={
-          <SideCard label="What the tier sets" title="What the tier sets" sub={`${view.compare.head[0]} against ${pick === view.suggested ? 'itself' : `your ${view.compare.head[1]}`}`} foot={<span>{view.compare.note}</span>}>
+          <SideCard label="What the tier sets" title="What the tier sets" sub={pick === view.suggested ? `${view.compare.head[0]}, as suggested` : `${view.compare.head[0]} against your ${view.compare.head[1]}`} foot={<span>{view.compare.note}</span>}>
             <div className={styles.compare}>
               <span className={styles.compareHead} />
               <span className={styles.compareHead}>{view.compare.head[0]}</span>

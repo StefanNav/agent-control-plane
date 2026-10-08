@@ -50,12 +50,12 @@ export function SignPage() {
             </div>
             {view.evidence ? (
               <section>
-                <h2 className={styles.caps}>
-                  {view.evidence.head} ·{' '}
+                <span className={styles.evidenceHead}>
+                  <h2 className={styles.caps}>{view.evidence.head}</h2>
                   <LinkButton to={`/operations/agents/${view.agentId}?tab=scorecard&activity=${view.activityId}`} variant="ghost">
                     Open scorecard
                   </LinkButton>
-                </h2>
+                </span>
                 <Table
                   ariaLabel="Shadow evidence"
                   rows={view.evidence.criteria}
@@ -166,11 +166,9 @@ export function SignPage() {
               <div className={styles.sideHead}>
                 <h2 className={styles.sideTitle}>What changes when you sign</h2>
               </div>
-              <ul className={styles.rows}>
+              <ul className={styles.lines}>
                 {view.changes.map((line) => (
-                  <li key={line} style={{ gridTemplateColumns: 'minmax(0, 1fr)' }}>
-                    <span>{line}</span>
-                  </li>
+                  <li key={line}>{line}</li>
                 ))}
               </ul>
             </section>
@@ -180,9 +178,9 @@ export function SignPage() {
               <div className={styles.sideHead}>
                 <h2 className={styles.sideTitle}>{view.conditions.head}</h2>
               </div>
-              <ul className={styles.rows}>
+              <ul className={styles.lines}>
                 {view.conditions.rows.map((c) => (
-                  <li key={c.id} style={{ gridTemplateColumns: '28px minmax(0, 1fr)' }}>
+                  <li key={c.id} className={styles.conditionLine}>
                     <span className={onboarding.monoMeta}>{c.id}</span>
                     <span>{c.text}</span>
                   </li>

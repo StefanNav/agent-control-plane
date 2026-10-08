@@ -5,7 +5,7 @@ function series(days: number, start: number, end: number, wiggle: number): numbe
   return Array.from({ length: days }, (_, i) => {
     if (i === days - 1) return end
     const base = start + ((end - start) * i) / (days - 1)
-    return Math.round((base + wiggle * Math.sin(i * 1.7)) * 10) / 10
+    return Math.round((base + wiggle * Math.sin(i * 0.55)) * 10) / 10
   })
 }
 

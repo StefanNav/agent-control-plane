@@ -144,10 +144,13 @@ export function selectMyPrivileges(s: DemoState, personaId: string, tab: 'all' |
     .map((p) => {
       const agent = s.agents.find((a) => a.id === p.agentId)!
       const activity = s.activities.find((a) => a.id === p.activityId)
-      const overdue = p.reviewDate! < s.now
+      // Shadow has no review cycle; only signed levels come due.
+      const reviewed = p.level !== 'shadow'
+      const overdue = reviewed && p.reviewDate! < s.now
       const days = overdue ? dayGap(p.reviewDate!, s.now) : dayGap(s.now, p.reviewDate!)
-      const dueSoon = !overdue && days <= 30
+      const dueSoon = reviewed && !overdue && days <= 30
       const paused = agent.lifecycle === 'paused'
+      const dayWord = (d: number) => `${d} ${d === 1 ? 'day' : 'days'}`
       return {
         id: p.id,
         code: p.code,
@@ -157,10 +160,10 @@ export function selectMyPrivileges(s: DemoState, personaId: string, tab: 'all' |
         level: LEVEL_NAME[p.level],
         domain: p.domain,
         signed: p.grantedAt ? formatDate(p.grantedAt) : '—',
-        due: formatDate(p.reviewDate!),
+        due: reviewed ? formatDate(p.reviewDate!) : '—',
         overdue,
         dueSoon,
-        status: overdue ? `Review overdue · ${days} days` : dueSoon ? `Due in ${days} days` : `In ${days} days${paused ? ' · paused' : ''}`,
+        status: !reviewed ? 'Shadow · no review date' : overdue ? `Review overdue · ${dayWord(days)}` : dueSoon ? `Due in ${dayWord(days)}` : `In ${dayWord(days)}${paused ? ' · paused' : ''}`,
         action: overdue ? 'Review' : 'Open',
       }
     })
