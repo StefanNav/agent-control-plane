@@ -180,3 +180,70 @@ test('intake to signed privilege: Dana → Marcus → Sam → Priya → Dana →
   await expect(page.locator('[data-row-id]').filter({ hasText: 'Med Rec Agent' })).toContainText('In 91 days')
   expect(errors).toEqual([])
 })
+
+async function viewPersona(page: import('@playwright/test').Page, name: string) {
+  await page.getByRole('button', { name: /^Viewing as/ }).click()
+  await page.getByRole('menuitem', { name: new RegExp(`^${name}`) }).click()
+}
+
+test('flag it where you work (Ana): flag from Epic → v1.5.0 held → re-validated → "Your flag led to a fix"', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/operations')
+  await viewPersona(page, 'Ana')
+  await page.getByRole('button', { name: 'Flag a problem' }).click()
+  await page.getByLabel('Add a note (optional)').fill('Frequency split into two lines')
+  await page.getByRole('button', { name: 'Send flag' }).click()
+  await expect(page.getByText('Flag FB-2291 sent to Marcus.', { exact: false })).toBeVisible()
+
+  await viewPersona(page, 'Marcus')
+  await page.goto('/operations/inbox')
+  await expect(page.getByText('Flag from Epic').first()).toBeVisible()
+
+  // The time skip: a week later Sam deploys v1.5.0 (the Phase 8 story loads this scenario too).
+  await page.goto('/operations/agents/med-rec?tab=changes&scenario=change-detected-v150')
+  await expect(page.getByText('v1.5.0 held at the gateway')).toBeVisible()
+  await page.getByRole('button', { name: 'Start replay' }).click()
+  await page.getByRole('button', { name: 'Sign off' }).click()
+
+  await viewPersona(page, 'Priya')
+  await page.goto('/operations/agents/med-rec?tab=changes')
+  await page.getByRole('button', { name: 'Approve', exact: true }).click()
+
+  await viewPersona(page, 'Marcus')
+  await page.goto('/operations/agents/med-rec?tab=changes')
+  await page.getByRole('button', { name: 'Accept v1.5.0' }).click()
+  await expect(page.getByText('v1.5.0 · SOP v1.5 · AGT-0123')).toBeVisible()
+
+  await viewPersona(page, 'Ana')
+  const fix = page.getByRole('region', { name: 'Your flag led to a fix' })
+  await expect(fix).toContainText('FB-2291 Frequency split into two lines')
+  await expect(fix).toContainText('5 other pharmacists flagged the same thing.')
+  expect(errors).toEqual([])
+})
+
+test('access follows accountability (Dana): Sam gets Discharge, can act there, then loses it again', async ({ page }) => {
+  const errors = collectErrors(page)
+  const revoke = () => page.getByRole('menuitem', { name: /Revoke a tool…/ })
+  await page.goto('/operations')
+  await viewPersona(page, 'Dana')
+  await page.goto('/settings/people?person=sam')
+  await page.getByRole('combobox', { name: 'Division for Sam' }).selectOption({ label: 'Discharge' })
+  await page.getByRole('button', { name: 'Add role' }).click()
+
+  await viewPersona(page, 'Sam')
+  await page.goto('/operations/agents/discharge-summary')
+  await page.getByRole('button', { name: 'Controls' }).click()
+  await expect(revoke()).not.toHaveAttribute('aria-disabled', 'true')
+  await page.keyboard.press('Escape')
+
+  await viewPersona(page, 'Dana')
+  await page.goto('/settings/people?person=sam')
+  await page.getByRole('button', { name: 'Remove Technical owner · Discharge' }).click()
+  await expect(page.getByRole('complementary', { name: 'Sam' })).not.toContainText('Technical owner · Discharge')
+
+  await viewPersona(page, 'Sam')
+  await page.goto('/operations/agents/discharge-summary')
+  await page.getByRole('button', { name: 'Controls' }).click()
+  await expect(revoke()).toHaveAttribute('aria-disabled', 'true')
+  expect(errors).toEqual([])
+})

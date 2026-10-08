@@ -995,7 +995,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
 
 ### Task 6.9: Journey test and checkpoint
 
-- [ ] **Step 1: e2e journeys** (`tests/e2e/journeys.spec.ts`):
+- [x] **Step 1: e2e journeys** (`tests/e2e/journeys.spec.ts`):
   - **"flag it where you work":**
     1. **Ana** at `/epic` sends a flag with the note "Frequency split into two lines".
     2. **Marcus** sees it in the inbox.
@@ -1008,7 +1008,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     1. **Dana** gives Sam Technical owner · Discharge.
     2. **Sam** can revoke a Discharge Meds tool.
     3. **Dana** removes it, and Sam's control is locked again.
-- [ ] **Step 2:** `pnpm check` and `pnpm e2e` green.
+- [x] **Step 2:** `pnpm check` and `pnpm e2e` green.
 - [ ] **Step 3: Checkpoint** per the BUILD_PLAN protocol:
   - Push, then open the PR "Phase 6: Governance and fast follows" with `Closes #7`.
   - Run the fresh whole-branch review and apply its fixes test-first.
