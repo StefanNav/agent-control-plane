@@ -4,6 +4,7 @@ import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type DemoState, type PersonaId } from '../data/types'
 import { formatClock } from '../lib/clock'
+import { applyPause } from './mutations'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
 
@@ -42,6 +43,15 @@ export interface DemoActions {
   assignException: (id: string, personId: string) => ActionResult
   /** Answer a question from a person (5a): closes it with the answer. */
   answerQuestion: (id: string, answer: 'yes' | 'no') => ActionResult
+  /** Stop an activity, an agent, or every agent in its division at the gateway (6b). */
+  pauseAgent: (agentId: string, input: PauseInput) => ActionResult
+}
+
+export interface PauseInput {
+  scope: 'activity' | 'agent' | 'division'
+  /** Activity scope; defaults to the agent's main (non-Shadow) activity. */
+  activityId?: string
+  reason?: string
 }
 
 export type DemoStore = DemoState & DemoActions
@@ -133,6 +143,35 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                 target.copied = [...new Set([...target.copied.filter((p) => p !== personId), ...keep])]
                 target.ownerId = personId
                 target.assignedAt = draft.now
+              },
+            })
+          },
+          pauseAgent: (agentId, { scope, activityId, reason }) => {
+            const s = get()
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!agent) return { ok: false, reason: 'Not found' }
+            if (agent.lifecycle === 'retired') return { ok: false, reason: 'Retired agents can’t be paused' }
+            const activities = s.activities.filter((a) => a.agentId === agentId)
+            const activity = activityId ?? (activities.find((a) => a.level !== 'shadow') ?? activities[0])?.id
+            const targets =
+              scope === 'division'
+                ? s.agents.filter((a) => a.divisionId === agent.divisionId && a.lifecycle !== 'retired' && a.lifecycle !== 'paused').map((a) => a.id)
+                : agent.lifecycle === 'paused' || (scope === 'activity' && s.activities.find((a) => a.id === activity)?.paused)
+                  ? []
+                  : [agentId]
+            if (!targets.length) return { ok: false, reason: 'Already paused' }
+            const why = reason?.trim() || undefined
+            const division = s.divisions.find((d) => d.id === agent.divisionId)
+            return act({
+              action: 'pause',
+              ctx: scope === 'division' ? { divisionId: agent.divisionId } : { agentId },
+              audit: {
+                action: 'Paused',
+                target: scope === 'division' ? `${division?.name} · ${targets.length} agents` : agent.code,
+                ...(why ? { reason: why } : {}),
+              },
+              mutate: (draft) => {
+                applyPause(draft, targets, { scope, ...(scope === 'activity' && activity ? { activityId: activity } : {}), ...(why ? { reason: why } : {}) }, draft.personaId)
               },
             })
           },

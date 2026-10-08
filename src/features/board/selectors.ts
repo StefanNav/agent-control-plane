@@ -2,6 +2,7 @@ import type { AgentRowView, LadderState, PrivilegeCardView } from '../../compone
 import type { Agent, AgentException, DemoState, Level, Status } from '../../data/types'
 import { formatAge, formatAgo, formatClock, formatClockSeconds, formatDate, formatDay, formatRelative, minutesBetween } from '../../lib/clock'
 import { trendPoints } from '../../lib/trend'
+import { queueOf } from '../../store/mutations'
 
 /** Statuses that need a human. */
 export const ATTENTION: Status[] = ['crit', 'warn', 'review', 'stale']
@@ -168,11 +169,12 @@ function activitiesOf(s: DemoState, agentId: string) {
   return s.activities
     .filter((act) => act.agentId === agentId)
     .map((act) => {
-      const prv = s.privileges.find((p) => p.activityId === act.id)
+      const prv = s.privileges.find((p) => p.activityId === act.id && p.state !== 'closed')
+      const agentPaused = s.agents.find((a) => a.id === agentId)?.lifecycle === 'paused'
       return {
         id: act.id,
         name: act.name,
-        level: LEVEL_NAME[act.level],
+        level: agentPaused || act.paused ? `Paused · was ${LEVEL_NAME[act.level]}` : LEVEL_NAME[act.level],
         grantor: personName(s, prv?.grantedBy),
         grantedAt: prv?.grantedAt ? formatDate(prv.grantedAt) : '',
         review: prv?.reviewDate ? formatDate(prv.reviewDate) : '—',
@@ -228,12 +230,32 @@ export function selectAgentOverview(s: DemoState, agentId: string) {
   const mainPrivilege = s.privileges.find((p) => p.agentId === a.id && p.level === a.level)
   const freshness = monitorFreshness(a.monitor.lastSeen, a.monitor.expectedIntervalMin, s.now)
   const rejected = m.rejected ?? (m.signedAsIs !== null && m.edited !== null ? Math.max(0, 100 - m.signedAsIs - m.edited) : null)
+  const pausedAt = a.lifecycle === 'paused' ? a.pausedAt : undefined
+  const incident = s.incidents.find((i) => i.agentId === a.id && i.state !== 'closed')
+  const pausedMinutes = pausedAt ? minutesBetween(pausedAt, s.now) : 0
   return {
     id: a.id,
     name: a.name,
     division: division?.name ?? '',
     divisionId: a.divisionId,
-    levelLine: `${LEVEL_NAME[a.level]}${mainPrivilege?.grantedAt ? ` · since ${formatDate(mainPrivilege.grantedAt)}` : ''}`,
+    levelLine: pausedAt ? `Paused · since ${formatClock(pausedAt)}` : `${LEVEL_NAME[a.level]}${mainPrivilege?.grantedAt ? ` · since ${formatDate(mainPrivilege.grantedAt)}` : ''}`,
+    /** The paused state (6d): who, when, what happened to the work, and how long it has been. */
+    paused:
+      pausedAt && a.pause
+        ? {
+            lead: `Paused by ${personName(s, a.pausedBy)} at ${formatClock(pausedAt)}.`,
+            text: `${a.pause.routed} drafts went to pharmacists. ${
+              a.divisionId === 'medications' ? 'New admissions on 7 West and 8 East are reconciled' : 'New work is handled'
+            } by hand until both of you approve a resume.`,
+            whilePaused: {
+              routed: `${a.pause.routed} at ${formatClock(pausedAt)}`,
+              byHand: `${Math.round((queueOf(a).perHour * pausedMinutes) / 60)} since`,
+              incident: incident ? `${incident.code} · ${personName(s, incident.commanderId)}` : null,
+              incidentId: incident?.id ?? null,
+              pausedFor: formatAgo(pausedAt, s.now).replace(/ ago$/, ''),
+            },
+          }
+        : null,
     idLine: `${a.version}${a.sop ? ` · SOP ${a.sop}` : ''} · ${a.code}`,
     judgment: a.judgment,
     lifecycle: a.lifecycle,

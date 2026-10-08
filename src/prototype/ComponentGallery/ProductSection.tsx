@@ -168,13 +168,14 @@ export function ProductSection() {
           ]}
           scope={scope}
           onScopeChange={setScope}
-          effect={{
-            lead: '12 drafts in progress go back to pharmacists.',
-            text: 'They appear in the 7 West and 8 East worklists within a minute. Nothing is lost. New admissions are reconciled by pharmacists until the agent resumes.',
-          }}
+          effects={[
+            { value: '12', lead: 'drafts in progress go back to pharmacists', text: 'They appear in the 7 West and 8 East worklists within a minute.' },
+            { value: '4', lead: 'drafts waiting for review stay', text: 'Pharmacists sign or reject them as usual.' },
+            { value: '~6', lead: 'admissions an hour reconciled by hand', text: 'Until the agent resumes. Charge pharmacists are told.' },
+          ]}
           resumeRule={{
-            lead: 'Resuming needs Priya and Marcus.',
-            text: 'Both, with a reason. Each activity returns to the level it had.',
+            lead: 'Resuming needs Priya and you,',
+            text: 'both with a reason. Each activity returns to the level it had.',
           }}
           reason={pauseReason}
           onReasonChange={setPauseReason}

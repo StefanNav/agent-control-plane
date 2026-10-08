@@ -237,7 +237,7 @@ These are the failure modes the spec implies that no screen test naturally cover
     - Paused for: the duration
   - Activities show "Paused · was Draft".
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **Store:**
     - Pausing Med Rec as Marcus sets the paused judgment and audit `'Paused'`.
     - A second pause is refused with 'Already paused' and changes nothing.
@@ -248,10 +248,10 @@ These are the failure modes the spec implies that no screen test naturally cover
     - The agent view shows "Paused by Marcus".
     - The division row shows the paused chip with numbers withdrawn.
     - The hospital board's Medications breakdown counts 1 paused.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 6b.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(controls): pause with impact preview"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 6b.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(controls): pause with impact preview"`.
 
 ### Task 4.4: Fix one thing: return to Shadow, revoke a tool (6c)
 

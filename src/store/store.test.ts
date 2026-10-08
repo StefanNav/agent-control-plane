@@ -257,3 +257,42 @@ test('assignException as read-only or frontline changes nothing', () => {
     expect(dataOf(store.getState())).toEqual(before)
   }
 })
+
+describe('pauseAgent (6b)', () => {
+  test('Marcus pauses Med Rec: paused judgment, drafts routed, audited as Paused', () => {
+    const store = fresh()
+    expect(store.getState().pauseAgent('med-rec', { scope: 'agent', reason: 'HS-04 blocked 3 dose changes.' })).toEqual({ ok: true })
+    const agent = store.getState().agents.find((a) => a.id === 'med-rec')!
+    expect(agent).toMatchObject({ lifecycle: 'paused', pausedBy: 'marcus', pausedAt: DEMO_NOW, judgment: { status: 'paused', label: 'Paused by Marcus' } })
+    expect(agent.pause).toMatchObject({ scope: 'agent', routed: 12, reason: 'HS-04 blocked 3 dose changes.', wasJudgment: { status: 'review' } })
+    expect(store.getState().audit.at(-1)).toMatchObject({ who: 'marcus', action: 'Paused', target: 'AGT-0123', reason: 'HS-04 blocked 3 dose changes.' })
+  })
+
+  test('a second pause is refused and changes nothing; Jordan is refused', () => {
+    const store = fresh()
+    store.getState().pauseAgent('med-rec', { scope: 'agent' })
+    const before = dataOf(store.getState())
+    expect(store.getState().pauseAgent('med-rec', { scope: 'agent' })).toEqual({ ok: false, reason: 'Already paused' })
+    expect(dataOf(store.getState())).toEqual(before)
+    const ro = fresh()
+    ro.getState().setPersona('jordan')
+    expect(ro.getState().pauseAgent('med-rec', { scope: 'agent' })).toMatchObject({ ok: false })
+    expect(ro.getState().agents.find((a) => a.id === 'med-rec')!.lifecycle).toBe('live')
+  })
+
+  test('this activity only: the activity pauses, the agent keeps running', () => {
+    const store = fresh()
+    expect(store.getState().pauseAgent('med-rec', { scope: 'activity' })).toEqual({ ok: true })
+    expect(store.getState().agents.find((a) => a.id === 'med-rec')!.lifecycle).toBe('live')
+    expect(store.getState().activities.find((a) => a.id === 'med-rec-admission')!.paused).toBe(true)
+  })
+
+  test('every agent in Medications: the 19 not already paused, one audit entry', () => {
+    const store = fresh()
+    expect(store.getState().pauseAgent('med-rec', { scope: 'division' })).toEqual({ ok: true })
+    const meds = store.getState().agents.filter((a) => a.divisionId === 'medications' && a.lifecycle !== 'retired')
+    expect(meds.every((a) => a.lifecycle === 'paused')).toBe(true)
+    expect(meds.filter((a) => a.pause?.scope === 'division')).toHaveLength(19)
+    expect(store.getState().audit.filter((a) => a.action === 'Paused')).toHaveLength(1)
+  })
+})

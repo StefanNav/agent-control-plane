@@ -113,3 +113,14 @@ test('retired agents leave every board count (Phase 4)', async () => {
   expect(s.agents.filter(onBoard)).toHaveLength(41)
   expect(s.agents.filter((a) => !onBoard(a)).every((a) => a.lifecycle === 'retired')).toBe(true)
 })
+
+test('a paused agent view reads like 6d: since when, why, and what happened to the work', () => {
+  const v = selectAgentOverview(buildScenario('med-rec-paused'), 'med-rec')!
+  expect(v.levelLine).toBe('Paused · since 09:47')
+  expect(v.paused).toMatchObject({
+    lead: 'Paused by Marcus at 09:47.',
+    text: '12 drafts went to pharmacists. New admissions on 7 West and 8 East are reconciled by hand until both of you approve a resume.',
+    whilePaused: { routed: '12 at 09:47', pausedFor: '5 min', incident: null },
+  })
+  expect(v.activities[0]!.level).toBe('Paused · was Draft')
+})

@@ -6,6 +6,8 @@ import { NotFound } from '../../layout/NotFound'
 import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { useDemo } from '../../store'
 import { controlMenu, parseControl, type ControlId } from '../controls/controlMenu'
+import { PauseFlow } from '../controls/PauseFlow'
+import type { PauseScope } from '../controls/selectors'
 import {
   ActionsTab,
   ActivitiesTab,
@@ -28,7 +30,14 @@ const LABELS: Record<Tab, string> = {
   history: 'History',
 }
 
-/** Pending-control copy until each dialog lands (Tasks 4.3–4.6). */
+/** The pause controls and the scope each opens with (6b). */
+const PAUSE_SCOPE: Partial<Record<ControlId, PauseScope>> = {
+  'pause-activity': 'activity',
+  'pause-agent': 'agent',
+  'pause-division': 'division',
+}
+
+/** Pending-control copy until each dialog lands (Tasks 4.4–4.6). */
 const CONTROL_LEAD: Record<ControlId, string> = {
   'pause-activity': 'Pause one activity of',
   'pause-agent': 'Pause',
@@ -123,7 +132,14 @@ export function AgentView() {
           />
         }
       />
-      {control ? (
+      {control && PAUSE_SCOPE[control] && !stopped ? (
+        <PauseFlow
+          agentId={agentId}
+          agentName={view.name}
+          initialScope={PAUSE_SCOPE[control]}
+          onClose={() => setControl(null)}
+        />
+      ) : control && !PAUSE_SCOPE[control] ? (
         <section aria-label="Pending control" className={styles.pending}>
           <Notice
             lead={`${CONTROL_LEAD[control]} ${view.name}`}
