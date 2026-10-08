@@ -1,0 +1,92 @@
+.root {
+  position: relative;
+  display: inline-flex;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 3px;
+  box-shadow: var(--cs-shadow-menu);
+}
+
+.right {
+  left: auto;
+  right: 0;
+}
+
+.divided {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--cs-line);
+}
+
+.groupLabel {
+  padding: 8px 14px 4px;
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cs-meta);
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 14px;
+  cursor: pointer;
+  outline: none;
+}
+
+.item:hover,
+.item:focus {
+  background: var(--cs-hover);
+}
+
+.selected {
+  background: var(--cs-sel);
+  box-shadow: inset 2px 0 0 var(--cs-acc);
+}
+
+.itemLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.selected .itemLabel {
+  font-weight: 600;
+}
+
+.sub {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.locked {
+  cursor: not-allowed;
+}
+
+.locked .itemLabel,
+.locked .sub {
+  color: var(--cs-off);
+}
+
+:global(:root[data-keyboard]) .item:focus {
+  outline: 2px solid var(--cs-focus);
+  outline-offset: -2px;
+}

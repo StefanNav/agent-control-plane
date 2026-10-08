@@ -23,3 +23,13 @@ export { ProgressBar, type ProgressBarProps } from './primitives/ProgressBar/Pro
 export { RuleTag, type RuleTagProps } from './primitives/RuleTag/RuleTag'
 export { LogRow, type LogRowProps } from './primitives/LogRow/LogRow'
 export { Avatar, type AvatarProps } from './primitives/Avatar/Avatar'
+export { Table, type Column, type TableGroup, type TableProps } from './primitives/Table/Table'
+export { Tabs, type TabItem, type TabsProps } from './primitives/Tabs/Tabs'
+export {
+  WizardSteps,
+  type StepMark,
+  type WizardStep,
+  type WizardStepsProps,
+} from './primitives/WizardSteps/WizardSteps'
+export { Menu, type MenuGroup, type MenuItem, type MenuProps } from './primitives/Menu/Menu'
+export { Modal, type ModalProps } from './primitives/Modal/Modal'

@@ -278,16 +278,16 @@ Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a
 - `MenuItem = { id: string; label: ReactNode; sub?: ReactNode; onSelect?: () => void; locked?: boolean }`; `Menu(props: { trigger: (p: { open: boolean; toggle: () => void; ref: Ref<HTMLButtonElement> }) => ReactNode; groups: { label?: string; items: MenuItem[] }[]; align?: 'left' | 'right' })`
 - `Modal(props: { open: boolean; onClose: () => void; title: ReactNode; children: ReactNode; audit?: ReactNode; actions: ReactNode; width?: number /* 600 */ })`: portal to `document.body`, scrim, top 96, `--cs-shadow-modal`; footer has `audit` (mono) left and `actions` right.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - Table: column headers render as `columnheader` in order; clicking row 2 calls `onSelect('r2')`; row with `selectedId` has `aria-selected="true"`; focusing row 1 and pressing ArrowDown focuses row 2; Enter on a focused row calls `onOpen`; a group header with label "Overdue" and count 2 renders before its rows; right-aligned cells carry `data-align="right"`.
   - Tabs: current item has `aria-current="page"`; items with `to` render links (wrap in `MemoryRouter`).
   - WizardSteps: current step `aria-current="step"`; a `done` step contains the check icon, a `locked` step the lock icon.
   - Menu: clicking the trigger shows `role="menu"`; ArrowDown moves focus between `menuitem`s; a `locked` item has `aria-disabled="true"` and selecting it does not call `onSelect`; Escape closes and returns focus to the trigger.
   - Modal: `open` renders `role="dialog"` with `aria-modal="true"` and `aria-labelledby` pointing at the title; focus moves inside on open; Tab from the last focusable element wraps to the first; Escape calls `onClose`; when `open` flips false, focus returns to the element focused before opening.
-- [ ] **Step 2: Run; verify fail.**
-- [ ] **Step 3: Implement** from the handoff (Table, Tabs, Wizard steps, Menu, Modal) and `cs-build.js`.
-- [ ] **Step 4: Run; verify pass.**
-- [ ] **Step 5: Commit** `git commit -m "feat(ds): table, tabs, wizard steps, menu, modal"`
+- [x] **Step 2: Run; verify fail.**
+- [x] **Step 3: Implement** from the handoff (Table, Tabs, Wizard steps, Menu, Modal) and `cs-build.js`.
+- [x] **Step 4: Run; verify pass.**
+- [x] **Step 5: Commit** `git commit -m "feat(ds): table, tabs, wizard steps, menu, modal"`
 
 ### Task 1.7: Layout and app shell
 

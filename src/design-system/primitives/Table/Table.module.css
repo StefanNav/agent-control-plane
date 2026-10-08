@@ -1,0 +1,97 @@
+.table {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.head {
+  display: grid;
+  column-gap: 16px;
+  align-items: center;
+  height: 32px;
+  padding: 0 16px;
+  background: var(--cs-sunk);
+}
+
+.label {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cs-meta);
+  white-space: nowrap;
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 16px;
+  background: var(--cs-sunk);
+  border-top: 1px solid var(--cs-line);
+}
+
+.row {
+  display: grid;
+  column-gap: 16px;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 16px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 13px;
+  line-height: 18px;
+  cursor: default;
+  transition: background-color 150ms ease-out;
+}
+
+/* With the header hidden, the first row needs no top border. */
+.table > .row:first-child {
+  border-top: none;
+}
+
+.board {
+  min-height: 32px;
+}
+
+.text14 {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.row:hover {
+  background: var(--cs-hover);
+}
+
+.selected,
+.selected:hover {
+  background: var(--cs-sel);
+  box-shadow: inset 2px 0 0 var(--cs-acc);
+}
+
+.muted {
+  color: var(--cs-meta);
+}
+
+:global(:root[data-keyboard]) .row:focus-visible {
+  outline: 2px solid var(--cs-focus);
+  outline-offset: -2px;
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.right {
+  align-items: flex-end;
+  text-align: right;
+}
