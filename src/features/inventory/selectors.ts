@@ -2,7 +2,7 @@ import { TIER_RULES } from '../../data/seed/catalogue'
 import type { DemoState, Level, Status } from '../../data/types'
 import { formatAgo, formatClock, formatDate } from '../../lib/clock'
 import { nextArchiveCode } from '../../store/mutations'
-import { firstMissingField, openStep, recordItems } from '../../store/onboardingRules'
+import { conditionRange, firstMissingField, openStep, recordItems } from '../../store/onboardingRules'
 import { onBoard, personName, selectAgentRows, selectDivisionSummaries } from '../board/selectors'
 
 const LEVEL: Record<Level, string> = { shadow: 'Shadow', draft: 'Draft', supervised: 'Supervised', autonomous: 'Autonomous' }
@@ -92,8 +92,7 @@ export function selectInventory(s: DemoState) {
 function committeeLine(s: DemoState, agentId: string): string {
   const decision = s.onboardings.find((r) => r.agentId === agentId)?.review?.decision
   if (!decision) return '—'
-  const ids = decision.conditions.map((c) => c.id)
-  const label = { approve: 'Approved', approveWithConditions: `Approved with ${ids.length > 1 ? `${ids[0]}–${ids.at(-1)}` : ids[0]}`, reReview: 'Re-review', deny: 'Denied' }[decision.kind]
+  const label = { approve: 'Approved', approveWithConditions: `Approved with ${conditionRange(decision.conditions.map((c) => c.id))}`, reReview: 'Re-review', deny: 'Denied' }[decision.kind]
   return `${label} · ${formatDate(decision.at)}`
 }
 

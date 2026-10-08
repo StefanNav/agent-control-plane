@@ -1,9 +1,9 @@
 import { BOARD_MEETINGS, HARD_STOP_LIBRARY, RETEST_CASES, TIER_RULES } from '../data/seed/catalogue'
 import { agentFromIntake } from '../data/seed/onboarding'
-import type { AgentException, DemoState, GrantCell, JobDraft, Limit, LimitTest, Onboarding, Tier, Verb } from '../data/types'
+import type { AgentException, Condition, DemoState, GrantCell, JobDraft, Limit, LimitTest, Onboarding, ReviewDecision, Tier, Verb } from '../data/types'
 import { addDays, formatDate, tomorrowAt } from '../lib/clock'
-import { nextExceptionCode, nextHardStopCode, nextPrivilegeCode } from './mutations'
-import { jobFields, onboardingContext, personName, recordItems, riskFactors, systemsProgress, templateFor } from './onboardingRules'
+import { nextArchiveCode, nextExceptionCode, nextHardStopCode, nextPrivilegeCode } from './mutations'
+import { conditionRange, jobFields, onboardingContext, personName, recordItems, riskFactors, systemsProgress, templateFor } from './onboardingRules'
 
 /**
  * Onboarding state changes, shared by store actions and scenarios so a scenario builds exactly
@@ -451,4 +451,60 @@ export function applyShadowStart(s: DemoState, agentId: string, by: string, at: 
   for (const a of record.job.activities)
     if (!s.scorecards.some((c) => c.activityId === a.id)) s.scorecards.push({ activityId: a.id, from, to: from, cases: 0, results: {}, causes: [], sampleCaseIds: [] })
   return s
+}
+
+export const DECISION_WORDS: Record<ReviewDecision['kind'], string> = {
+  approve: 'approved',
+  approveWithConditions: 'approved with conditions',
+  reReview: 'sent back for re-review',
+  deny: 'denied',
+}
+
+/** The board's decision (2c): approval starts shadow; re-review goes back to the program lead; deny archives. */
+export function applyDecision(s: DemoState, agentId: string, input: { kind: ReviewDecision['kind']; conditions: Condition[]; reason: string }, by: string, at: string): DemoState {
+  const record = s.onboardings.find((r) => r.agentId === agentId)
+  const agent = s.agents.find((a) => a.id === agentId)
+  const review = record?.review
+  if (!record || !agent || !review) return s
+  const { people } = onboardingContext(s, agentId)
+  const conditions = input.kind === 'approveWithConditions' ? input.conditions : []
+  const present = (review.tier ?? 2) >= 3 ? '5 of 7 board members present' : 'Chair decision'
+  resolveItems(s, agentId, 'Review: your decision', by, at, `${DECISION_WORDS[input.kind].charAt(0).toUpperCase()}${DECISION_WORDS[input.kind].slice(1)}`)
+  record.history.push({
+    at,
+    by,
+    text: `${personName(s, by)} · ${DECISION_WORDS[input.kind]}${conditions.length ? ` ${conditionRange(conditions.map((c) => c.id))}` : ''}`,
+    sub: `Reason recorded · ${present}`,
+    decision: true,
+  })
+  if (input.kind === 'reReview') {
+    // Back to the program lead with the board's questions: the tier and packet are redone for the next meeting.
+    delete review.tier
+    delete review.tierAt
+    delete review.tierBy
+    delete review.tierReason
+    delete review.packetAt
+    review.meeting = BOARD_MEETINGS.find((m) => m > review.meeting) ?? review.meeting
+    raiseItem(s, {
+      agentId,
+      type: 'Re-review: questions from the board',
+      reason: input.reason,
+      action: 'answer the board and rebuild the packet',
+      actionSub: `Next meeting ${formatDate(review.meeting)}`,
+      ownerId: people.lead,
+      copied: [people.owner, people.sponsor],
+      link: { label: 'Open risk tier', to: `/inventory/agents/${agentId}/risk-tier` },
+      at,
+    })
+    return s
+  }
+  review.decision = { kind: input.kind, conditions, reason: input.reason, by, at, present }
+  if (input.kind === 'deny') {
+    agent.lifecycle = 'retired'
+    agent.retirement = { at, by, code: nextArchiveCode(s), reason: `Denied by the AI review board: ${input.reason}` }
+    agent.judgment = { status: 'normal', label: 'Retired' }
+    for (const p of s.privileges) if (p.agentId === agentId) p.state = 'closed'
+    return s
+  }
+  return applyShadowStart(s, agentId, by, at)
 }

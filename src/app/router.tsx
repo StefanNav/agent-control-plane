@@ -12,6 +12,7 @@ import { IncidentPage } from '../features/audit/IncidentPage'
 import { IncidentsPage } from '../features/audit/IncidentsPage'
 import { ExportPage } from '../features/audit/ExportPage'
 import { OnboardingPage } from '../features/onboarding/OnboardingPage'
+import { PacketPage } from '../features/review/PacketPage'
 import { RecordPage } from '../features/review/RecordPage'
 import { RiskTierPage } from '../features/review/RiskTierPage'
 import { NotFound } from '../layout/NotFound'
@@ -39,6 +40,7 @@ const PAGES: Record<string, ReactNode> = {
   '/inventory/agents/:agentId/onboarding/:step': <OnboardingPage />,
   '/inventory/agents/:agentId': <RecordPage />,
   '/inventory/agents/:agentId/risk-tier': <RiskTierPage />,
+  '/portfolio/reviews/:reviewId': <PacketPage />,
   '/wall': <WallDisplay />,
 }
 

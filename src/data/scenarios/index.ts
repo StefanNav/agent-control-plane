@@ -20,6 +20,8 @@ export type ScenarioId =
   | 'onboarding-returned-hs11'
   | 'onboarding-ready'
   | 'review-risk-tier'
+  | 'review-committee'
+  | 'review-decided'
 
 /** Every scenario id, for validating a `?scenario=` param. */
 export const SCENARIO_IDS: readonly ScenarioId[] = [
@@ -37,6 +39,8 @@ export const SCENARIO_IDS: readonly ScenarioId[] = [
   'onboarding-returned-hs11',
   'onboarding-ready',
   'review-risk-tier',
+  'review-committee',
+  'review-decided',
 ]
 
 /** The seed's live heartbeat (one minute before DEMO_NOW). */
@@ -181,6 +185,12 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
 
   // E2 2b: 13 Oct 10:15, Dana sets the risk tier; the suggestion is Tier 2.
   'review-risk-tier': medRecAt('risk-tier'),
+
+  // E2 2c: 14 Oct 16:12, Dr. Lee has the Tier 3 packet (item 3 of 5).
+  'review-committee': medRecAt('committee'),
+
+  // E2 2d: 14 Oct 16:25, approved with conditions C1–C3 at 16:20; shadow starts 15 Oct.
+  'review-decided': medRecAt('decided'),
 }
 
 /** A fresh state for the scenario. */

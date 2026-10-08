@@ -178,3 +178,13 @@ test('onboarding-ready (1h): Priya signed at 16:02 on 07 Oct; frozen at v1.0, in
   expect(s.agents.find((a) => a.id === 'med-rec')!.lifecycle).toBe('inReview')
   expect(s.exceptions.filter((e) => e.agentId === 'med-rec' && e.state === 'new').map((e) => [e.type, e.ownerId])).toEqual([['Review: risk tier', 'dana']])
 })
+
+test('review-committee (2c) and review-decided (2d)', () => {
+  const committee = buildScenario('review-committee')
+  expect(committee.now).toBe('2026-10-14T16:12:00')
+  expect(committee.onboardings.find((r) => r.agentId === 'med-rec')!.review).toMatchObject({ tier: 3, packetAt: '2026-10-13T10:20:00', agendaItem: { item: 3, of: 5 } })
+  const decided = buildScenario('review-decided')
+  expect(decided.now).toBe('2026-10-14T16:25:00')
+  expect(decided.onboardings.find((r) => r.agentId === 'med-rec')!.review!.decision).toMatchObject({ kind: 'approveWithConditions', at: '2026-10-14T16:20:00' })
+  expect(decided.agents.find((a) => a.id === 'med-rec')!.lifecycle).toBe('live')
+})

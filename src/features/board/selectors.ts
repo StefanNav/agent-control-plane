@@ -12,6 +12,7 @@ import {
 } from '../../lib/clock'
 import { trendPoints } from '../../lib/trend'
 import { queueOf } from '../../store/mutations'
+import { conditionRange } from '../../store/onboardingRules'
 
 /** Statuses that need a human. */
 export const ATTENTION: Status[] = ['crit', 'warn', 'review', 'stale']
@@ -520,7 +521,8 @@ export function selectPrivilegeCards(s: DemoState, agentId: string): PrivilegeCa
               : 'Awaiting signature',
           },
           { key: 'Evidence', value: p.evidence },
-          { key: 'Conditions', value: p.conditions.length ? p.conditions.join(' · ') : 'None' },
+          // Committee conditions on the record (2d), e.g. "C1–C3 · Dr. Lee".
+          { key: 'Conditions', value: p.conditions.length ? `${conditionRange(p.conditions)} · ${personName(s, s.roles.find((r) => r.role === 'committee')?.personId)}` : 'None' },
           {
             key: 'Review',
             value: p.reviewDate

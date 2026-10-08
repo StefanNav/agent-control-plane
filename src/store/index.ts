@@ -2,10 +2,10 @@ import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
-import { PERSONA_IDS, type DemoState, type Incident, type JobDraft, type PersonaId, type Tier, type Verb } from '../data/types'
+import { PERSONA_IDS, type Condition, type DemoState, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
-import { applyJobEdit, applyReply, applyRequestChanges, applySend, applySetTier, applySponsorSign, applyStart, applySystemsEdit, applyTest, testResult, type SystemsChange } from './onboarding'
+import { applyDecision, applyJobEdit, applyReply, applyRequestChanges, applySend, applySetTier, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, testResult, type SystemsChange } from './onboarding'
 import { FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems } from './onboardingRules'
 import { can, lockReason } from './permissions'
 import { runAction, type ActionResult } from './runAction'
@@ -90,6 +90,8 @@ export interface DemoActions {
   approveAsSponsor: (agentId: string) => ActionResult
   /** Set the risk tier (2b); a tier other than the suggested one needs a reason. Tier 2+ builds the packet. */
   setRiskTier: (agentId: string, input: { tier: Tier; reason?: string }) => ActionResult
+  /** The AI review board's decision from the packet, with a reason (2c); approval starts shadow (2d). */
+  recordDecision: (agentId: string, input: { kind: ReviewDecision['kind']; conditions: Condition[]; reason: string }) => ActionResult
 }
 
 export interface PauseInput {
@@ -711,6 +713,24 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Set risk tier', target: agent.code, reason: `Tier ${tier}${why ? ` · ${why}` : ''}` },
               mutate: (draft) => {
                 applySetTier(draft, agentId, { tier, ...(why ? { reason: why } : {}) }, draft.personaId, draft.now)
+              },
+            })
+          },
+          recordDecision: (agentId, { kind, conditions, reason }) => {
+            const s = get()
+            const review = s.onboardings.find((r) => r.agentId === agentId)?.review
+            const agent = s.agents.find((a) => a.id === agentId)
+            if (!review || !agent) return { ok: false, reason: 'Not found' }
+            if (!review.packetAt || review.decision) return { ok: false, reason: 'No packet yet' }
+            const why = reason.trim()
+            if (!why) return { ok: false, reason: 'A reason is required' }
+            if (kind === 'approveWithConditions' && !conditions.length) return { ok: false, reason: 'Add at least one condition' }
+            return act({
+              action: 'approveGoLive',
+              ctx: { agentId },
+              audit: { action: 'Recorded committee decision', target: agent.code, reason: `${DECISION_WORDS[kind]} · ${why}` },
+              mutate: (draft) => {
+                applyDecision(draft, agentId, { kind, conditions, reason: why }, draft.personaId, draft.now)
               },
             })
           },

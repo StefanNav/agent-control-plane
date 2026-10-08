@@ -1,4 +1,5 @@
-import { applyJobEdit, applyRequestChanges, applySend, applySponsorSign, applyStart, applySystemsEdit, applyTest } from '../../store/onboarding'
+import { applyDecision, applyJobEdit, applyRequestChanges, applySend, applySetTier, applySponsorSign, applyStart, applySystemsEdit, applyTest } from '../../store/onboarding'
+import { JOB_TEMPLATES } from '../seed/catalogue'
 import type { DemoState, Verb } from '../types'
 import { dropAgents, rewindTo } from './rewind'
 
@@ -8,9 +9,9 @@ import { dropAgents, rewindTo } from './rewind'
  * store's own mutations, so a frame's state is exactly what the UI would produce.
  */
 
-export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4' | 'tools-tested' | 'sponsor-review' | 'returned-hs11' | 'ready' | 'risk-tier'
+export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4' | 'tools-tested' | 'sponsor-review' | 'returned-hs11' | 'ready' | 'risk-tier' | 'committee' | 'decided'
 
-const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4', 'tools-tested', 'sponsor-review', 'returned-hs11', 'ready', 'risk-tier']
+const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4', 'tools-tested', 'sponsor-review', 'returned-hs11', 'ready', 'risk-tier', 'committee', 'decided']
 
 /** "Now" in each stage's frame. */
 const NOW: Record<MedRecStage, string> = {
@@ -22,6 +23,8 @@ const NOW: Record<MedRecStage, string> = {
   'returned-hs11': '2026-10-07T09:31:00',
   ready: '2026-10-07T16:05:00',
   'risk-tier': '2026-10-13T10:15:00',
+  committee: '2026-10-14T16:12:00',
+  decided: '2026-10-14T16:25:00',
 }
 
 /** A dated step and the first stage at which it has happened. */
@@ -87,7 +90,19 @@ const TIMELINE: Step[] = [
   { stage: 'ready', run: (s) => applyTest(s, 'med-rec', 'HS-11', 'sep-8east-transfers', 'sam', '2026-10-07T10:40:00') },
   { stage: 'ready', run: (s) => applySend(s, 'med-rec', 'sam', '2026-10-07T10:45:00') },
   { stage: 'ready', run: (s) => applySponsorSign(s, 'med-rec', 'priya', '2026-10-07T16:02:00') },
+  // 2b → 2c: Dana raises the tier to 3 and builds the packet; it is item 3 of 5 at the 14 Oct meeting.
+  { stage: 'committee', run: (s) => applySetTier(s, 'med-rec', { tier: 3, reason: TIER_REASON }, 'dana', '2026-10-13T10:20:00') },
+  { stage: 'committee', run: (s) => void (s.onboardings.find((r) => r.agentId === 'med-rec')!.review!.agendaItem = { item: 3, of: 5 }) },
+  // 2c → 2d: Dr. Lee approves with C1–C3 at 16:20.
+  {
+    stage: 'decided',
+    run: (s) => applyDecision(s, 'med-rec', { kind: 'approveWithConditions', conditions: JOB_TEMPLATES['req-0093']!.conditions, reason: DECISION_REASON }, 'drlee', '2026-10-14T16:20:00'),
+  },
 ]
+
+/** Dana's reason for Tier 3 (2b) and Dr. Lee's for the decision (2c), verbatim. */
+const TIER_REASON = 'Med rec errors carry into every inpatient order. Pharmacist review catches most, not all. The board should see this at Tier 3 until shadow evidence is in.'
+const DECISION_REASON = 'Clear limits and good hard-stop evidence. The conditions keep a pharmacist on every draft and keep dialysis patients out while renal dosing is unsettled.'
 
 /** Priya's note on HS-11 (1f, verbatim). */
 export const HS11_NOTE = 'HS-11 shows 0 blocks. Before I sign, please test it on September’s 8 East transfers. That’s where a wrong-patient draft would happen.'

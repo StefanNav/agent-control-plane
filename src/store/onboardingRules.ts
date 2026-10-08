@@ -317,3 +317,10 @@ export function riskFactors(s: DemoState, agentId: string): { rows: { factor: st
   const suggested = submits.length ? 4 : !intake?.patientImpact ? 1 : raises > lowers ? 3 : 2
   return { rows, suggested }
 }
+
+/** ['C1','C2','C3'] → "C1–C3"; ['C1','C3'] → "C1, C3" (2d, 8c, privilege cards). */
+export function conditionRange(ids: string[]): string {
+  const nums = ids.map((id) => Number(id.slice(1)))
+  const contiguous = ids.length > 2 && ids.every((id) => /^C\d+$/.test(id)) && nums.every((n, i) => i === 0 || n === nums[i - 1]! + 1)
+  return contiguous ? `${ids[0]}–${ids.at(-1)}` : ids.join(', ')
+}

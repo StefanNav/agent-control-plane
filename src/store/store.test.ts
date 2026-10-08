@@ -879,3 +879,56 @@ describe('risk tier (2b) — Review focus 2, 3', () => {
     expect(s.exceptions.some((e) => e.type === 'Review: your decision')).toBe(false)
   })
 })
+
+describe('committee decision (2c, 2d) — Review focus 2, 3', () => {
+  const at = (persona: 'drlee' | 'marcus') => {
+    const store = fresh()
+    store.getState().loadScenario('review-committee')
+    store.getState().setPersona(persona)
+    return store
+  }
+  const REASON = 'Clear limits and good hard-stop evidence. The conditions keep a pharmacist on every draft and keep dialysis patients out while renal dosing is unsettled.'
+  const proposed = (store: ReturnType<typeof fresh>) => store.getState().onboardings.find((r) => r.agentId === 'med-rec')!.review!.proposedConditions
+
+  test('Dr. Lee approves with C1–C3: Med Rec goes to Shadow from 15 Oct, the conditions sit on the v2 privileges', async () => {
+    const { onBoard, selectDivisionSummaries } = await import('../features/board/selectors')
+    const store = at('drlee')
+    expect(store.getState().recordDecision('med-rec', { kind: 'approveWithConditions', conditions: proposed(store), reason: REASON })).toEqual({ ok: true })
+    const s = store.getState()
+    expect(s.agents.find((a) => a.id === 'med-rec')).toMatchObject({ lifecycle: 'live', level: 'shadow', judgment: { status: 'shadow', label: 'Shadow' } })
+    expect(s.onboardings.find((r) => r.agentId === 'med-rec')!.review).toMatchObject({ shadowFrom: '2026-10-15T00:00:00', decision: { kind: 'approveWithConditions', by: 'drlee', present: '5 of 7 board members present' } })
+    const current = s.privileges.filter((p) => p.agentId === 'med-rec' && p.state !== 'closed')
+    expect(current.map((p) => [p.code, p.version, p.state, p.conditions])).toEqual([
+      ['PRV-0142', 2, 'active', ['C1', 'C2', 'C3']],
+      ['PRV-0143', 2, 'active', ['C1', 'C3']],
+    ])
+    expect(current[0]!.domain).toMatch(/excluding dialysis \(C3\)$/)
+    expect(s.grants.filter((g) => g.agentId === 'med-rec').map((g) => g.system)).toEqual(['Epic', 'Pharmacy worklist', 'Pyxis', 'Microsoft Teams'])
+    expect(s.hardStops.filter((h) => h.agentId === 'med-rec').map((h) => h.code)).toEqual(['HS-04', 'HS-07', 'HS-11'])
+    expect(s.exceptions.find((e) => e.type === 'Review: your decision')!.state).toBe('resolved')
+    expect(onBoard(s.agents.find((a) => a.id === 'med-rec')!)).toBe(true)
+    expect(selectDivisionSummaries(s).find((d) => d.id === 'medications')!.agentCount).toBe(20)
+  })
+
+  test('gates: conditions for “with conditions”, a reason always, the board only', () => {
+    const store = at('drlee')
+    const before = dataOf(store.getState())
+    expect(store.getState().recordDecision('med-rec', { kind: 'approveWithConditions', conditions: [], reason: REASON })).toEqual({ ok: false, reason: 'Add at least one condition' })
+    expect(store.getState().recordDecision('med-rec', { kind: 'approve', conditions: [], reason: '  ' })).toEqual({ ok: false, reason: 'A reason is required' })
+    expect(dataOf(store.getState())).toEqual(before)
+    expect(at('marcus').getState().recordDecision('med-rec', { kind: 'approve', conditions: [], reason: REASON }).ok).toBe(false)
+  })
+
+  test('deny archives the record under RET-07; re-review sends it back to Dana for the next meeting', () => {
+    const deny = at('drlee')
+    expect(deny.getState().recordDecision('med-rec', { kind: 'deny', conditions: [], reason: 'Not now.' })).toEqual({ ok: true })
+    expect(deny.getState().agents.find((a) => a.id === 'med-rec')).toMatchObject({ lifecycle: 'retired', retirement: { code: 'RET-07' } })
+    const again = at('drlee')
+    expect(again.getState().recordDecision('med-rec', { kind: 'reReview', conditions: [], reason: 'Show allergy-flag evidence first.' })).toEqual({ ok: true })
+    const review = again.getState().onboardings.find((r) => r.agentId === 'med-rec')!.review!
+    expect(review).toMatchObject({ meeting: '2026-11-11T15:00:00' })
+    expect(review.tier).toBeUndefined()
+    expect(review.packetAt).toBeUndefined()
+    expect(again.getState().exceptions.find((e) => e.type === 'Re-review: questions from the board')).toMatchObject({ ownerId: 'dana', reason: 'Show allergy-flag evidence first.' })
+  })
+})

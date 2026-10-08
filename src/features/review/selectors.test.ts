@@ -34,3 +34,19 @@ test('2b: what Tier 3 sets against the suggested Tier 2', () => {
   expect(view.button).toBe('Set Tier 3 and build the packet')
   expect(selectRiskTier(buildScenario('review-risk-tier'), 'med-rec', 1)!.button).toBe('Set Tier 1 and start shadow')
 })
+
+test('2c: the packet reads the record for the board', async () => {
+  const { selectPacket } = await import('./selectors')
+  const p = selectPacket(buildScenario('review-committee'), 'med-rec')!
+  expect(p.breadcrumb).toBe('Portfolio / AI review board / 14 Oct 2026 / Item 3 of 5')
+  expect(p.title).toBe('Med Rec Agent · review packet')
+  expect(p.status).toBe('Tier 3 · High')
+  expect(p.idLine).toBe('AGT-0123 v1.0 · REQ-0093')
+  expect(p.handsOff).toBe('Home list and fill history disagree · patient on dialysis · more than 15 home medications')
+  expect(p.never.map((n) => n.code)).toEqual(['HS-04', 'HS-07', 'HS-11', 'ORG-POL-02'])
+  expect(p.tier).toBe('Tier 3 · High. Suggested Tier 2. Dana raised it: “Med rec errors carry into every inpatient order. Pharmacist review catches most, not all.”')
+  expect(p.state).toBe('open')
+  expect(selectPacket(buildScenario('review-risk-tier'), 'med-rec')!.state).toBe('notBuilt')
+  expect(selectPacket(createSeed(), 'med-rec')!.state).toBe('decided')
+  expect(selectPacket(createSeed(), 'nope')).toBeNull()
+})

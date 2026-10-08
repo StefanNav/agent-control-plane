@@ -42,3 +42,81 @@
   line-height: 24px;
   color: var(--cs-ink);
 }
+
+.peopleRow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.peopleRow > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.peopleRow strong {
+  font-weight: 600;
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.condition {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.decisionCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 20px;
+  background: var(--cs-fill);
+  border-radius: 6px;
+}
+
+.decisionCard strong {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.log {
+  margin: 0;
+  padding: 0 20px 12px;
+  list-style: none;
+}
+
+.log li {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-ink);
+}
+
+.log li > span:last-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.log small {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
