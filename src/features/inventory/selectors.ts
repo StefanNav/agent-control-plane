@@ -1,10 +1,11 @@
+import { TIER_RULES } from '../../data/seed/catalogue'
 import type { DemoState, Level, Status } from '../../data/types'
 import { formatAgo, formatClock, formatDate } from '../../lib/clock'
 import { nextArchiveCode } from '../../store/mutations'
+import { firstMissingField, openStep, recordItems } from '../../store/onboardingRules'
 import { onBoard, personName, selectAgentRows, selectDivisionSummaries } from '../board/selectors'
 
 const LEVEL: Record<Level, string> = { shadow: 'Shadow', draft: 'Draft', supervised: 'Supervised', autonomous: 'Autonomous' }
-const TIER: Record<1 | 2 | 3, string> = { 1: 'Low', 2: 'Medium', 3: 'High' }
 
 export type InventoryTab = 'agents' | 'drafts' | 'intake' | 'retired'
 
@@ -49,18 +50,34 @@ export function selectInventory(s: DemoState) {
     .filter((a) => a.retirement)
     .sort((a, b) => b.retirement!.at.localeCompare(a.retirement!.at))
     .map((a) => ({ id: a.id, code: a.retirement!.code, name: a.name, division: divisionName(a.divisionId), at: formatDate(a.retirement!.at), by: personName(s, a.retirement!.by), reason: a.retirement!.reason }))
-  const drafts = s.onboardingDrafts.map((d) => ({
-    id: d.id,
-    name: d.agentName,
-    division: divisionName(d.divisionId),
-    request: d.requestCode,
-    step: `${d.step} · ${d.stepName}`,
-    stepSub: d.stepSub ?? '',
-    waitingOn: d.waitingOn,
-    progress: `${d.progress} of 13`,
-    lastChange: `${formatDate(d.lastChange)} ${formatClock(d.lastChange)}`,
-  }))
-  const intake = s.intakeRequests.map((r) => ({ id: r.id, code: r.code, title: r.title, division: divisionName(r.divisionId), requestedBy: personName(s, r.requestedBy), approved: formatDate(r.approvedAt) }))
+  // Drafts are onboarding records still in progress (1i); a record leaves when the sponsor signs.
+  const drafts = s.onboardings
+    .filter((r) => !r.frozenAt)
+    .flatMap((r) => {
+      const agent = byId.get(r.agentId)
+      const open = openStep(s, r.agentId)
+      const intake = s.intakeRequests.find((i) => i.id === r.intakeId)
+      if (!agent || !open) return []
+      const items = recordItems(s, r.agentId)
+      return [
+        {
+          id: r.agentId,
+          agentId: r.agentId,
+          name: agent.name,
+          division: divisionName(agent.divisionId),
+          request: intake?.code ?? '',
+          step: `${open.number} · ${open.name}`,
+          stepSub: open.missing.join(', '),
+          waitingOn: personName(s, open.waitingOn),
+          waitingOnId: open.waitingOn,
+          progress: `${items.done} of ${items.total}`,
+          lastChange: `${formatDate(r.savedAt)} ${formatClock(r.savedAt)}`,
+          field: open.step === 'job' ? firstMissingField(s, r.agentId) : null,
+          stepId: open.step,
+        },
+      ]
+    })
+  const intake = s.intakeRequests.filter((r) => !r.startedAt).map((r) => ({ id: r.id, code: r.code, title: r.title, division: divisionName(r.divisionId), requestedBy: personName(s, r.requestedBy), approved: formatDate(r.approvedAt) }))
   return {
     counts: { agents: s.agents.filter(onBoard).length, drafts: drafts.length, intake: intake.length, retired: retired.length },
     agents,
@@ -68,6 +85,15 @@ export function selectInventory(s: DemoState) {
     intake,
     retired,
   }
+}
+
+/** The board's decision on the record, e.g. "Approved with C1–C3 · 14 Oct" (8c). */
+function committeeLine(s: DemoState, agentId: string): string {
+  const decision = s.onboardings.find((r) => r.agentId === agentId)?.review?.decision
+  if (!decision) return '—'
+  const ids = decision.conditions.map((c) => c.id)
+  const label = { approve: 'Approved', approveWithConditions: `Approved with ${ids.length > 1 ? `${ids[0]}–${ids.at(-1)}` : ids[0]}`, reReview: 'Re-review', deny: 'Denied' }[decision.kind]
+  return `${label} · ${formatDate(decision.at)}`
 }
 
 /** "One record: governance and operations" (8c). */
@@ -86,8 +112,8 @@ export function selectRecord(s: DemoState, agentId: string) {
     lifecycle: a.lifecycle,
     governance: [
       ['Record', `${a.code} · v1.0`],
-      ['Risk tier', `Tier ${a.riskTier} · ${TIER[a.riskTier]}`],
-      ['Committee', a.id === 'med-rec' ? 'Approved with C1–C3 · 14 Oct' : '—'],
+      ['Risk tier', `Tier ${a.riskTier} · ${TIER_RULES[a.riskTier].label}`],
+      ['Committee', committeeLine(s, a.id)],
       ['Privileges', levels.length ? levels.join(' · ') : 'None active'],
       ['Next review', main?.reviewDate ? `${formatDate(main.reviewDate)} ${main.reviewDate.slice(0, 4)}` : '—'],
     ] as [string, string][],

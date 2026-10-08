@@ -111,7 +111,7 @@ test('retired agents leave every board count (Phase 4)', async () => {
   expect(summaries.find((d) => d.id === 'medications')!.agentCount).toBe(20)
   expect(selectAgentRows(s, 'medications')).toHaveLength(20)
   expect(s.agents.filter(onBoard)).toHaveLength(41)
-  expect(s.agents.filter((a) => !onBoard(a)).every((a) => a.lifecycle === 'retired')).toBe(true)
+  expect(s.agents.filter((a) => !onBoard(a)).every((a) => a.lifecycle === 'retired' || a.lifecycle === 'onboarding')).toBe(true)
 })
 
 test('a paused agent view reads like 6d: since when, why, and what happened to the work', () => {
@@ -170,4 +170,14 @@ test('Important #7: the division\'s incident badge follows the incident record',
   expect(revenue(retired.getState())).toMatchObject({ status: 'normal' })
   expect(revenue(retired.getState()).incidentId).toBeUndefined()
   expect(revenue(retired.getState()).resumeNeeds).toBeUndefined()
+})
+
+test('drafts being onboarded or in review are on no board (Phase 5)', async () => {
+  const { onBoard } = await import('./selectors')
+  const s = createSeed()
+  const draft = s.agents.find((a) => a.id === 'culture-followup')!
+  expect(draft.lifecycle).toBe('onboarding')
+  expect(onBoard(draft)).toBe(false)
+  expect(onBoard({ ...draft, lifecycle: 'inReview' })).toBe(false)
+  expect(selectDivisionSummaries(s).reduce((n, d) => n + d.agentCount, 0)).toBe(41)
 })

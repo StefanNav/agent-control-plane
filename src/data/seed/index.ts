@@ -7,7 +7,8 @@ import { divisions } from './divisions'
 import { changeEvents, logEvents } from './events'
 import { exceptions } from './exceptions'
 import { incidents } from './incidents'
-import { exportRecords, intakeRequests, onboardingDrafts, retiredAgents } from './inventory'
+import { exportRecords, retiredAgents } from './inventory'
+import { draftAgents, intakeRequests, onboardings } from './onboarding'
 import { people, roles } from './people'
 import { grants, hardStops, instructions } from './policies'
 import { privileges } from './privileges'
@@ -16,7 +17,7 @@ import { privileges } from './privileges'
  * Bump whenever seed data or the DemoState shape changes: saved state from an older
  * version is discarded and replaced by a fresh seed (Review focus 1).
  */
-export const SEED_VERSION = 5
+export const SEED_VERSION = 6
 
 const SEED: DemoState = {
   version: SEED_VERSION,
@@ -25,7 +26,7 @@ const SEED: DemoState = {
   people,
   roles,
   divisions,
-  agents: [...agents, ...retiredAgents],
+  agents: [...agents, ...retiredAgents, ...draftAgents],
   activities,
   privileges,
   hardStops,
@@ -38,7 +39,9 @@ const SEED: DemoState = {
   changeEvents,
   incidents,
   intakeRequests,
-  onboardingDrafts,
+  onboardings,
+  scorecards: [],
+  sampleCases: [],
   exports: exportRecords,
   stats24h: { closedEarlier: 5, medianCloseMin: 41, lastHour: { hardStops: 3, pauses: 1, pages: 0 }, actionsToday: 1912 },
   audit: [],

@@ -16,8 +16,11 @@ import { queueOf } from '../../store/mutations'
 /** Statuses that need a human. */
 export const ATTENTION: Status[] = ['crit', 'warn', 'review', 'stale']
 
-/** Retired agents are archived: they leave every board, division, tile and wall count. */
-export const onBoard = (a: Agent) => a.lifecycle !== 'retired'
+/**
+ * Retired agents are archived and drafts can't act yet: neither is on any board, division,
+ * tile or wall count. not retired, and not still being onboarded or in AIMS Review.
+ */
+export const onBoard = (a: Agent) => a.lifecycle !== 'retired' && a.lifecycle !== 'onboarding' && a.lifecycle !== 'inReview'
 
 /** Board order: critical, then anything needing a human, then fine, paused, shadow. Ties keep seed order. */
 export function severityRank(status: Status): number {

@@ -78,3 +78,6 @@ export const nextIncidentCode = (s: DemoState) => nextCode(s.incidents.map((i) =
 /** "RET-07" after RET-06. */
 export const nextArchiveCode = (s: DemoState) =>
   nextCode(s.agents.flatMap((a) => (a.retirement ? [a.retirement.code] : [])), 'RET-', 2)
+
+/** "PRV-0144" after PRV-0143: the next privilege record (ruling R11). */
+export const nextPrivilegeCode = (s: DemoState) => nextCode(s.privileges.map((p) => p.code), 'PRV-', 4)

@@ -37,6 +37,9 @@ export type Level = 'shadow' | 'draft' | 'supervised' | 'autonomous'
 /** Where an agent is in its life. */
 export type Lifecycle = 'onboarding' | 'inReview' | 'live' | 'paused' | 'disabled' | 'retired'
 
+/** Risk tier set in AIMS Review (2b): 1 Low, 2 Moderate, 3 High, 4 Critical. */
+export type Tier = 1 | 2 | 3 | 4
+
 /** The board's judgment of an agent against its job description. */
 export interface Judgment {
   status: Status
@@ -102,7 +105,7 @@ export interface Agent {
   ownerId: string
   techOwnerId: string
   sponsorId: string
-  riskTier: 1 | 2 | 3
+  riskTier: Tier
   lifecycle: Lifecycle
   /** Level of its main activity, as shown in board rows. */
   level: Level
@@ -275,6 +278,8 @@ export interface AgentException {
   incidentId?: string
   detail?: ExceptionDetail
   route: 'page' | 'inbox' | 'digest' | 'log'
+  /** Where the work lives, for hand-offs that aren't about the agent's behaviour (onboarding, signatures). */
+  link?: { label: string; to: string }
   outcome?: string
   outcomeSub?: string
   closedAt?: string
@@ -364,7 +369,17 @@ export interface Incident {
   closedAt?: string
 }
 
-/** An approved request for a new agent, not yet in onboarding (Inventory → Intake). */
+/** Where an agent may work: units, patients and hours (1a, 1b). */
+export interface Domain {
+  units: string[]
+  patients: string
+  hours: string
+}
+
+/**
+ * An approved request for a new agent (Inventory → Intake). Approval reserves the agent's id
+ * and code; starting onboarding creates that agent and carries the request's fields over (1a).
+ */
 export interface IntakeRequest {
   id: string
   code: string
@@ -372,22 +387,181 @@ export interface IntakeRequest {
   divisionId: string
   requestedBy: string
   approvedAt: string
+  agentId: string
+  agentCode: string
+  agentName: string
+  /** The clinical sponsor named on the request. */
+  sponsorId: string
+  purpose: string
+  domain: Domain
+  /** A condition the committee set when it approved the intake. */
+  condition?: { text: string; at: string }
+  /** Risk-tier findings that only the request knows (2b). */
+  patientImpact: string
+  volume: string
+  startedAt?: string
 }
 
-/** An agent being onboarded (Inventory → Drafts, 1i). Progress is out of 13. */
-export interface OnboardingDraft {
+/** The job description being written (1b). Targets are keyed by the template's criterion ids. */
+export interface JobDraft {
+  purpose: string
+  activities: { id: string; name: string; branch: string }[]
+  /** What the agent must never do, in plain words; the ORG-POL-02 line is implicit. */
+  never: string[]
+  actingFor: string | null
+  escalation: string[]
+  targets: Record<string, number | null>
+  domain: Domain
+}
+
+/** What a grant serves: one activity's id, every activity, or escalation messages. */
+export type GrantPurpose = string
+
+/** One ticked cell of the systems grid during onboarding (1c), with the activity it serves. */
+export interface OnboardingGrant {
+  system: string
+  verb: Verb
+  /** null until Marcus names the activity it serves (1c "choose activity"). */
+  activity: GrantPurpose | null
+  why: string
+  added: string
+}
+
+/** A test of a hard stop on past traffic (1d, 1g). */
+export interface LimitTest {
+  at: string
+  by: string
+  blocked: number
+  of: number
+  /** A named case set from the catalogue (the 1g re-test); absent = the last 30 days. */
+  casesId?: string
+  examples: { date: string; unit: string; text: string; trace: string }[]
+}
+
+/** A hard stop drawn from the never list, enforced at the gateway once approved (1d). */
+export interface Limit {
+  code: string
+  version: number
+  title: string
+  text: string
+  /** The never-list item it came from. */
+  from: string
+  /** A library rule id; absent = written in plain language. */
+  library?: string
+  ownerId: string
+  test?: LimitTest
+  /** The test before the latest one (1g "Last result"). */
+  previousTest?: LimitTest
+  /** Sent back by the sponsor for another look (1f, 1g). */
+  reopened?: { by: string; at: string }
+}
+
+/** The clinical sponsor's review of the final set (1e–1g). */
+export interface SponsorReview {
+  state: 'notSent' | 'waiting' | 'returned' | 'signed'
+  /** How many times the set has been sent. */
+  round: number
+  sentAt?: string
+  sentBy?: string
+  /** While returned: who it went back to, about what, and why. */
+  returned?: { to: string; about?: string; note: string; at: string; reply?: { text: string; at: string } }
+  signedAt?: string
+  /** Earlier rounds: changes asked for and resets, for the record (1h). */
+  earlier: { at: string; kind: 'returned' | 'reset'; to?: string; about?: string; note: string; casesId?: string }[]
+}
+
+/** A condition the committee puts on every privilege it applies to (2c, 2d). */
+export interface Condition {
   id: string
-  agentName: string
-  divisionId: string
-  requestCode: string
-  step: number
-  stepName: string
-  stepSub?: string
-  /** "Sam", "Review: final set" */
-  waitingOn: string
-  waitingOnId?: string
-  progress: number
-  lastChange: string
+  text: string
+  appliesTo: string
+  /** The activities it binds; empty = every activity. */
+  activityIds: string[]
+  checkedBy: string
+  /** Added to a privilege's domain, e.g. "excluding dialysis (C3)". */
+  domainNote?: string
+}
+
+/** The AI review board's decision (2c), logged with its reason (2d). */
+export interface ReviewDecision {
+  kind: 'approve' | 'approveWithConditions' | 'reReview' | 'deny'
+  conditions: Condition[]
+  reason: string
+  by: string
+  at: string
+  /** "5 of 7 board members present". */
+  present?: string
+}
+
+/** AIMS Review after onboarding: tier, packet, decision and shadow (E2). */
+export interface AimsReview {
+  suggestedTier: Tier
+  tier?: Tier
+  tierReason?: string
+  tierAt?: string
+  tierBy?: string
+  packetAt?: string
+  /** The board meeting that decides it. */
+  meeting: string
+  agendaItem?: { item: number; of: number }
+  proposedConditions: Condition[]
+  decision?: ReviewDecision
+  shadowFrom?: string
+  shadowDays: number
+}
+
+/** One agent's onboarding record, intake to "ready for review", then AIMS Review (E1, E2). */
+export interface Onboarding {
+  agentId: string
+  intakeId: string
+  startedAt: string
+  startedBy: string
+  /** Minor version: every saved edit adds one; the sponsor's signature makes it 10 (v1.0). */
+  version: number
+  savedAt: string
+  /** Set when the sponsor signs; the record no longer changes. */
+  frozenAt?: string
+  job: JobDraft
+  grants: OnboardingGrant[]
+  limits: Limit[]
+  sponsor: SponsorReview
+  review?: AimsReview
+  /** When each owner's part was finished, and by whom. */
+  done: Partial<Record<'intake' | 'job' | 'systems' | 'tools', { at: string; by: string }>>
+  /** Who did what; `decision` entries form the decision log (2d). */
+  history: { at: string; by: string; text: string; sub?: string; decision?: boolean }[]
+}
+
+/** Shadow results for one activity against the job's success criteria (3a). */
+export interface Scorecard {
+  activityId: string
+  from: string
+  to: string
+  cases: number
+  /** By criterion id: the result over the period and its daily values, oldest first. */
+  results: Record<string, { value: number; trend: number[] }>
+  causes: { label: string; count: number; example: string }[]
+  hardStopNote?: string
+  sampleCaseIds: string[]
+  extendedDays?: number
+}
+
+/** One shadow case compared line by line with the pharmacist's final list (3b). */
+export interface SampleCase {
+  id: string
+  encounter: string
+  agentId: string
+  activityId: string
+  unit: string
+  admittedAt: string
+  mrn: string
+  age: number
+  draftAt: string
+  finalBy: string
+  finalAt: string
+  traceId?: string
+  lines: { agent: string | null; pharmacist: string | null; result: 'agrees' | 'inaccurate' | 'omitted'; note?: string; source: string }[]
+  notes: { line: number; title: string; text: string }[]
 }
 
 /** A records export built for a survey or audit (7d). */
@@ -434,7 +608,9 @@ export interface DemoState {
   changeEvents: ChangeEvent[]
   incidents: Incident[]
   intakeRequests: IntakeRequest[]
-  onboardingDrafts: OnboardingDraft[]
+  onboardings: Onboarding[]
+  scorecards: Scorecard[]
+  sampleCases: SampleCase[]
   exports: ExportRecord[]
   /** Hospital-wide counts before today's activity (4f "Last 24 hours"); `actionsToday` for 7a. */
   stats24h: {

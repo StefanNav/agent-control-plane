@@ -1,4 +1,4 @@
-import type { Agent, Level, Status } from '../types'
+import type { Agent, Level, Status, Tier } from '../types'
 
 const LIVE = '2026-12-08T09:51:00'
 
@@ -42,7 +42,7 @@ const MEDICATIONS: Array<[id: string, code: string, row: Row]> = [
 ]
 
 /** Risk tiers from the inventory (8c) and retire dialog (6f). */
-const TIER: Record<string, 1 | 2 | 3> = {
+const TIER: Record<string, Tier> = {
   'med-rec': 3,
   'allergy-recon': 3,
   'renal-dosing': 3,
@@ -99,6 +99,9 @@ function medicationsAgent([id, code, row]: (typeof MEDICATIONS)[number]): Agent 
  */
 type Other = [id: string, code: string, name: string, version: string, day: number, asIs: number, edited: number, end: number, drift: number]
 
+/** Technical owners outside Medications: Lena in Discharge (2a), Omar elsewhere. */
+const TECH: Record<string, string> = { discharge: 'lena' }
+
 function otherAgent(divisionId: string, ownerId: string, sponsorId: string, level: Level, status: Status) {
   return ([id, code, name, version, day, asIs, edited, end, drift]: Other): Agent => ({
     id,
@@ -108,7 +111,7 @@ function otherAgent(divisionId: string, ownerId: string, sponsorId: string, leve
     platform: 'Epic',
     divisionId,
     ownerId,
-    techOwnerId: 'omar',
+    techOwnerId: TECH[divisionId] ?? 'omar',
     sponsorId,
     riskTier: 1,
     lifecycle: 'live',

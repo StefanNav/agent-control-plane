@@ -13,7 +13,7 @@ test('five divisions with the board’s agent counts (41 agents)', () => {
     'patient-messages',
   ])
   const counts = Object.fromEntries(
-    seed.divisions.map((d) => [d.id, seed.agents.filter((a) => a.lifecycle !== 'retired' && a.divisionId === d.id).length]),
+    seed.divisions.map((d) => [d.id, seed.agents.filter((a) => a.lifecycle !== 'retired' && a.lifecycle !== 'onboarding' && a.divisionId === d.id).length]),
   )
   expect(counts).toEqual({
     'revenue-cycle': 6,
@@ -22,8 +22,8 @@ test('five divisions with the board’s agent counts (41 agents)', () => {
     'imaging-referrals': 4,
     'patient-messages': 3,
   })
-  // 41 on the board, plus 6 retired agents kept on record (Phase 4).
-  expect(seed.agents).toHaveLength(47)
+  // 41 on the board, plus 6 retired agents kept on record (Phase 4) and 1 draft being onboarded (Phase 5).
+  expect(seed.agents).toHaveLength(48)
 })
 
 test('ids are unique within each collection', () => {
@@ -78,7 +78,7 @@ test('every reference resolves', () => {
 })
 
 test('Medications agents follow the division view, in order', () => {
-  const meds = seed.agents.filter((a) => a.lifecycle !== 'retired' && a.divisionId === 'medications')
+  const meds = seed.agents.filter((a) => a.lifecycle !== 'retired' && a.lifecycle !== 'onboarding' && a.divisionId === 'medications')
   const statuses = meds.map((a) => a.judgment.status)
   expect(statuses.slice(0, 5)).toEqual(['review', 'warn', 'warn', 'stale', 'normal'])
   expect(statuses.slice(-4)).toEqual(['paused', 'shadow', 'shadow', 'shadow'])
@@ -141,8 +141,8 @@ test('agent owners, sponsors and tech owners hold those roles in the agent’s d
 describe('E4 and E5 refinements', () => {
   const open = (e: (typeof seed.exceptions)[number]) => e.state !== 'resolved' && e.state !== 'dismissed'
 
-  test('seed version 5 (Phase 4: incidents, pause detail, inventory)', () => {
-    expect(SEED_VERSION).toBe(5)
+  test('seed version 6 (Phase 5: onboarding records)', () => {
+    expect(SEED_VERSION).toBe(6)
   })
 
   test('Medications has exactly four agents needing a human', () => {
@@ -235,9 +235,74 @@ describe('Phase 4: controls and audit data', () => {
     expect(byId('med-rec').queue).toEqual({ inProgress: 12, awaitingReview: 4, perHour: 6 })
   })
 
-  test('inventory records: 2 approved intakes, 3 onboarding drafts, 3 past exports', () => {
-    expect(s.intakeRequests).toHaveLength(2)
-    expect(s.onboardingDrafts.map((d) => d.agentName)).toEqual(['Discharge Summary Agent', 'Prior Auth Agent v2', 'Referral Triage Agent'])
+  test('inventory records: 2 approved intakes not started, 3 past exports', () => {
+    expect(s.intakeRequests.filter((r) => !r.startedAt).map((r) => r.code)).toEqual(['REQ-0106', 'REQ-0108'])
     expect(s.exports).toHaveLength(3)
+  })
+})
+
+describe('Phase 5: onboarding data (seed v6)', () => {
+  const s = createSeed()
+
+  test('seed version 6', () => {
+    expect(SEED_VERSION).toBe(6)
+  })
+
+  test('every intake reserves a unique agent id and code; only a started intake’s agent uses them', () => {
+    const codes = s.intakeRequests.map((r) => r.agentCode)
+    expect(new Set(codes).size).toBe(codes.length)
+    for (const intake of s.intakeRequests) {
+      const holder = s.agents.find((a) => a.code === intake.agentCode || a.id === intake.agentId)
+      if (intake.startedAt) expect(holder?.id, intake.code).toBe(intake.agentId)
+      else expect(holder, intake.code).toBeUndefined()
+    }
+    expect(s.intakeRequests.find((r) => r.code === 'REQ-0093')).toMatchObject({ agentId: 'med-rec', agentCode: 'AGT-0123', sponsorId: 'priya' })
+  })
+
+  test('Med Rec’s record is complete and frozen at v1.0; Culture Follow-up is a live draft', async () => {
+    const { recordItems, openStep } = await import('../../store/onboardingRules')
+    const medRec = s.onboardings.find((r) => r.agentId === 'med-rec')!
+    expect(medRec.version).toBe(10)
+    expect(medRec.frozenAt).toBe('2026-10-07T16:02:00')
+    expect(recordItems(s, 'med-rec')).toEqual({ done: 13, total: 13 })
+    expect(medRec.review?.decision).toMatchObject({ kind: 'approveWithConditions', at: '2026-10-14T16:20:00' })
+
+    expect(s.agents.find((a) => a.id === 'culture-followup')).toMatchObject({ lifecycle: 'onboarding', code: 'AGT-0184' })
+    expect(recordItems(s, 'culture-followup')).toEqual({ done: 4, total: 10 })
+    expect(openStep(s, 'culture-followup')).toEqual({
+      step: 'job',
+      number: 2,
+      name: 'Job description',
+      missing: ['Never list', 'Acting for', 'Escalation triggers', 'Success criteria'],
+      waitingOn: 'marcus',
+    })
+  })
+
+  test('privilege codes: next is PRV-0144; Med Rec holds PRV-0142 v3 (Draft) and PRV-0143 v2 (Shadow)', async () => {
+    const { nextPrivilegeCode } = await import('../../store/mutations')
+    expect(nextPrivilegeCode(s)).toBe('PRV-0144')
+    const medRec = s.privileges.filter((p) => p.agentId === 'med-rec' && p.state !== 'closed')
+    expect(medRec.map((p) => [p.code, p.version, p.level, p.conditions])).toEqual([
+      ['PRV-0142', 3, 'draft', ['C1', 'C2', 'C3']],
+      ['PRV-0143', 2, 'shadow', ['C1', 'C3']],
+    ])
+    expect(medRec[0]).toMatchObject({ grantedAt: '2026-11-06T09:52:00', evidence: '21-day shadow · 1,118 cases · 2 of 3 targets met' })
+    const others = s.privileges.filter((p) => p.agentId !== 'med-rec').map((p) => Number(p.code.slice(4)))
+    expect(Math.max(...others)).toBeLessThan(142)
+  })
+
+  test('no retirement falls inside the onboarding window', () => {
+    expect(s.agents.filter((a) => a.retirement && a.retirement.at > '2026-09-29T00:00:00')).toEqual([])
+  })
+
+  test('technical owners: Lena owns Discharge; Omar is clinical informatics', () => {
+    expect(s.agents.filter((a) => a.divisionId === 'discharge').every((a) => a.techOwnerId === 'lena')).toBe(true)
+    expect(s.roles).toContainEqual({ personId: 'lena', divisionId: 'discharge', role: 'techOwner' })
+    expect(s.roles).not.toContainEqual({ personId: 'omar', divisionId: 'discharge', role: 'techOwner' })
+    expect(s.people.find((p) => p.id === 'omar')!.title).toBe('Clinical informatics analyst')
+  })
+
+  test('3d: the overdue Duplicate Rx review copies Marcus and Dana', () => {
+    expect(s.exceptions.find((e) => e.id === 'exc-5497')!.copied).toEqual(['marcus', 'dana'])
   })
 })

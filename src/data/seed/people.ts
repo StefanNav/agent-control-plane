@@ -16,7 +16,8 @@ export const people: Person[] = [
   { id: 'grace', name: 'Grace', initial: 'G', title: 'Patient access manager' },
   { id: 'hana', name: 'Hana', initial: 'H', title: 'Director of Imaging' },
   { id: 'owen', name: 'Owen', initial: 'O', title: 'Director of Patient Access' },
-  { id: 'omar', name: 'Omar', initial: 'O', title: 'Integration analyst' },
+  { id: 'omar', name: 'Omar', initial: 'O', title: 'Clinical informatics analyst' },
+  { id: 'lena', name: 'Lena', initial: 'L', title: 'Integration analyst' },
 ]
 
 /** Roles are assigned per division; 'all' spans every division. */
@@ -36,9 +37,9 @@ export const roles: RoleAssignment[] = [
   { personId: 'hana', divisionId: 'imaging-referrals', role: 'sponsor' },
   { personId: 'grace', divisionId: 'patient-messages', role: 'owner' },
   { personId: 'owen', divisionId: 'patient-messages', role: 'sponsor' },
-  // Sam is technical owner in Medications only; Omar covers the other divisions.
+  // Sam is technical owner in Medications only, Lena in Discharge (2a); Omar covers the rest.
   { personId: 'omar', divisionId: 'revenue-cycle', role: 'techOwner' },
-  { personId: 'omar', divisionId: 'discharge', role: 'techOwner' },
+  { personId: 'lena', divisionId: 'discharge', role: 'techOwner' },
   { personId: 'omar', divisionId: 'imaging-referrals', role: 'techOwner' },
   { personId: 'omar', divisionId: 'patient-messages', role: 'techOwner' },
 ]

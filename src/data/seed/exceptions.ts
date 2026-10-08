@@ -165,7 +165,8 @@ export const exceptions: AgentException[] = [
     action: 'review the privilege',
     actionSub: '96 days of Draft evidence ready',
     ownerId: 'priya',
-    copied: ['marcus'],
+    // 3d: "Marcus and Dana are copied."
+    copied: ['marcus', 'dana'],
     deadline: '2026-12-15T17:00:00',
     state: 'new',
     route: 'inbox',

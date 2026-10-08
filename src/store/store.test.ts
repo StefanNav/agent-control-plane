@@ -3,6 +3,7 @@ import { DEMO_NOW } from '../lib/clock'
 import { createDemoStore, dataOf } from './index'
 import { runAction } from './runAction'
 import { createMemoryStorage, safeStorage } from './storage'
+import { onBoard } from '../features/board/selectors'
 
 const fresh = () => createDemoStore(createMemoryStorage())
 
@@ -290,7 +291,7 @@ describe('pauseAgent (6b)', () => {
   test('every agent in Medications: the 19 not already paused, one audit entry', () => {
     const store = fresh()
     expect(store.getState().pauseAgent('med-rec', { scope: 'division' })).toEqual({ ok: true })
-    const meds = store.getState().agents.filter((a) => a.divisionId === 'medications' && a.lifecycle !== 'retired')
+    const meds = store.getState().agents.filter((a) => a.divisionId === 'medications' && onBoard(a))
     expect(meds.every((a) => a.lifecycle === 'paused')).toBe(true)
     expect(meds.filter((a) => a.pause?.scope === 'division')).toHaveLength(19)
     expect(store.getState().audit.filter((a) => a.action === 'Paused')).toHaveLength(1)
