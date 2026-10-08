@@ -205,7 +205,6 @@ export type ExceptionState = 'new' | 'claimed' | 'overdue' | 'resolved' | 'dismi
 export interface ExceptionDetail {
   headline: string
   trendLabel?: string
-  trendStart?: string
   /** Daily values, oldest first. */
   trend?: number[]
   target?: number

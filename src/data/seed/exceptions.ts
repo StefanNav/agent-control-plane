@@ -114,7 +114,6 @@ export const exceptions: AgentException[] = [
     detail: {
       headline: 'Renal Dosing Agent edit rate is 19.2 %',
       trendLabel: 'Edit rate · 14 days',
-      trendStart: '24 Nov',
       trend: RENAL_EDIT_RATE,
       target: 10,
       breakdownLabel: 'What pharmacists changed · 32 edits since Monday',

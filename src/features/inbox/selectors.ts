@@ -93,7 +93,6 @@ export function selectExceptionDetail(s: DemoState, id: string) {
     ownerName: owner,
     sponsorName: sponsor,
     trendLabel: e.detail?.trendLabel,
-    trendStart: e.detail?.trendStart,
     trend: e.detail?.trend,
     target: e.detail?.target,
     breakdownLabel: e.detail?.breakdownLabel,
