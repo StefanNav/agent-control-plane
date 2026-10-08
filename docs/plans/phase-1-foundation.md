@@ -31,15 +31,15 @@ See `docs/BUILD_PLAN.md` → Global constraints. Most relevant here: no UI/icon 
 **Interfaces:**
 - Produces: `cx(...parts: Array<string | false | null | undefined>): string` in `src/lib/cx.ts`; scripts `dev`, `build`, `preview`, `typecheck`, `lint`, `test`, `check`, `e2e`, `designs`, `format`.
 
-- [ ] **Step 1: Branch**
+- [x] **Step 1: Branch**
 
 Run: `git checkout -b phase-1-foundation`
 
-- [ ] **Step 2: Scaffold outside the repo and copy in**
+- [x] **Step 2: Scaffold outside the repo and copy in**
 
 The repo root is not empty, so scaffold in the scratchpad: `pnpm create vite@latest acp-scaffold --template react-ts`. Copy `package.json`, `index.html`, `vite.config.ts`, `tsconfig*.json`, `src/main.tsx` into the repo root. Do **not** copy its `README.md`, `_gitignore`, `_oxlintrc.json`, `public/`, `src/App.*`, `src/assets/`, `src/index.css`. (create-vite 9.2 ships oxlint, no `eslint.config.js` and no `vite-env.d.ts`; `"types": ["vite/client"]` in `tsconfig.app.json` replaces the latter.) Set `"name": "agent-control-plane"`, `"private": true`, `"packageManager": "pnpm@11.5.1"` (CI's `pnpm/action-setup` reads it).
 
-- [ ] **Step 3: Install dependencies**
+- [x] **Step 3: Install dependencies**
 
 ```bash
 pnpm add react-router zustand @fontsource/ibm-plex-sans @fontsource/ibm-plex-mono
@@ -50,7 +50,7 @@ pnpm add -D vitest jsdom @testing-library/react @testing-library/user-event @tes
 ```
 Record the installed major versions of react, react-router, vite, vitest in the BUILD_PLAN decision log.
 
-- [ ] **Step 4: Configure**
+- [x] **Step 4: Configure**
   - `tsconfig.app.json`: `"strict": true`, `"noUncheckedIndexedAccess": true`, `"types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]` (keep `vite/client`: CSS Module and `?raw` imports need it).
   - `vite.config.ts`: `test: { environment: 'jsdom', globals: true, setupFiles: ['src/test/setup.ts'], include: ['src/**/*.test.{ts,tsx}'] }`.
   - `src/test/setup.ts`: `import '@testing-library/jest-dom/vitest'`.
@@ -62,7 +62,7 @@ Record the installed major versions of react, react-router, vite, vitest in the 
     - `"check": "pnpm typecheck && pnpm lint && pnpm test && vite build"`
     - `"e2e": "playwright test"`, `"designs": "serve designs -l 4599"`, `"format": "prettier --write ."`
 
-- [ ] **Step 5: Write the failing test** in `src/lib/cx.test.ts`
+- [x] **Step 5: Write the failing test** in `src/lib/cx.test.ts`
 
 ```ts
 import { cx } from './cx'
@@ -75,19 +75,19 @@ test('returns an empty string when nothing is truthy', () => {
 })
 ```
 
-- [ ] **Step 6: Run it to verify it fails**
+- [x] **Step 6: Run it to verify it fails**
 
 Run: `pnpm test src/lib/cx.test.ts`
 Expected: FAIL, cannot resolve `./cx`
 
-- [ ] **Step 7: Implement `cx` in `src/lib/cx.ts`**; make `src/main.tsx` render a bare `<div>Agent Control Plane</div>` for now
+- [x] **Step 7: Implement `cx` in `src/lib/cx.ts`**; make `src/main.tsx` render a bare `<div>Agent Control Plane</div>` for now
 
-- [ ] **Step 8: Run the full gate**
+- [x] **Step 8: Run the full gate**
 
 Run: `pnpm check`
 Expected: typecheck, lint, 2 tests and build all pass
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add -A
