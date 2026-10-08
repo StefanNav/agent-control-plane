@@ -1,0 +1,139 @@
+[Heading1] Epics and user stories
+Written to drive wireframes and user flows. v1 epics are detailed with acceptance criteria; v2 and v3 are lighter.
+[Heading2] Conventions
+Stories use one fictional hospital, Lakeshore Health, and named personas so flows stay concrete. Each epic lists the screens it implies and the PRD requirements it covers.
+Persona
+Role
+Division
+Dana
+AI program lead
+All
+Priya
+Clinical sponsor, Director of Pharmacy
+Medications
+Marcus
+Agent owner, pharmacy informatics manager
+Medications
+Sam
+Technical owner, integration analyst
+Medications
+Dr. Lee
+Chair, AI review board
+All (approves)
+Ana
+Pharmacist, frontline reviewer
+Works in Epic, not the console
+Jordan
+Risk manager
+Read-only, incidents
+Example agents: Med Rec Agent (Medications division, the main thread), Discharge Summary Agent (Discharge division), Prior Auth Agent (Revenue cycle division).
+Format: &quot;As [persona], I want [capability] so that [benefit],&quot; with acceptance criteria as Given/When/Then or a checklist. Story IDs (E1.1) are stable for referencing in flows.
+[Heading2] Now: v1 Safe at Draft
+[Heading3] E1. Onboard an agent
+Covers R1, R3. Screens: onboarding flow, job description editor, systems and verbs matrix, tools and hard stops.
+[ListParagraph] E1.1 As Dana, I want to start onboarding from an approved intake request so that the agent&apos;s history carries over.
+[ListParagraph] Given an approved intake request for an agent, when Dana chooses Start onboarding, then a draft agent record opens with intake details filled in.
+[ListParagraph] E1.2 As Marcus, I want to write the agent&apos;s job description in plain language so that everyone knows what it&apos;s for and what it must never do.
+[ListParagraph] ☐ Purpose, at least one activity, a &quot;never&quot; list, acting-for, escalation triggers, success criteria and a rollout domain are required
+[ListParagraph] ☐ Submit stays disabled until required fields are complete, with the missing ones listed
+[ListParagraph] ☐ Saving after go-live creates a new version and lists the privileges affected
+[ListParagraph] E1.3 As Marcus, I want to set which systems the agent may read, draft to, write to or submit to so that its reach is explicit.
+[ListParagraph] ☐ A systems by verbs grid, defaulting to read only
+[ListParagraph] ☐ &quot;Sign&quot; and &quot;order&quot; are shown locked, with the organization policy that locks them
+[ListParagraph] E1.4 As Sam, I want to grant tools and add hard stops, and see how each hard stop would have applied to recent cases, so that limits are enforced rather than hoped for. Priya approves the final set before it goes to review.
+[ListParagraph] ☐ Enforced policies and agent instructions are visually distinct and labelled
+[ListParagraph] ☐ Hard stops can be picked from a library or written in plain language
+[ListParagraph] ☐ Before activation, each new hard stop shows how many recent cases it would have blocked, with examples
+[ListParagraph] E1.5 Edge case: As Marcus, if I leave onboarding halfway, I want my draft saved so that I can return without losing work.
+[Heading3] E2. Name the humans and review
+Covers R2, R4. Screens: ownership step, risk tier step, committee review packet.
+[ListParagraph] E2.1 As Dana, I want onboarding to require a division, sponsor, owner and technical owner so that no agent goes live without named humans.
+[ListParagraph] ☐ Submit is blocked until all four are set
+[ListParagraph] ☐ If Marcus would directly supervise more than 7 agent activities, a warning suggests splitting the division
+[ListParagraph] E2.2 As Dana, I want a suggested risk tier with its reasons so that the committee starts from a consistent assessment.
+[ListParagraph] Given the job description and systems grid, when the tier is suggested, then it shows the factors behind it (patient impact, adverse branches, patient- or clinician-facing) and Dana can change it with a reason.
+[ListParagraph] E2.3 As Dr. Lee, I want a one-page review packet with the job description, systems grid, hard stops, success criteria and rollout domain so that I approve what I can see.
+[ListParagraph] ☐ Decisions: Approve, Approve with conditions, Re-review, Deny
+[ListParagraph] ☐ Conditions carry over onto the privilege record
+[ListParagraph] ☐ Every decision and its reason is logged
+[Heading3] E3. Validate in shadow and go live
+Covers R5, R6. Screens: shadow scorecard, privilege signing, my privileges.
+[ListParagraph] E3.1 As Marcus, I want a shadow scorecard against the success criteria we set so that go-live is decided on evidence.
+[ListParagraph] ☐ Shows agreement with pharmacist work, omissions and inaccuracies against each target
+[ListParagraph] ☐ Lets Marcus open sample cases with agent and pharmacist output side by side
+[ListParagraph] E3.2 As Priya, I want to sign the privilege that moves an activity from Shadow to Draft so that my accountability is explicit.
+[ListParagraph] ☐ The signing screen shows activity, domain, conditions, evidence summary and review date
+[ListParagraph] ☐ If criteria aren&apos;t met, signing requires a written reason that stays on the record
+[ListParagraph] E3.3 As Priya, I want to see every privilege I&apos;ve granted and when each is due for review so that nothing lapses unnoticed.
+[ListParagraph] Given a privilege&apos;s review date has passed, then Priya gets an exception and the privilege shows &quot;Review overdue&quot;.
+[Heading3] E4. Supervise from the Command Board
+Covers R7. Screens: hospital view, division view, agent view, with the action trace from E7 as the fourth level.
+[ListParagraph] E4.1 As Dana, I want a hospital view of every division so that I can see in seconds where attention is needed.
+[ListParagraph] ☐ Divisions that are fine are grey; only divisions needing a human use colour, an icon and words
+[ListParagraph] ☐ Each division shows open exceptions by severity and its owner
+[ListParagraph] E4.2 As Marcus, I want my division view to judge each agent against its job description so that I see problems, not raw numbers.
+[ListParagraph] ☐ Each row leads with a judgment (&quot;Within scope&quot;, &quot;3 blocked actions today&quot;, &quot;Monitor stale&quot;)
+[ListParagraph] ☐ Quality (acceptance without edit, edit rate, rejections) sits next to volume, with short trends
+[ListParagraph] E4.3 As Marcus, I want an agent view with its activities, privileges, metrics and recent actions so that I can investigate in one place.
+[ListParagraph] E4.4 As Marcus, I want to see when monitoring itself has gone quiet so that silence is never mistaken for health.
+[ListParagraph] Given no data has arrived for an agent within its expected interval, then the agent shows &quot;Monitor stale&quot; in a distinct style, not grey.
+[Heading3] E5. Work the exception inbox
+Covers R8. Screens: inbox, exception detail, digest.
+[ListParagraph] E5.1 As Marcus, I want one inbox of what needs me (reviews, questions, notices and incidents), each stating the action, deadline and reason, so that I can work through it.
+[ListParagraph] E5.2 As Marcus, I want critical exceptions to page me and minor ones to arrive in a daily digest, with purely informational events kept in the log so that interruptions match severity.
+[ListParagraph] E5.3 As Marcus, I want to dismiss an exception only with a reason so that noisy exception types can be tuned.
+[ListParagraph] E5.4 Edge case: As Priya, I want exceptions unanswered past their deadline escalated to me so that nothing sits.
+[Heading3] E6. Stop easy, resume deliberate
+Covers R9. Screens: control menu, impact preview, resume approval.
+[ListParagraph] E6.1 As Marcus, I want to pause an agent in one action, after seeing what happens to queued work, so that I can stop harm without causing chaos.
+[ListParagraph] ☐ Scope choices: this activity, this agent, every agent in the division
+[ListParagraph] ☐ The preview states the effect (&quot;12 drafts in queue will go to pharmacists&quot;)
+[ListParagraph] ☐ Pending work routes to humans; nothing is lost
+[ListParagraph] E6.2 As Sam or Marcus, I want to revoke a single tool, or return one activity to Shadow, so that I can fix one problem without stopping the agent. Moving back to Draft needs Priya&apos;s signature again.
+[ListParagraph] E6.3 As Priya and Marcus, we want resuming to need both of us with a reason so that restarts are deliberate.
+[ListParagraph] Given Marcus requests resume, when Priya hasn&apos;t approved, then the agent stays paused and both see the pending request.
+[ListParagraph] E6.4 As Dana, I want to disable an activity, an agent or a whole division, and retire an agent for good, so that access is revoked and records archived.
+[Heading3] E7. Replay and audit
+Covers R10. Screens: action list, action trace, export.
+[ListParagraph] E7.1 As Jordan, I want to replay any action with the agent version, who it acted for, policy decisions and the reviewer&apos;s outcome, and open an incident record (commander, timeline, root cause, corrections) linked to those actions, so that incidents can be reconstructed and closed properly.
+[ListParagraph] E7.2 As Dana, I want to export an agent&apos;s records for a surveyor so that certification prep doesn&apos;t mean manual collection.
+[Heading3] E8. Divisions, access and AIMS fit
+Covers R11, R12. Screens: division settings, role assignment, inventory row and links.
+[ListParagraph] E8.1 As Dana, I want to create divisions, assign roles per division, and set what happens when a privilege&apos;s review date lapses, so that access follows accountability.
+[ListParagraph] E8.2 As Dana, I want agents in the AIMS inventory linked to their operations view so that governance and operations stay one record.
+[ListParagraph] E8.3 As Jordan, I want read-only access to every division&apos;s board and audit trail so that I can investigate without changing anything.
+[Heading2] Next: v2 Earned autonomy
+E9 to E12 are the PRD&apos;s P1 fast follows and ship first in this phase. Stories are lighter; acceptance criteria get written when each epic is pulled in.
+[Heading3] E9. Detect changes and unregistered agents
+[ListParagraph] E9.1 As Marcus, I want to be told when an agent&apos;s version, SOP or hard stops change so that I can re-validate before it keeps working.
+[ListParagraph] E9.2 As Dana, I want agents seen at the gateway without a registry record flagged to me so that shadow adoption is caught.
+[Heading3] E10. Close the clinician feedback loop
+[ListParagraph] E10.1 As Ana, I want to flag a problem with an agent&apos;s draft from Epic in one action so that it reaches the owner without extra work.
+[ListParagraph] E10.2 As Ana, I want to see when my flag led to a fix (&quot;Fixed in v1.4&quot;) so that I know reporting is worth it.
+[Heading3] E11. Watch reviewer behaviour
+[ListParagraph] E11.1 As Marcus, I want division-level approval speed and edit rate shown next to independent quality checks so that I can tell &quot;the agent got better&quot; from &quot;reviewers stopped checking.&quot;
+[Heading3] E12. Produce RUAIH evidence
+[ListParagraph] E12.1 As Dana, I want each agent&apos;s records mapped to the Joint Commission standards and exportable so that survey prep takes hours, not weeks.
+[Heading3] E13. Set review levels by rule (Inspection Engine)
+[ListParagraph] E13.1 As Priya, I want each activity&apos;s review level (tightened, normal, reduced) to move by written rules so that review effort follows evidence.
+[ListParagraph] E13.2 As Marcus, I want a sampling queue for activities on reduced review so that I audit a sample instead of everything.
+[Heading3] E14. Promote an activity to Supervised
+[ListParagraph] E14.1 As Priya, I want to promote a favourable branch (for example prior auth approvals) to Supervised, with the evidence in front of me, so that the agent takes real work off the team.
+[ListParagraph] E14.2 As Dr. Lee, I want promotions above a risk tier to come to the committee so that big steps get a second look.
+[Heading3] E15. Step down automatically
+[ListParagraph] E15.1 As Priya, I want an activity to drop back one level automatically (Supervised to Draft, Draft to Shadow) on a version change, threshold breach or incident so that autonomy never outlives its evidence.
+[Heading2] Later: v3 Scale and simulate
+Directional. Each becomes a full epic when the v2 gate is met.
+[Heading3] E16. Replay simulator
+[ListParagraph] E16.1 As Priya, I want to see what the agent would have done on last month&apos;s real cases, next to what clinicians did, so that I promote on evidence I can inspect.
+[Heading3] E17. Divisions at scale
+[ListParagraph] E17.1 As Dana, I want guidance when a division outgrows its owner&apos;s span of control so that supervision never quietly thins out.
+[Heading3] E18. Operational periods and briefings
+[ListParagraph] E18.1 As Marcus, I want a start-of-shift briefing of what my agents did and what changed so that handovers don&apos;t lose context.
+[Heading3] E19. Unit-map lens
+[ListParagraph] E19.1 As a charge nurse, I want to see agent work waiting for sign-off by bed so that I can plan my unit&apos;s review load.
+[Heading3] E20. Agent-to-agent handoffs
+[ListParagraph] E20.1 As Marcus, I want to see when one agent&apos;s output feeds another, inside a structure the hospital defined, so that chained work stays traceable.
+[Heading3] E21. Vendor-hosted agents and cost
+[ListParagraph] E21.1 As Dana, I want vendor-hosted agents in the same board, even with less detail, so that nothing runs unseen.
+[ListParagraph] E21.2 As an AI executive, I want cost per agent and duplicate agents flagged so that we stop paying twice for the same work.

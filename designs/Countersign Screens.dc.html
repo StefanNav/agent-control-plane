@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&amp;family=IBM+Plex+Mono:wght@400;600&amp;display=swap">
+<style>html{background:oklch(0.93 0.003 90)}body{margin:0;background:oklch(0.93 0.003 90);-webkit-font-smoothing:antialiased}a{color:oklch(0.21 0.004 90)}a:hover{color:oklch(0.41 0.006 90)}button{font:inherit}@media (prefers-reduced-motion: reduce){*{transition:none !important}}</style>
+</helmet>
+<section id="t1" style="padding:48px; display:flex; flex-direction:column; gap:28px; font-family:'IBM Plex Sans',sans-serif; color:oklch(0.21 0.004 90); width:max-content; box-sizing:border-box; background:oklch(0.93 0.003 90);">
+<div style="display:flex; flex-direction:column; gap:6px; max-width:1100px;"><div style="display:flex; align-items:baseline; gap:10px;"><a href="#t1" style="font:600 11px ui-monospace,Menlo,monospace; padding:3px 7px; background:oklch(0.21 0.004 90); color:oklch(1 0 0); border-radius:3px; text-decoration:none;">1</a><span style="font-size:15px; font-weight:600;">Division view and privilege signing on Countersign</span></div>
+<p style="margin:0; font-size:14px; line-height:22px; color:oklch(0.41 0.006 90); text-wrap:pretty;">Same screens, data and selected row as the Foundation Directions stress test, now on the tokens used in Countersign Components and E1: boxed tables, radius 3/6, outlined chips and tags, uppercase mono labels, indigo selection and teal for review. The division view is a monitoring screen at 13 px; signing is a form at 16 px with 44 px fields. In the division view, hover, click and Tab are live.</p></div>
+<div style="display:flex; flex-wrap:nowrap; gap:48px; align-items:flex-start;">
+<div id="1a" style="flex:none; display:flex; flex-direction:column; gap:10px; scroll-margin-top:16px;"><div style="display:flex; align-items:baseline; gap:8px; font-size:13px; color:oklch(0.41 0.006 90);"><a href="#1a" style="font:600 11px ui-monospace,Menlo,monospace; padding:3px 7px; background:oklch(0.87 0.005 90); color:oklch(0.21 0.004 90); border-radius:3px; text-decoration:none;">1a</a><span style="font-size:15px; font-weight:600; color:oklch(0.21 0.004 90);">Medications division view</span><span>20 agents, 3 need a human · Discharge Meds Agent selected while Med Rec Agent needs review · 1440 × 900</span></div>
+<div style="border:1px solid oklch(0.87 0.005 90); border-radius:8px; overflow:hidden;"><dc-import name="DivisionView" theme="{{ div }}" hint-size="1440px,900px"></dc-import></div></div>
+<div id="1b" style="flex:none; display:flex; flex-direction:column; gap:10px; scroll-margin-top:16px;"><div style="display:flex; align-items:baseline; gap:8px; font-size:13px; color:oklch(0.41 0.006 90);"><a href="#1b" style="font:600 11px ui-monospace,Menlo,monospace; padding:3px 7px; background:oklch(0.87 0.005 90); color:oklch(0.21 0.004 90); border-radius:3px; text-decoration:none;">1b</a><span style="font-size:15px; font-weight:600; color:oklch(0.21 0.004 90);">Signing a privilege</span><span>Priya moves admission med rec from Shadow to Draft</span></div>
+<div style="border:1px solid oklch(0.87 0.005 90); border-radius:8px; overflow:hidden;"><dc-import name="SignPrivilege" theme="{{ sign }}" hint-size="1440px,1500px"></dc-import></div></div>
+</div>
+<p style="margin:0; font-size:13px; line-height:20px; color:oklch(0.41 0.006 90);">Try next: “add the compact autonomy ladder to the Privilege column” · “dark wall display of 1a” · “link 1e’s Approve and sign to this signing pattern”</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const RING = 'M6 1.75a4.25 4.25 0 1 1 0 8.5a4.25 4.25 0 1 1 0-8.5Z';
+const DIA = 'M6 0.9L11.1 6L6 11.1L0.9 6Z';
+const TRI = 'M6 1.2L11.4 10.6H0.6Z';
+const HALF = 'M6 1.75a4.25 4.25 0 0 0 0 8.5Z';
+const PAUSE = 'M2.5 2h2.6v8H2.5zM6.9 2h2.6v8H6.9z';
+const SH = { review: { p1: RING }, warn: { p2: DIA }, crit: { p2: TRI }, stale: { p1: RING, dash: '2.2 1.75' }, shadow: { p1: RING, p2: HALF }, paused: { p2: PAUSE }, normal: {} };
+const ATT = ['review', 'warn', 'crit', 'stale'];
+const L10 = [0.985, 0.965, 0.925, 0.87, 0.72, 0.6, 0.5, 0.41, 0.31, 0.21];
+const D = {
+  a: { h: 255, L: L10, C: [0.003, 0.005, 0.008, 0.01, 0.013, 0.015, 0.016, 0.016, 0.014, 0.012], acc: [0.45, 0.17, 275], tint: 'oklch(0.96 0.022 275)', rev: [0.45, 0.17, 275], surf: [1, 0, 0], revName: 'indigo' },
+  b: { h: 75, L: L10, C: [0.004, 0.006, 0.008, 0.01, 0.012, 0.013, 0.013, 0.012, 0.01, 0.008], acc: [0.47, 0.16, 292], tint: 'oklch(0.955 0.03 292)', rev: [0.47, 0.16, 292], surf: [0.997, 0.002, 75], revName: 'violet' },
+  c: { h: 90, L: L10, C: [0.002, 0.003, 0.004, 0.005, 0.006, 0.006, 0.006, 0.006, 0.005, 0.004], acc: [0.43, 0.15, 268], tint: 'oklch(0.96 0.02 268)', rev: [0.5, 0.085, 200], surf: [1, 0, 0], revName: 'teal' },
+  d: { h: 70, L: [0.975, 0.955, 0.92, 0.865, 0.72, 0.6, 0.5, 0.41, 0.31, 0.22], C: [0.008, 0.01, 0.012, 0.013, 0.014, 0.014, 0.013, 0.012, 0.01, 0.008], acc: [0.44, 0.13, 280], tint: 'oklch(0.95 0.025 280)', rev: [0.44, 0.13, 280], surf: [0.975, 0.008, 70], revName: 'indigo', raised: 'oklch(0.995 0.003 70)' }
+};
+D.e = { ...D.d };
+const WARN = [0.65, 0.14, 70], WARN_T = [0.5, 0.1, 62], CRIT = [0.52, 0.19, 27];
+const WARN_BAND = 'oklch(0.955 0.035 82)';
+const STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
+const ROLES = ['page', 'hover', 'line', 'rule', 'off', 'icon', 'meta', 'body', 'title', 'ink'];
+const CHIPS = [['normal', 'Within scope'], ['review', 'Review: 3 drafts'], ['warn', 'Edit rate rising'], ['crit', 'Wrong-patient draft · paused'], ['stale', 'No data for 3h'], ['shadow', 'Shadow'], ['paused', 'Paused by Marcus']];
+const ROWS = [
+  { id: 'medrec', name: 'Med Rec Agent', ver: 'v1.3.0', level: 'Draft', st: 'review', label: 'Review: 3 drafts', n: '412', acc: '91.2%', edit: '7.4%', upd: '09:42', t: [88, 89, 90, 89, 91, 90, 91], g: 'Priya', due: '05 Jan', rule: 'HS-04 v2' },
+  { id: 'dis', name: 'Discharge Meds Agent', ver: 'v2.0.1', level: 'Draft', st: 'normal', label: 'Within scope', n: '286', acc: '94.8%', edit: '4.9%', upd: '09:41', t: [93, 94, 94, 95, 94, 95, 95], g: 'Priya', due: '12 Feb', rule: 'JD v4' },
+  { id: 'renal', name: 'Renal Dosing Agent', ver: 'v1.1.4', level: 'Draft', st: 'warn', label: 'Edit rate rising', n: '198', acc: '78.3%', edit: '19.2%', upd: '09:42', t: [89, 88, 86, 85, 82, 80, 78], g: 'Priya', due: '19 Nov', hot: true, rule: 'MR-12 v1' },
+  { id: 'ivpo', name: 'IV-to-Oral Agent', ver: 'v0.8.2', level: 'Shadow', st: 'shadow', label: 'Shadow', n: '64', acc: '—', edit: '—', upd: '09:40', t: [82, 84, 85, 86, 86, 87, 88], g: 'Dr. Lee', due: '02 Dec', rule: 'SC-01 v1' },
+  { id: 'form', name: 'Formulary Swap Agent', ver: 'v1.4.0', level: 'Draft', st: 'stale', label: 'No data for 3h', n: '—', acc: '—', edit: '—', upd: '06:41', t: [92, 93, 92, 93, 92, 93, 92], g: 'Priya', due: '28 Jan', rule: 'MON-02 v1' }
+];
+const css = ([L, C, h]) => `oklch(${L} ${C} ${h})`;
+const N = (k, i) => css([D[k].L[i], D[k].C[i], D[k].h]);
+const NV = (k, i) => [D[k].L[i], D[k].C[i], D[k].h];
+function lin([L, C, h]) {
+  const a = C * Math.cos(h * Math.PI / 180), b = C * Math.sin(h * Math.PI / 180);
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3, m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3, s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s].map(v => Math.min(1, Math.max(0, v)));
+}
+const lum = c => { const [r, g, b] = lin(c); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+const cr = (fg, bg) => { const a = lum(fg), b = lum(bg); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
+
+function chip(k, st, label) {
+  const d = D[k], s = SH[st] || {};
+  const col = { review: css(d.rev), warn: css(WARN), crit: css(CRIT), stale: N(k, 6), shadow: N(k, 5), paused: N(k, 5) }[st] || 'none';
+  const tc = { review: css(d.rev), warn: css(WARN_T), crit: css(CRIT), stale: N(k, 8) }[st] || N(k, 6);
+  let bg = 'transparent', bd = '1px solid transparent';
+  if (k === 'b') {
+    bg = { review: d.tint, warn: 'oklch(0.96 0.04 85)', crit: 'oklch(0.955 0.025 27)', shadow: N(k, 1), paused: N(k, 1) }[st] || 'transparent';
+    if (st === 'stale') bd = '1px dashed ' + N(k, 4);
+  }
+  if (k === 'c') {
+    const c = { review: css(d.rev), warn: css(WARN), crit: css(CRIT), stale: N(k, 5), shadow: N(k, 3), paused: N(k, 3) }[st];
+    if (c) bd = `1px ${st === 'stale' ? 'dashed' : 'solid'} ${c}`;
+  }
+  return { label, p1: s.p1 || '', p2: s.p2 || '', dash: s.dash || 'none', col, tc, w: ATT.includes(st) ? 600 : 400, bg, bd };
+}
+
+const FONT = { a: ["'Geist',sans-serif", "'Geist Mono',monospace"], b: ["'Atkinson Hyperlegible Next',sans-serif", "'Atkinson Hyperlegible Mono',monospace"], c: ["'IBM Plex Sans',sans-serif", "'IBM Plex Mono',monospace"], d: ["'Red Hat Text',sans-serif", "'Red Hat Mono',monospace"], e: ["'Red Hat Text',sans-serif", "'Red Hat Mono',monospace"] };
+const SCALE = { a: [28, 36, 20, 28, 16, 24, 14, 20, 12, 16, 12, 16], b: [30, 38, 21, 28, 17, 26, 15, 22, 13, 18, 13, 18], c: [24, 32, 18, 24, 14, 20, 13, 18, 12, 16, 12, 16], d: [32, 40, 20, 28, 16, 24, 14, 20, 12, 16, 12, 16], e: [32, 40, 20, 28, 16, 24, 14, 20, 12, 16, 12, 16] };
+function theme(k) {
+  const d = D[k], n = i => N(k, i), [font, mono] = FONT[k], s = SCALE[k], line = '1px solid ' + n(2);
+  const tonal = k === 'd' || k === 'e', boxed = k === 'a' || k === 'b';
+  const raised = { a: 'oklch(1 0 0)', b: 'oklch(0.997 0.002 75)', c: 'oklch(1 0 0)', d: d.raised, e: d.raised }[k];
+  const acc = css(d.acc), st = {};
+  for (const [s0] of CHIPS) { const c = chip(k, s0, ''); st[s0] = { col: c.col, tc: c.tc, w: c.w, bg: c.bg, bd: (k === 'b' || k === 'c') ? c.bd : 'none', band: 'transparent' }; }
+  if (tonal) { st.review.band = d.tint; st.warn.band = WARN_BAND; st.stale.band = n(1); st.crit.band = 'oklch(0.955 0.025 27)'; }
+  const panelP = { a: 20, b: 24, c: 20, d: 24, e: 24 }[k];
+  return {
+    font, mono, num: k === 'b' ? mono : font, numS: k === 'b' ? 14 : s[6],
+    dS: s[0], dL: s[1], tS: s[2], tL: s[3], bS: s[4], bL: s[5], cS: s[6], cL: s[7], lS: s[8], lL: s[9], mS: s[10], mL: s[11],
+    lFont: k === 'c' ? mono : font, lCase: k === 'c' ? 'uppercase' : 'none', lLs: k === 'c' ? '0.05em' : 'normal',
+    page: k === 'c' ? 'oklch(1 0 0)' : n(0), raised, ink: n(9), strong: n(8), text2: n(7), meta: n(6), icon: n(5), off: n(4), hover: n(1),
+    acc, warnT: css(WARN_T), mark: (k === 'a' || k === 'c') ? acc : n(9),
+    sel: k === 'b' || k === 'e' ? { bg: k === 'b' ? n(1) : raised, bar: 'inset 3px 0 0 ' + n(9) } : k === 'd' ? { bg: raised, bar: 'inset 0 0 0 1px ' + n(3) } : { bg: d.tint, bar: 'inset 2px 0 0 ' + acc },
+    st,
+    chip: k === 'b' ? { h: 24, pad: '0 9px 0 7px', r: 999 } : k === 'c' ? { h: 22, pad: '0 7px 0 6px', r: 2 } : { h: 24, pad: '0', r: 0 },
+    tagBg: k === 'c' ? 'transparent' : tonal ? n(2) : n(1), tagBd: k === 'c' ? '1px solid ' + n(3) : 'none', tagC: n(7), tagR: k === 'c' ? 2 : 4,
+    tableBg: boxed ? raised : 'transparent', tableBd: boxed ? line : 'none', tableTop: k === 'c' ? '1px solid ' + n(9) : boxed ? line : 'none', tableR: k === 'a' ? 10 : k === 'b' ? 12 : 0,
+    headBg: boxed ? n(0) : 'transparent', headH: k === 'b' ? 30 : 28,
+    rowRule: k === 'd' ? 'none' : line, rowR: k === 'd' ? 6 : 0, rowGap: k === 'd' ? 2 : 0, rowPx: { a: 16, b: 16, c: 8, d: 12, e: 12 }[k],
+    detailBd: tonal ? 'none' : line, topbarBd: tonal ? 'none' : line,
+    btnH: k === 'b' ? 36 : 32, btnPx: (k === 'b' || tonal) ? 14 : 12, secBd: '1px solid ' + (k === 'c' ? n(4) : n(3)), ctrlR: { a: 6, b: 8, c: 3, d: 6, e: 6 }[k],
+    inH: { a: 44, b: 48, c: 40, d: 52, e: 52 }[k], inBg: raised, inBd: '1px solid ' + n(3),
+    panelBd: tonal ? 'none' : line, panelR: { a: 10, b: 12, c: 6, d: 12, e: 12 }[k], panelP, sigP: panelP + 8, sigBtnH: { a: 40, b: 44, c: 36, d: 44, e: 44 }[k],
+    noticeBg: { a: n(1), b: 'oklch(0.96 0.04 85)', c: 'transparent', d: WARN_BAND, e: WARN_BAND }[k], noticeBd: k === 'c' ? '1px solid ' + css(WARN) : 'none',
+    bandM: tonal ? -12 : 0, bandP: tonal ? 12 : 0
+  };
+}
+
+
+class Component extends DCLogic {
+  renderVals() {
+    const k = 'c', n = i => N(k, i), base = theme(k);
+    // Countersign as used in the component sheet and E1: boxed tables, radius 3/6, live hover and focus
+    const cs = { ...base, page: 'oklch(1 0 0)', raised: 'oklch(1 0 0)',
+      tableBg: 'oklch(1 0 0)', tableBd: '1px solid ' + n(2), tableTop: '1px solid ' + n(2), tableR: 6, headBg: n(0),
+      selHover: 'oklch(0.975 0.003 90)', focus: '2px solid ' + n(9), mark: css(D.c.acc) };
+    // Signing is a form: comfortable 16/24 body, 44 px fields
+    const sign = { ...cs, bS: 16, bL: 24, cS: 14, cL: 20, inH: 44, sigBtnH: 40, btnH: 36 };
+    return { div: cs, sign };
+  }
+}
+</script>
+</body>
+</html>

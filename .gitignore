@@ -1,0 +1,27 @@
+# Source docs stay local (not for the public repo)
+reference/source-docs/
+*.docx
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Dependencies and builds
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Test output
+playwright-report/
+test-results/
+blob-report/
+
+# Env and deploy
+.env
+.env.*
+!.env.example
+.vercel/
