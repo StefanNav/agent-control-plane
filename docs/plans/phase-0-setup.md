@@ -66,29 +66,29 @@ Written during the planning session on 2026-10-08. Verify it is current after Ta
 
 **Files:** none (remote setup)
 
-- [ ] **Step 1: Prove no source docs are in history**
+- [x] **Step 1: Prove no source docs are in history**
 
 Run: `git log --all --name-only --format= | grep -ci "docx\|source-docs"`
 Expected: `0`
 
-- [ ] **Step 2: Prove the company name is absent from tracked files**
+- [x] **Step 2: Prove the company name is absent from tracked files**
 
 Run: `git grep -il -f .git/info/forbidden-terms ; echo "exit=$?"` (the terms file is local-only, never committed; recreate it from the source docs if missing)
 Expected: no file names, `exit=1`
 
-- [ ] **Step 3: Create and push**
+- [x] **Step 3: Create and push**
 
 ```bash
 gh repo create StefanNav/agent-control-plane --public --source . --remote origin --push \
   --description "Signal Agent Control Plane: clickable prototype of an operations console for supervising AI agents in hospitals (Countersign design system, mock data)"
 ```
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Run: `gh repo view StefanNav/agent-control-plane --json visibility,url,defaultBranchRef --jq '.visibility + " " + .url + " " + .defaultBranchRef.name'`
 Expected: `PUBLIC https://github.com/StefanNav/agent-control-plane main`
 
-- [ ] **Step 5: Add topics**
+- [x] **Step 5: Add topics**
 
 ```bash
 gh repo edit StefanNav/agent-control-plane --add-topic prototype,react,typescript,vite,design-system,healthcare,ai-governance
@@ -99,7 +99,7 @@ gh repo edit StefanNav/agent-control-plane --add-topic prototype,react,typescrip
 **Files:**
 - Modify: `docs/BUILD_PLAN.md` (Phase overview table: Issue column)
 
-- [ ] **Step 1: Labels**
+- [x] **Step 1: Labels**
 
 ```bash
 for n in 0 1 2 3 4 5 6 7 8 9; do gh label create "phase-$n" --color BFD4F2 --force; done
@@ -107,7 +107,7 @@ gh label create checkpoint --color 2D46A1 --description "Phase checkpoint awaiti
 gh label create design-qa --color C47D04 --description "Visual difference from a design frame" --force
 ```
 
-- [ ] **Step 2: Milestones** (titles exactly as in the BUILD_PLAN phase overview)
+- [x] **Step 2: Milestones** (titles exactly as in the BUILD_PLAN phase overview)
 
 ```bash
 for t in "Phase 0: Setup" "Phase 1: Foundation" "Phase 2: Components and data" \
@@ -120,7 +120,7 @@ gh api repos/StefanNav/agent-control-plane/milestones --jq '.[].title'
 ```
 Expected: the 10 titles.
 
-- [ ] **Step 3: One issue per phase**
+- [x] **Step 3: One issue per phase**
 
 For each phase N, the issue body is that phase's section from `docs/BUILD_PLAN.md` (Goal, task checklist, Done when), followed by `Plan: docs/BUILD_PLAN.md · Spec: docs/specs/2026-10-08-agent-control-plane-prototype-design.md`. Extract each section with `awk` between `## Phase N:` and the next `## ` heading into a temp file in the scratchpad, then:
 
@@ -131,18 +131,18 @@ gh issue create --repo StefanNav/agent-control-plane \
 
 Verify: `gh issue list --repo StefanNav/agent-control-plane --limit 20 --json number,title --jq '.[] | "\(.number) \(.title)"'` lists 10 issues.
 
-- [ ] **Step 4: Record issue numbers** in the BUILD_PLAN Phase overview "Issue" column as links (`[#3](https://github.com/StefanNav/agent-control-plane/issues/3)`).
+- [x] **Step 4: Record issue numbers** in the BUILD_PLAN Phase overview "Issue" column as links (`[#3](https://github.com/StefanNav/agent-control-plane/issues/3)`).
 
-- [ ] **Step 5: Tick Phase 0 tasks 0.1–0.4 on the Phase 0 issue** (`gh issue edit` with the updated body) and in BUILD_PLAN.
+- [x] **Step 5: Tick Phase 0 tasks 0.1–0.4 on the Phase 0 issue** (`gh issue edit` with the updated body) and in BUILD_PLAN.
 
 ### Task 0.5: Checkpoint
 
-- [ ] **Step 1: Update `docs/BUILD_PLAN.md`**
+- [x] **Step 1: Update `docs/BUILD_PLAN.md`**
   - Phase overview: Phase 0 → ⏸ At checkpoint.
   - Start here: Repo URL; Next task = Phase 1, Task 1.1; Blockers = "Stefan reviewing Phase 0".
   - Phase 0 handoff notes: repo URL, issue numbers, anything surprising.
   - Session log row.
-- [ ] **Step 2: Commit and push**
+- [x] **Step 2: Commit and push**
 
 ```bash
 git add docs README.md CLAUDE.md

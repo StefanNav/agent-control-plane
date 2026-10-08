@@ -18,12 +18,12 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 0: Setup (not started) |
-| **Branch** | `main` (local only; no remote yet) |
-| **Last completed** | Design spec + this build plan written (2026-10-08) |
-| **Next task** | Phase 0, Task 0.1 in [`docs/plans/phase-0-setup.md`](plans/phase-0-setup.md) |
-| **Blockers** | Waiting for Stefan to review this plan and choose an execution method |
-| **Repo** | not created yet (Phase 0 creates `StefanNav/agent-control-plane`) |
+| **Current phase** | Phase 0: Setup (⏸ at checkpoint, awaiting Stefan's review) |
+| **Branch** | `main` (pushed to `origin`) |
+| **Last completed** | Phase 0 Tasks 0.1–0.4: repo public, 10 milestones, labels, 10 phase issues (2026-10-08) |
+| **Next task** | After Stefan approves Phase 0: Phase 1, Task 1.1 in [`docs/plans/phase-1-foundation.md`](plans/phase-1-foundation.md) (creates branch `phase-1-foundation`) |
+| **Blockers** | Stefan reviewing Phase 0 (repo, issues, plan on GitHub) |
+| **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | none yet (first deploy in Phase 1) |
 | **Latest preview** | none |
 
@@ -88,18 +88,18 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 
 | # | Phase | Status | Branch | Issue | PR | Plan file |
 |---|---|---|---|---|---|---|
-| 0 | Setup | ☐ Not started | `main` | – | – | [phase-0-setup.md](plans/phase-0-setup.md) |
-| 1 | Foundation | ☐ Not started | `phase-1-foundation` | – | – | [phase-1-foundation.md](plans/phase-1-foundation.md) |
-| 2 | Components and data | ☐ Not started | `phase-2-components-data` | – | – | to write (Task 2.0) |
-| 3 | Command Board and inbox | ☐ Not started | `phase-3-board-inbox` | – | – | to write (Task 3.0) |
-| 4 | Controls and audit | ☐ Not started | `phase-4-controls-audit` | – | – | to write (Task 4.0) |
-| 5 | Onboarding and go-live | ☐ Not started | `phase-5-onboarding` | – | – | to write (Task 5.0) |
-| 6 | Governance and fast follows | ☐ Not started | `phase-6-governance` | – | – | to write (Task 6.0) |
-| 7 | Earned autonomy | ☐ Not started | `phase-7-autonomy` | – | – | to write (Task 7.0) |
-| 8 | Stories and portfolio layer | ☐ Not started | `phase-8-stories` | – | – | to write (Task 8.0) |
-| 9 | Polish and launch | ☐ Not started | `phase-9-polish` | – | – | to write (Task 9.0) |
+| 0 | Setup | ⏸ At checkpoint | `main` | [#1](https://github.com/StefanNav/agent-control-plane/issues/1) | no PR (docs on `main`) | [phase-0-setup.md](plans/phase-0-setup.md) |
+| 1 | Foundation | ☐ Not started | `phase-1-foundation` | [#2](https://github.com/StefanNav/agent-control-plane/issues/2) | – | [phase-1-foundation.md](plans/phase-1-foundation.md) |
+| 2 | Components and data | ☐ Not started | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | – | to write (Task 2.0) |
+| 3 | Command Board and inbox | ☐ Not started | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | – | to write (Task 3.0) |
+| 4 | Controls and audit | ☐ Not started | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | – | to write (Task 4.0) |
+| 5 | Onboarding and go-live | ☐ Not started | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | – | to write (Task 5.0) |
+| 6 | Governance and fast follows | ☐ Not started | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | – | to write (Task 6.0) |
+| 7 | Earned autonomy | ☐ Not started | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | – | to write (Task 7.0) |
+| 8 | Stories and portfolio layer | ☐ Not started | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | – | to write (Task 8.0) |
+| 9 | Polish and launch | ☐ Not started | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | – | to write (Task 9.0) |
 
-Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
+GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
 ---
 
@@ -108,14 +108,21 @@ Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting
 **Goal:** The project exists on GitHub with this plan, the conventions file and tracking in place.
 **Detailed steps:** [`docs/plans/phase-0-setup.md`](plans/phase-0-setup.md)
 
-- [ ] 0.1 Move the design handoff README to `docs/design-handoff.md`; write a short project `README.md`; update references
+- [x] 0.1 Move the design handoff README to `docs/design-handoff.md`; write a short project `README.md`; update references
 - [x] 0.2 Write `CLAUDE.md` (done during planning, 2026-10-08)
-- [ ] 0.3 Create the public repo `StefanNav/agent-control-plane` and push `main`
-- [ ] 0.4 Create labels, the 10 phase milestones and the 10 phase issues
+- [x] 0.3 Create the public repo `StefanNav/agent-control-plane` and push `main`
+- [x] 0.4 Create labels, the 10 phase milestones and the 10 phase issues
 - [ ] 0.5 Checkpoint: Stefan reviews the repo, issues and plan on GitHub
 
 **Done when:** repo is public, `main` has spec + plan + `CLAUDE.md`, 10 milestones and 10 issues exist, no `.docx` in history.
-**Handoff notes:** _written at the end of the phase._
+**Handoff notes (2026-10-08):**
+- Repo: https://github.com/StefanNav/agent-control-plane (public, default branch `main`, topics set). Phase 0 worked directly on `main`; from Phase 1 every phase uses a branch and a PR.
+- Tracking: milestones 1–10 and issues #1–#10 are Phases 0–9 in order (**issue number = phase + 1**). Labels: `phase-0`…`phase-9`, `checkpoint`, `design-qa`. When ticking a phase task, tick it here and in that phase's issue body.
+- The design handoff now lives at `docs/design-handoff.md`; the root `README.md` is an interim project README (Phase 9 replaces it).
+- Brand is **Signal** (spec D7). The real company name is listed only in local `.git/info/forbidden-terms`; run `git grep -il -f .git/info/forbidden-terms` before every push (must print nothing). A fresh clone won't have that file: ask Stefan.
+- History was rewritten once, before the first push, to remove a leaked mention. Nothing after the first push has been rewritten; never rewrite pushed history.
+- Gotcha: the Bash tool's shell is zsh, where arrays start at 1. Wrap scripts that use arrays in `bash -c '…'`.
+- Vercel isn't linked yet; that's Phase 1 Task 1.10.
 
 ## Phase 1: Foundation
 
@@ -360,3 +367,4 @@ One row per working session. Newest last.
 | Date | Phase | What happened | Next |
 |---|---|---|---|
 | 2026-10-08 | – | Brainstormed and approved design; wrote spec, this plan, Phase 0 and 1 step files, and `CLAUDE.md`; local git repo with design handoff | Stefan reviews plan → Phase 0 |
+| 2026-10-08 | 0 | Moved handoff to `docs/`, interim README, adopted Signal brand, created public repo, milestones, labels, issues #1–#10 | Stefan reviews Phase 0 → Phase 1 |
