@@ -145,3 +145,22 @@ describe('claiming an exception', () => {
     expect(store.getState().exceptions.find((e) => e.id === 'exc-5530')!.ownerId).toBe('dana')
   })
 })
+
+test('snoozeException hides the item until the time and logs it; read-only is refused', () => {
+  const store = fresh()
+  expect(store.getState().snoozeException('exc-5512', '2026-12-08T10:52:00')).toEqual({ ok: true })
+  const exc = store.getState().exceptions.find((e) => e.id === 'exc-5512')!
+  expect(exc.snoozedUntil).toBe('2026-12-08T10:52:00')
+  expect(store.getState().audit.at(-1)).toMatchObject({ who: 'marcus', action: 'Snoozed', target: 'EXC-5512', reason: 'until 10:52' })
+
+  const readOnly = fresh()
+  readOnly.getState().setPersona('jordan')
+  expect(readOnly.getState().snoozeException('exc-5512', '2026-12-08T10:52:00')).toMatchObject({ ok: false })
+  expect(readOnly.getState().exceptions.find((e) => e.id === 'exc-5512')!.snoozedUntil).toBeUndefined()
+})
+
+test('snoozeException refuses resolved items and unknown ids', () => {
+  const store = fresh()
+  expect(store.getState().snoozeException('exc-5521', '2026-12-08T10:52:00')).toEqual({ ok: false, reason: 'Already resolved' })
+  expect(store.getState().snoozeException('nope', '2026-12-08T10:52:00')).toEqual({ ok: false, reason: 'Not found' })
+})

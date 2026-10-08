@@ -245,16 +245,16 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
   - The escalation line "Not handled by 15:00 → goes to Priya".
 - **Load the `dataviz` skill before writing `TrendChart`.**
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - Store: `snoozeException` hides the item until the time and writes an audit entry. As Jordan it returns `ok: false`.
   - e2e:
     - `/operations/inbox` as Marcus shows "Needs me · 4" with Monitor stale first.
     - Selecting Edit rate rising shows "EXC-5512 · MR-12 v1 · raised 07:15" and the breakdown "Dose lowered for eGFR 30 to 44 · 23".
     - Snooze → 1 hour removes it, and the tab reads "Needs me · 3".
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against E5 5a.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(inbox): list, detail, snooze"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against E5 5a.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(inbox): list, detail, snooze"`.
 
 ### Task 3.8: Dismiss with a reason (5b)
 

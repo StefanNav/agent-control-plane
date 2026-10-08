@@ -3,6 +3,7 @@ import { createJSONStorage, persist, type StateStorage } from 'zustand/middlewar
 import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type DemoState, type PersonaId } from '../data/types'
+import { formatClock } from '../lib/clock'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
 
@@ -16,6 +17,8 @@ export interface DemoActions {
   loadScenario: (id: ScenarioId) => void
   /** Take ownership of an exception (state → claimed, stamped with the demo clock). */
   claimException: (id: string) => ActionResult
+  /** Hide an exception from the inbox until `until`; the deadline still stands. */
+  snoozeException: (id: string, until: string) => ActionResult
 }
 
 export type DemoStore = DemoState & DemoActions
@@ -52,15 +55,21 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
           if (result.ok) set(state)
           return result
         }
+        /** An open exception, or the reason it can't be acted on. */
+        const openException = (id: string) => {
+          const exception = get().exceptions.find((e) => e.id === id)
+          if (!exception) return { error: { ok: false, reason: 'Not found' } as ActionResult }
+          if (exception.state === 'resolved' || exception.state === 'dismissed') return { error: { ok: false, reason: 'Already resolved' } as ActionResult }
+          return { exception }
+        }
         return {
           ...createSeed(),
           setPersona: (id) => set({ personaId: id }),
           reset: () => set(createSeed()),
           loadScenario: (id) => set({ ...buildScenario(id), personaId: get().personaId }),
           claimException: (id) => {
-            const exception = get().exceptions.find((e) => e.id === id)
-            if (!exception) return { ok: false, reason: 'Not found' }
-            if (exception.state === 'resolved' || exception.state === 'dismissed') return { ok: false, reason: 'Already resolved' }
+            const { exception, error } = openException(id)
+            if (!exception) return error
             if (exception.claimedAt) return { ok: false, reason: 'Already claimed' }
             return act({
               action: 'resolveException',
@@ -71,6 +80,18 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                 target.claimedAt = draft.now
                 target.ownerId = draft.personaId
                 if (target.state === 'new') target.state = 'claimed'
+              },
+            })
+          },
+          snoozeException: (id, until) => {
+            const { exception, error } = openException(id)
+            if (!exception) return error
+            return act({
+              action: 'resolveException',
+              ctx: { agentId: exception.agentId },
+              audit: { action: 'Snoozed', target: exception.code, reason: `until ${formatClock(until)}` },
+              mutate: (draft) => {
+                draft.exceptions.find((e) => e.id === id)!.snoozedUntil = until
               },
             })
           },

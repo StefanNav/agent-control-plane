@@ -39,6 +39,22 @@ export function formatDate(iso: string): string {
   return `${pad(d.getDate())} ${MONTHS[d.getMonth()]}`
 }
 
+/** Back to a local, timezone-free ISO string. */
+const toIso = (d: Date) =>
+  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+
+/** iso + n minutes. */
+export function addMinutes(iso: string, minutes: number): string {
+  return toIso(new Date(at(iso).getTime() + minutes * 60000))
+}
+
+/** The next day at 'hh:mm', e.g. tomorrowAt(now, '07:00') for "until tomorrow 07:00". */
+export function tomorrowAt(iso: string, hhmm: string): string {
+  const d = at(iso)
+  const [h = 0, m = 0] = hhmm.split(':').map(Number)
+  return toIso(new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, h, m))
+}
+
 /** b − a in whole minutes. */
 export function minutesBetween(a: string, b: string): number {
   return Math.round((at(b).getTime() - at(a).getTime()) / 60000)

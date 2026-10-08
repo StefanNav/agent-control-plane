@@ -1,0 +1,80 @@
+.figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 640px;
+  max-width: 100%;
+}
+
+.caption {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cs-meta);
+}
+
+.plot {
+  position: relative;
+}
+
+.svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+  cursor: crosshair;
+}
+
+.svg:focus-visible {
+  outline: 2px solid var(--cs-focus);
+  outline-offset: 4px;
+}
+
+/* The readout follows the crosshair; text stays in text tokens. */
+.tip {
+  position: absolute;
+  top: -8px;
+  transform: translate(-50%, -100%);
+  display: flex;
+  gap: 8px;
+  padding: 4px 8px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 3px;
+  box-shadow: 0 2px 6px oklch(0 0 0 / 0.08);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tipDay {
+  color: var(--cs-meta);
+}
+
+.tipValue {
+  font-family: var(--cs-font-mono);
+  color: var(--cs-ink);
+}
+
+.axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

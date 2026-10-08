@@ -1,5 +1,5 @@
 import { createSeed } from '../../data/seed'
-import { selectExceptionDetail, selectInbox } from './selectors'
+import { selectExceptionDetail, selectInbox, selectInboxHeader } from './selectors'
 
 const s = createSeed()
 
@@ -38,4 +38,20 @@ test('the detail of the edit-rate item reads like 5a', () => {
   expect(d.escalationLine).toBe('Not handled by 15:00 → goes to Priya')
   expect(d.breakdown).toHaveLength(3)
   expect(selectExceptionDetail(s, 'nope')).toBeNull()
+})
+
+test('due within two hours (or late) is emphasised; later deadlines are not', () => {
+  const { needsMe } = selectInbox(createSeed(), 'marcus')
+  expect(needsMe.map((i) => [i.due, i.dueSoon])).toEqual([
+    ['Due 10:46', true],
+    ['Due 11:00', true],
+    ['Due 15:00', false],
+    ['Due tomorrow', false],
+  ])
+})
+
+test('the inbox header names the persona and their division', () => {
+  const s = createSeed()
+  expect(selectInboxHeader(s, 'marcus')).toEqual({ status: 'Marcus · Medications', divisionId: 'medications' })
+  expect(selectInboxHeader(s, 'dana')).toEqual({ status: 'Dana · All divisions', divisionId: undefined })
 })

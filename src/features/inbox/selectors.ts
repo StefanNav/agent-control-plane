@@ -1,5 +1,5 @@
 import type { AgentException, DemoState, LogEvent, PersonaId, Status } from '../../data/types'
-import { formatClock, formatDue, formatAgo } from '../../lib/clock'
+import { formatClock, formatDue, formatAgo, minutesBetween } from '../../lib/clock'
 import { personName } from '../board/selectors'
 
 export const isOpen = (e: AgentException) => e.state !== 'resolved' && e.state !== 'dismissed'
@@ -15,6 +15,8 @@ export interface InboxItemView {
   /** "Formulary Swap Agent · MON-02 v1", "Sam · Med Rec Agent", "Formulary Swap Agent · escalated" */
   source: string
   due: string
+  /** Due within two hours, or late: the due line is set in ink and bold (5a). */
+  dueSoon: boolean
   late: boolean
   reason: string
   action: string
@@ -43,6 +45,7 @@ function itemView(s: DemoState, e: AgentException, viewer: PersonaId): InboxItem
         ? `${personName(s, e.from)} · ${agent?.name}`
         : `${agent?.name}${e.ruleTag ? ` · ${e.ruleTag}` : ''}`,
     due: formatDue(e.deadline, s.now),
+    dueSoon: minutesBetween(s.now, e.deadline) <= 120,
     late: isOverdue(e, s.now),
     reason,
     action: escalated ? 'Action: assign it, or answer it yourself' : `Action: ${e.action}`,
@@ -104,3 +107,11 @@ export function selectExceptionDetail(s: DemoState, id: string) {
 }
 
 export type ExceptionDetailView = NonNullable<ReturnType<typeof selectExceptionDetail>>
+
+/** "Marcus · Medications": who is viewing, and the division they work in (or all of them). */
+export function selectInboxHeader(s: DemoState, personaId: PersonaId): { status: string; divisionId: string | undefined } {
+  const roles = s.roles.filter((r) => r.personId === personaId)
+  const divisionId = roles.some((r) => r.divisionId === 'all') ? undefined : roles[0]?.divisionId
+  const division = s.divisions.find((d) => d.id === divisionId)
+  return { status: `${personName(s, personaId)} · ${division?.name ?? 'All divisions'}`, divisionId }
+}

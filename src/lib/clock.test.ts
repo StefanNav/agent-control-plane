@@ -1,4 +1,6 @@
 import {
+  addMinutes,
+  tomorrowAt,
   DEMO_NOW,
   formatAge,
   formatAgo,
@@ -71,4 +73,11 @@ test.each([
 
 test('formatDue reports lateness in hours and minutes', () => {
   expect(formatDue('2026-12-08T10:46:00', '2026-12-08T12:00:00')).toBe('1 h 14 min late')
+})
+
+test('addMinutes and tomorrowAt keep local, timezone-free ISO strings', () => {
+  expect(addMinutes('2026-12-08T09:52:00', 60)).toBe('2026-12-08T10:52:00')
+  expect(addMinutes('2026-12-31T23:30:00', 45)).toBe('2027-01-01T00:15:00')
+  expect(tomorrowAt('2026-12-08T09:52:00', '07:00')).toBe('2026-12-09T07:00:00')
+  expect(tomorrowAt('2026-12-31T23:59:00', '07:00')).toBe('2027-01-01T07:00:00')
 })
