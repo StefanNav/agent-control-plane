@@ -568,3 +568,105 @@ export function applyFlagLine(s: DemoState, caseId: string, line: number, by: st
   })
   return s
 }
+
+/** The latest version of a privilege by its code ("prv-0142"). */
+export const latestByCode = (s: DemoState, code: string) => s.privileges.filter((p) => p.code.toLowerCase() === code.toLowerCase()).sort((a, b) => b.version - a.version)[0]
+
+/** What signing this privilege would do now: sign a proposal, renew a due one, or nothing. */
+export function signMode(s: DemoState, code: string): 'sign' | 'renew' | null {
+  const p = latestByCode(s, code)
+  if (!p) return null
+  if (p.state === 'awaiting' && p.proposedLevel) return 'sign'
+  if (p.state === 'due' || (p.state === 'active' && p.reviewDate && p.reviewDate < s.now && p.level !== 'shadow')) return 'renew'
+  return null
+}
+
+const LEVELS: Array<'shadow' | 'draft' | 'supervised' | 'autonomous'> = ['shadow', 'draft', 'supervised', 'autonomous']
+
+/** The review date for a privilege signed at `at`: the tier's cycle counted from the day after (R12). */
+export const reviewDateFrom = (at: string, tier: Tier) => `${addDays(at, TIER_RULES[tier].reviewDays + 1).slice(0, 10)}T00:00:00`
+
+/** The sponsor signs (3c): the proposal goes live at its level; or a due privilege is renewed (3d). */
+export function applySignPrivilege(s: DemoState, code: string, input: { reason?: string }, by: string, at: string): DemoState {
+  const latest = latestByCode(s, code)
+  const mode = signMode(s, code)
+  const agent = s.agents.find((a) => a.id === latest?.agentId)
+  const activity = s.activities.find((a) => a.id === latest?.activityId)
+  if (!latest || !mode || !agent || !activity) return s
+  const reviewDate = reviewDateFrom(at, agent.riskTier)
+  if (mode === 'sign') {
+    const level = latest.proposedLevel!
+    for (const p of s.privileges) if (p.code === latest.code && p.version < latest.version && p.state !== 'closed') p.state = 'closed'
+    const card = s.scorecards.find((c) => c.activityId === activity.id)
+    const criteria = criteriaStatus(s, activity.id)
+    const days = card ? Math.round((Date.parse(card.to) - Date.parse(card.from)) / 86400000) + 1 : 0
+    Object.assign(latest, {
+      state: 'active',
+      level,
+      grantedBy: by,
+      grantedAt: at,
+      reviewDate,
+      evidence: card ? `${days}-day shadow · ${card.cases.toLocaleString('en-US')} cases · ${criteria.filter((c) => c.met).length} of ${criteria.length} targets met` : latest.evidence,
+      ...(input.reason ? { signReason: input.reason } : {}),
+    })
+    delete latest.proposedLevel
+    activity.level = level
+    const levels = s.activities.filter((a) => a.agentId === agent.id).map((a) => LEVELS.indexOf(a.level))
+    agent.level = LEVELS[Math.max(...levels)]!
+    if (agent.judgment.status === 'shadow') agent.judgment = { status: 'normal', label: 'Within scope' }
+    agent.reviewDate = reviewDate
+    resolveItems(s, agent.id, 'Review: your signature', by, at, 'Signed')
+    recordOfActivity(s, activity.id)?.history.push({ at, by, text: `${personName(s, by)} · signed ${latest.code} v${latest.version}`, sub: `Shadow → ${level.charAt(0).toUpperCase()}${level.slice(1)}${input.reason ? ' · below target, reason recorded' : ''}`, decision: true })
+    return s
+  }
+  // Renewal: a new version at the same level, reviewed again a full cycle from now.
+  const version = latest.version + 1
+  latest.state = 'closed'
+  s.privileges.push({ ...latest, id: `${latest.code.toLowerCase()}-v${version}`, version, state: 'active', grantedBy: by, grantedAt: at, reviewDate, ...(input.reason ? { signReason: input.reason } : {}) })
+  if (agent.level === latest.level) agent.reviewDate = reviewDate
+  for (const e of s.exceptions)
+    if (e.agentId === agent.id && e.type === 'Review overdue' && e.ruleTag === latest.code && e.state !== 'resolved' && e.state !== 'dismissed')
+      Object.assign(e, { state: 'resolved', outcome: `Renewed · ${latest.code} v${version}`, closedAt: at, closedBy: by })
+  return s
+}
+
+/** The sponsor sends a go-live request back to the owner with a note (3c "Request changes"). */
+export function applyReturnRequest(s: DemoState, code: string, note: string, by: string, at: string): DemoState {
+  const latest = latestByCode(s, code)
+  const agent = s.agents.find((a) => a.id === latest?.agentId)
+  if (!latest || !agent || latest.state !== 'awaiting' || !latest.proposedLevel) return s
+  latest.state = 'closed'
+  resolveItems(s, agent.id, 'Review: your signature', by, at, 'Sent back')
+  raiseItem(s, {
+    agentId: agent.id,
+    type: 'Returned: go-live request',
+    reason: note,
+    action: 'answer before asking again',
+    actionSub: `${personName(s, by)} sent ${latest.code} v${latest.version} back`,
+    ownerId: agent.ownerId,
+    copied: [by],
+    link: { label: 'Open the scorecard', to: `/operations/agents/${agent.id}?tab=scorecard&activity=${latest.activityId}` },
+    at,
+  })
+  recordOfActivity(s, latest.activityId)?.history.push({ at, by, text: `${personName(s, by)} · sent the go-live request back`, sub: note, decision: true })
+  return s
+}
+
+/** The sponsor asks the owner for evidence before a review (3d "Ask Marcus for evidence"). */
+export function applyAskEvidence(s: DemoState, code: string, by: string, at: string): DemoState {
+  const latest = latestByCode(s, code)
+  const agent = s.agents.find((a) => a.id === latest?.agentId)
+  if (!latest || !agent) return s
+  raiseItem(s, {
+    agentId: agent.id,
+    type: `Evidence for the ${latest.code} review`,
+    reason: `${personName(s, by)} asks for evidence before reviewing ${latest.code} v${latest.version}.`,
+    action: 'send the evidence',
+    actionSub: latest.evidence,
+    ownerId: agent.ownerId,
+    copied: [by],
+    link: { label: 'Open the privileges', to: `/operations/agents/${agent.id}?tab=privileges` },
+    at,
+  })
+  return s
+}

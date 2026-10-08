@@ -112,8 +112,8 @@ const medRecRecord: Onboarding = {
   job: {
     purpose: 'Prepare admission medication reconciliation drafts for pharmacist review, so pharmacists start from a complete home medication list.',
     activities: [
-      { id: 'med-rec-admission', name: 'Reconcile home medications at admission', branch: 'Adverse branch: stopping a home medication' },
-      { id: 'med-rec-allergy', name: 'Flag allergy conflicts', branch: 'No adverse branch: flags only' },
+      { id: 'med-rec-admission', name: 'Reconcile home medications at admission', branch: 'Adverse branch: stopping a home medication', short: 'admission med rec' },
+      { id: 'med-rec-allergy', name: 'Flag allergy conflicts', branch: 'No adverse branch: flags only', short: 'allergy flags' },
     ],
     never: ['Change a dose', 'Remove an allergy', 'Draft for anyone but the encounter’s patient'],
     actingFor: 'The admitting pharmacist on the patient’s unit',

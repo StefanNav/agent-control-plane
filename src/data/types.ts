@@ -183,6 +183,8 @@ export interface Privilege {
   stepDownTriggers: string[]
   movedBy?: string
   trigger?: string
+  /** The sponsor's written reason when signing below target (3c). */
+  signReason?: string
 }
 
 /** A rule enforced at the gateway, outside the model. */
@@ -405,7 +407,8 @@ export interface IntakeRequest {
 /** The job description being written (1b). Targets are keyed by the template's criterion ids. */
 export interface JobDraft {
   purpose: string
-  activities: { id: string; name: string; branch: string }[]
+  /** `short` names the activity in a privilege title, e.g. "admission med rec" (3c). */
+  activities: { id: string; name: string; branch: string; short?: string }[]
   /** What the agent must never do, in plain words; the ORG-POL-02 line is implicit. */
   never: string[]
   actingFor: string | null

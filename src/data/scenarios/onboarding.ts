@@ -1,4 +1,4 @@
-import { applyDecision, applyJobEdit, applyRequestChanges, applySend, applySetTier, applySponsorSign, applyStart, applySystemsEdit, applyTest } from '../../store/onboarding'
+import { applyDecision, applyGoLiveRequest, applyJobEdit, applyRequestChanges, applySend, applySetTier, applySponsorSign, applyStart, applySystemsEdit, applyTest } from '../../store/onboarding'
 import { createSeed } from '../seed'
 import { JOB_TEMPLATES } from '../seed/catalogue'
 import type { DemoState, Verb } from '../types'
@@ -10,9 +10,9 @@ import { dropAgents, rewindTo } from './rewind'
  * store's own mutations, so a frame's state is exactly what the UI would produce.
  */
 
-export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4' | 'tools-tested' | 'sponsor-review' | 'returned-hs11' | 'ready' | 'risk-tier' | 'committee' | 'decided' | 'shadow-day-21'
+export type MedRecStage = 'intake' | 'job-5-of-7' | 'systems-3-of-4' | 'tools-tested' | 'sponsor-review' | 'returned-hs11' | 'ready' | 'risk-tier' | 'committee' | 'decided' | 'shadow-day-21' | 'awaiting-signature'
 
-const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4', 'tools-tested', 'sponsor-review', 'returned-hs11', 'ready', 'risk-tier', 'committee', 'decided', 'shadow-day-21']
+const STAGES: MedRecStage[] = ['intake', 'job-5-of-7', 'systems-3-of-4', 'tools-tested', 'sponsor-review', 'returned-hs11', 'ready', 'risk-tier', 'committee', 'decided', 'shadow-day-21', 'awaiting-signature']
 
 /** "Now" in each stage's frame. */
 const NOW: Record<MedRecStage, string> = {
@@ -27,6 +27,7 @@ const NOW: Record<MedRecStage, string> = {
   committee: '2026-10-14T16:12:00',
   decided: '2026-10-14T16:25:00',
   'shadow-day-21': '2026-11-05T09:30:00',
+  'awaiting-signature': '2026-11-06T09:52:00',
 }
 
 /** A dated step and the first stage at which it has happened. */
@@ -47,8 +48,8 @@ const TIMELINE: Step[] = [
         'med-rec',
         {
           activities: [
-            { id: 'med-rec-admission', name: 'Reconcile home medications at admission', branch: 'Adverse branch: stopping a home medication' },
-            { id: 'med-rec-allergy', name: 'Flag allergy conflicts', branch: 'No adverse branch: flags only' },
+            { id: 'med-rec-admission', name: 'Reconcile home medications at admission', branch: 'Adverse branch: stopping a home medication', short: 'admission med rec' },
+            { id: 'med-rec-allergy', name: 'Flag allergy conflicts', branch: 'No adverse branch: flags only', short: 'allergy flags' },
           ],
         },
         'marcus',
@@ -102,6 +103,15 @@ const TIMELINE: Step[] = [
   },
   // 2d → 3a: 21 days of shadow, 15 Oct to 04 Nov; Marcus compared 12 cases.
   { stage: 'shadow-day-21', run: (s) => shadowEvidence(s) },
+  // 3a → 3c: Marcus asks Priya to sign at 11:00 on 05 Nov; SOP v1.3.1 (the name fix) deploys at 16:00.
+  { stage: 'awaiting-signature', run: (s) => applyGoLiveRequest(s, 'med-rec-admission', 'marcus', '2026-11-05T11:00:00') },
+  {
+    stage: 'awaiting-signature',
+    run: (s) => {
+      s.agents.find((a) => a.id === 'med-rec')!.sop = 'v1.3.1'
+      s.logEvents.push({ id: `log-sop-${s.logEvents.length + 1}`, at: '2026-11-05T16:00:00', agentId: 'med-rec', text: 'SOP v1.3 → v1.3.1', sub: 'Adds 186 brand names to the generic mapping · Sam' })
+    },
+  },
 ]
 
 /** Shadow evidence as of 05 Nov (3a, 3b): the seed's scorecards, cases and trace, cut to 04 Nov. */

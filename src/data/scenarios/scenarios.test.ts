@@ -35,10 +35,18 @@ test('resume-requested (6d, 6e): at 11:58 Marcus has asked; Priya has not approv
   expect(inc.timeline.at(-1)).toMatchObject({ title: 'Resume requested' })
 })
 
-test('awaiting-signature: PRV-0142 waits for Priya, Shadow → Draft', () => {
+test('awaiting-signature (3c, R17): 06 Nov 09:52, PRV-0142 v3 waits for Priya, Shadow → Draft', () => {
   const s = buildScenario('awaiting-signature')
-  const prv = s.privileges.find((p) => p.code === 'PRV-0142')!
-  expect(prv).toMatchObject({ state: 'awaiting', level: 'shadow', proposedLevel: 'draft' })
+  expect(s.now).toBe('2026-11-06T09:52:00')
+  const versions = s.privileges.filter((p) => p.code === 'PRV-0142').map((p) => [p.version, p.state])
+  expect(versions).toEqual([
+    [1, 'closed'],
+    [2, 'active'],
+    [3, 'awaiting'],
+  ])
+  expect(s.privileges.find((p) => p.code === 'PRV-0142' && p.version === 3)).toMatchObject({ level: 'shadow', proposedLevel: 'draft', movedBy: 'marcus' })
+  expect(s.agents.find((a) => a.id === 'med-rec')!.sop).toBe('v1.3.1')
+  expect(s.exceptions.find((e) => e.type === 'Review: your signature')).toMatchObject({ ownerId: 'priya', state: 'new' })
 })
 
 test('step-down-threshold: admission med rec dropped to Shadow by rule', () => {

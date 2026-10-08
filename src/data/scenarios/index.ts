@@ -1,6 +1,6 @@
 import { createSeed } from '../seed'
 import { addMinutes } from '../../lib/clock'
-import { applyPause } from '../../store/mutations'
+import { applyPause, raiseOverdueReviews } from '../../store/mutations'
 import type { DemoState, Incident } from '../types'
 import { medRecAt } from './onboarding'
 
@@ -64,6 +64,8 @@ function advanceClock(s: DemoState, to: string): DemoState {
   for (const agent of s.agents) if (agent.monitor.lastSeen === LIVE) agent.monitor.lastSeen = heartbeat
   for (const division of s.divisions) if (division.monitor.state === 'live') division.monitor.lastAt = heartbeat
   s.now = to
+  // A review date the clock moves past raises its overdue review (3d).
+  raiseOverdueReviews(s)
   return s
 }
 
@@ -131,18 +133,8 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
     return s
   },
 
-  // E3 3c / Countersign Screens 1b: PRV-0142 v3 waits for Priya, Shadow → Draft.
-  'awaiting-signature': (s) => {
-    Object.assign(admissionPrivilege(s), {
-      state: 'awaiting',
-      level: 'shadow',
-      proposedLevel: 'draft',
-      grantedBy: undefined,
-      grantedAt: undefined,
-    })
-    s.activities.find((a) => a.id === 'med-rec-admission')!.level = 'shadow'
-    return s
-  },
+  // E3 3c / Countersign Screens 1b: 06 Nov 09:52, PRV-0142 v3 waits for Priya, Shadow → Draft (R17).
+  'awaiting-signature': medRecAt('awaiting-signature'),
 
   // E15 15a: a threshold breach drops admission med rec from Draft to Shadow.
   'step-down-threshold': (s) => {

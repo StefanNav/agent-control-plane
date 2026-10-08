@@ -19,6 +19,7 @@ const KNOWN: Record<string, Partial<Privilege>> = {
     grantedAt: '2026-11-06T09:52:00',
     reviewDate: '2027-02-05T00:00:00',
     stepDownTriggers: ['Edit rate above 15% for 3 days', 'New version', 'Incident'],
+    signReason: '21 of the 29 inaccurate lines were brand and generic name mismatches. SOP v1.3.1 fixes the mapping, and a pharmacist signs every draft (C1).',
   },
   'med-rec-allergy': {
     code: 'PRV-0143',
@@ -99,5 +100,6 @@ export const privileges: Privilege[] = activities
       reviewDate,
       state: known.state ?? 'active',
       stepDownTriggers: known.stepDownTriggers ?? ['Edit rate above 15% for 3 days'],
+      ...(known.signReason ? { signReason: known.signReason } : {}),
     }
   })

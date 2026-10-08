@@ -5,8 +5,8 @@ import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type Condition, type DemoState, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
-import { applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applySend, applySetTier, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestPrivilege, testResult, type SystemsChange } from './onboarding'
-import { FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems, shadowProgress } from './onboardingRules'
+import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, signMode, testResult, type SystemsChange } from './onboarding'
+import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems, shadowProgress } from './onboardingRules'
 import { can, lockReason } from './permissions'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
@@ -98,6 +98,12 @@ export interface DemoActions {
   extendShadow: (activityId: string, days?: number) => ActionResult
   /** Flag a sample-case line for the SOP (3b). */
   flagCaseLine: (caseId: string, line: number) => ActionResult
+  /** The sponsor signs a go-live proposal, or renews a due privilege (3c, 3d). Below target needs a reason. */
+  signPrivilege: (code: string, input: { reason?: string; accepted: boolean }) => ActionResult
+  /** The sponsor sends a go-live request back to the owner with a note (3c). */
+  returnPrivilegeRequest: (code: string, note: string) => ActionResult
+  /** The sponsor asks the owner for evidence before a review (3d). */
+  askForEvidence: (code: string) => ActionResult
 }
 
 export interface PauseInput {
@@ -787,6 +793,57 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Flagged for SOP', target: agent.code, reason: `Encounter ${c.encounter} · line ${line}` },
               mutate: (draft) => {
                 applyFlagLine(draft, caseId, line, draft.personaId, draft.now)
+              },
+            })
+          },
+          signPrivilege: (code, { reason, accepted }) => {
+            const s = get()
+            const latest = latestByCode(s, code)
+            const agent = s.agents.find((a) => a.id === latest?.agentId)
+            if (!latest || !agent) return { ok: false, reason: 'Not found' }
+            const mode = signMode(s, code)
+            if (!mode) return { ok: false, reason: 'Nothing to sign' }
+            if (!accepted) return { ok: false, reason: 'Tick the accountability statement' }
+            const why = reason?.trim() ?? ''
+            if (mode === 'sign' && criteriaStatus(s, latest.activityId).some((c) => !c.met) && !why) return { ok: false, reason: 'A written reason is required' }
+            return act({
+              action: 'signPrivilege',
+              ctx: { agentId: agent.id },
+              audit: { action: mode === 'sign' ? 'Signed privilege' : 'Renewed privilege', target: `${latest.code} v${mode === 'sign' ? latest.version : latest.version + 1}`, ...(why ? { reason: why } : {}) },
+              mutate: (draft) => {
+                applySignPrivilege(draft, code, why ? { reason: why } : {}, draft.personaId, draft.now)
+              },
+            })
+          },
+          returnPrivilegeRequest: (code, note) => {
+            const s = get()
+            const latest = latestByCode(s, code)
+            const agent = s.agents.find((a) => a.id === latest?.agentId)
+            if (!latest || !agent) return { ok: false, reason: 'Not found' }
+            if (signMode(s, code) !== 'sign') return { ok: false, reason: 'Nothing to send back' }
+            const why = note.trim()
+            if (!why) return { ok: false, reason: 'A note is required' }
+            return act({
+              action: 'signPrivilege',
+              ctx: { agentId: agent.id },
+              audit: { action: 'Returned go-live request', target: `${latest.code} v${latest.version}`, reason: why },
+              mutate: (draft) => {
+                applyReturnRequest(draft, code, why, draft.personaId, draft.now)
+              },
+            })
+          },
+          askForEvidence: (code) => {
+            const s = get()
+            const latest = latestByCode(s, code)
+            const agent = s.agents.find((a) => a.id === latest?.agentId)
+            if (!latest || !agent) return { ok: false, reason: 'Not found' }
+            if (s.exceptions.some((e) => e.type === `Evidence for the ${latest.code} review` && e.state !== 'resolved' && e.state !== 'dismissed')) return { ok: false, reason: 'Already asked' }
+            return act({
+              action: 'signPrivilege',
+              ctx: { agentId: agent.id },
+              audit: { action: 'Asked for evidence', target: latest.code },
+              mutate: (draft) => {
+                applyAskEvidence(draft, code, draft.personaId, draft.now)
               },
             })
           },

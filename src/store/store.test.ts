@@ -965,3 +965,76 @@ describe('go-live request (3a)', () => {
     expect(store.getState().logEvents.at(-1)).toMatchObject({ text: 'Flagged for SOP: line 4 · Lasix → furosemide', agentId: 'med-rec' })
   })
 })
+
+describe('sign the privilege (3c) and reviews (3d) — Review focus 2, 3', () => {
+  const at = (scenario: 'awaiting-signature' | 'baseline', persona: 'priya' | 'marcus') => {
+    const store = fresh()
+    store.getState().loadScenario(scenario)
+    store.getState().setPersona(persona)
+    return store
+  }
+  const REASON = '21 of the 29 inaccurate lines were brand and generic name mismatches. SOP v1.3.1 fixes the mapping, and a pharmacist signs every draft (C1).'
+
+  test('Priya signs PRV-0142 with a reason: Draft, review 05 Feb 2027, Med Rec at Draft', () => {
+    const store = at('awaiting-signature', 'priya')
+    expect(store.getState().signPrivilege('prv-0142', { reason: REASON, accepted: true })).toEqual({ ok: true })
+    const s = store.getState()
+    const v3 = s.privileges.find((p) => p.code === 'PRV-0142' && p.version === 3)!
+    expect(v3).toMatchObject({ state: 'active', level: 'draft', grantedBy: 'priya', grantedAt: '2026-11-06T09:52:00', reviewDate: '2027-02-05T00:00:00', signReason: REASON })
+    expect(v3.proposedLevel).toBeUndefined()
+    expect(s.privileges.find((p) => p.code === 'PRV-0142' && p.version === 2)!.state).toBe('closed')
+    expect(s.activities.find((a) => a.id === 'med-rec-admission')!.level).toBe('draft')
+    expect(s.agents.find((a) => a.id === 'med-rec')).toMatchObject({ level: 'draft', judgment: { status: 'normal', label: 'Within scope' } })
+    expect(s.exceptions.find((e) => e.type === 'Review: your signature')!.state).toBe('resolved')
+    expect(store.getState().signPrivilege('prv-0142', { reason: REASON, accepted: true })).toEqual({ ok: false, reason: 'Nothing to sign' })
+  })
+
+  test('below target needs a written reason; the accountability box must be ticked; only the sponsor signs', () => {
+    const store = at('awaiting-signature', 'priya')
+    const before = dataOf(store.getState())
+    expect(store.getState().signPrivilege('prv-0142', { reason: ' ', accepted: true })).toEqual({ ok: false, reason: 'A written reason is required' })
+    expect(store.getState().signPrivilege('prv-0142', { reason: REASON, accepted: false })).toEqual({ ok: false, reason: 'Tick the accountability statement' })
+    expect(dataOf(store.getState())).toEqual(before)
+    expect(at('awaiting-signature', 'marcus').getState().signPrivilege('prv-0142', { reason: REASON, accepted: true }).ok).toBe(false)
+  })
+
+  test('Priya sends the request back with a note: the proposal closes, Shadow stays, Marcus is told', () => {
+    const store = at('awaiting-signature', 'priya')
+    expect(store.getState().returnPrivilegeRequest('prv-0142', '')).toEqual({ ok: false, reason: 'A note is required' })
+    expect(store.getState().returnPrivilegeRequest('prv-0142', 'Fix the brand-name mapping first.')).toEqual({ ok: true })
+    const s = store.getState()
+    expect(s.privileges.filter((p) => p.code === 'PRV-0142' && p.state !== 'closed').map((p) => [p.version, p.level])).toEqual([[2, 'shadow']])
+    expect(s.exceptions.find((e) => e.type === 'Returned: go-live request')).toMatchObject({ ownerId: 'marcus', reason: 'Fix the brand-name mapping first.' })
+  })
+
+  test('3d: Priya renews the overdue Duplicate Rx privilege; EXC-5497 closes', () => {
+    const store = at('baseline', 'priya')
+    expect(store.getState().signPrivilege('prv-0098', { accepted: true })).toEqual({ ok: true })
+    const s = store.getState()
+    expect(s.privileges.find((p) => p.code === 'PRV-0098' && p.version === 5)).toMatchObject({ state: 'active', level: 'draft', reviewDate: '2027-03-09T00:00:00', grantedAt: s.now })
+    expect(s.privileges.find((p) => p.code === 'PRV-0098' && p.version === 4)!.state).toBe('closed')
+    expect(s.exceptions.find((e) => e.id === 'exc-5497')!.state).toBe('resolved')
+  })
+
+  test('3d: Priya asks Marcus for evidence once', () => {
+    const store = at('baseline', 'priya')
+    expect(store.getState().askForEvidence('prv-0098')).toEqual({ ok: true })
+    expect(store.getState().exceptions.find((e) => e.type === 'Evidence for the PRV-0098 review')).toMatchObject({ ownerId: 'marcus', link: { to: '/operations/agents/duplicate-rx?tab=privileges' } })
+    expect(store.getState().askForEvidence('prv-0098')).toEqual({ ok: false, reason: 'Already asked' })
+  })
+})
+
+describe('raiseOverdueReviews (3d: "one review overdue raises an exception")', () => {
+  test('the seed already holds its one overdue review; moving to 23 Dec raises Med Shortage’s, once', async () => {
+    const { raiseOverdueReviews } = await import('./mutations')
+    const s = createSeed()
+    const count = s.exceptions.length
+    raiseOverdueReviews(s)
+    expect(s.exceptions).toHaveLength(count)
+    s.now = '2026-12-23T09:00:00'
+    raiseOverdueReviews(s)
+    expect(s.exceptions.slice(count).map((e) => [e.type, e.agentId, e.ownerId, e.deadline])).toEqual([['Review overdue', 'med-shortage', 'priya', '2027-01-05T17:00:00']])
+    raiseOverdueReviews(s)
+    expect(s.exceptions).toHaveLength(count + 1)
+  })
+})

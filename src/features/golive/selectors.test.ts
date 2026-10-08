@@ -34,3 +34,28 @@ test('3b: case 2 of 12, side by side', () => {
   expect(selectCase(buildScenario('shadow-day-21'), 'med-rec', 'nope')).toBeNull()
   expect(selectCase(buildScenario('shadow-day-21'), 'renal-dosing', 'enc-4105')).toBeNull()
 })
+
+test('3d: Priya’s privileges, soonest review first', async () => {
+  const { selectMyPrivileges } = await import('./selectors')
+  const view = selectMyPrivileges(createSeed(), 'priya', 'all')
+  expect(view.counts).toEqual({ all: 17, overdue: 1, due: 1 })
+  expect(view.rows[0]).toMatchObject({ agent: 'Duplicate Rx Agent', status: 'Review overdue · 7 days', action: 'Review' })
+  expect(view.rows.find((r) => r.agent === 'Controlled Drug Agent')!.status).toBe('In 31 days · paused')
+  expect(view.rows.find((r) => r.agent === 'Med Rec Agent')).toMatchObject({ status: 'In 59 days', signed: '06 Nov', due: '05 Feb' })
+  expect(view.footer).toBe('Showing 17 of 17, soonest review first.')
+  expect(view.overdue?.text).toBe('Duplicate Rx Agent passed its review date on 01 Dec. If you don’t review it by 15 Dec, flag duplicate therapy returns to Shadow and its flags stop reaching pharmacists. Marcus and Dana are copied.')
+})
+
+test('3c: the signature for PRV-0142 v3 on 06 Nov', async () => {
+  const { selectSignature } = await import('./selectors')
+  const view = selectSignature(buildScenario('awaiting-signature'), 'prv-0142')!
+  expect(view.mode).toBe('sign')
+  expect(view.title).toBe('Move admission med rec to Draft')
+  expect(view.idLine).toBe('PRV-0142 · v3 draft')
+  expect(view.review).toBe('05 Feb 2027 · in 91 days · a lapse sends the activity back to Shadow')
+  expect(view.belowTarget).toBe('1 of 3 criteria is below target. A written reason is required and stays on the privilege record.')
+  expect(view.records).toBe('Records: Priya · Director of Pharmacy · 2026-11-06 09:52 · PRV-0142 v3 · under ORG-SIGN-01')
+  expect(selectSignature(createSeed(), 'prv-0142')!.mode).toBe('signed')
+  expect(selectSignature(createSeed(), 'prv-0098')!.mode).toBe('renew')
+  expect(selectSignature(createSeed(), 'nope')).toBeNull()
+})
