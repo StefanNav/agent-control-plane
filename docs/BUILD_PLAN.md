@@ -18,10 +18,10 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 5: Onboarding and go-live (☐ not started) |
-| **Branch** | `phase-5-onboarding` (create from `main`) |
+| **Current phase** | Phase 5: Onboarding and go-live (◐ in progress) |
+| **Branch** | `phase-5-onboarding` |
 | **Last completed** | Phase 4 approved and squash-merged (PR #14) (2026-10-08) |
-| **Next task** | Phase 5 Task 5.0: write `docs/plans/phase-5-onboarding.md` (read Phase 4's handoff notes first) |
+| **Next task** | Phase 5 Task 5.1: data model, catalogue, progress and rewind (seed v6), per [`docs/plans/phase-5-onboarding.md`](plans/phase-5-onboarding.md) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -92,8 +92,8 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 1 | Foundation | ☑ Merged | `phase-1-foundation` | [#2](https://github.com/StefanNav/agent-control-plane/issues/2) | [#11](https://github.com/StefanNav/agent-control-plane/pull/11) | [phase-1-foundation.md](plans/phase-1-foundation.md) |
 | 2 | Components and data | ☑ Merged | `phase-2-components-data` | [#3](https://github.com/StefanNav/agent-control-plane/issues/3) | [#12](https://github.com/StefanNav/agent-control-plane/pull/12) | [phase-2-components-data.md](plans/phase-2-components-data.md) |
 | 3 | Command Board and inbox | ☑ Merged | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | [#13](https://github.com/StefanNav/agent-control-plane/pull/13) | [phase-3-board-inbox.md](plans/phase-3-board-inbox.md) |
-| 4 | Controls and audit | ☑ Merged | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | [#14](https://github.com/StefanNav/agent-control-plane/pull/14) | to write (Task 4.0) |
-| 5 | Onboarding and go-live | ☐ Not started | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | – | to write (Task 5.0) |
+| 4 | Controls and audit | ☑ Merged | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | [#14](https://github.com/StefanNav/agent-control-plane/pull/14) | [phase-4-controls-audit.md](plans/phase-4-controls-audit.md) |
+| 5 | Onboarding and go-live | ◐ In progress | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | – | [phase-5-onboarding.md](plans/phase-5-onboarding.md) |
 | 6 | Governance and fast follows | ☐ Not started | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | – | to write (Task 6.0) |
 | 7 | Earned autonomy | ☐ Not started | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | – | to write (Task 7.0) |
 | 8 | Stories and portfolio layer | ☐ Not started | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | – | to write (Task 8.0) |
@@ -326,18 +326,19 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 **Goal:** Intake to signed privilege (E1, E2, E3).
 **Note from the Phase 2 review:** the permission matrix needs three additions here. Add a `requestGoLive` action for owners. Make committee go-live approval tier-aware (medium and high only). Decide whether Sam's "technical only" exception scope differs from "own agents".
 
-- [ ] 5.0 Write `docs/plans/phase-5-onboarding.md`; commit
-- [ ] 5.1 Onboarding wizard shell (6 steps: Intake, Job description, Systems and verbs, Tools and hard stops, Sponsor approval, Ready for review; marks derived from the record) + intake 1a + name the humans 2a (all four required; span-of-control warning above 7 activities)
-- [ ] 5.2 Job description 1b (7 required fields, "5 of 7", missing fields listed, submit gated)
-- [ ] 5.3 Systems and verbs 1c (default read only; Sign and Order locked by `ORG-POL-02`; changed ring)
-- [ ] 5.4 Tools and hard stops 1d (library or plain language; "would have blocked" counts; Send to Priya unlocks when all tested)
-- [ ] 5.5 Sponsor approval 1e, request changes on HS-11 1f, returned to Sam 1g (only HS-11 reopens; Priya's review resets)
-- [ ] 5.6 Ready for review 1h (frozen) and Drafts in Inventory 1i (Continue opens the first missing field)
-- [ ] 5.7 Risk tier 2b (factors shown; changing it requires a reason)
-- [ ] 5.8 Committee packet 2c (Approve / Approve with conditions / Re-review / Deny) and decision logged 2d (conditions carry onto the privilege)
-- [ ] 5.9 Shadow scorecard 3a and sample case 3b (side by side, line by line)
-- [ ] 5.10 Sign the privilege 3c (missed target → written reason required) and My privileges 3d (overdue review raises an exception)
-- [ ] 5.11 E2E: intake → job → systems → tools → approval → committee → sign; checkpoint
+- [x] 5.0 Write `docs/plans/phase-5-onboarding.md`; commit
+- [ ] 5.1 Data model, catalogue, progress and `rewindTo` (onboarding records replace static drafts; Lena; Tier 4; seed v6)
+- [ ] 5.2 Wizard shell (6 steps, marks derived from the record), start from intake 1a + name the humans 2a (all four required; span warning above 7); `onboarding-intake`
+- [ ] 5.3 Job description 1b (7 fields, "5 of 7", missing listed, welcome back, `?field=`) and Drafts 1i (Continue opens the first missing field); `onboarding-at-5-of-7`
+- [ ] 5.4 Systems and verbs 1c (nothing granted until ticked; Sign and Order locked by `ORG-POL-02`; changed ring; reach line); `onboarding-systems`
+- [ ] 5.5 Tools and hard stops 1d (library or plain language; "would have blocked" counts; Send to Priya unlocks at 12 of 13; inbox hand-off); `onboarding-tools-tested`
+- [ ] 5.6 Sponsor approval 1e, request changes on HS-11 1f, returned to Sam 1g (only HS-11 reopens; any edit resets Priya's review); `onboarding-sponsor-review`, `onboarding-returned-hs11`
+- [ ] 5.7 Ready for review 1h (frozen v1.0); `onboarding-ready`
+- [ ] 5.8 Agent record and risk tier 2b (factors shown; changing it requires a reason; tier-aware committee); `review-risk-tier`
+- [ ] 5.9 Committee packet 2c (Approve / with conditions / Re-review / Deny) and decision logged 2d (conditions carry onto the privilege); `review-committee`, `review-decided`
+- [ ] 5.10 Shadow scorecard 3a and sample case 3b (side by side, line by line); `requestGoLive`; `shadow-day-21`
+- [ ] 5.11 Sign the privilege 3c (missed target → written reason) and My privileges 3d (overdue review raises an exception; renewal); `awaiting-signature` at 06 Nov
+- [ ] 5.12 E2E: intake → job → systems → tools → approval → committee → (skip 21 days) → sign; checkpoint
 
 **Done when:** frames 1a–1i, 2a–2d, 3a–3d built and visually checked.
 **Handoff notes:** _written at the end of the phase._
@@ -511,6 +512,7 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-08 | Retired agents stay in `state.agents` (lifecycle retired) and leave every board through `onBoard()`; retiring closes open exceptions | One record, one filter |
 | 2026-10-08 | Actions carry their own context (privilege, checks, conditions) so the audit never recomputes the past from today's state | "Any action can be reconstructed" |
 | 2026-10-08 | Counts come from data when a frame's number conflicts (7 tool grants, Drafts · 3, by-hand counts, hard-stop tests, export contents) | Realism over copying frame literals |
+| 2026-10-08 | Phase 5 split into 5.0–5.12: data and rewind first, then one task per wizard step and review screen. Onboarding frames happen 29 Sep–06 Nov, so scenarios `rewindTo` the hospital at that moment and replay Med Rec's onboarding through the store's own mutations; baseline keeps the completed record plus one live draft (Culture Follow-up, invented). Full rulings R1–R19 in the phase plan | Frames tell an October story; the demo clock is 08 Dec |
 
 ## Session log
 
