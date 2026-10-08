@@ -18,10 +18,10 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 6: Governance and fast follows (☐ not started) |
-| **Branch** | `phase-6-governance` (create from `main`) |
+| **Current phase** | Phase 6: Governance and fast follows (◐ in progress) |
+| **Branch** | `phase-6-governance` |
 | **Last completed** | Phase 5 approved and squash-merged (PR #15) (2026-10-08) |
-| **Next task** | Phase 6 Task 6.0: write `docs/plans/phase-6-governance.md` (read Phase 5's handoff notes first) |
+| **Next task** | Phase 6 Task 6.1: division settings, lapse policy and escalation chain (seed v7) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -94,7 +94,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 3 | Command Board and inbox | ☑ Merged | `phase-3-board-inbox` | [#4](https://github.com/StefanNav/agent-control-plane/issues/4) | [#13](https://github.com/StefanNav/agent-control-plane/pull/13) | [phase-3-board-inbox.md](plans/phase-3-board-inbox.md) |
 | 4 | Controls and audit | ☑ Merged | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | [#14](https://github.com/StefanNav/agent-control-plane/pull/14) | [phase-4-controls-audit.md](plans/phase-4-controls-audit.md) |
 | 5 | Onboarding and go-live | ☑ Merged | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | [#15](https://github.com/StefanNav/agent-control-plane/pull/15) | [phase-5-onboarding.md](plans/phase-5-onboarding.md) |
-| 6 | Governance and fast follows | ☐ Not started | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | – | to write (Task 6.0) |
+| 6 | Governance and fast follows | ◐ In progress | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | – | [phase-6-governance.md](plans/phase-6-governance.md) |
 | 7 | Earned autonomy | ☐ Not started | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | – | to write (Task 7.0) |
 | 8 | Stories and portfolio layer | ☐ Not started | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | – | to write (Task 8.0) |
 | 9 | Polish and launch | ☐ Not started | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | – | to write (Task 9.0) |
@@ -415,13 +415,16 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 
 **Goal:** Divisions and access, change detection, clinician feedback, reviewer behaviour (E8, E9, E10, E11).
 
-- [ ] 6.0 Write `docs/plans/phase-6-governance.md`; commit
-- [ ] 6.1 Division settings 8a (owner, sponsor, lapse policy)
-- [ ] 6.2 People and roles 8b (Sam gets a second division; `can()` results follow the role change)
-- [ ] 6.3 New version held at the gateway 9a (v1.5.0; re-validate before it serves)
-- [ ] 6.4 Unregistered caller 9b (flagged to Dana)
-- [ ] 6.5 Epic stand-in `/epic`: flag in one action 10a (reason prefilled from Ana's edit) and "Fixed in v1.5.0" 10b (`?day=later`, scenario `epic-fixed-later`)
-- [ ] 6.6 Reviewer behaviour 11a and drill into 6 North 11b (by unit and shift, never by named pharmacist); checkpoint
+- [x] 6.0 Write `docs/plans/phase-6-governance.md`; commit
+- [ ] 6.1 Division settings 8a (owner, sponsor, lapse policy that acts on save and when the clock moves, escalation chain; seed v7)
+- [ ] 6.2 New division and split (composed from 8a; the board takes a sixth division)
+- [ ] 6.3 People and roles 8b (Sam gets a second division; `can()` results follow the role change; add, remove, invite)
+- [ ] 6.4 Epic stand-in `/epic`: flag in one action 10a (reason prefilled from Ana's edit; the flag reaches Marcus's inbox)
+- [ ] 6.5 New version held at the gateway 9a (v1.5.0; re-validate before it serves; `change-detected-v150`)
+- [ ] 6.6 "Fixed in v1.5.0" 10b (`?day=later`, scenario `epic-fixed-later`)
+- [ ] 6.7 Unregistered caller 9b (flagged to Dana; start onboarding from REQ-0081)
+- [ ] 6.8 Reviewer behaviour 11a and drill into 6 North 11b (by unit and shift, never by named pharmacist; Priya signs the sampling change)
+- [ ] 6.9 E2E journeys (flag → v1.5.0 → fixed; access follows accountability); checkpoint
 
 **Done when:** frames 8a, 8b, 9a, 9b, 10a, 10b, 11a, 11b built and visually checked.
 **Handoff notes:** _written at the end of the phase._
