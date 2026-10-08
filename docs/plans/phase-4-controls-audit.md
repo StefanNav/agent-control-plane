@@ -538,7 +538,7 @@ These are the failure modes the spec implies that no screen test naturally cover
 
 ### Task 4.10: Journey test and checkpoint
 
-- [ ] **Step 1: e2e journey** (`tests/e2e/journeys.spec.ts`), "stop easy, resume deliberate":
+- [x] **Step 1: e2e journey** (`tests/e2e/journeys.spec.ts`), "stop easy, resume deliberate":
   - As Marcus, pause Med Rec from the division panel's "Pause agent". Then:
     - The board shows the paused agent.
     - The agent view shows "Paused by Marcus".
@@ -548,7 +548,7 @@ These are the failure modes the spec implies that no screen test naturally cover
     - The agent is live again at Draft.
     - The wall's "last hour" shows "2 pauses".
   - As Jordan, the action list → ACT-88213 → Open incident → the record shows the linked action.
-- [ ] **Step 2: `pnpm check` and `pnpm e2e` green.**
+- [x] **Step 2: `pnpm check` and `pnpm e2e` green.**
 - [ ] **Step 3: Checkpoint** per the BUILD_PLAN protocol:
   - Push, then open the PR "Phase 4: Controls and audit" with `Closes #5`.
   - Run the fresh whole-branch review and apply its fixes test-first.

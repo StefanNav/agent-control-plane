@@ -58,7 +58,7 @@ test('the view toggle switches layouts', async ({ page }) => {
 })
 
 test.describe('division view (4b)', () => {
-  test('Marcus sees his 20 agents, judgment first', async ({ page }) => {
+  test('Marcus sees the 20 Medications agents, judgment first', async ({ page }) => {
     const errors = collectErrors(page)
     await page.goto('/operations/divisions/medications')
     await expect(page.getByRole('heading', { level: 1, name: 'Medications' })).toBeVisible()

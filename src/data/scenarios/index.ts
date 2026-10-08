@@ -17,7 +17,7 @@ const admissionPrivilege = (s: DemoState) => s.privileges.find((p) => p.activity
 
 const PAUSED_AT = '2026-12-08T09:47:00'
 
-/** 6b: Marcus paused the whole agent at 09:47 with his reason; 12 drafts went back to pharmacists. */
+/** 6b: Marcus paused the whole agent at 09:47, with a reason; 12 drafts went back to pharmacists. */
 function pauseMedRec(s: DemoState): DemoState {
   return applyPause(s, ['med-rec'], { scope: 'agent', reason: 'HS-04 blocked 3 dose changes since 09:00. Pausing until we know why.' }, 'marcus', PAUSED_AT)
 }
