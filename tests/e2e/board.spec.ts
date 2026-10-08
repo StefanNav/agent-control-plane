@@ -120,3 +120,17 @@ test.describe('agent view (4c)', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible()
   })
 })
+
+test('wall display (4e): dark, read only, no product chrome', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/wall')
+  const wall = page.locator('[data-theme="dark"]').first()
+  await expect(wall).toBeVisible()
+  await expect(page.getByText('2 divisions need a human')).toBeVisible()
+  await expect(page.getByText(/Read only · touch nothing here/)).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Prototype controls' })).toHaveCount(0)
+  await expect(page.getByRole('navigation', { name: 'Main' })).toHaveCount(0)
+  await expect(page.getByRole('button')).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Exit wall display' })).toHaveAttribute('href', '/operations')
+  expect(errors).toEqual([])
+})

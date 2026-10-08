@@ -79,3 +79,22 @@ test('exceptions first (4f): critical first then by deadline; next deadline show
   expect(rows[0]).toMatchObject({ agent: 'Prior Auth Agent', division: 'Revenue cycle', owner: 'Tom', age: '1 h 47' })
   expect(selectLast24h(s)).toEqual({ pages: '1 · Tom, 08:05', pauses: '2', closed: '6 · median 41 min' })
 })
+
+test('wall (4e): attention cards with three items each, the rest overflow; pauses this hour count', async () => {
+  const { selectWall } = await import('./selectors')
+  const wall = selectWall(s)
+  expect(wall.title).toBe('2 divisions need a human')
+  expect(wall.attention.map((d) => [d.name, d.chip, d.sub])).toEqual([
+    ['Revenue cycle', 'Critical', 'Tom · acknowledged 08:06'],
+    ['Medications', '4 need a human', 'Marcus · next deadline 10:46'],
+  ])
+  expect(wall.attention[1]!.items.map((i) => `${i.name} ${i.reason} ${i.age}`)).toEqual([
+    'Formulary Swap no data for 3 h 3 h 06',
+    'Med Rec 3 drafts held by HS-04 10 min',
+    'Renal Dosing edit rate 19.2 % 2 h 37',
+  ])
+  expect(wall.overflow).toEqual(['+1 more in Medications: Duplicate Rx Agent privilege review overdue'])
+  expect(wall.lastHour).toBe('3 hard stops fired · 1 pause · 0 pages')
+  const paused = { ...s, audit: [...s.audit, { id: 'a-x', at: '2026-12-08T09:40:00', who: 'marcus' as const, action: 'Paused', target: 'Renal Dosing Agent' }] }
+  expect(selectWall(paused).lastHour).toBe('3 hard stops fired · 2 pauses · 0 pages')
+})

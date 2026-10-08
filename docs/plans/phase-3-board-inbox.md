@@ -216,14 +216,14 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
 - The footer reads "Read only · touch nothing here; act from your own screen".
 - No controls, apart from a small corner "Exit wall display" link to `/operations`, visible on hover or focus.
 
-- [ ] **Step 1: Failing e2e:**
+- [x] **Step 1: Failing e2e:**
   - `/wall` has `data-theme="dark"` and shows "2 divisions need a human" and "Read only".
   - It has no buttons except "Exit wall display".
   - It has no prototype bar or top nav.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against E4 4e (frame 1).
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(board): wall display"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against E4 4e (frame 1).
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(board): wall display"`.
 
 ### Task 3.7: Inbox list and detail (5a), claim and snooze
 

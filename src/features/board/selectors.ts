@@ -1,6 +1,6 @@
 import type { AgentRowView, LadderState, PrivilegeCardView } from '../../components'
 import type { Agent, AgentException, DemoState, Level, Status } from '../../data/types'
-import { formatAge, formatAgo, formatClock, formatClockSeconds, formatDate, formatRelative, minutesBetween } from '../../lib/clock'
+import { formatAge, formatAgo, formatClock, formatClockSeconds, formatDate, formatDay, formatRelative, minutesBetween } from '../../lib/clock'
 import { trendPoints } from '../../lib/trend'
 
 /** Statuses that need a human. */
@@ -386,3 +386,45 @@ export function selectAgentHistory(s: DemoState, agentId: string) {
   const log = s.logEvents.filter((e) => e.agentId === agentId).map((e) => ({ id: e.id, at: e.at, text: e.text, sub: e.sub ?? '' }))
   return [...audit, ...log].sort((a, b) => b.at.localeCompare(a.at)).map((e) => ({ ...e, time: formatClock(e.at) }))
 }
+
+/** The wall display (4e): attention divisions with up to three items by deadline, the rest quiet. */
+export function selectWall(s: DemoState) {
+  const divisions = selectDivisionSummaries(s)
+  const overflow: string[] = []
+  const attention = divisions
+    .filter((d) => d.needsHuman > 0)
+    .map((d) => {
+      const items = s.exceptions
+        .filter((e) => isOpen(e) && ATTENTION.includes(e.status) && s.agents.find((a) => a.id === e.agentId)?.divisionId === d.id)
+        .sort((a, b) => a.deadline.localeCompare(b.deadline))
+        .map((e) => {
+          const agent = s.agents.find((a) => a.id === e.agentId)!
+          return { id: e.id, status: e.status, name: agent.name.replace(/ Agent$/, ''), fullName: agent.name, reason: e.wallShort ?? e.short ?? e.reason, age: formatAge(e.raisedAt, s.now) }
+        })
+      for (const extra of items.slice(3)) overflow.push(`+1 more in ${d.name}: ${extra.fullName} ${extra.reason}`)
+      const page = s.divisions.find((x) => x.id === d.id)?.page
+      return {
+        id: d.id,
+        name: d.name,
+        status: d.status,
+        chip: d.status === 'crit' ? 'Critical' : `${d.needsHuman} need a human`,
+        sub: page?.ackAt ? `${d.owner} · acknowledged ${formatClock(page.ackAt)}` : d.nextDeadline ? `${d.owner} · next deadline ${d.nextDeadline.at}` : d.owner,
+        items: items.slice(0, 3),
+      }
+    })
+  const pausesThisHour = s.audit.filter((a) => a.action === 'Paused' && minutesBetween(a.at, s.now) <= 60).length
+  const { lastHour } = s.stats24h
+  const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
+  return {
+    title: `${attention.length} ${attention.length === 1 ? 'division needs' : 'divisions need'} a human`,
+    clock: formatClock(s.now),
+    date: `${formatDay(s.now)} · live, every 30 s`,
+    attention,
+    quiet: divisions
+      .filter((d) => d.needsHuman === 0)
+      .map((d) => ({ id: d.id, name: d.name, sub: `${d.owner} · ${d.agentCount} agents`, note: d.status === 'shadow' ? 'Shadow' : 'No exceptions' })),
+    lastHour: `${plural(lastHour.hardStops, 'hard stop')} fired · ${plural(lastHour.pauses + pausesThisHour, 'pause')} · ${plural(lastHour.pages, 'page')}`,
+    overflow,
+  }
+}
+

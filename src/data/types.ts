@@ -229,6 +229,8 @@ export interface AgentException {
   short?: string
   /** The hospital exception list's reason when it differs from the inbox (4f). */
   boardReason?: string
+  /** The wall display's trimmed phrasing (4e), e.g. "edit rate 19.2 %". */
+  wallShort?: string
   agentId: string
   ruleTag?: string
   /** Who raised a question, if a person did. */
@@ -340,6 +342,6 @@ export interface DemoState {
   logEvents: LogEvent[]
   changeEvents: ChangeEvent[]
   /** Hospital-wide counts before today's activity (4f "Last 24 hours"). */
-  stats24h: { closedEarlier: number; medianCloseMin: number }
+  stats24h: { closedEarlier: number; medianCloseMin: number; lastHour: { hardStops: number; pauses: number; pages: number } }
   audit: AuditEntry[]
 }

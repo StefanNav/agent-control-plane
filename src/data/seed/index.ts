@@ -34,7 +34,7 @@ const SEED: DemoState = {
   resumeRequests: [],
   logEvents,
   changeEvents,
-  stats24h: { closedEarlier: 5, medianCloseMin: 41 },
+  stats24h: { closedEarlier: 5, medianCloseMin: 41, lastHour: { hardStops: 3, pauses: 1, pages: 0 } },
   audit: [],
 }
 
