@@ -250,7 +250,7 @@ Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a
 
 `sparklinePath` algorithm (pinned so tests and component agree): padding 2 px; `x_i = 2 + i * (width - 4) / (n - 1)`; `y_i = 2 + (1 - (v_i - min) / (max - min)) * (height - 4)`; if `max === min`, every `y = height / 2`; numbers rounded to 2 decimals, trailing zeros dropped; format `M{x} {y}L{x} {y}…`; fewer than 2 values → `''`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - `sparklinePath([0, 10, 5], 72, 20) === 'M2 18L36 2L70 10'`
   - `sparklinePath([5, 5], 72, 20) === 'M2 10L70 10'`
   - `sparklinePath([3], 72, 20) === ''`
@@ -258,10 +258,10 @@ Paths (verbatim from the handoff "Icons" list and `cs-build.js`): ring `M6 1.75a
   - `ProgressBar value={1.4}` → `aria-valuenow="100"`; `value={-1}` → `"0"`; `role="progressbar"`.
   - `DefinitionList` renders a `dl` with `dt`/`dd` pairs in order.
   - `Notice` renders `lead` in a `strong`.
-- [ ] **Step 2: Run; verify fail.**
-- [ ] **Step 3: Implement** from the handoff (Card, Paper, Definition list, Notice, Stat strip, Sparkline, Progress bar, Rule tag, Log row).
-- [ ] **Step 4: Run; verify pass.**
-- [ ] **Step 5: Commit** `git commit -m "feat(ds): display primitives"`
+- [x] **Step 2: Run; verify fail.**
+- [x] **Step 3: Implement** from the handoff (Card, Paper, Definition list, Notice, Stat strip, Sparkline, Progress bar, Rule tag, Log row).
+- [x] **Step 4: Run; verify pass.**
+- [x] **Step 5: Commit** `git commit -m "feat(ds): display primitives"`
 
 ### Task 1.6: Interactive structures
 

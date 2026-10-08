@@ -1,0 +1,33 @@
+.strip {
+  display: grid;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 14px 16px;
+}
+
+.stat + .stat {
+  border-left: 1px solid var(--cs-line);
+}
+
+.label {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-meta);
+}
+
+.value {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+.sub {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}

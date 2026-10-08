@@ -1,0 +1,10 @@
+.paper {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-width: 0;
+  padding: 28px 32px 32px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 6px;
+}
