@@ -549,7 +549,7 @@ These are the failure modes the spec implies that no screen test naturally cover
     - The wall's "last hour" shows "2 pauses".
   - As Jordan, the action list → ACT-88213 → Open incident → the record shows the linked action.
 - [x] **Step 2: `pnpm check` and `pnpm e2e` green.**
-- [ ] **Step 3: Checkpoint** per the BUILD_PLAN protocol:
+- [x] **Step 3: Checkpoint** per the BUILD_PLAN protocol:
   - Push, then open the PR "Phase 4: Controls and audit" with `Closes #5`.
   - Run the fresh whole-branch review and apply its fixes test-first.
   - Visual QA of 6a–6f, 7a–7d and 8c; tick them in the frame tracker.
