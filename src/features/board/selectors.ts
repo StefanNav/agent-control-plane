@@ -134,8 +134,8 @@ export function selectDivisionSummaries(s: DemoState): DivisionSummary[] {
 }
 
 function agentRow(s: DemoState, a: Agent, index: number): AgentRowView {
-  // No data (stale) or not running (paused): the last numbers would mislead, so they're withdrawn.
-  const withdrawn = a.judgment.status === 'stale' || a.lifecycle === 'paused'
+  // No data (stale) or not running (paused, disabled): the last numbers would mislead, so they're withdrawn.
+  const withdrawn = a.judgment.status === 'stale' || a.lifecycle === 'paused' || a.lifecycle === 'disabled'
   const m = a.metrics
   return {
     id: a.id,
@@ -189,8 +189,8 @@ export function selectAgentPanel(s: DemoState, agentId: string) {
   const a = s.agents.find((x) => x.id === agentId)
   if (!a) return null
   const m = a.metrics
-  // No data (stale) or not running (paused): the last numbers would mislead, so they're withdrawn.
-  const withdrawn = a.judgment.status === 'stale' || a.lifecycle === 'paused'
+  // No data (stale) or not running (paused, disabled): the last numbers would mislead, so they're withdrawn.
+  const withdrawn = a.judgment.status === 'stale' || a.lifecycle === 'paused' || a.lifecycle === 'disabled'
   const rejected = m.rejected ?? (m.signedAsIs !== null && m.edited !== null ? Math.max(0, 100 - m.signedAsIs - m.edited) : null)
   const actions = m.weekActions ?? (m.day === null ? null : m.day * 7)
   return {

@@ -3,6 +3,7 @@ import type { DemoState, Level, PersonaId, Verb } from '../../data/types'
 import { formatClock } from '../../lib/clock'
 import { queueOf } from '../../store/mutations'
 import { onBoard, personName } from '../board/selectors'
+import { activityCount } from './controlMenu'
 
 export type PauseScope = 'activity' | 'agent' | 'division'
 
@@ -32,7 +33,7 @@ export function selectPausePreview(s: DemoState, personaId: PersonaId, agentId: 
   const medications = agent.divisionId === 'medications'
   const scopes: RadioCardOption<PauseScope>[] = [
     { value: 'activity', title: 'This activity', description: main?.name ?? '' },
-    { value: 'agent', title: 'This agent', description: activities.length === 2 ? 'Both activities' : `All ${activities.length} activities` },
+    { value: 'agent', title: 'This agent', description: activityCount(activities.length) },
     { value: 'division', title: `Every agent in ${division?.name}`, description: `${inDivision.length} agents · ${atDraft} activities at Draft` },
   ]
   return {

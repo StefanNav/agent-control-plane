@@ -29,3 +29,18 @@ test('6a as Dana: program-lead actions open', () => {
   const items = controlMenu(s, 'dana', 'med-rec').flatMap((g) => g.items)
   expect(items.find((i) => i.control === 'retire')!.locked).toBe(false)
 })
+
+test('a disabled agent offers only Retire; the rest say why', async () => {
+  const { createDemoStore } = await import('../../store')
+  const { createMemoryStorage } = await import('../../store/storage')
+  const store = createDemoStore(createMemoryStorage())
+  store.getState().setPersona('dana')
+  store.getState().disableAgent('med-rec', 'Vendor review.')
+  const items = controlMenu(store.getState(), 'dana', 'med-rec').flatMap((g) => g.items)
+  expect(items.filter((i) => !i.locked).map((i) => i.control)).toEqual(['retire'])
+  expect(items.find((i) => i.control === 'pause-agent')!.sub).toBe('Disabled by Dana; access already revoked')
+})
+
+test('a single-activity agent: "Its one activity", never "All 1 activities"', () => {
+  expect(controlMenu(s, 'marcus', 'renal-dosing')[0]!.items[1]!.sub).toBe('Its one activity')
+})

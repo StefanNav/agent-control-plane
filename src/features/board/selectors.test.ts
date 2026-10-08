@@ -124,3 +124,12 @@ test('a paused agent view reads like 6d: since when, why, and what happened to t
   })
   expect(v.activities[0]!.level).toBe('Paused · was Draft')
 })
+
+test('a disabled agent withdraws its numbers too', async () => {
+  const { createDemoStore } = await import('../../store')
+  const { createMemoryStorage } = await import('../../store/storage')
+  const store = createDemoStore(createMemoryStorage())
+  store.getState().setPersona('dana')
+  store.getState().disableAgent('renal-dosing', 'Vendor review.')
+  expect(selectAgentRows(store.getState(), 'medications').find((r) => r.id === 'renal-dosing')).toMatchObject({ day: '—', signedAsIs: '—', edited: '—', blocked: '—' })
+})

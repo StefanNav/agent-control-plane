@@ -1,7 +1,7 @@
 import { useMemo, type ReactNode } from 'react'
 import { useParams, useSearchParams } from 'react-router'
 import { StatusChip } from '../../components'
-import { Button, Icon, LinkButton, Menu, Notice, Tabs } from '../../design-system'
+import { Button, Icon, LinkButton, Menu, Tabs } from '../../design-system'
 import { NotFound } from '../../layout/NotFound'
 import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { useDemo } from '../../store'
@@ -19,7 +19,6 @@ import {
   ScorecardTab,
 } from './agent-tabs/Tabs'
 import { Overview } from './agent-tabs/Overview'
-import styles from './agent-tabs/agent.module.css'
 import { selectAgentOverview } from './selectors'
 
 const TABS = ['overview', 'activities', 'scorecard', 'actions', 'privileges', 'history'] as const
@@ -40,17 +39,6 @@ const PAUSE_SCOPE: Partial<Record<ControlId, PauseScope>> = {
   'pause-division': 'division',
 }
 
-/** Pending-control copy until each dialog lands (Tasks 4.4–4.6). */
-const CONTROL_LEAD: Record<ControlId, string> = {
-  'pause-activity': 'Pause one activity of',
-  'pause-agent': 'Pause',
-  'pause-division': 'Pause every agent alongside',
-  shadow: 'Return one activity to Shadow on',
-  revoke: 'Revoke a tool from',
-  disable: 'Disable',
-  retire: 'Retire',
-}
-
 /** One agent: activities, privileges, metrics and recent actions in one place (4c). */
 export function AgentView() {
   const { agentId = '' } = useParams()
@@ -64,6 +52,8 @@ export function AgentView() {
   const agent = state.agents.find((a) => a.id === agentId)
   /** Paused or retired: the header offers only "Open in Inventory" (6d). */
   const stopped = agent?.lifecycle === 'paused' || agent?.lifecycle === 'retired'
+  /** Pause and narrow fixes apply only to a working agent (not paused, disabled or retired). */
+  const live = agent?.lifecycle === 'live'
   const setControl = (next: ControlId | null) =>
     setParams(
       (prev) => {
@@ -135,36 +125,17 @@ export function AgentView() {
           />
         }
       />
-      {control && PAUSE_SCOPE[control] && !stopped ? (
+      {control && PAUSE_SCOPE[control] && live ? (
         <PauseFlow
           agentId={agentId}
           agentName={view.name}
           initialScope={PAUSE_SCOPE[control]}
           onClose={() => setControl(null)}
         />
-      ) : (control === 'shadow' || control === 'revoke') && !stopped ? (
+      ) : (control === 'shadow' || control === 'revoke') && live ? (
         <FixOneThing agentId={agentId} initialMode={control} onClose={() => setControl(null)} />
       ) : (control === 'disable' || control === 'retire') && agent?.lifecycle !== 'retired' ? (
         <RetireDialog agentId={agentId} initialMode={control} onClose={() => setControl(null)} />
-      ) : control &&
-        !PAUSE_SCOPE[control] &&
-        control !== 'shadow' &&
-        control !== 'revoke' &&
-        control !== 'disable' &&
-        control !== 'retire' ? (
-        <section aria-label="Pending control" className={styles.pending}>
-          <Notice
-            lead={`${CONTROL_LEAD[control]} ${view.name}`}
-            actions={
-              <Button variant="ghost" size="sm" onClick={() => setControl(null)}>
-                Close
-              </Button>
-            }
-          >
-            opens an impact preview first: what stops, what keeps running and who is told, then asks
-            you to confirm. That flow is built in Phase 4 of this prototype.
-          </Notice>
-        </section>
       ) : null}
       {content[tab]}
     </>

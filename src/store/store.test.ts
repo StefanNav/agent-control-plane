@@ -499,3 +499,41 @@ test('buildExport logs an export record (7d); it needs an agent; Jordan may buil
   store.getState().setPersona('jordan')
   expect(store.getState().buildExport(input)).toEqual({ ok: true })
 })
+
+describe('review fix: disable, pause and resume compose (Important #1)', () => {
+  const disabledMedRec = () => {
+    const store = fresh()
+    store.getState().setPersona('dana')
+    store.getState().disableAgent('med-rec', 'Vendor review.')
+    store.getState().setPersona('marcus')
+    return store
+  }
+
+  test('a disabled agent can\'t be paused, so it can\'t come back through resume', () => {
+    const store = disabledMedRec()
+    const before = dataOf(store.getState())
+    expect(store.getState().pauseAgent('med-rec', { scope: 'agent' })).toEqual({ ok: false, reason: 'Disabled agents can’t be paused' })
+    expect(store.getState().requestResume('med-rec', 'x')).toEqual({ ok: false, reason: 'Not paused' })
+    expect(dataOf(store.getState())).toEqual(before)
+  })
+
+  test('a division pause skips disabled agents', () => {
+    const store = disabledMedRec()
+    store.getState().pauseAgent('renal-dosing', { scope: 'division' })
+    expect(store.getState().agents.find((a) => a.id === 'med-rec')!).toMatchObject({ lifecycle: 'disabled' })
+    expect(store.getState().agents.find((a) => a.id === 'med-rec')!.pause).toBeUndefined()
+  })
+
+  test('disabling or retiring a paused agent clears the pause and its resume request', () => {
+    const store = fresh()
+    store.getState().loadScenario('resume-requested')
+    store.getState().setPersona('dana')
+    expect(store.getState().disableAgent('med-rec', 'Vendor review.')).toEqual({ ok: true })
+    const agent = store.getState().agents.find((a) => a.id === 'med-rec')!
+    expect(agent.pause).toBeUndefined()
+    expect(agent.pausedAt).toBeUndefined()
+    expect(store.getState().resumeRequests).toHaveLength(0)
+    store.getState().setPersona('priya')
+    expect(store.getState().approveResume('med-rec', 'x')).toEqual({ ok: false, reason: 'No resume request' })
+  })
+})

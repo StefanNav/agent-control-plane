@@ -82,6 +82,19 @@ export type DemoStore = DemoState & DemoActions
 
 const DATA_KEYS = Object.keys(createSeed()) as Array<keyof DemoState>
 
+/** Paused as a whole, or one of its activities paused while it keeps working (never disabled or retired). */
+const isPaused = (agent: DemoState['agents'][number]) => agent.lifecycle === 'paused' || (agent.lifecycle === 'live' && agent.pause?.scope === 'activity')
+
+/** Drop a pause and its resume request: disabling or retiring supersedes them. */
+function clearPause(draft: DemoState, agentId: string) {
+  const agent = draft.agents.find((a) => a.id === agentId)!
+  delete agent.pause
+  delete agent.pausedBy
+  delete agent.pausedAt
+  for (const activity of draft.activities) if (activity.agentId === agentId) delete activity.paused
+  draft.resumeRequests = draft.resumeRequests.filter((r) => r.agentId !== agentId)
+}
+
 /** Every tool grant to none: the agent loses gateway access (disable, retire). */
 function revokeAll(draft: DemoState, agentId: string) {
   for (const g of draft.grants) {
@@ -190,11 +203,12 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
             const agent = s.agents.find((a) => a.id === agentId)
             if (!agent) return { ok: false, reason: 'Not found' }
             if (agent.lifecycle === 'retired') return { ok: false, reason: 'Retired agents can’t be paused' }
+            if (agent.lifecycle === 'disabled') return { ok: false, reason: 'Disabled agents can’t be paused' }
             const activities = s.activities.filter((a) => a.agentId === agentId)
             const activity = activityId ?? (activities.find((a) => a.level !== 'shadow') ?? activities[0])?.id
             const targets =
               scope === 'division'
-                ? s.agents.filter((a) => a.divisionId === agent.divisionId && a.lifecycle !== 'retired' && a.lifecycle !== 'paused').map((a) => a.id)
+                ? s.agents.filter((a) => a.divisionId === agent.divisionId && a.lifecycle === 'live').map((a) => a.id)
                 : agent.lifecycle === 'paused' || (scope === 'activity' && s.activities.find((a) => a.id === activity)?.paused)
                   ? []
                   : [agentId]
@@ -272,7 +286,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
             const s = get()
             const agent = s.agents.find((a) => a.id === agentId)
             if (!agent) return { ok: false, reason: 'Not found' }
-            if (agent.lifecycle !== 'paused' && !agent.pause) return { ok: false, reason: 'Not paused' }
+            if (!isPaused(agent)) return { ok: false, reason: 'Not paused' }
             const why = reason.trim()
             if (!why) return { ok: false, reason: 'A reason is required' }
             if (s.resumeRequests.some((r) => r.agentId === agentId)) return { ok: false, reason: 'A resume request is already open' }
@@ -292,6 +306,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
             if (!agent) return { ok: false, reason: 'Not found' }
             const request = s.resumeRequests.find((r) => r.agentId === agentId)
             if (!request) return { ok: false, reason: 'No resume request' }
+            if (!isPaused(agent)) return { ok: false, reason: 'Not paused' }
             const why = reason.trim()
             if (!why) return { ok: false, reason: 'A reason is required' }
             if (request.approvals.some((a) => a.personId === s.personaId)) return { ok: false, reason: 'You already approved; the other person must' }
@@ -359,6 +374,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               mutate: (draft) => {
                 const target = draft.agents.find((a) => a.id === agentId)!
                 const name = draft.people.find((p) => p.id === draft.personaId)?.name ?? draft.personaId
+                clearPause(draft, agentId)
                 target.lifecycle = 'disabled'
                 target.disabled = { at: draft.now, by: draft.personaId, reason: why }
                 target.judgment = { status: 'paused', label: `Disabled by ${name}` }
@@ -380,6 +396,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Retired', target: agent.code, reason: why },
               mutate: (draft) => {
                 const target = draft.agents.find((a) => a.id === agentId)!
+                clearPause(draft, agentId)
                 target.retirement = { at: draft.now, by: draft.personaId, code: nextArchiveCode(draft), reason: why }
                 target.lifecycle = 'retired'
                 revokeAll(draft, agentId)

@@ -110,6 +110,6 @@ export function selectRetirePreview(s: DemoState, agentId: string) {
     : 'Closes no privileges; none are active'
   return {
     lines: [tools, privileges, `Archives the record under ${nextArchiveCode(s)}; still searchable in audit and exports`, 'Moves it to Inventory → Retired; it leaves every board'],
-    disableLines: [tools, `Keeps ${active.length} ${active.length === 1 ? 'privilege' : 'privileges'} and the record; re-enabling restores access`, 'Stays on the boards, marked Disabled'],
+    disableLines: [tools, `Keeps ${active.length} ${active.length === 1 ? 'privilege' : 'privileges'} and the record; restoring access goes back through tool approval`, 'Stays on the boards, marked Disabled'],
   }
 }

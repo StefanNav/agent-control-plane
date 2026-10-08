@@ -38,7 +38,7 @@ export function RetireDialog({ agentId, initialMode, onClose }: RetireDialogProp
       open
       onClose={onClose}
       title={`Disable or retire ${agent.name}`}
-      description="Disabling can be undone. Retiring can’t: the record is archived and leaves every board."
+      description="Disabling revokes access and keeps the record live. Retiring can’t be undone: the record is archived and leaves every board."
       audit={`Logs ${personName(state, state.personaId)} · ${roleOn(state, state.personaId, agentId)}`}
       actions={
         <>
@@ -61,7 +61,7 @@ export function RetireDialog({ agentId, initialMode, onClose }: RetireDialogProp
             {
               value: 'disable',
               title: 'Disable',
-              description: 'Access revoked now. The record stays live; you can re-enable it.',
+              description: 'Access revoked now. The record stays live; restoring access goes back through tool approval.',
             },
             {
               value: 'retire',
