@@ -54,3 +54,15 @@ test('incident record (7c) in resume-requested: people, root cause, corrections,
   await expect(page.getByRole('heading', { name: 'Appeal drafted for the wrong encounter' })).toBeVisible()
   expect(errors).toEqual([])
 })
+
+test('export for a surveyor (7d): built from the record and logged', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/reports/export?agent=med-rec')
+  await expect(page.getByRole('heading', { name: 'Export records' })).toBeVisible()
+  await expect(page.getByText('PRV-0142 v1 to v3 · 2 signatures')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Past exports · 3' })).toBeVisible()
+  await page.getByRole('button', { name: 'Build export' }).click()
+  await expect(page.getByText(/EXP-0004 built/)).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Past exports · 4' })).toBeVisible()
+  expect(errors).toEqual([])
+})

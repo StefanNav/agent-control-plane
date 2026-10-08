@@ -1,6 +1,8 @@
 import { createSeed } from '../../data/seed'
 import { buildScenario } from '../../data/scenarios'
-import { selectActions, selectIncident, selectIncidents, selectTrace } from './selectors'
+import { createDemoStore } from '../../store'
+import { createMemoryStorage } from '../../store/storage'
+import { selectActions, selectExportContents, selectIncident, selectIncidents, selectTrace } from './selectors'
 
 const s = createSeed()
 
@@ -86,4 +88,33 @@ test('the incidents list puts open ones first; unknown ids are null', () => {
     ['INC-0030', 'Closed'],
   ])
   expect(selectIncident(createSeed(), 'marcus', 'nope')).toBeNull()
+})
+
+describe('7d contents, counted from the record', () => {
+  test('Med Rec on the baseline', () => {
+    const rows = selectExportContents(s, ['med-rec'])
+    const exceptions = s.exceptions.filter((e) => e.agentId === 'med-rec').length
+    expect(rows).toEqual([
+      ['Job description versions', '4 · v1 to v4'],
+      ['Privileges and signatures', 'PRV-0142 v1 to v3 · 2 signatures'],
+      ['Committee decisions and conditions', '1 · approved with C1 to C3'],
+      ['Hard-stop tests', '3 · with examples'],
+      ['Actions and traces', '2,961 · 06 Nov to 08 Dec'],
+      ['Exceptions and how each closed', String(exceptions)],
+      ['Incidents', 'None'],
+      ['Pauses and resumes', 'None'],
+    ])
+  })
+
+  test('after the incident and a two-person resume', () => {
+    const store = createDemoStore(createMemoryStorage())
+    store.getState().loadScenario('resume-requested')
+    expect(selectExportContents(store.getState(), ['med-rec']).slice(6)).toEqual([
+      ['Incidents', '1 · INC-0031'],
+      ['Pauses and resumes', '1 · still paused'],
+    ])
+    store.getState().setPersona('priya')
+    store.getState().approveResume('med-rec', 'Fixed and replayed clean.')
+    expect(selectExportContents(store.getState(), ['med-rec']).at(-1)).toEqual(['Pauses and resumes', '1 · with both reasons'])
+  })
 })

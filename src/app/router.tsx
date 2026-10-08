@@ -10,6 +10,7 @@ import { ActionsPage } from '../features/audit/ActionsPage'
 import { ActionTracePage } from '../features/audit/ActionTracePage'
 import { IncidentPage } from '../features/audit/IncidentPage'
 import { IncidentsPage } from '../features/audit/IncidentsPage'
+import { ExportPage } from '../features/audit/ExportPage'
 import { NotFound } from '../layout/NotFound'
 import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
 import { AppShell } from './AppShell'
@@ -31,6 +32,7 @@ const PAGES: Record<string, ReactNode> = {
   '/operations/actions/:actionId': <ActionTracePage />,
   '/operations/incidents': <IncidentsPage />,
   '/operations/incidents/:incidentId': <IncidentPage />,
+  '/reports/export': <ExportPage />,
   '/wall': <WallDisplay />,
 }
 

@@ -487,3 +487,15 @@ describe('incident record (7c)', () => {
     expect(at1158('sam').getState().closeIncident('inc-0031', 'x')).toMatchObject({ ok: false })
   })
 })
+
+test('buildExport logs an export record (7d); it needs an agent; Jordan may build', () => {
+  const store = fresh()
+  store.getState().setPersona('dana')
+  const input = { agentIds: ['med-rec'], from: '2026-11-06T00:00:00', to: '2026-12-08T00:00:00', format: 'packet' as const, masked: true }
+  expect(store.getState().buildExport(input)).toEqual({ ok: true })
+  expect(store.getState().exports.at(-1)).toMatchObject({ code: 'EXP-0004', by: 'dana', agentIds: ['med-rec'], at: DEMO_NOW })
+  expect(store.getState().audit.at(-1)).toMatchObject({ action: 'Built export', target: 'EXP-0004' })
+  expect(store.getState().buildExport({ ...input, agentIds: [] })).toEqual({ ok: false, reason: 'Choose at least one agent' })
+  store.getState().setPersona('jordan')
+  expect(store.getState().buildExport(input)).toEqual({ ok: true })
+})

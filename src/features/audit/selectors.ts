@@ -186,3 +186,34 @@ export function selectIncidents(s: DemoState) {
       linked: String(i.linkedActionIds.length),
     }))
 }
+
+/** What 7d's packet holds for Med Rec that the prototype doesn't model yet (job descriptions, committee, action volume). */
+const EXPORT_FACTS: Record<string, { jobDescriptions: string; committee: string; actions: string }> = {
+  'med-rec': { jobDescriptions: '4 · v1 to v4', committee: '1 · approved with C1 to C3', actions: '2,961 · 06 Nov to 08 Dec' },
+}
+
+/** The export's contents (7d), counted from the record for the chosen agents. */
+export function selectExportContents(s: DemoState, agentIds: string[]): [string, string][] {
+  const ids = new Set(agentIds)
+  const single = agentIds.length === 1 ? EXPORT_FACTS[agentIds[0]!] : undefined
+  const privileges = s.privileges.filter((p) => ids.has(p.agentId) && p.level !== 'shadow' && p.state !== 'closed')
+  const signatures = privileges.reduce((n, p) => n + Math.max(0, p.version - 1), 0)
+  const stops = s.hardStops.filter((h) => ids.has(h.agentId)).length
+  const exceptions = s.exceptions.filter((e) => ids.has(e.agentId)).length
+  const incidents = s.incidents.filter((i) => ids.has(i.agentId))
+  const codes = [...ids].flatMap((id) => s.agents.filter((a) => a.id === id).map((a) => a.code))
+  // Every pause goes through applyPause, which logs the drafts it routed; resumes are audited.
+  const pauses = s.logEvents.filter((e) => e.agentId && ids.has(e.agentId) && e.id.startsWith('log-pause')).length
+  const resumes = s.audit.filter((a) => a.action === 'Resumed' && codes.includes(a.target)).length
+  const actions = s.actions.filter((a) => ids.has(a.agentId)).length
+  return [
+    ['Job description versions', single?.jobDescriptions ?? '—'],
+    ['Privileges and signatures', privileges.length ? `${privileges.map((p) => `${p.code} v1 to v${p.version}`).join(', ')} · ${signatures} ${signatures === 1 ? 'signature' : 'signatures'}` : 'None'],
+    ['Committee decisions and conditions', single?.committee ?? '—'],
+    ['Hard-stop tests', stops ? `${stops} · with examples` : 'None'],
+    ['Actions and traces', single?.actions ?? `${actions} seeded`],
+    ['Exceptions and how each closed', String(exceptions)],
+    ['Incidents', incidents.length ? `${incidents.length} · ${incidents.map((i) => i.code).join(', ')}` : 'None'],
+    ['Pauses and resumes', pauses ? `${pauses} · ${resumes >= pauses ? 'with both reasons' : 'still paused'}` : 'None'],
+  ]
+}

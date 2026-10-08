@@ -67,6 +67,8 @@ export interface DemoActions {
   completeCorrection: (incidentId: string, correctionId: string) => ActionResult
   /** Close once every correction is done: the commander or the program lead (7c). */
   closeIncident: (incidentId: string, reason: string) => ActionResult
+  /** Build a records export for a survey or audit; it is logged (7d). */
+  buildExport: (input: { agentIds: string[]; from: string; to: string; format: 'packet' | 'csv'; masked: boolean }) => ActionResult
 }
 
 export interface PauseInput {
@@ -494,6 +496,19 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                 target.state = 'closed'
                 target.closedAt = draft.now
                 target.timeline.push({ at: draft.now, title: 'Incident closed', sub: name, by: draft.personaId })
+              },
+            })
+          },
+          buildExport: (input) => {
+            const s = get()
+            if (!input.agentIds.length) return { ok: false, reason: 'Choose at least one agent' }
+            const code = `EXP-${String(s.exports.length + 1).padStart(4, '0')}`
+            return act({
+              action: 'viewAudit',
+              ctx: input.agentIds.length === 1 ? { agentId: input.agentIds[0] } : undefined,
+              audit: { action: 'Built export', target: code, reason: `${input.format === 'packet' ? 'PDF packet and CSV' : 'CSV'}${input.masked ? ' · identifiers masked' : ''}` },
+              mutate: (draft) => {
+                draft.exports.push({ id: code.toLowerCase(), code, ...input, by: draft.personaId, at: draft.now })
               },
             })
           },

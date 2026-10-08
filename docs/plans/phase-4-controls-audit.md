@@ -527,14 +527,14 @@ These are the failure modes the spec implies that no screen test naturally cover
   - The packet preview list
   - After building, a Notice: "EXP-0004 built · logged as Dana". It adds to Past exports. No file is produced; ledger this as a prototype ruling.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **Selectors:** Med Rec contents show Incidents "1 · INC-0031" in `resume-requested`, and Pauses and resumes "1 · with both reasons" after an approve.
   - **Store:** building with no agents is refused; Jordan can build.
   - **e2e:** as Dana, `/reports/export?agent=med-rec` → Build export → "Past exports · 4".
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 7d.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(audit): export for a surveyor"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 7d.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(audit): export for a surveyor"`.
 
 ### Task 4.10: Journey test and checkpoint
 
