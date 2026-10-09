@@ -18,10 +18,10 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 8: Stories and portfolio layer (☐ not started) |
-| **Branch** | `phase-8-stories` (create from `main`) |
+| **Current phase** | Phase 8: Stories and portfolio layer (◐ in progress) |
+| **Branch** | `phase-8-stories` |
 | **Last completed** | Phase 7 approved and squash-merged (PR #17) (2026-10-09) |
-| **Next task** | Phase 8 Task 8.0: write `docs/plans/phase-8-stories.md` (read Phase 7's handoff notes first) |
+| **Next task** | Phase 8 Task 8.1: story engine (plan written; execution order 8.1, 8.3, 8.4, 8.2, 8.5, 8.6, 8.7) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -96,7 +96,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 5 | Onboarding and go-live | ☑ Merged | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | [#15](https://github.com/StefanNav/agent-control-plane/pull/15) | [phase-5-onboarding.md](plans/phase-5-onboarding.md) |
 | 6 | Governance and fast follows | ☑ Merged | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | [#16](https://github.com/StefanNav/agent-control-plane/pull/16) | [phase-6-governance.md](plans/phase-6-governance.md) |
 | 7 | Earned autonomy | ☑ Merged | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | [#17](https://github.com/StefanNav/agent-control-plane/pull/17) | [phase-7-autonomy.md](plans/phase-7-autonomy.md) |
-| 8 | Stories and portfolio layer | ☐ Not started | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | – | to write (Task 8.0) |
+| 8 | Stories and portfolio layer | ◐ In progress | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | – | [phase-8-stories.md](plans/phase-8-stories.md) |
 | 9 | Polish and launch | ☐ Not started | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | – | to write (Task 9.0) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
@@ -517,7 +517,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 
 **Goal:** Visitors can follow any persona's story or explore freely (spec §4).
 
-- [ ] 8.0 Write `docs/plans/phase-8-stories.md`; commit
+- [x] 8.0 Write `docs/plans/phase-8-stories.md`; commit
 - [ ] 8.1 Story engine: `Story`/`Step` types, `?story=&step=` URL sync, scenario load on start, narration panel, `data-story-target` outline; **Review focus 4 test** (unknown story ignored, out-of-range step clamped)
 - [ ] 8.2 Landing page `/`
 - [ ] 8.3 Stories: Marcus, Priya, Dana (add `data-story-target` attributes to screens as needed)
