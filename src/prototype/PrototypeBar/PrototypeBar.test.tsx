@@ -20,7 +20,7 @@ const renderBar = () =>
   )
 
 afterEach(() => {
-  useStory.setState({ progress: null })
+  useStory.setState({ progress: null, exited: false })
   useDemo.getState().reset()
 })
 
@@ -51,7 +51,7 @@ test('Reset demo also ends the story', async () => {
   useStory.setState({ progress: { storyId: 'marcus', step: 2, loaded: 'baseline' } })
   renderBar()
   await userEvent.click(screen.getByRole('button', { name: 'Reset demo' }))
-  expect(useStory.getState().progress).toBeNull()
+  expect(useStory.getState()).toMatchObject({ progress: null, exited: true })
   expect(screen.getByRole('status', { name: 'location' })).toHaveTextContent(
     /^\/operations\/divisions\/medications$/,
   )

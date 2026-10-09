@@ -26,7 +26,7 @@ function show(step: number, at: string) {
 }
 
 afterEach(() => {
-  useStory.setState({ progress: null })
+  useStory.setState({ progress: null, exited: false })
   useDemo.getState().reset()
 })
 

@@ -24,7 +24,7 @@ const show = () =>
   )
 
 afterEach(() => {
-  useStory.setState({ progress: null })
+  useStory.setState({ progress: null, exited: false })
   useDemo.getState().reset()
 })
 
@@ -69,7 +69,7 @@ test('Explore freely leaves any story and lands on Marcus’s division, keeping 
   useDemo.getState().setPersona('jordan')
   show()
   await userEvent.click(screen.getByRole('button', { name: 'Explore freely' }))
-  expect(useStory.getState().progress).toBeNull()
+  expect(useStory.getState()).toMatchObject({ progress: null, exited: true })
   expect(useDemo.getState().personaId).toBe('marcus')
   expect(useDemo.getState().exceptions.find((e) => e.id === 'exc-5530')!.claimedAt).toBeDefined()
   expect(screen.getByRole('status', { name: 'location' })).toHaveTextContent(

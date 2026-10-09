@@ -59,7 +59,7 @@ export function PrototypeBar({ stories = STORIES }: { stories?: readonly Story[]
           type="button"
           className={styles.action}
           onClick={() => {
-            useStory.getState().setProgress(null)
+            useStory.getState().exit()
             reset()
             navigate('/operations/divisions/medications')
           }}

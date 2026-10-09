@@ -56,7 +56,7 @@ export function useStoryActions(stories: readonly Story[] = STORIES) {
       },
       /** Leave the story where you are; the data stays as it is. */
       exit: () => {
-        useStory.getState().setProgress(null)
+        useStory.getState().exit()
         setStoryParams(setParams, null)
       },
     }
@@ -72,7 +72,8 @@ export function useStoryUrlSync(stories: readonly Story[] = STORIES) {
   const storyParam = params.get('story')
   const stepParam = params.get('step')
   const sync = useEffectEvent(() => {
-    const action = urlAction(params, useStory.getState().progress, stories)
+    const { progress, exited } = useStory.getState()
+    const action = urlAction(params, progress, stories, exited)
     if (action.kind === 'strip') setStoryParams(setParams, null)
     if (action.kind === 'append' || action.kind === 'rewrite')
       setStoryParams(setParams, action.storyId, action.step)

@@ -64,12 +64,14 @@ export type UrlAction =
 
 /**
  * What the URL's `story` and `step` ask for, against saved progress (R3). No story param: put the
- * active story back. Unknown story: strip it. A bad step: clamp it and rewrite the param.
+ * active story back. Unknown story: strip it. A bad step: clamp it and rewrite the param. Once the
+ * visitor has exited on this page, a story link reached by Back is stripped, not restarted.
  */
 export function urlAction(
   params: URLSearchParams,
   progress: StoryProgress | null,
   stories: readonly Story[],
+  exited = false,
 ): UrlAction {
   const id = params.get('story')
   if (id === null)
@@ -77,7 +79,7 @@ export function urlAction(
       ? { kind: 'append', storyId: progress.storyId, step: progress.step }
       : { kind: 'none' }
   const story = stories.find((s) => s.id === id)
-  if (!story) return { kind: 'strip' }
+  if (!story || (exited && !progress)) return { kind: 'strip' }
   const raw = params.get('step')
   const step = clampStep(story, raw === null ? Number.NaN : Number(raw))
   const rewrite = raw !== String(step)

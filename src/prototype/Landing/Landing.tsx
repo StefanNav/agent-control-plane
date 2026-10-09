@@ -17,7 +17,7 @@ export function Landing() {
   const marcus = personaById('marcus')
 
   const exploreFreely = () => {
-    useStory.getState().setProgress(null)
+    useStory.getState().exit()
     setPersona(marcus.id)
     navigate(marcus.landing)
   }

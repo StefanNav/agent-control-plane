@@ -7,7 +7,11 @@ import type { Story, StoryProgress } from './types'
 
 export interface StoryStore {
   progress: StoryProgress | null
+  /** The visitor left a story on this page load (kept in memory only): Back won't restart it. */
+  exited: boolean
   setProgress: (progress: StoryProgress | null) => void
+  /** Leave the story: no progress, and story links reached by Back are ignored. */
+  exit: () => void
 }
 
 /**
@@ -22,7 +26,9 @@ export function createStoryStore(
     persist(
       (set) => ({
         progress: null,
-        setProgress: (progress) => set({ progress }),
+        exited: false,
+        setProgress: (progress) => set(progress ? { progress, exited: false } : { progress }),
+        exit: () => set({ progress: null, exited: true }),
       }),
       {
         name: 'acp-story',

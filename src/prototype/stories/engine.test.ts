@@ -144,6 +144,19 @@ describe('urlAction (R3, Review focus 4)', () => {
     })
   })
 
+  test('after Exit, Back to a story link is ignored and stripped, not restarted', () => {
+    expect(urlAction(new URLSearchParams('story=marcus&step=2'), null, stories, true)).toEqual({
+      kind: 'strip',
+    })
+    // A link in a fresh tab (nothing exited) still opens.
+    expect(urlAction(new URLSearchParams('story=marcus&step=2'), null, stories, false)).toEqual({
+      kind: 'open',
+      storyId: 'marcus',
+      step: 2,
+      rewrite: false,
+    })
+  })
+
   test('the URL already matches progress', () => {
     expect(action('story=marcus&step=2', at(2))).toEqual({ kind: 'none' })
     expect(action('story=marcus&step=02', at(2))).toEqual({

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 import { useLocation } from 'react-router'
 import { Button } from '../../design-system'
 import { personaById } from '../personas'
@@ -6,12 +6,17 @@ import { onStepRoute } from '../stories/engine'
 import { STORIES } from '../stories/index'
 import type { Story } from '../stories/types'
 import { useActiveStory, useStoryActions } from '../stories/useStory'
+import { scrollDelta } from './scroll'
 import styles from './StoryPanel.module.css'
 
 const SAFE_TARGET = /^[a-z0-9-]+$/
 
-/** Bring the step's target into view once it renders (R6); leave it alone if it already shows. */
-function useScrollToTarget(target: string | undefined, key: string) {
+/** Bring the step's target into view once it renders, clear of the panel (R6); leave it if it shows. */
+function useScrollToTarget(
+  target: string | undefined,
+  key: string,
+  panel: RefObject<HTMLElement | null>,
+) {
   useEffect(() => {
     if (!target || !SAFE_TARGET.test(target)) return
     let frame = 0
@@ -22,19 +27,15 @@ function useScrollToTarget(target: string | undefined, key: string) {
         if (++tries < 60) frame = requestAnimationFrame(tick)
         return
       }
-      const rect = el.getBoundingClientRect()
-      const tall = rect.height > window.innerHeight - 160
-      const topHidden = rect.top < 0 || rect.top > window.innerHeight - 120
-      if (!topHidden && (tall || rect.bottom <= window.innerHeight)) return
+      const box = panel.current?.getBoundingClientRect() ?? null
+      const delta = scrollDelta(el.getBoundingClientRect(), box, window.innerHeight)
+      if (delta === 0) return
       const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-      el.scrollIntoView?.({
-        block: tall ? 'start' : 'center',
-        behavior: reduced ? 'auto' : 'smooth',
-      })
+      window.scrollBy?.({ top: delta, behavior: reduced ? 'auto' : 'smooth' })
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
-  }, [target, key])
+  }, [target, key, panel])
 }
 
 /** The narration panel (spec §4.3, R5): docked bottom-right while a story is followed. */
@@ -43,8 +44,13 @@ export function StoryPanel({ stories = STORIES }: { stories?: readonly Story[] }
   const { go, exit } = useStoryActions(stories)
   const { pathname } = useLocation()
   const [hidden, setHidden] = useState(false)
+  const panelRef = useRef<HTMLElement>(null)
   const step = active ? active.story.steps[active.progress.step - 1] : undefined
-  useScrollToTarget(step?.target, active ? `${active.story.id}-${active.progress.step}` : '')
+  useScrollToTarget(
+    step?.target,
+    active ? `${active.story.id}-${active.progress.step}` : '',
+    panelRef,
+  )
   if (!active || !step) return null
 
   const { story, progress } = active
@@ -61,7 +67,7 @@ export function StoryPanel({ stories = STORIES }: { stories?: readonly Story[] }
         <style>{`[data-story-target="${target}"] { outline: 2px solid var(--cs-ink); outline-offset: 2px; }`}</style>
       ) : null}
       {hidden ? (
-        <aside aria-label="Story" className={styles.collapsed}>
+        <aside ref={panelRef} aria-label="Story" className={styles.collapsed}>
           <span className={styles.storyTitle}>{story.title}</span>
           <span className={styles.count}>{count}</span>
           <button type="button" className={styles.textButton} onClick={() => setHidden(false)}>
@@ -71,7 +77,7 @@ export function StoryPanel({ stories = STORIES }: { stories?: readonly Story[] }
       ) : (
         <>
           <div className={styles.space} aria-hidden="true" />
-          <aside aria-label="Story" className={styles.panel}>
+          <aside ref={panelRef} aria-label="Story" className={styles.panel}>
             <div className={styles.head}>
               <span className={styles.storyTitle}>{story.title}</span>
               <span className={styles.count}>{count}</span>

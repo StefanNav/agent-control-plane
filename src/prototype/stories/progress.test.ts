@@ -45,3 +45,15 @@ describe('saved progress from an older build is dropped (Review focus 4)', () =>
     expect(createStoryStore(storage, stories).getState().progress).toBeNull()
   })
 })
+
+test('Exit marks the story as left for this page only; following one again clears it', () => {
+  const storage = createMemoryStorage()
+  const store = createStoryStore(storage, stories)
+  store.getState().setProgress({ storyId: 'marcus', step: 2, loaded: 'baseline' })
+  store.getState().exit()
+  expect(store.getState()).toMatchObject({ progress: null, exited: true })
+  // Not saved: a new page load (a shared link, a refresh) starts unexited.
+  expect(createStoryStore(storage, stories).getState().exited).toBe(false)
+  store.getState().setProgress({ storyId: 'marcus', step: 1, loaded: 'baseline' })
+  expect(store.getState().exited).toBe(false)
+})
