@@ -11,6 +11,11 @@ export interface Voice {
   currentMs(): number
   /** Start fetching a beat's clip so it is ready when its turn comes. */
   preload(beatId: string): void
+  /**
+   * Call inside the visitor's click (Play, Resume tour), before playing: it lets the browser play
+   * the clips that start later, outside any click (Ruling 11).
+   */
+  unlock(): void
 }
 
 /** A playhead that advances with the wall clock, for voices with no audio behind them. */
@@ -95,6 +100,7 @@ export function createSilentVoice(msFor: (beatId: string) => number, factor = 10
     },
     currentMs: () => current?.timer.positionMs() ?? 0,
     preload: () => {},
+    unlock: () => {},
   }
 }
 
@@ -244,6 +250,17 @@ export function createAudioVoice(
       if (warmed === beatId) return
       warmed = beatId
       warm.src = url(beatId)
+    },
+    unlock() {
+      // A clip already playing has nothing to unlock, and pausing it here would stop it.
+      if (current && !current.paused) return
+      // Playing the element inside the click unlocks it; pausing at once keeps it silent.
+      try {
+        Promise.resolve(audio.play()).catch(() => {})
+      } catch {
+        // An old browser that throws instead of rejecting: nothing to undo.
+      }
+      audio.pause()
     },
   }
 }

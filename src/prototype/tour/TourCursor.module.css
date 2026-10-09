@@ -1,0 +1,69 @@
+/* The tour's cursor (spec §4.3): above the bar and the cards, never in the pointer's way. */
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 70;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  transition-property: transform;
+  transition-timing-function: ease-in-out;
+}
+
+.cursor[data-visible='false'] {
+  visibility: hidden;
+}
+
+/* The arrow's tip is the point. */
+.arrow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  fill: var(--cs-ink);
+  stroke: var(--cs-raised);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+/* One pulse per click, once the glide is over; invisible at rest, so reduced motion shows none. */
+.ring {
+  position: absolute;
+  top: -13px;
+  left: -13px;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--cs-ink);
+  border-radius: 50%;
+  opacity: 0;
+  animation: pulse 480ms ease-out both;
+}
+
+/* Held at 0% (unseen) through the delay, so it shows only once the arrow has arrived. */
+@keyframes pulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  1% {
+    opacity: 1;
+    transform: scale(0.5);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor {
+    transition: none;
+  }
+
+  .ring {
+    animation: none;
+  }
+}

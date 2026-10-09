@@ -25,6 +25,11 @@
   right: 0;
 }
 
+.above {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+
 .divided {
   margin-top: 4px;
   padding-top: 4px;

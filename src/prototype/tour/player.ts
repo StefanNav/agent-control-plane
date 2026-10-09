@@ -51,6 +51,8 @@ export interface TourState {
   card: { id: string; side: 'left' | 'right' } | null
   /** Visible only while playing, once the tour has moved it. */
   cursor: { x: number; y: number; visible: boolean; click: boolean }
+  /** Goes up by one for each press of the cursor, so the overlay can pulse once per click. */
+  clicks: number
   /** Bumped on every step entry; the shell keys its outlet by it (R6). */
   stepKey: number
   /** Every action skipped since the tour opened, as `kind:target`. */
@@ -193,7 +195,10 @@ export function createTourPlayer(
         moveCursor: (x, y, click) => {
           if (!live()) return Promise.resolve()
           cursorMoved = true
-          set({ cursor: { x, y, click, visible: get().status === 'playing' } })
+          set((s) => ({
+            cursor: { x, y, click, visible: s.status === 'playing' },
+            clicks: click ? s.clicks + 1 : s.clicks,
+          }))
           return glide(deps.reducedMotion() ? 0 : GLIDE_MS / get().rate, signal)
         },
         rate: () => get().rate,
@@ -283,6 +288,7 @@ export function createTourPlayer(
       outline: null,
       card: null,
       cursor: HIDDEN_CURSOR,
+      clicks: 0,
       stepKey: 0,
       skipped: [],
 

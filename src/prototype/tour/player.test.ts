@@ -50,6 +50,7 @@ function makeVoice() {
     setRate: vi.fn<Voice['setRate']>(),
     currentMs: () => 0,
     preload: vi.fn<Voice['preload']>(),
+    unlock: vi.fn<Voice['unlock']>(),
   }
   return { voice, finish: end }
 }
@@ -188,6 +189,7 @@ test('starts closed, at the first beat, at 1×, with captions on', () => {
     outline: null,
     card: null,
     cursor: { x: 0, y: 0, visible: false, click: false },
+    clicks: 0,
     stepKey: 0,
     skipped: [],
   })
@@ -617,6 +619,33 @@ describe('pause', () => {
     expect(t.state().cursor.visible).toBe(false)
     t.state().play()
     expect(t.state().cursor).toEqual({ x: 10, y: 20, visible: true, click: true })
+  })
+
+  test('clicks counts each press of the cursor, and nothing else: not a move, not showing it again', async () => {
+    const t = setup()
+    t.state().open(1, true)
+    await flush()
+    const host = t.calls[0]!.host
+    void host.moveCursor(10, 20, false)
+    expect(t.state().clicks).toBe(0)
+    void host.moveCursor(10, 20, true)
+    expect(t.state().clicks).toBe(1)
+    t.state().pause()
+    t.state().play()
+    expect(t.state().clicks).toBe(1)
+    // The same spot again is still a new click.
+    void host.moveCursor(10, 20, true)
+    expect(t.state().clicks).toBe(2)
+  })
+
+  test('a run that was dropped does not count its clicks', async () => {
+    const t = setup()
+    t.state().open(1, true)
+    await flush()
+    const host = t.calls[0]!.host
+    t.state().takeOver()
+    void host.moveCursor(10, 20, true)
+    expect(t.state().clicks).toBe(0)
   })
 
   test('the cursor stays hidden until the tour first moves it', () => {

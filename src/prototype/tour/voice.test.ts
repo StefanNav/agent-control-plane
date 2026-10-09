@@ -112,6 +112,17 @@ describe('createSilentVoice', () => {
       voice.preload('a')
     }).not.toThrow()
   })
+
+  test('unlock does nothing: there is no audio to unlock (Ruling 11)', async () => {
+    const voice = createSilentVoice(msFor)
+    voice.unlock()
+    const played = track(voice.play('a'))
+    voice.unlock()
+    await vi.advanceTimersByTimeAsync(399)
+    expect(played.done).toBe(false)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(played.done).toBe(true)
+  })
 })
 
 describe('createAudioVoice', () => {
@@ -294,6 +305,58 @@ describe('createAudioVoice', () => {
     expect(voice.currentMs()).toBe(2500)
     voice.stop()
     expect(voice.currentMs()).toBe(0)
+  })
+
+  describe('unlock (Ruling 11)', () => {
+    test('plays and pauses the clip element inside the call, so the click that called it unlocks audio', () => {
+      const voice = createAudioVoice(msFor, url)
+      voice.unlock()
+      expect(played).toEqual([main()])
+      expect(HTMLMediaElement.prototype.pause).toHaveBeenCalledTimes(1)
+    })
+
+    test('a play the browser refuses is ignored', async () => {
+      playResult = () => Promise.reject(new DOMException('no source', 'NotSupportedError'))
+      const voice = createAudioVoice(msFor, url)
+      expect(() => voice.unlock()).not.toThrow()
+      await vi.advanceTimersByTimeAsync(0)
+      const result = track(voice.play('b'))
+      playResult = () => Promise.resolve()
+      await vi.advanceTimersByTimeAsync(1999)
+      expect(result.done).toBe(false)
+    })
+
+    test('a play that throws is ignored', () => {
+      vi.mocked(HTMLMediaElement.prototype.play).mockImplementationOnce(() => {
+        throw new Error('old browser')
+      })
+      const voice = createAudioVoice(msFor, url)
+      expect(() => voice.unlock()).not.toThrow()
+    })
+
+    test('leaves a clip that is playing alone', async () => {
+      const voice = createAudioVoice(msFor, url)
+      const result = track(voice.play('a'))
+      voice.unlock()
+      expect(played).toHaveLength(1)
+      expect(HTMLMediaElement.prototype.pause).not.toHaveBeenCalled()
+      main().dispatchEvent(new Event('ended'))
+      await vi.advanceTimersByTimeAsync(0)
+      expect(result.done).toBe(true)
+    })
+
+    test('a paused clip stays paused and resumes from where it was', async () => {
+      const voice = createAudioVoice(msFor, url)
+      const result = track(voice.play('a'))
+      voice.pause()
+      voice.unlock()
+      await vi.advanceTimersByTimeAsync(10_000)
+      expect(result.done).toBe(false)
+      voice.resume()
+      main().dispatchEvent(new Event('ended'))
+      await vi.advanceTimersByTimeAsync(0)
+      expect(result.done).toBe(true)
+    })
   })
 
   describe('watchdog', () => {
