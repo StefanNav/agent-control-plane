@@ -66,3 +66,20 @@ test('Phase 7: an October rewind rolls review levels back to that day (R17)', as
   expect(levelOf(s, 'allergy-recon').changes.map((c) => c.at)).toEqual(['2026-10-06T06:00:00'])
   expect(s.activities.find((a) => a.id === 'duplicate-rx')!.reviewLevel).toBe('normal')
 })
+
+test('Phase 8 R8: a later signing rolls back by its own review interval, not the tier’s', async () => {
+  const { dayGap } = await import('../../lib/clock')
+  const seed = createSeed()
+  const s = buildScenario('awaiting-signature')
+  const gap = (p: { grantedAt?: string; reviewDate?: string }) => dayGap(p.grantedAt!, p.reviewDate!)
+  for (const privilege of s.privileges) {
+    const original = seed.privileges.find((p) => p.id === privilege.id)
+    if (!original?.grantedAt || !original.reviewDate || !privilege.reviewDate) continue
+    expect(gap(privilege), privilege.id).toBe(gap(original))
+  }
+  const tpn = s.privileges.find((p) => p.agentId === 'tpn-draft')!
+  expect(tpn.grantedAt!.slice(0, 10)).toBe('2026-08-13')
+  expect(tpn.reviewDate!.slice(0, 10)).toBe('2026-11-12')
+  // On 06 Nov nothing signed in the seed's later weeks reads as long overdue.
+  expect(s.privileges.filter((p) => p.state !== 'closed' && p.reviewDate && p.reviewDate < '2026-10-01')).toEqual([])
+})

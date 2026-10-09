@@ -1,4 +1,4 @@
-import { addDays, addMinutes } from '../../lib/clock'
+import { addDays, addMinutes, dayGap } from '../../lib/clock'
 import { TIER_RULES } from '../seed/catalogue'
 import type { DemoState } from '../types'
 
@@ -88,10 +88,12 @@ export function rewindTo(s: DemoState, at: string): DemoState {
     division.exceptionsByDay = division.exceptionsByDay.map(() => 0)
   }
 
-  // A privilege signed after `at` stands for its previous signing: roll it back one review cycle at a time.
+  // A privilege signed after `at` stands for its previous signing: roll it back one review cycle at a
+  // time. The cycle is the privilege's own interval; the tier's only when it has no review date (R8).
   for (const privilege of s.privileges) {
     const tier = s.agents.find((a) => a.id === privilege.agentId)?.riskTier ?? 2
-    const cycle = TIER_RULES[tier].reviewDays + 1
+    const own = privilege.grantedAt && privilege.reviewDate ? dayGap(privilege.grantedAt, privilege.reviewDate) : 0
+    const cycle = own > 0 ? own : TIER_RULES[tier].reviewDays + 1
     while (privilege.grantedAt && privilege.grantedAt > at) {
       privilege.grantedAt = addDays(privilege.grantedAt, -cycle)
       if (privilege.reviewDate) privilege.reviewDate = addDays(privilege.reviewDate, -cycle)
