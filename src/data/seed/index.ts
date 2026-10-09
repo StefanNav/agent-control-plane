@@ -2,7 +2,7 @@ import { DEMO_NOW } from '../../lib/clock'
 import type { DemoState } from '../types'
 import { actions } from './actions'
 import { activities } from './activities'
-import { reviewLevels } from './autonomy'
+import { reviewLevels, samplingDraws } from './autonomy'
 import { agents } from './agents'
 import { divisions } from './divisions'
 import { changeEvents, logEvents } from './events'
@@ -53,6 +53,7 @@ const SEED: DemoState = {
   callers,
   reviewChanges: [],
   reviewLevels,
+  samplingDraws,
   stats24h: { closedEarlier: 5, medianCloseMin: 41, lastHour: { hardStops: 3, pauses: 1, pages: 0 }, actionsToday: 1912 },
   audit: [],
 }

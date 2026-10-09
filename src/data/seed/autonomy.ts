@@ -1,4 +1,4 @@
-import type { Branch, ReviewLevelRecord, ReviewRules } from '../types'
+import type { Branch, ReviewLevelRecord, ReviewRules, SamplingDraw } from '../types'
 import { E13_SHIFT, fromMarch } from './redate'
 
 /**
@@ -70,5 +70,60 @@ export const reviewLevels: ReviewLevelRecord[] = [
     defects: 0,
     defectDays: [],
     fired: { checks: 301, defects: 0 },
+  },
+]
+
+/** Checks recorded earlier this week, before today's draw (13b "Checked this week · 31"). */
+export const CHECKED_EARLIER_THIS_WEEK = 29
+
+const today = (hhmm: string) => `2026-12-08T${hhmm}:00`
+const drawn = today('06:00')
+
+/**
+ * Today's draw (13b), verbatim: 6 drawn at 06:00, 2 already checked. ACT-90412's lines are the
+ * frame's; the others are invented in the same voice (R9). Builds are the seed's live ones (R1).
+ */
+export const samplingDraws: SamplingDraw[] = [
+  {
+    id: 'draw-act-90412', actionCode: 'ACT-90412', activityId: 'allergy-recon', encounter: '7731', unit: '8 East', list: 'allergy list',
+    signedBy: 'Lee T., PharmD', signedAt: today('08:14'), drawnAt: drawn, build: 'v1.2.0',
+    lines: [
+      { output: 'Add: penicillin · hives', outputSub: 'From an outside record', source: 'St. Mary’s summary, 2019', chart: 'Penicillin · hives' },
+      { output: 'Keep: latex · rash', outputSub: 'Already on the list', source: 'Lakeshore chart, 2023', chart: 'Latex · rash' },
+      { output: 'Add: sulfa · reaction unknown', outputSub: 'From an outside record', source: 'St. Mary’s summary, 2019', chart: 'Sulfonamide antibiotics' },
+    ],
+  },
+  {
+    id: 'draw-act-90377', actionCode: 'ACT-90377', activityId: 'allergy-recon', encounter: '7702', unit: '7 West', list: 'allergy list',
+    signedBy: 'Ana R., PharmD', signedAt: today('07:41'), drawnAt: drawn, build: 'v1.2.0',
+    lines: [
+      { output: 'Add: codeine · nausea', outputSub: 'From an outside record', source: 'Riverside clinic note, 2021', chart: 'Codeine · nausea' },
+      { output: 'Keep: shellfish · hives', outputSub: 'Already on the list', source: 'Lakeshore chart, 2022', chart: 'Shellfish · hives' },
+    ],
+  },
+  {
+    id: 'draw-act-90330', actionCode: 'ACT-90330', activityId: 'allergy-recon', encounter: '7688', unit: '8 East', list: 'allergy list',
+    signedBy: 'Jo K., PharmD', signedAt: today('07:02'), drawnAt: drawn, build: 'v1.2.0',
+    lines: [{ output: 'Add: amoxicillin · rash', outputSub: 'From an outside record', source: 'St. Mary’s summary, 2020', chart: 'Amoxicillin · rash' }],
+    result: 'right', checkedBy: 'marcus', checkedAt: today('08:40'),
+  },
+  {
+    id: 'draw-act-90398', actionCode: 'ACT-90398', activityId: 'duplicate-rx', encounter: '7719', unit: '7 West', list: 'medication list',
+    signedBy: 'Ana R., PharmD', signedAt: today('07:55'), drawnAt: drawn, build: 'v1.5.2',
+    lines: [{ output: 'Flag: omeprazole twice', outputSub: 'Two pharmacies, same strength', source: 'Outside fills, 30 days', chart: 'Omeprazole 20 mg, once' }],
+  },
+  {
+    id: 'draw-act-90351', actionCode: 'ACT-90351', activityId: 'duplicate-rx', encounter: '7695', unit: '8 East', list: 'medication list',
+    signedBy: 'Lee T., PharmD', signedAt: today('07:20'), drawnAt: drawn, build: 'v1.5.2',
+    lines: [{ output: 'No duplicates found', outputSub: '12 medications compared', source: 'Home list and fills, 90 days', chart: '12 medications' }],
+    result: 'right', checkedBy: 'marcus', checkedAt: today('08:52'),
+  },
+  {
+    id: 'draw-act-90365', actionCode: 'ACT-90365', activityId: 'vaccine-history', encounter: '7698', unit: '7 West', list: 'vaccine record',
+    signedBy: 'Jo K., PharmD', signedAt: today('07:33'), drawnAt: drawn, build: 'v2.2.0',
+    lines: [
+      { output: 'Add: influenza 2026–27 · 14 Oct', outputSub: 'From the state registry', source: 'State immunization registry', chart: 'Influenza 2026–27' },
+      { output: 'Keep: Tdap · 2019', outputSub: 'Already on the list', source: 'Lakeshore chart, 2019', chart: 'Tdap' },
+    ],
   },
 ]

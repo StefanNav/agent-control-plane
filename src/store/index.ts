@@ -11,7 +11,7 @@ import { applyAccept, applyHardStopApproval, applyReplay, applySystemsSignOff, p
 import { applyFlag, applyFlagAnswer, applySeenFix, type FlagAnswer } from './feedback'
 import { applyBlockCaller, applyDismissCaller, applyMessageOwner } from './gateway'
 import { applyDeclineReviewChange, applyProposeReviewChange, applyShareFinding, applySignReviewChange, unitById } from './reviewers'
-import { applyRules, applyTighten, validRules } from './levels'
+import { applyCheck, applyRules, applyTighten, validRules } from './levels'
 import { can, lockReason } from './permissions'
 import { applyAddRole, applyCreateDivision, applyDivisionSettings, applyInvite, applyRemoveRole, applyReturnToShadow, diffDivision, divisionSlug, ROLE_LABEL, roleDivision, type DivisionPatch, type NewDivisionInput, type RoleInput } from './settings'
 import { runAction, type ActionResult } from './runAction'
@@ -120,6 +120,8 @@ export interface DemoActions {
   tightenReviewLevel: (activityId: string, reason: string) => ActionResult
   /** "Edit rules" (13a): the sponsor rewrites the numbers in the four rules, with a reason. */
   updateReviewRules: (activityId: string, rules: ReviewRules, reason: string) => ActionResult
+  /** Record an independent check of a drawn output (13b); a defect can move the level by rule. Owner. */
+  recordCheck: (drawId: string, input: { result: 'right' | 'defect' | 'cantTell'; note?: string }) => ActionResult
   /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
   startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
   /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
@@ -890,6 +892,21 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Edited review-level rules', target: activity.name, reason: reason.trim() },
               mutate: (draft) => {
                 applyRules(draft, activityId, { rules, reason: reason.trim() }, draft.personaId, draft.now)
+              },
+            })
+          },
+          recordCheck: (drawId, input) => {
+            const s = get()
+            const draw = s.samplingDraws.find((d) => d.id === drawId)
+            const activity = s.activities.find((a) => a.id === draw?.activityId)
+            if (!draw || !activity) return { ok: false, reason: 'Not found' }
+            if (draw.result) return { ok: false, reason: 'Already checked' }
+            return act({
+              action: 'recordCheck',
+              ctx: { agentId: activity.agentId },
+              audit: { action: 'Recorded check', target: draw.actionCode, reason: input.result },
+              mutate: (draft) => {
+                applyCheck(draft, drawId, input, draft.personaId, draft.now)
               },
             })
           },

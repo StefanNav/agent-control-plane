@@ -501,6 +501,28 @@ export interface ReviewLevelRecord {
   noReducedBefore?: string
 }
 
+/** One signed output drawn at random for an independent check (13b's sampling queue). */
+export interface SamplingDraw {
+  id: string
+  /** 'ACT-90412' */
+  actionCode: string
+  activityId: string
+  encounter: string
+  unit: string
+  /** What was signed: "allergy list". */
+  list: string
+  /** "Lee T., PharmD": pharmacists are named only, not console users. */
+  signedBy: string
+  signedAt: string
+  drawnAt: string
+  build: string
+  lines: { output: string; outputSub: string; source: string; chart: string }[]
+  result?: 'right' | 'defect' | 'cantTell'
+  note?: string
+  checkedBy?: string
+  checkedAt?: string
+}
+
 /** An informational event: kept in the log, never sent to anyone. */
 export interface LogEvent {
   id: string
@@ -855,6 +877,8 @@ export interface DemoState {
   reviewChanges: ReviewChange[]
   /** Activities' review levels and the rules that move them (E13). */
   reviewLevels: ReviewLevelRecord[]
+  /** Today's random sample of signed outputs, checked independently (13b). */
+  samplingDraws: SamplingDraw[]
   /** Hospital-wide counts before today's activity (4f "Last 24 hours"); `actionsToday` for 7a. */
   stats24h: {
     closedEarlier: number

@@ -1,6 +1,6 @@
 import { TEMPLATE_RULES } from '../data/seed/autonomy'
 import type { DemoState, ReviewLevel, ReviewLevelRecord, ReviewRules } from '../data/types'
-import { formatDate } from '../lib/clock'
+import { addDays, formatDate } from '../lib/clock'
 
 /** How much of a level's signed output a second pharmacist checks (13a's three cards). */
 export const RATE: Record<ReviewLevel, { title: string; label: string; every: number }> = {
@@ -143,3 +143,35 @@ export function levelSince(s: DemoState, activityId: string): string {
 }
 
 export const sinceLabel = (iso: string) => `since ${formatDate(iso)}`
+
+/** The reviewer's name as the check names them: "Lee T., PharmD" → "Lee T.". */
+export const reviewerName = (signedBy: string) => signedBy.replace(/, PharmD$/, '')
+
+/**
+ * Record one independent check (13b). "Right" counts a check; "Defect" counts a check and a
+ * defect and moves the level by rule (Reduced → Normal on any defect; Normal → Tightened on enough
+ * defects within the batches); "Can't tell" counts neither and asks the reviewer (R9).
+ */
+export function applyCheck(s: DemoState, drawId: string, input: { result: 'right' | 'defect' | 'cantTell'; note?: string }, by: string, at: string): DemoState {
+  const draw = s.samplingDraws.find((d) => d.id === drawId)
+  const activity = s.activities.find((a) => a.id === draw?.activityId)
+  if (!draw || !activity || draw.result) return s
+  Object.assign(draw, { result: input.result, checkedBy: by, checkedAt: at, ...(input.note?.trim() ? { note: input.note.trim() } : {}) })
+  if (input.result === 'cantTell') {
+    s.logEvents.push({ id: `log-ask-${draw.id}`, at, agentId: activity.agentId, text: `Asked ${reviewerName(draw.signedBy)} about ${draw.actionCode}`, sub: 'Can’t tell from the record · counts as neither' })
+    return s
+  }
+  const record = recordFor(s, activity.id)
+  record.checks += 1
+  if (input.result === 'right') return s
+  record.defects += 1
+  record.defectDays.push(at.slice(0, 10))
+  if (activity.reviewLevel === 'reduced') return applyLevelChange(s, activity.id, 'normal', 'rule', `1 defect in a check · ${draw.actionCode}`, at)
+  if (activity.reviewLevel === 'normal') {
+    const { defects, batches } = record.rules.tighten
+    const window = addDays(at, -(batches - 1)).slice(0, 10)
+    const recent = record.defectDays.filter((day) => day >= window).length
+    if (recent >= defects) return applyLevelChange(s, activity.id, 'tightened', 'rule', `${defects} defects in ${batches} batches · ${draw.actionCode}`, at)
+  }
+  return s
+}

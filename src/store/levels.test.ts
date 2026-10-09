@@ -81,3 +81,49 @@ test('accepting a held build is a new version: a Reduced activity goes back to N
   expect(s.activities.find((a) => a.id === 'med-rec-admission')!.reviewLevel).toBe('normal')
   expect(levelOf(s, 'med-rec-admission').changes.at(-1)).toMatchObject({ by: 'rule', why: 'New agent or SOP version' })
 })
+
+describe('13b: recorded checks move the level by rule (R9)', () => {
+  test('a defect at Reduced moves to Normal; a second that day moves on to Tightened', () => {
+    const store = fresh('marcus')
+    expect(store.getState().recordCheck('draw-act-90412', { result: 'defect', note: 'Sulfa missed' })).toEqual({ ok: true })
+    let s = store.getState()
+    expect(s.samplingDraws.find((d) => d.id === 'draw-act-90412')).toMatchObject({ result: 'defect', note: 'Sulfa missed', checkedBy: 'marcus', checkedAt: s.now })
+    expect(s.activities.find((a) => a.id === 'allergy-recon')!.reviewLevel).toBe('normal')
+    expect(levelOf(s, 'allergy-recon').changes.at(-1)).toEqual({ at: s.now, from: 'reduced', to: 'normal', by: 'rule', why: '1 defect in a check · ACT-90412' })
+    expect(s.logEvents.at(-1)).toMatchObject({ text: 'Reconcile allergy lists: Reduced → Normal', to: ['priya', 'marcus'] })
+
+    expect(store.getState().recordCheck('draw-act-90377', { result: 'defect' })).toEqual({ ok: true })
+    s = store.getState()
+    expect(s.activities.find((a) => a.id === 'allergy-recon')!.reviewLevel).toBe('tightened')
+    expect(levelOf(s, 'allergy-recon').changes.at(-1)).toMatchObject({ from: 'normal', to: 'tightened', by: 'rule', why: '2 defects in 5 batches · ACT-90377' })
+  })
+
+  test('a checked draw can’t be recorded again, so no level moves twice for it', () => {
+    const store = fresh('marcus')
+    store.getState().recordCheck('draw-act-90412', { result: 'defect' })
+    store.getState().recordCheck('draw-act-90377', { result: 'defect' })
+    const changes = levelOf(store.getState(), 'allergy-recon').changes.length
+    expect(store.getState().recordCheck('draw-act-90330', { result: 'defect' })).toEqual({ ok: false, reason: 'Already checked' })
+    expect(levelOf(store.getState(), 'allergy-recon').changes).toHaveLength(changes)
+  })
+
+  test('“Right as signed” counts a check; “Can’t tell” counts neither and asks the reviewer', () => {
+    const store = fresh('marcus')
+    store.getState().recordCheck('draw-act-90398', { result: 'right' })
+    expect(levelOf(store.getState(), 'duplicate-rx')).toMatchObject({ checks: 127, defects: 0 })
+    store.getState().recordCheck('draw-act-90365', { result: 'cantTell' })
+    expect(levelOf(store.getState(), 'vaccine-history')).toMatchObject({ checks: 62, defects: 0 })
+    expect(store.getState().logEvents.at(-1)).toMatchObject({ text: 'Asked Jo K. about ACT-90365' })
+  })
+
+  test('only the owner records checks, once each', () => {
+    const priya = fresh('priya')
+    const before = dataOf(priya.getState())
+    expect(priya.getState().recordCheck('draw-act-90412', { result: 'right' })).toEqual({ ok: false, reason: 'Agent owner only' })
+    expect(dataOf(priya.getState())).toEqual(before)
+    const marcus = fresh('marcus')
+    expect(marcus.getState().recordCheck('draw-act-90412', { result: 'right' })).toEqual({ ok: true })
+    expect(marcus.getState().recordCheck('draw-act-90412', { result: 'right' })).toEqual({ ok: false, reason: 'Already checked' })
+    expect(marcus.getState().recordCheck('nope', { result: 'right' })).toEqual({ ok: false, reason: 'Not found' })
+  })
+})

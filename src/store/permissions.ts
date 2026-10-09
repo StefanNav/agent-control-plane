@@ -35,6 +35,8 @@ export type PermAction =
   | 'tightenReview'
   /** Rewrite the rules that move a review level (13a "Edit rules"). */
   | 'editReviewRules'
+  /** Record an independent check from the sampling queue (13b: "Checked by Marcus · sampling queue"). */
+  | 'recordCheck'
 
 /** How far a role reaches for an action: everywhere, its own divisions, or its own agents. */
 type Scope = 'all' | 'own' | 'ownAgents'
@@ -77,6 +79,7 @@ const MATRIX: Record<PermAction, Partial<Record<Role, Scope>>> = {
   // 13a: tightening is a safety step, like a pause; the sponsor writes the rules.
   tightenReview: STOPPERS,
   editReviewRules: { sponsor: 'own' },
+  recordCheck: { owner: 'own' },
 }
 
 export interface PermContext {
@@ -123,6 +126,7 @@ const REASONS: Partial<Record<PermAction, string>> = {
   signReviewChange: 'Clinical sponsor only',
   tightenReview: 'Owner, sponsor or program lead',
   editReviewRules: 'Clinical sponsor only',
+  recordCheck: 'Agent owner only',
   prepareGoLive: 'Program lead only',
   retire: 'Program lead or sponsor only',
   disable: 'Program lead or sponsor only',
