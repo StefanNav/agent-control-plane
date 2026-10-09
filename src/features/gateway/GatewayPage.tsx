@@ -94,7 +94,7 @@ export function GatewayPage() {
         </div>
 
         {d ? (
-          <aside className={styles.panel} aria-label={d.name}>
+          <aside className={styles.panel} aria-label={d.name} data-story-target="caller-detail">
             <div className={styles.panelHead}>
               <span className={styles.strong}>{d.name}</span>
               <span className={styles.meta}>{d.seen}</span>

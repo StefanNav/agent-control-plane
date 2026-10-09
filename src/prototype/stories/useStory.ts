@@ -8,7 +8,9 @@ import { useStory } from './progress'
 import type { Story, StoryId, StoryProgress } from './types'
 
 /** The story being followed, if any. */
-export function useActiveStory(stories: readonly Story[] = STORIES): { story: Story; progress: StoryProgress } | null {
+export function useActiveStory(
+  stories: readonly Story[] = STORIES,
+): { story: Story; progress: StoryProgress } | null {
   const progress = useStory((s) => s.progress)
   const story = progress ? storyById(progress.storyId, stories) : undefined
   return story && progress ? { story, progress } : null
@@ -72,7 +74,8 @@ export function useStoryUrlSync(stories: readonly Story[] = STORIES) {
   const sync = useEffectEvent(() => {
     const action = urlAction(params, useStory.getState().progress, stories)
     if (action.kind === 'strip') setStoryParams(setParams, null)
-    if (action.kind === 'append' || action.kind === 'rewrite') setStoryParams(setParams, action.storyId, action.step)
+    if (action.kind === 'append' || action.kind === 'rewrite')
+      setStoryParams(setParams, action.storyId, action.step)
     if (action.kind === 'open') {
       applyStep(useDemo, useStory, storyById(action.storyId, stories)!, action.step, false)
       if (action.rewrite) setStoryParams(setParams, action.storyId, action.step)

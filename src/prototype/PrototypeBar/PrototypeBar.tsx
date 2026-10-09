@@ -26,7 +26,14 @@ export function PrototypeBar({ stories = STORIES }: { stories?: readonly Story[]
           align="right"
           width={300}
           trigger={({ toggle, ref, open }) => (
-            <button ref={ref} type="button" className={styles.action} aria-expanded={open} aria-haspopup="menu" onClick={toggle}>
+            <button
+              ref={ref}
+              type="button"
+              className={styles.action}
+              aria-expanded={open}
+              aria-haspopup="menu"
+              onClick={toggle}
+            >
               Stories
               <Icon name="chevron" size={10} />
             </button>

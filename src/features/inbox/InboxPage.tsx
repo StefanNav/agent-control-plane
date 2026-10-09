@@ -98,7 +98,7 @@ export function InboxPage() {
         </div>
       ) : (
         <div className={styles.body}>
-          <div className={styles.listCard}>
+          <div className={styles.listCard} data-story-target="inbox-list">
             <div className={styles.listHead}>
               <span className={styles.label}>
                 {listLabel} · {items.length}

@@ -34,7 +34,9 @@ test('Stories lists each story with its person and length, and starts one', asyn
   await userEvent.click(item)
   expect(useStory.getState().progress).toEqual({ storyId: 'marcus', step: 1, loaded: 'baseline' })
   expect(useDemo.getState().personaId).toBe('marcus')
-  expect(screen.getByRole('status', { name: 'location' })).toHaveTextContent('/operations?story=marcus&step=1')
+  expect(screen.getByRole('status', { name: 'location' })).toHaveTextContent(
+    '/operations?story=marcus&step=1',
+  )
 })
 
 test('while a story runs, Stories offers Exit story', async () => {
@@ -50,5 +52,7 @@ test('Reset demo also ends the story', async () => {
   renderBar()
   await userEvent.click(screen.getByRole('button', { name: 'Reset demo' }))
   expect(useStory.getState().progress).toBeNull()
-  expect(screen.getByRole('status', { name: 'location' })).toHaveTextContent(/^\/operations\/divisions\/medications$/)
+  expect(screen.getByRole('status', { name: 'location' })).toHaveTextContent(
+    /^\/operations\/divisions\/medications$/,
+  )
 })

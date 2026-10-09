@@ -54,31 +54,33 @@ export function MyPrivilegesPage() {
         }
       />
       <Body>
-        <Table
-          ariaLabel="Privileges"
-          rows={view.rows}
-          getRowId={(r) => r.id}
-          minRowHeight={56}
-          columns={[
-            { id: 'agent', header: 'Agent', width: '190px', render: (r) => <span className={styles.strong}>{r.agent}</span> },
-            { id: 'activity', header: 'Activity', width: 'minmax(0, 1fr)', render: (r) => r.activity },
-            { id: 'level', header: 'Level', width: '80px', render: (r) => r.level },
-            { id: 'domain', header: 'Domain', width: '200px', render: (r) => r.domain },
-            { id: 'signed', header: 'Signed', width: '72px', render: (r) => r.signed },
-            { id: 'due', header: 'Review due', width: '96px', render: (r) => r.due },
-            { id: 'status', header: 'Status', width: '190px', render: (r) => (r.overdue ? <StatusChip status="warn" label={r.status} /> : r.status) },
-            {
-              id: 'action',
-              header: '',
-              width: '96px',
-              render: (r) => (
-                <LinkButton to={r.to} variant={r.overdue ? 'primary' : 'ghost'}>
-                  {r.action}
-                </LinkButton>
-              ),
-            },
-          ]}
-        />
+        <div data-story-target="privileges-table">
+          <Table
+            ariaLabel="Privileges"
+            rows={view.rows}
+            getRowId={(r) => r.id}
+            minRowHeight={56}
+            columns={[
+              { id: 'agent', header: 'Agent', width: '190px', render: (r) => <span className={styles.strong}>{r.agent}</span> },
+              { id: 'activity', header: 'Activity', width: 'minmax(0, 1fr)', render: (r) => r.activity },
+              { id: 'level', header: 'Level', width: '80px', render: (r) => r.level },
+              { id: 'domain', header: 'Domain', width: '200px', render: (r) => r.domain },
+              { id: 'signed', header: 'Signed', width: '72px', render: (r) => r.signed },
+              { id: 'due', header: 'Review due', width: '96px', render: (r) => r.due },
+              { id: 'status', header: 'Status', width: '190px', render: (r) => (r.overdue ? <StatusChip status="warn" label={r.status} /> : r.status) },
+              {
+                id: 'action',
+                header: '',
+                width: '96px',
+                render: (r) => (
+                  <LinkButton to={r.to} variant={r.overdue ? 'primary' : 'ghost'}>
+                    {r.action}
+                  </LinkButton>
+                ),
+              },
+            ]}
+          />
+        </div>
         <span className={styles.line}>{view.footer}</span>
         {view.overdue ? (
           <Notice

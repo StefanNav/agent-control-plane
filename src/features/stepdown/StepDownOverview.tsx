@@ -25,34 +25,36 @@ export function StepDownOverview({ agentId, view }: { agentId: string; view: Vie
     <Split
       main={
         <>
-          <Notice
-            mark="warn"
-            lead={view.notice.lead}
-            actions={
-              <>
-                {view.exceptionId ? (
-                  <LinkButton to={`/operations/inbox/${view.exceptionId}`} variant="ghost" size="sm">
-                    Open the exception
-                  </LinkButton>
-                ) : null}
-                {view.incident ? (
-                  <LinkButton to={`/operations/incidents/${view.incident.id}`} variant="ghost" size="sm">
-                    {`Open ${view.incident.code}`}
-                  </LinkButton>
-                ) : allowed ? (
-                  <Button variant="ghost" size="sm" onClick={startIncident}>
-                    Start an incident
-                  </Button>
-                ) : (
-                  <Button variant="ghost" size="sm" locked={lockReason('openIncident', state.personaId)}>
-                    Start an incident
-                  </Button>
-                )}
-              </>
-            }
-          >
-            {view.notice.text}
-          </Notice>
+          <div data-story-target="stepdown-notice">
+            <Notice
+              mark="warn"
+              lead={view.notice.lead}
+              actions={
+                <>
+                  {view.exceptionId ? (
+                    <LinkButton to={`/operations/inbox/${view.exceptionId}`} variant="ghost" size="sm">
+                      Open the exception
+                    </LinkButton>
+                  ) : null}
+                  {view.incident ? (
+                    <LinkButton to={`/operations/incidents/${view.incident.id}`} variant="ghost" size="sm">
+                      {`Open ${view.incident.code}`}
+                    </LinkButton>
+                  ) : allowed ? (
+                    <Button variant="ghost" size="sm" onClick={startIncident}>
+                      Start an incident
+                    </Button>
+                  ) : (
+                    <Button variant="ghost" size="sm" locked={lockReason('openIncident', state.personaId)}>
+                      Start an incident
+                    </Button>
+                  )}
+                </>
+              }
+            >
+              {view.notice.text}
+            </Notice>
+          </div>
           {view.chart ? (
             <TrendChart
               label={view.chart.label}

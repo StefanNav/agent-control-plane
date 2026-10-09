@@ -148,7 +148,7 @@ function Check({ detail, onDone }: { detail: NonNullable<View['detail']>; onDone
         </Notice>
       ) : (
         <>
-          <div className={styles.question}>
+          <div className={styles.question} data-story-target="sampling-check">
             <div className={styles.questionHead}>
               <strong>Was this right as signed?</strong>
               <span>{detail.independent}</span>

@@ -18,7 +18,10 @@ test('starting loads the step’s scenario, switches persona and saves progress'
   expect(progress).toEqual({ storyId: 'marcus', step: 3, loaded: 'med-rec-paused' })
   expect(stories.getState().progress).toEqual(progress)
   expect(demo.getState().personaId).toBe('marcus')
-  expect(dataOf(demo.getState())).toEqual({ ...buildScenario('med-rec-paused'), personaId: 'marcus' })
+  expect(dataOf(demo.getState())).toEqual({
+    ...buildScenario('med-rec-paused'),
+    personaId: 'marcus',
+  })
 })
 
 test('a step in the same segment changes no data', () => {

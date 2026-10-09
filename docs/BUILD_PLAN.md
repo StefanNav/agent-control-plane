@@ -689,6 +689,7 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-09 | Story URL mirrors progress: product links that drop `?story=&step=` get them back; a link to another step opens it where the visitor is; an unknown story is stripped; a bad step is clamped and rewritten. Progress is its own store (`acp-story` v1), so a refresh never reloads a scenario; stale progress is dropped; Reset and Exit clear it | Phase 8 R3, R4 (Review focus 4) |
 | 2026-10-09 | Narration panel: bottom-right, 360 px, z-index 60 (above dialogs, so narration stays readable), Hide/Show, "Return to it" off path, Finish = Exit; 280 px of space under the page while it shows. The step's target gets a 2 px ink outline from one `<style>` rule and is scrolled into view; dialog steps have no target | Phase 8 R5, R6 |
 | 2026-10-09 | `rewindTo` rolls a later signing back by the privilege's own interval (review date − signed), not the tier's cycle | Phase 8 R8: seeded Medications privileges are 91-day cycles on Tier 1 agents, so October and November scenarios showed five reviews "overdue · 269 days" |
+| 2026-10-09 | Story choices: Priya's "overdue review" step runs at baseline (Duplicate Rx 7 days overdue; 06 Nov has none); Sam starts at `onboarding-tools-tested` (1d as drawn); Jordan's incident is INC-0031 at `resume-requested` (7c); Dana retires IV-to-Oral (6f); Ana's nine days later loads `epic-fixed-later` by patch, not `?day=later` | Phase 8 R7: each step shows its frame's moment |
 
 ## Session log
 

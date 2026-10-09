@@ -170,7 +170,7 @@ export function ExceptionDetail({
         </LinkButton>
         <LinkButton to={`${agentLink}?control=shadow`}>Return to Shadow</LinkButton>
         {snooze}
-        <Button variant="ghost" onClick={() => setDismissing(true)} {...lockProps}>
+        <Button variant="ghost" onClick={() => setDismissing(true)} {...lockProps} data-story-target="inbox-dismiss">
           Dismiss…
         </Button>
       </>

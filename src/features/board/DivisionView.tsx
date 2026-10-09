@@ -67,18 +67,20 @@ export function DivisionView() {
           </div>
           <DivisionTabs divisionId={division.id} current="board" />
         </div>
-        <AgentTable
-          ariaLabel={`${division.name} agents`}
-          layout="withPanel"
-          rows={rows}
-          selectedId={selectedId}
-          onSelect={(id) => {
-            const p = new URLSearchParams(params)
-            p.set('agent', id)
-            setParams(p, { replace: true })
-          }}
-          onOpen={(id) => navigate(`/operations/agents/${id}`)}
-        />
+        <div data-story-target="division-agents">
+          <AgentTable
+            ariaLabel={`${division.name} agents`}
+            layout="withPanel"
+            rows={rows}
+            selectedId={selectedId}
+            onSelect={(id) => {
+              const p = new URLSearchParams(params)
+              p.set('agent', id)
+              setParams(p, { replace: true })
+            }}
+            onOpen={(id) => navigate(`/operations/agents/${id}`)}
+          />
+        </div>
       </div>
       {panel ? <AgentPanel panel={panel} /> : null}
     </div>

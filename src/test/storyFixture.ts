@@ -9,7 +9,12 @@ export const FIXTURE_STORY: Story = {
   scenarioId: 'baseline',
   steps: [
     { route: '/operations', title: 'One', body: 'First. Second.' },
-    { route: '/operations/agents/med-rec?tab=scorecard', title: 'Two', body: 'First. Second.', target: 'agent-summary' },
+    {
+      route: '/operations/agents/med-rec?tab=scorecard',
+      title: 'Two',
+      body: 'First. Second.',
+      target: 'agent-summary',
+    },
     {
       route: '/operations/agents/med-rec',
       title: 'Three',

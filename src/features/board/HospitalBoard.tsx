@@ -79,19 +79,21 @@ export function HospitalBoard() {
         <div className={styles.boardGrid}>
           <div className={styles.column}>
             {filters}
-            <Table
-              ariaLabel="Divisions"
-              columns={COLUMNS}
-              rows={shown}
-              getRowId={(d) => d.id}
-              selectedId={selected?.id ?? null}
-              onSelect={(id) => {
-                const p = new URLSearchParams(params)
-                p.set('division', id)
-                setParams(p, { replace: true })
-              }}
-              minRowHeight={68}
-            />
+            <div data-story-target="board-divisions">
+              <Table
+                ariaLabel="Divisions"
+                columns={COLUMNS}
+                rows={shown}
+                getRowId={(d) => d.id}
+                selectedId={selected?.id ?? null}
+                onSelect={(id) => {
+                  const p = new URLSearchParams(params)
+                  p.set('division', id)
+                  setParams(p, { replace: true })
+                }}
+                minRowHeight={68}
+              />
+            </div>
             <span className={styles.note}>Divisions that are fine stay grey. Only a division that needs a human gets colour, a mark and words.</span>
           </div>
           {selected ? <DivisionPanel division={selected} /> : null}

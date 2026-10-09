@@ -27,7 +27,7 @@ export function IntakeStep({ agentId }: { agentId: string }) {
   if (!step) return null
   const lead = personName(state, people.lead)
   const carried = (
-    <section className={styles.section}>
+    <section className={styles.section} data-story-target="intake-carried">
       <h3 className={styles.caps}>Carried over from {step.code}</h3>
       <div className={styles.table}>
         <DefinitionList
@@ -64,7 +64,7 @@ export function IntakeStep({ agentId }: { agentId: string }) {
             meta={`${personName(state, started.by)} · done ${formatDate(started.at)}`}
           >
             {carried}
-            <section className={styles.section}>
+            <section className={styles.section} data-story-target="intake-owners">
               <h3 className={styles.caps}>Owners</h3>
               <div className={styles.table}>
                 <DefinitionList
@@ -123,7 +123,7 @@ export function IntakeStep({ agentId }: { agentId: string }) {
           meta={`${lead} · ${named} of 4`}
         >
           {carried}
-          <section className={styles.sectionWide}>
+          <section className={styles.sectionWide} data-story-target="intake-owners">
             <h3 className={styles.caps}>Owners</h3>
             <span className={styles.note}>No agent goes live without four named people. Division and sponsor come from the intake; you choose the owner and the technical owner.</span>
             <Field label="Agent owner" htmlFor={ownerField} hint="Job description · systems and verbs" help={owner?.sub}>

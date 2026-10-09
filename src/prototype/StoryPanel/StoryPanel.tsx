@@ -27,7 +27,10 @@ function useScrollToTarget(target: string | undefined, key: string) {
       const topHidden = rect.top < 0 || rect.top > window.innerHeight - 120
       if (!topHidden && (tall || rect.bottom <= window.innerHeight)) return
       const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-      el.scrollIntoView?.({ block: tall ? 'start' : 'center', behavior: reduced ? 'auto' : 'smooth' })
+      el.scrollIntoView?.({
+        block: tall ? 'start' : 'center',
+        behavior: reduced ? 'auto' : 'smooth',
+      })
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
@@ -54,7 +57,9 @@ export function StoryPanel({ stories = STORIES }: { stories?: readonly Story[] }
 
   return (
     <>
-      {target ? <style>{`[data-story-target="${target}"] { outline: 2px solid var(--cs-ink); outline-offset: 2px; }`}</style> : null}
+      {target ? (
+        <style>{`[data-story-target="${target}"] { outline: 2px solid var(--cs-ink); outline-offset: 2px; }`}</style>
+      ) : null}
       {hidden ? (
         <aside aria-label="Story" className={styles.collapsed}>
           <span className={styles.storyTitle}>{story.title}</span>

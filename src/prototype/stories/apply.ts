@@ -11,7 +11,13 @@ interface Stores<T> {
  * Open a step: load its scenario if it needs one (R2), switch to the story's persona, save
  * progress. `fresh` starts over, loading the scenario even within the same story.
  */
-export function applyStep(demo: Stores<DemoStore>, stories: Stores<StoryStore>, story: Story, step: number, fresh: boolean): StoryProgress {
+export function applyStep(
+  demo: Stores<DemoStore>,
+  stories: Stores<StoryStore>,
+  story: Story,
+  step: number,
+  fresh: boolean,
+): StoryProgress {
   const current = fresh ? null : stories.getState().progress
   const { progress, load } = openStep(current, story, step, dataOf(demo.getState()))
   if (load) demo.getState().loadScenario(load)

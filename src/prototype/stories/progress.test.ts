@@ -11,8 +11,14 @@ const saved = (state: unknown) => {
 
 test('progress persists across store instances', () => {
   const storage = createMemoryStorage()
-  createStoryStore(storage, stories).getState().setProgress({ storyId: 'marcus', step: 2, loaded: 'baseline' })
-  expect(createStoryStore(storage, stories).getState().progress).toEqual({ storyId: 'marcus', step: 2, loaded: 'baseline' })
+  createStoryStore(storage, stories)
+    .getState()
+    .setProgress({ storyId: 'marcus', step: 2, loaded: 'baseline' })
+  expect(createStoryStore(storage, stories).getState().progress).toEqual({
+    storyId: 'marcus',
+    step: 2,
+    loaded: 'baseline',
+  })
 })
 
 test('clearing progress persists', () => {

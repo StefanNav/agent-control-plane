@@ -14,7 +14,10 @@ export interface StoryStore {
  * Story progress, kept apart from the hospital's data (R4): a refresh reads it, so it never reloads
  * a scenario over the visitor's own changes. Saved progress that no longer fits is dropped.
  */
-export function createStoryStore(storage: StateStorage = safeStorage, stories: readonly Story[] = STORIES) {
+export function createStoryStore(
+  storage: StateStorage = safeStorage,
+  stories: readonly Story[] = STORIES,
+) {
   return create<StoryStore>()(
     persist(
       (set) => ({
@@ -27,7 +30,10 @@ export function createStoryStore(storage: StateStorage = safeStorage, stories: r
         storage: createJSONStorage(() => storage),
         partialize: (s) => ({ progress: s.progress }),
         migrate: () => ({ progress: null }),
-        merge: (saved, current) => ({ ...current, progress: validProgress((saved as { progress?: unknown } | undefined)?.progress, stories) }),
+        merge: (saved, current) => ({
+          ...current,
+          progress: validProgress((saved as { progress?: unknown } | undefined)?.progress, stories),
+        }),
       },
     ),
   )

@@ -85,7 +85,7 @@ export function SignPage() {
             )}
           </section>
 
-          <section className={onboarding.card} aria-label="Your signature">
+          <section className={onboarding.card} aria-label="Your signature" data-story-target="sign-signature">
             <h2 className={onboarding.title}>Your signature</h2>
             {view.signed ? (
               <Notice mark="none" lead={`${view.signed.line}.`}>

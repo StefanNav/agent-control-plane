@@ -39,7 +39,12 @@ export function onStepRoute(step: Step, pathname: string): boolean {
  * scenario loads only when it differs from the one loaded, unless the step that declares it
  * accepts the visitor's own state (`keep`).
  */
-export function openStep(progress: StoryProgress | null, story: Story, step: number, state: DemoState): { progress: StoryProgress; load: ScenarioId | null } {
+export function openStep(
+  progress: StoryProgress | null,
+  story: Story,
+  step: number,
+  state: DemoState,
+): { progress: StoryProgress; load: ScenarioId | null } {
   const n = clampStep(story, step)
   const needed = scenarioAt(story, n)
   const next: StoryProgress = { storyId: story.id, step: n, loaded: needed }
@@ -61,15 +66,23 @@ export type UrlAction =
  * What the URL's `story` and `step` ask for, against saved progress (R3). No story param: put the
  * active story back. Unknown story: strip it. A bad step: clamp it and rewrite the param.
  */
-export function urlAction(params: URLSearchParams, progress: StoryProgress | null, stories: readonly Story[]): UrlAction {
+export function urlAction(
+  params: URLSearchParams,
+  progress: StoryProgress | null,
+  stories: readonly Story[],
+): UrlAction {
   const id = params.get('story')
-  if (id === null) return progress ? { kind: 'append', storyId: progress.storyId, step: progress.step } : { kind: 'none' }
+  if (id === null)
+    return progress
+      ? { kind: 'append', storyId: progress.storyId, step: progress.step }
+      : { kind: 'none' }
   const story = stories.find((s) => s.id === id)
   if (!story) return { kind: 'strip' }
   const raw = params.get('step')
   const step = clampStep(story, raw === null ? Number.NaN : Number(raw))
   const rewrite = raw !== String(step)
-  if (progress?.storyId === story.id && progress.step === step) return rewrite ? { kind: 'rewrite', storyId: story.id, step } : { kind: 'none' }
+  if (progress?.storyId === story.id && progress.step === step)
+    return rewrite ? { kind: 'rewrite', storyId: story.id, step } : { kind: 'none' }
   return { kind: 'open', storyId: story.id, step, rewrite }
 }
 
@@ -78,7 +91,13 @@ export function validProgress(value: unknown, stories: readonly Story[]): StoryP
   if (!value || typeof value !== 'object') return null
   const { storyId, step, loaded } = value as Record<string, unknown>
   const story = stories.find((s) => s.id === storyId)
-  if (!story || !Number.isInteger(step) || (step as number) < 1 || (step as number) > story.steps.length) return null
+  if (
+    !story ||
+    !Number.isInteger(step) ||
+    (step as number) < 1 ||
+    (step as number) > story.steps.length
+  )
+    return null
   if (!SCENARIO_IDS.includes(loaded as ScenarioId)) return null
   return { storyId: story.id, step: step as number, loaded: loaded as ScenarioId }
 }
