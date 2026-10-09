@@ -34,6 +34,11 @@ export interface PlayerDeps {
   /** Scroll an element into view, clear of the bar. */
   reveal(el: HTMLElement): Promise<void>
   reducedMotion(): boolean
+  /**
+   * Resolves once the screen of step entry `stepKey` has rendered (at once if it already has), so a
+   * step's first beat never acts on the outgoing screen (Ruling 10). Resolves, not rejects, on abort.
+   */
+  settle(stepKey: number, signal: AbortSignal): Promise<void>
 }
 
 export interface TourState {
@@ -75,6 +80,15 @@ const GLIDE_MS = 600
 
 const HIDDEN_CURSOR: TourState['cursor'] = { x: 0, y: 0, visible: false, click: false }
 
+/** Call a dep that returns a promise, so a synchronous throw arrives as a rejection. */
+function attempt<T>(work: () => Promise<T>): Promise<T> {
+  try {
+    return work()
+  } catch (error) {
+    return Promise.reject(error)
+  }
+}
+
 /** Wait out the cursor's glide; cut short if the run is aborted. */
 function glide(ms: number, signal: AbortSignal): Promise<void> {
   if (ms <= 0 || signal.aborted) return Promise.resolve()
@@ -92,8 +106,9 @@ function glide(ms: number, signal: AbortSignal): Promise<void> {
 /**
  * The tour's player (not persisted; the URL is the persistence). It plays one beat at a time: the
  * beat's clip and its actions start together, and the beat ends when both are done. Then the next
- * beat, entering its step if it is a new one (R6), or the end (R5). Only one run is ever live: any
- * entry, take-over or exit aborts the current one, and a run's late writes are dropped.
+ * beat, entering its step if it is a new one (R6), or the end (R5). A step's first beat waits for
+ * the step's screen to settle (Ruling 10). Only one run is ever live: any entry, take-over or exit
+ * aborts the current one, and a run's late writes are dropped.
  */
 export function createTourPlayer(
   deps: PlayerDeps,
@@ -104,8 +119,11 @@ export function createTourPlayer(
     /** Names the live run; bumped whenever a run starts or is abandoned, so a stale run can tell. */
     let token = 0
     let controller: AbortController | null = null
-    /** The beat at `pos`: not started yet, in flight, or finished while paused (waiting for Play). */
-    let phase: 'ready' | 'running' | 'done' = 'ready'
+    /**
+     * The step's work: none, waiting for its screen, screen ready but paused before its first beat,
+     * a beat in flight, or a beat finished while paused (waiting for Play).
+     */
+    let phase: 'none' | 'settling' | 'settled' | 'running' | 'done' = 'none'
     /** Has the tour moved the cursor since it opened? */
     let cursorMoved = false
 
@@ -121,10 +139,19 @@ export function createTourPlayer(
       token++
       controller?.abort()
       controller = null
-      phase = 'ready'
+      phase = 'none'
     }
 
-    /** Enter a step (R6): its scenario (always), its persona, its route; then a fresh outlet and overlay. */
+    /** Start new work under a fresh token and controller; whatever ran before can no longer write. */
+    const claim = () => {
+      controller = new AbortController()
+      return { runToken: ++token, signal: controller.signal }
+    }
+
+    /**
+     * Enter a step (R6): its scenario (always), its persona, its route; then a fresh outlet and
+     * overlay. Its first beat starts once its screen has settled, if the tour is playing by then.
+     */
     const enter = (pos: Position, status: TourStatus) => {
       const { load, persona, route } = enterStep(stepAt(chapters, pos))
       if (load) deps.demo.loadScenario(load)
@@ -137,6 +164,18 @@ export function createTourPlayer(
         outline: null,
         card: null,
       }))
+      const { runToken, signal } = claim()
+      phase = 'settling'
+      void attempt(() => deps.settle(get().stepKey, signal))
+        .catch((error: unknown) => {
+          if (!signal.aborted) console.warn('Tour: the step’s screen did not settle', error)
+        })
+        .then(() => {
+          // Dropped while settling (next, take-over, exit…): that step's beat never starts.
+          if (runToken !== token) return
+          if (get().status === 'playing') startBeat(runToken, signal)
+          else phase = 'settled'
+        })
     }
 
     /** The overlay lent to one run; every write checks the run is still the live one. */
@@ -167,31 +206,21 @@ export function createTourPlayer(
       actions: TourAction[],
       host: ActionHost,
       signal: AbortSignal,
-    ): Promise<{ skipped: string[] }> => {
-      let work: Promise<{ skipped: string[] }>
-      try {
-        work = deps.run(actions, host, signal)
-      } catch (error) {
-        work = Promise.reject(error)
-      }
-      return work.catch((error: unknown) => {
+    ): Promise<{ skipped: string[] }> =>
+      attempt(() => deps.run(actions, host, signal)).catch((error: unknown) => {
         console.warn('Tour: a beat’s actions failed', error)
         return { skipped: [] }
       })
-    }
 
-    /** Play the beat at `pos`: its clip and its actions together. */
-    const startBeat = () => {
-      const runToken = ++token
-      const run = new AbortController()
-      controller = run
+    /** Play the beat at `pos` under the given run: its clip and its actions together. */
+    const startBeat = (runToken: number, signal: AbortSignal) => {
       phase = 'running'
       const { pos } = get()
       const beat = beatAt(chapters, pos)
       const spoken = voice.play(beat.id)
       const after = nextBeat(chapters, pos)
       if (after) voice.preload(beatAt(chapters, after).id)
-      const acted = act(beat.actions ?? [], hostFor(runToken, run.signal), run.signal).then(
+      const acted = act(beat.actions ?? [], hostFor(runToken, signal), signal).then(
         ({ skipped }) => {
           if (runToken === token && skipped.length > 0)
             set((s) => ({ skipped: [...s.skipped, ...skipped] }))
@@ -211,9 +240,10 @@ export function createTourPlayer(
       const after = nextBeat(chapters, pos)
       if (!after) return close()
       // Beat 0 is always a new step.
-      if (after.beat === 0) enter(after, 'playing')
-      else set({ pos: after })
-      startBeat()
+      if (after.beat === 0) return enter(after, 'playing')
+      set({ pos: after })
+      const { runToken, signal } = claim()
+      startBeat(runToken, signal)
     }
 
     /** End or exit (R5): reset the demo, silence the voice, close; an interlude gives way to the landing page. */
@@ -242,9 +272,7 @@ export function createTourPlayer(
       if (!to) return
       dropRun()
       voice.stop()
-      const playing = status === 'playing'
-      enter(to, playing ? 'playing' : 'paused')
-      if (playing) startBeat()
+      enter(to, status === 'playing' ? 'playing' : 'paused')
     }
 
     return {
@@ -265,16 +293,16 @@ export function createTourPlayer(
         voice.stop()
         set({ skipped: [] })
         enter(chapterStart(chapter), autoplay ? 'playing' : 'paused')
-        if (autoplay) startBeat()
       },
       play() {
         const { status } = get()
         if (status === 'driving') return get().resume()
         if (status !== 'paused') return
         set(withStatus('playing'))
-        if (phase === 'ready') startBeat()
+        // While still settling, the settle starts the first beat.
+        if (phase === 'settled' && controller) startBeat(token, controller.signal)
         else if (phase === 'running') voice.resume()
-        else advance()
+        else if (phase === 'done') advance()
       },
       pause() {
         if (get().status !== 'playing') return
@@ -295,7 +323,6 @@ export function createTourPlayer(
         voice.stop()
         // The current step's first beat: `pos` is in range and every step has a beat.
         enter({ chapter: pos.chapter, step: pos.step, beat: 0 }, 'playing')
-        startBeat()
       },
       next() {
         goTo((pos) => nextStep(chapters, pos))

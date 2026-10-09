@@ -80,10 +80,34 @@ function makeRun() {
   return { run, calls }
 }
 
-function setup(chapters: Chapter[] = FIXTURE_CHAPTERS, reducedMotion = true) {
+interface SettleCall {
+  stepKey: number
+  signal: AbortSignal
+  resolve(): void
+  reject(error: Error): void
+}
+
+/** The entered step's screen settling: at once, or (manual) only when the test says so. */
+function makeSettle(manual: boolean) {
+  const settles: SettleCall[] = []
+  const settle = vi.fn<PlayerDeps['settle']>(
+    (stepKey, signal) =>
+      new Promise<void>((resolve, reject) => {
+        settles.push({ stepKey, signal, resolve, reject })
+        if (!manual) resolve()
+      }),
+  )
+  return { settle, settles }
+}
+
+function setup(
+  chapters: Chapter[] = FIXTURE_CHAPTERS,
+  { reducedMotion = true, manualSettle = false } = {},
+) {
   const log: string[] = []
   const { voice, finish } = makeVoice()
   const { run, calls } = makeRun()
+  const { settle, settles } = makeSettle(manualSettle)
   const demo = {
     /** What the hospital already shows; the player must load a step's scenario regardless. */
     scenario: 'baseline' as ScenarioId,
@@ -107,6 +131,7 @@ function setup(chapters: Chapter[] = FIXTURE_CHAPTERS, reducedMotion = true) {
     run,
     reveal,
     reducedMotion: () => reducedMotion,
+    settle,
   }
   const player = createTourPlayer(deps)
   return {
@@ -121,6 +146,8 @@ function setup(chapters: Chapter[] = FIXTURE_CHAPTERS, reducedMotion = true) {
     navigate,
     exitStory,
     reveal,
+    settle,
+    settles,
     log,
   }
 }
@@ -200,9 +227,10 @@ describe('open', () => {
     expect(t.exitStory).toHaveBeenCalledTimes(2)
   })
 
-  test('open(chapter, true) plays from the chapter’s first beat', () => {
+  test('open(chapter, true) plays from the chapter’s first beat', async () => {
     const t = setup()
     t.state().open(1, true)
+    await flush()
     expect(t.state().status).toBe('playing')
     expect(t.voice.play).toHaveBeenCalledWith('decision-1-screen-1')
     expect(t.lastCall().actions).toEqual(FIXTURE_CHAPTERS[1]!.steps[0]!.beats[0]!.actions)
@@ -223,6 +251,7 @@ describe('playing beats', () => {
     const t = setup()
     t.state().open(1, false)
     t.state().play()
+    await flush()
     expect(t.state().status).toBe('playing')
     expect(t.voice.play).toHaveBeenCalledTimes(1)
     expect(t.voice.play).toHaveBeenLastCalledWith('decision-1-screen-1')
@@ -243,6 +272,7 @@ describe('playing beats', () => {
   test('actions finishing first do not end the beat either', async () => {
     const t = setup()
     t.state().open(1, true)
+    await flush()
     t.calls[0]!.done()
     await flush()
     expect(t.state().pos.beat).toBe(0)
@@ -251,20 +281,23 @@ describe('playing beats', () => {
     expect(t.state().pos.beat).toBe(1)
   })
 
-  test('a beat with no actions still goes through the runner, with none', () => {
+  test('a beat with no actions still goes through the runner, with none', async () => {
     const t = setup()
     t.state().open(0, true)
+    await flush()
     expect(t.calls[0]!.actions).toEqual([])
   })
 
   test('each beat preloads the next one’s clip, across steps; the last beat preloads nothing', async () => {
     const t = setup()
     t.state().open(0, true)
+    await flush()
     expect(t.voice.preload).toHaveBeenLastCalledWith('why-intro-2')
     await finishBeat(t)
     await finishBeat(t)
     expect(t.voice.preload).toHaveBeenLastCalledWith('why-screen-1')
     t.state().jump(1)
+    await flush()
     expect(t.voice.preload).toHaveBeenLastCalledWith('decision-1-screen-2')
     t.voice.preload.mockClear()
     await finishBeat(t)
@@ -275,6 +308,7 @@ describe('playing beats', () => {
   test('crossing a step boundary enters the new step', async () => {
     const t = setup()
     t.state().open(0, true)
+    await flush()
     t.lastCall().host.setOutline('gap-owner')
     t.lastCall().host.setCard({ id: 'decision-1', side: 'left' })
     await finishBeat(t)
@@ -305,6 +339,7 @@ describe('playing beats', () => {
   test('finishing the last beat closes the tour and stays on a product route (R5)', async () => {
     const t = setup()
     t.state().open(1, true)
+    await flush()
     t.voice.stop.mockClear()
     await finishBeat(t)
     await finishBeat(t)
@@ -318,17 +353,19 @@ describe('playing beats', () => {
   test('finishing the last beat on an interlude goes to the landing page (R5)', async () => {
     const t = setup(TOUR)
     t.state().open(2, true)
+    await flush()
     await finishBeat(t)
     expect(t.demo.reset).toHaveBeenCalledTimes(1)
     expect(t.state().status).toBe('idle')
     expect(t.navigate).toHaveBeenLastCalledWith('/')
   })
 
-  test('play() twice runs one beat', () => {
+  test('play() twice runs one beat', async () => {
     const t = setup()
     t.state().open(1, false)
     t.state().play()
     t.state().play()
+    await flush()
     expect(t.voice.play).toHaveBeenCalledTimes(1)
     expect(t.run).toHaveBeenCalledTimes(1)
   })
@@ -344,6 +381,7 @@ describe('playing beats', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const t = setup()
     t.state().open(1, true)
+    await flush()
     t.calls[0]!.fail(new Error('reveal broke'))
     await flush()
     expect(warn).toHaveBeenCalledTimes(1)
@@ -356,6 +394,7 @@ describe('playing beats', () => {
   test('skipped actions add up across runs, and clear on open and on exit', async () => {
     const t = setup()
     t.state().open(1, true)
+    await flush()
     t.lastCall().done(['outline:a'])
     t.finish()
     await flush()
@@ -366,6 +405,7 @@ describe('playing beats', () => {
     t.state().open(1, false)
     expect(t.state().skipped).toEqual([])
     t.state().play()
+    await flush()
     t.lastCall().done(['outline:a'])
     await flush()
     expect(t.state().skipped).toEqual(['outline:a'])
@@ -374,10 +414,162 @@ describe('playing beats', () => {
   })
 })
 
+describe('waiting for the step’s screen (Ruling 10)', () => {
+  const beat0 = FIXTURE_CHAPTERS[1]!.steps[0]!.beats[0]!
+
+  test('a step’s first beat starts only once its screen has settled: voice and actions both wait', async () => {
+    const t = setup(FIXTURE_CHAPTERS, { manualSettle: true })
+    t.state().open(1, true)
+    expect(t.settles).toHaveLength(1)
+    expect(t.settles[0]!.stepKey).toBe(1)
+    await flush()
+    expect(t.voice.play).not.toHaveBeenCalled()
+    expect(t.run).not.toHaveBeenCalled()
+
+    t.settles[0]!.resolve()
+    await flush()
+    expect(t.voice.play).toHaveBeenCalledWith(beat0.id)
+    expect(t.run).toHaveBeenCalledTimes(1)
+    expect(t.calls[0]!.actions).toEqual(beat0.actions)
+    expect(t.calls[0]!.signal).toBe(t.settles[0]!.signal)
+  })
+
+  test('resume() waits for the re-entered step’s screen, under its new stepKey', async () => {
+    const t = setup(FIXTURE_CHAPTERS, { manualSettle: true })
+    t.state().open(1, true)
+    t.settles[0]!.resolve()
+    await flush()
+    await finishBeat(t)
+    t.state().takeOver()
+    t.state().resume()
+    expect(t.state().stepKey).toBe(2)
+    expect(t.settles).toHaveLength(2)
+    expect(t.settles[1]!.stepKey).toBe(2)
+    await flush()
+    expect(t.run).toHaveBeenCalledTimes(2)
+
+    t.settles[1]!.resolve()
+    await flush()
+    expect(t.run).toHaveBeenCalledTimes(3)
+    expect(t.lastCall().actions).toEqual(beat0.actions)
+    expect(t.voice.play).toHaveBeenLastCalledWith(beat0.id)
+  })
+
+  test('next() while the step is still settling: the old settle starts nothing, only the new step’s first beat runs', async () => {
+    const t = setup(FIXTURE_CHAPTERS, { manualSettle: true })
+    t.state().open(0, true)
+    t.state().next()
+    expect(t.settles).toHaveLength(2)
+    expect(t.settles[0]!.signal.aborted).toBe(true)
+
+    t.settles[0]!.resolve()
+    await flush()
+    expect(t.voice.play).not.toHaveBeenCalled()
+    expect(t.run).not.toHaveBeenCalled()
+
+    t.settles[1]!.resolve()
+    await flush()
+    expect(t.voice.play).toHaveBeenCalledTimes(1)
+    expect(t.voice.play).toHaveBeenCalledWith('why-screen-1')
+    expect(t.run).toHaveBeenCalledTimes(1)
+    expect(t.calls[0]!.actions).toEqual([{ kind: 'outline', target: 'agent-summary' }])
+  })
+
+  test('later beats in a step do not wait again; the next step does', async () => {
+    const t = setup()
+    t.state().open(0, true)
+    await flush()
+    await finishBeat(t)
+    await finishBeat(t)
+    expect(t.state().pos).toEqual({ chapter: 0, step: 0, beat: 2 })
+    expect(t.settle).toHaveBeenCalledTimes(1)
+    await finishBeat(t)
+    expect(t.state().pos).toEqual({ chapter: 0, step: 1, beat: 0 })
+    expect(t.settle).toHaveBeenCalledTimes(2)
+    expect(t.settles[1]!.stepKey).toBe(2)
+  })
+
+  test('a step entered paused settles but starts nothing; play() then starts its first beat without waiting again', async () => {
+    const t = setup(FIXTURE_CHAPTERS, { manualSettle: true })
+    t.state().open(1, false)
+    expect(t.settles).toHaveLength(1)
+    t.settles[0]!.resolve()
+    await flush()
+    expect(t.run).not.toHaveBeenCalled()
+
+    t.state().play()
+    expect(t.voice.play).toHaveBeenCalledWith(beat0.id)
+    expect(t.calls[0]!.signal).toBe(t.settles[0]!.signal)
+    expect(t.settles).toHaveLength(1)
+  })
+
+  test('play() before the screen settles plays the first beat once it has', async () => {
+    const t = setup(FIXTURE_CHAPTERS, { manualSettle: true })
+    t.state().open(1, false)
+    t.state().play()
+    expect(t.state().status).toBe('playing')
+    await flush()
+    expect(t.run).not.toHaveBeenCalled()
+    t.settles[0]!.resolve()
+    await flush()
+    expect(t.run).toHaveBeenCalledTimes(1)
+    expect(t.voice.play).toHaveBeenCalledWith(beat0.id)
+  })
+
+  test('pausing while the screen settles holds the first beat until play()', async () => {
+    const t = setup(FIXTURE_CHAPTERS, { manualSettle: true })
+    t.state().open(1, true)
+    t.state().pause()
+    t.settles[0]!.resolve()
+    await flush()
+    expect(t.run).not.toHaveBeenCalled()
+    t.state().play()
+    expect(t.run).toHaveBeenCalledTimes(1)
+    expect(t.settles).toHaveLength(1)
+  })
+
+  test('taking over or exiting while the screen settles starts nothing', async () => {
+    const t = setup(FIXTURE_CHAPTERS, { manualSettle: true })
+    t.state().open(1, true)
+    t.state().takeOver()
+    expect(t.settles[0]!.signal.aborted).toBe(true)
+    t.settles[0]!.resolve()
+    t.state().resume()
+    t.state().exit()
+    expect(t.settles[1]!.signal.aborted).toBe(true)
+    t.settles[1]!.resolve()
+    await flush()
+    expect(t.run).not.toHaveBeenCalled()
+    expect(t.voice.play).not.toHaveBeenCalled()
+  })
+
+  test('a settle that fails is warned about and the beat starts anyway', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const t = setup(FIXTURE_CHAPTERS, { manualSettle: true })
+    t.state().open(1, true)
+    t.settles[0]!.reject(new Error('outlet never mounted'))
+    await flush()
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(t.run).toHaveBeenCalledTimes(1)
+  })
+
+  test('a settle that rejects after its step was left is not warned about', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const t = setup(FIXTURE_CHAPTERS, { manualSettle: true })
+    t.state().open(1, true)
+    t.state().exit()
+    t.settles[0]!.reject(new Error('aborted'))
+    await flush()
+    expect(warn).not.toHaveBeenCalled()
+    expect(t.run).not.toHaveBeenCalled()
+  })
+})
+
 describe('pause', () => {
   test('pause() holds the voice only; running actions finish and the beat ends after play()', async () => {
     const t = setup()
     t.state().open(1, true)
+    await flush()
     const { host, signal } = t.calls[0]!
     t.state().pause()
     expect(t.state().status).toBe('paused')
@@ -402,6 +594,7 @@ describe('pause', () => {
   test('a beat that finishes while paused waits there for play()', async () => {
     const t = setup()
     t.state().open(1, true)
+    await flush()
     t.finish()
     t.state().pause()
     t.calls[0]!.done()
@@ -414,9 +607,10 @@ describe('pause', () => {
     expect(t.voice.play).toHaveBeenLastCalledWith('decision-1-screen-2')
   })
 
-  test('the cursor hides while paused and shows again on play()', () => {
+  test('the cursor hides while paused and shows again on play()', async () => {
     const t = setup()
     t.state().open(1, true)
+    await flush()
     void t.calls[0]!.host.moveCursor(10, 20, true)
     expect(t.state().cursor).toEqual({ x: 10, y: 20, visible: true, click: true })
     t.state().pause()
@@ -435,8 +629,9 @@ describe('pause', () => {
 describe('cursor glide', () => {
   test('moveCursor resolves after 600 ms ÷ rate', async () => {
     vi.useFakeTimers()
-    const t = setup(FIXTURE_CHAPTERS, false)
+    const t = setup(FIXTURE_CHAPTERS, { reducedMotion: false })
     t.state().open(1, true)
+    await flush()
     t.state().setRate(1.5)
     const glided = track(t.calls[0]!.host.moveCursor(1, 2, false))
     await vi.advanceTimersByTimeAsync(399)
@@ -447,8 +642,9 @@ describe('cursor glide', () => {
 
   test('under reduced motion the cursor jumps', async () => {
     vi.useFakeTimers()
-    const t = setup(FIXTURE_CHAPTERS, true)
+    const t = setup(FIXTURE_CHAPTERS, { reducedMotion: true })
     t.state().open(1, true)
+    await flush()
     const glided = track(t.calls[0]!.host.moveCursor(1, 2, false))
     await flush()
     expect(glided.done).toBe(true)
@@ -456,8 +652,9 @@ describe('cursor glide', () => {
 
   test('an aborted run stops waiting for its glide', async () => {
     vi.useFakeTimers()
-    const t = setup(FIXTURE_CHAPTERS, false)
+    const t = setup(FIXTURE_CHAPTERS, { reducedMotion: false })
     t.state().open(1, true)
+    await flush()
     const glided = track(t.calls[0]!.host.moveCursor(1, 2, false))
     t.state().exit()
     await flush()
@@ -469,6 +666,7 @@ describe('take over and resume', () => {
   test('takeOver() while playing hands the screen over: driving, voice paused, actions aborted, cursor hidden', async () => {
     const t = setup()
     t.state().open(1, true)
+    await flush()
     void t.calls[0]!.host.moveCursor(10, 20, true)
     await finishBeat(t)
     const { host, signal } = t.lastCall()
@@ -485,6 +683,7 @@ describe('take over and resume', () => {
   test('resume() restarts the step clean and plays it from its first beat (Review focus 3)', async () => {
     const t = setup()
     t.state().open(1, true)
+    await flush()
     await finishBeat(t)
     expect(t.state().pos.beat).toBe(1)
     t.state().takeOver()
@@ -498,6 +697,7 @@ describe('take over and resume', () => {
       pos: { chapter: 1, step: 0, beat: 0 },
       stepKey: stepKey + 1,
     })
+    await flush()
     expect(t.voice.play).toHaveBeenLastCalledWith('decision-1-screen-1')
     expect(t.lastCall().actions).toEqual(FIXTURE_CHAPTERS[1]!.steps[0]!.beats[0]!.actions)
   })
@@ -505,6 +705,7 @@ describe('take over and resume', () => {
   test('play() while driving resumes the same way', async () => {
     const t = setup()
     t.state().open(1, true)
+    await flush()
     await finishBeat(t)
     t.state().takeOver()
     t.state().play()
@@ -525,6 +726,7 @@ describe('take over and resume', () => {
   test('resume() while paused carries on like play(), without restarting the step', async () => {
     const t = setup()
     t.state().open(1, true)
+    await flush()
     await finishBeat(t)
     t.state().pause()
     t.state().resume()
@@ -545,38 +747,42 @@ describe('take over and resume', () => {
 })
 
 describe('next, prev and jump', () => {
-  test('rapid next() while playing ends three steps on; earlier runs are aborted and write nothing (Review focus 2)', async () => {
+  test('rapid next() while playing ends three steps on; earlier work is aborted and writes nothing (Review focus 2)', async () => {
     const t = setup(TOUR)
     t.state().open(0, true)
+    await flush()
+    const first = t.calls[0]!
     t.state().next()
     t.state().next()
     t.state().next()
+    await flush()
     expect(t.state()).toMatchObject({ status: 'playing', pos: { chapter: 2, step: 0, beat: 0 } })
-    expect(t.calls).toHaveLength(4)
-    expect(t.calls.slice(0, 3).map((call) => call.signal.aborted)).toEqual([true, true, true])
-    expect(t.calls[3]!.signal.aborted).toBe(false)
-    expect(t.calls[3]!.actions).toEqual([{ kind: 'outline', target: 'story-cards' }])
+    expect(first.signal.aborted).toBe(true)
+    expect(t.settles.map((settle) => settle.signal.aborted)).toEqual([true, true, true, false])
+    // Only the last step's first beat ran; the steps skipped past never started theirs.
+    expect(t.calls).toHaveLength(2)
+    expect(t.calls[1]!.actions).toEqual([{ kind: 'outline', target: 'story-cards' }])
+    expect(t.voice.play).toHaveBeenCalledTimes(2)
     expect(t.voice.play).toHaveBeenLastCalledWith('your-turn-1')
 
-    // The abandoned runs try to write and then finish, as an aborted runner would.
+    // The abandoned run tries to write and then finishes, as an aborted runner would.
     const settled = t.state()
-    for (const call of t.calls.slice(0, 3)) {
-      call.host.setOutline('stale')
-      call.host.setCard({ id: 'stale', side: 'left' })
-      void call.host.moveCursor(5, 5, true)
-      void call.host.reveal(document.body)
-      call.done(['outline:stale'])
-    }
+    first.host.setOutline('stale')
+    first.host.setCard({ id: 'stale', side: 'left' })
+    void first.host.moveCursor(5, 5, true)
+    void first.host.reveal(document.body)
+    first.done(['outline:stale'])
     await flush()
     expect(t.state()).toBe(settled)
     expect(t.reveal).not.toHaveBeenCalled()
-    expect(t.calls).toHaveLength(4)
+    expect(t.calls).toHaveLength(2)
   })
 
-  test('next() from paused enters the next step and stays paused', () => {
+  test('next() from paused enters the next step and stays paused', async () => {
     const t = setup()
     t.state().open(0, false)
     t.state().next()
+    await flush()
     expect(t.state()).toMatchObject({
       status: 'paused',
       pos: { chapter: 0, step: 1, beat: 0 },
@@ -587,11 +793,13 @@ describe('next, prev and jump', () => {
     expect(t.run).not.toHaveBeenCalled()
   })
 
-  test('next() while driving enters the next step paused', () => {
+  test('next() while driving enters the next step paused', async () => {
     const t = setup()
     t.state().open(0, true)
+    await flush()
     t.state().takeOver()
     t.state().next()
+    await flush()
     expect(t.state()).toMatchObject({ status: 'paused', pos: { chapter: 0, step: 1, beat: 0 } })
     expect(t.run).toHaveBeenCalledTimes(1)
   })
@@ -609,8 +817,10 @@ describe('next, prev and jump', () => {
   test('prev() goes back to the previous step’s first beat, across chapters', async () => {
     const t = setup()
     t.state().open(1, true)
+    await flush()
     await finishBeat(t)
     t.state().prev()
+    await flush()
     expect(t.state()).toMatchObject({ status: 'playing', pos: { chapter: 0, step: 1, beat: 0 } })
     expect(t.voice.play).toHaveBeenLastCalledWith('why-screen-1')
   })
@@ -627,11 +837,13 @@ describe('next, prev and jump', () => {
     expect(t.log.slice(-3)).toEqual(['load:baseline', 'persona:priya', 'navigate:/operations'])
   })
 
-  test('jump() mid-beat while playing aborts the beat and plays the chapter', () => {
+  test('jump() mid-beat while playing aborts the beat and plays the chapter', async () => {
     const t = setup()
     t.state().open(0, true)
+    await flush()
     t.state().jump(1)
     expect(t.calls[0]!.signal.aborted).toBe(true)
+    await flush()
     expect(t.state()).toMatchObject({ status: 'playing', pos: { chapter: 1, step: 0, beat: 0 } })
     expect(t.voice.play).toHaveBeenLastCalledWith('decision-1-screen-1')
   })
@@ -648,9 +860,10 @@ describe('next, prev and jump', () => {
 })
 
 describe('settings and exit', () => {
-  test('setRate(1.5) sets the voice’s rate and the rate the actions see', () => {
+  test('setRate(1.5) sets the voice’s rate and the rate the actions see', async () => {
     const t = setup()
     t.state().open(1, true)
+    await flush()
     t.state().setRate(1.5)
     expect(t.voice.setRate).toHaveBeenCalledWith(1.5)
     expect(t.state().rate).toBe(1.5)
@@ -668,6 +881,7 @@ describe('settings and exit', () => {
   test('the host reads the outline and forwards reveal and reduced motion', async () => {
     const t = setup()
     t.state().open(1, true)
+    await flush()
     const { host } = t.calls[0]!
     host.setOutline('agent-summary')
     expect(host.outline()).toBe('agent-summary')
@@ -676,9 +890,10 @@ describe('settings and exit', () => {
     expect(t.reveal).toHaveBeenCalledWith(document.body)
   })
 
-  test('exit() resets the demo, silences the voice and closes, staying on a product route (R5)', () => {
+  test('exit() resets the demo, silences the voice and closes, staying on a product route (R5)', async () => {
     const t = setup()
     t.state().open(1, true)
+    await flush()
     t.calls[0]!.host.setOutline('agent-summary')
     t.voice.stop.mockClear()
     t.state().exit()
