@@ -445,4 +445,4 @@ The gate (tokens only; `--cs-bg` page, one column max 560, padding 32 px 16 px):
 - [x] **Step 4: Fresh review.** Dispatch a reviewer on the whole branch (superpowers:requesting-code-review). Fix Critical and Important findings test-first; re-grade minors that would bite a visitor; list the rest as deferred.
 - [x] **Step 5: Update `docs/BUILD_PLAN.md`:** tick 8.0–8.7; handoff notes (what exists, review fixes, deferred minors, gotchas, what Phase 9 needs); decision log rows R1–R12 as landed; Start here (⏸ at checkpoint, PR link, preview URL); session log row.
 - [x] **Step 6: Checkpoint.** `pnpm check` and `pnpm e2e` green; forbidden-terms check prints nothing; push `phase-8-stories`; open the PR ("Phase 8: Stories and portfolio layer", body: task checklist, preview URL, screenshots, `Closes #9`); tick the issue's checklist.
-- [ ] **Step 7: STOP.** Ask Stefan to review the preview URL. Merge only after approval.
+- [x] **Step 7: STOP.** Ask Stefan to review the preview URL. Merge only after approval.
