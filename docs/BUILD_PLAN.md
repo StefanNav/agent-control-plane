@@ -18,10 +18,10 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 9: Polish and launch (☐ not started) |
-| **Branch** | `phase-9-polish` (create from `main`) |
+| **Current phase** | Phase 9: Polish and launch (◐ in progress) |
+| **Branch** | `phase-9-polish` |
 | **Last completed** | Phase 8 approved and squash-merged (PR #18) (2026-10-09) |
-| **Next task** | Phase 9 Task 9.0: write `docs/plans/phase-9-polish.md` (read Phase 8's handoff notes first) |
+| **Next task** | Task 9.1 in [`docs/plans/phase-9-polish.md`](plans/phase-9-polish.md) (order: 9.1, 9.2, 9.4, 9.3, 9.5, 9.6) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -97,7 +97,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 6 | Governance and fast follows | ☑ Merged | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | [#16](https://github.com/StefanNav/agent-control-plane/pull/16) | [phase-6-governance.md](plans/phase-6-governance.md) |
 | 7 | Earned autonomy | ☑ Merged | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | [#17](https://github.com/StefanNav/agent-control-plane/pull/17) | [phase-7-autonomy.md](plans/phase-7-autonomy.md) |
 | 8 | Stories and portfolio layer | ☑ Merged | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | [#18](https://github.com/StefanNav/agent-control-plane/pull/18) | [phase-8-stories.md](plans/phase-8-stories.md) |
-| 9 | Polish and launch | ☐ Not started | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | – | to write (Task 9.0) |
+| 9 | Polish and launch | ◐ In progress | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | – | [phase-9-polish.md](plans/phase-9-polish.md) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
@@ -557,7 +557,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 
 **Goal:** Portfolio-ready public release.
 
-- [ ] 9.0 Write `docs/plans/phase-9-polish.md`; commit
+- [x] 9.0 Write `docs/plans/phase-9-polish.md`; commit
 - [ ] 9.1 Keyboard and accessibility pass (axe on key routes; modal focus; row keyboard paths)
 - [ ] 9.2 Reduced motion and final interaction polish
 - [ ] 9.3 Visual QA of every frame against its design; fix drift; tick "QA'd" in the tracker
@@ -743,3 +743,4 @@ One row per working session. Newest last.
 | 2026-10-09 | 7 | Stefan approved; PR #17 squash-merged; #8 closed | Phase 8 Task 8.0 (new session) |
 | 2026-10-09 | 8 | Built Phase 8 (story engine, seven stories with targets, narration panel, Stories menu, landing, About, desktop gate, rewind fix, story e2e incl. a shared link to every step). Fresh review: 3 Important fixed test-first; 5 minors deferred (see handoff notes). PR #18 open | Stefan reviews Phase 8 → merge → Phase 9 Task 9.0 |
 | 2026-10-09 | 8 | Stefan approved; PR #18 squash-merged; #9 closed | Phase 9 Task 9.0 (new session) |
+| 2026-10-09 | 9 | Wrote the Phase 9 plan (rulings R1–R15) after recon: axe on all 36 routes + 14 variants (10 rules, all small; contrast clean), tab-stop and click-target scan, O1 greyscale check (stale and review rings indistinguishable by shape → dashed square) | Task 9.1 |
