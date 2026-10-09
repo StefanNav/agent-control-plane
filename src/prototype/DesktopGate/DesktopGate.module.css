@@ -1,0 +1,59 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+  max-width: 560px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 32px 16px;
+  background: var(--cs-bg);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.page h1,
+.page h2,
+.page p {
+  margin: 0;
+}
+
+.page h1 {
+  color: var(--cs-ink);
+}
+
+.page h2 {
+  margin-top: 8px;
+}
+
+.strong {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-strong);
+}
+
+.people {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.people li {
+  display: flex;
+  flex-direction: column;
+}
+
+.people strong {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.link {
+  margin-top: 8px;
+  color: var(--cs-acc);
+  text-underline-offset: 2px;
+}

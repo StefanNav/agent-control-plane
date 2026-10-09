@@ -2,15 +2,12 @@ import { useNavigate } from 'react-router'
 import { Button, Card, LinkButton } from '../../design-system'
 import type from '../../design-system/type.module.css'
 import { useDemo } from '../../store'
+import { PITCH } from '../copy'
 import { personaById } from '../personas'
 import { STORIES } from '../stories'
 import { useStory } from '../stories/progress'
 import { useStoryActions } from '../stories/useStory'
 import styles from './Landing.module.css'
-
-/** The pitch, the opening line shared with the desktop gate. */
-export const PITCH =
-  'A hospital should bring on an AI agent the way it brings on a clinician: a written job, named people accountable, privileges earned on evidence, and supervision that spends human attention only where it matters.'
 
 /** The start page (spec §4.2): what this is, seven stories, and free explore. */
 export function Landing() {

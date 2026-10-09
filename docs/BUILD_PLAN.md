@@ -523,7 +523,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 - [x] 8.3 Stories: Marcus, Priya, Dana (add `data-story-target` attributes to screens as needed)
 - [x] 8.4 Stories: Sam, Dr. Lee, Ana, Jordan
 - [x] 8.5 About page `/about`
-- [ ] 8.6 Desktop gate below 1024 px
+- [x] 8.6 Desktop gate below 1024 px
 - [ ] 8.7 E2E: every story runs from step 1 to the end; checkpoint
 
 **Done when:** all 7 stories complete in Playwright and by hand on the preview URL.
@@ -691,6 +691,7 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-09 | `rewindTo` rolls a later signing back by the privilege's own interval (review date − signed), not the tier's cycle | Phase 8 R8: seeded Medications privileges are 91-day cycles on Tier 1 agents, so October and November scenarios showed five reviews "overdue · 269 days" |
 | 2026-10-09 | Story choices: Priya's "overdue review" step runs at baseline (Duplicate Rx 7 days overdue; 06 Nov has none); Sam starts at `onboarding-tools-tested` (1d as drawn); Jordan's incident is INC-0031 at `resume-requested` (7c); Dana retires IV-to-Oral (6f); Ana's nine days later loads `epic-fixed-later` by patch, not `?day=later` | Phase 8 R7: each step shows its frame's moment |
 | 2026-10-09 | Landing, About and desktop-gate copy is ours (no frames), written from the Vision and PRD with Signal as the brand and a "fictional" disclaimer; cards follow persona order. "Explore freely" exits any story, switches to Marcus and goes to Marcus's landing, keeping the data | Phase 8 R9, R10 |
+| 2026-10-09 | Desktop gate wraps the router (`matchMedia('(min-width: 1024px)')` via `useSyncExternalStore`), so below 1024 px nothing of the app renders: no scenario loads, no dialog opens. Without `matchMedia` the app renders | Phase 8 R11 (spec D6, §4.7) |
 
 ## Session log
 

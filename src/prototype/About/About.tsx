@@ -1,8 +1,7 @@
 import { Link } from 'react-router'
 import type from '../../design-system/type.module.css'
+import { REPO_URL } from '../copy'
 import styles from './About.module.css'
-
-export const REPO_URL = 'https://github.com/StefanNav/agent-control-plane'
 
 const PRINCIPLES = [
   'Human attention is the scarce resource. Spend it where it matters instead of adding approvals.',
