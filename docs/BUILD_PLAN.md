@@ -522,7 +522,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 - [x] 8.2 Landing page `/`
 - [x] 8.3 Stories: Marcus, Priya, Dana (add `data-story-target` attributes to screens as needed)
 - [x] 8.4 Stories: Sam, Dr. Lee, Ana, Jordan
-- [ ] 8.5 About page `/about`
+- [x] 8.5 About page `/about`
 - [ ] 8.6 Desktop gate below 1024 px
 - [ ] 8.7 E2E: every story runs from step 1 to the end; checkpoint
 
