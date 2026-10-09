@@ -20,8 +20,8 @@ Update this block every time a session stops, even mid-phase.
 |---|---|
 | **Current phase** | Phase 10: Guided tour (◐ in progress) |
 | **Branch** | `phase-10-guided-tour` |
-| **Last completed** | Spec approved; plan written; Task 10.1 script draft written (`docs/tour/script.md`); Claude Design explorations received in `reference/tour-inbox/` (2026-10-09) |
-| **Next task** | 10.2 (engine), executed subagent-driven (Stefan, 2026-10-09). In parallel, **CHECKPOINT A**: Stefan is editing the script; 10.7 onward waits for it |
+| **Last completed** | Tasks 10.2–10.6 (engine, audio pipeline, voice and actions, player, bar/cursor/cards), each reviewed; branch not pushed (2026-10-09) |
+| **Next task** | **CHECKPOINT A:** Stefan finishes editing `docs/tour/script.md` (wording and order). Then 10.7 (cold open) → CHECKPOINT B |
 | **Blockers** | None now. Stefan's photo comes later (10.12 ships the credit without it if needed) |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -626,11 +626,11 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 
 - [x] 10.0 Plan and tracking
 - [x] 10.1 Script draft → **CHECKPOINT A** (Stefan edits; may reorder)
-- [ ] 10.2 Types, engine and text hash
-- [ ] 10.3 Manifest, placeholder audio and script printer
-- [ ] 10.4 Voice and action runner
-- [ ] 10.5 Player
-- [ ] 10.6 Tour layer, bar, cursor and cards
+- [x] 10.2 Types, engine and text hash
+- [x] 10.3 Manifest, placeholder audio and script printer
+- [x] 10.4 Voice and action runner
+- [x] 10.5 Player
+- [x] 10.6 Tour layer, bar, cursor and cards
 - [ ] 10.7 Cold open (vertical slice) → **CHECKPOINT B** (first chapter on a preview)
 - [ ] 10.8 Chapters 3 and 4 (onboarding, decision 1)
 - [ ] 10.9 Chapters 6 and 7 (decision 3, step-down)
@@ -803,6 +803,8 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-09 | Phase 10: a narrated, self-playing tour of the live prototype (not a recorded video), following the Med Rec agent from intake to step-down; three decisions marked in place; player bar along the bottom; actions click the real UI; every step loads its own scenario; one clip per sentence; a dev-only recording page; About becomes the case study; AI chat is v2 (spec T1–T11) | Stefan's walkthrough for a job application: clear, deep, not overwhelming, no video editing |
 | 2026-10-09 | Brand becomes **Attune** (replacing Signal) in Task 10.12; the top-nav wordmark stays AIMS for now | Stefan's call; a name clearly distinct from the real company |
 | 2026-10-09 | Design explorations and Stefan's photo arrive in `reference/tour-inbox/` (git-ignored); images are viewed for names and converted before anything enters `public/` | The forbidden-terms check can't read pixels |
+| 2026-10-09 | Tour engine rulings (Phase 10, SDD ledger): manifest at `src/prototype/tour/manifest.json` (Vite can't import from `public/`); `tour:audio` keeps up-to-date placeholders and encodes at 44.1 kHz; the audio voice has a watchdog (manifest ms ÷ rate + 2 s) so a stalled clip never freezes the tour; `ActionHost` has `outline()` and `reveal(el)`; the player implements the host itself; no `ended` status (finishing = exit) | Plan defects found in pre-flight and review |
+| 2026-10-09 | Tour behaviour rulings: pause pauses the voice only (in-flight actions finish); next/prev/jump keep playing if playing, else land paused; each step's first beat waits for its screen to settle (outlet keyed by step, pathname and the step's query match, one frame, 1.5 s cap); `Voice.unlock()` primes audio inside the Play click (Safari); take-over comes only from visitor input (pointer, or keys on any control or focusable row), also while paused; a finished typing action blurs its field; starting a story exits the tour; a `?tour=<chapter>` link mid-tour jumps there | Reviews of 10.4–10.6: never stall, never act on the wrong screen, wandering off can't break the tour |
 
 ## Session log
 
@@ -833,3 +835,4 @@ One row per working session. Newest last.
 | 2026-10-09 | 9 | Built Phase 9 (axe gate on every route, keyboard paths and focus, page titles, scroll on navigation, story panel with dialogs, O1 stale square, 54-frame visual sweep with 9 drift fixes, README, social image, meta). Fresh review: 3 Important + 1 re-graded fixed test-first; 4 minors deferred. PR #19 open | Stefan reviews Phase 9 → merge → launch steps |
 | 2026-10-09 | 9 | Stefan approved; PR #19 squash-merged; #10 closed. Production deploy verified (og.png, favicon, meta, deep links; 57 route and story e2e and 58 axe e2e pass against the live URL). Repo homepage, description and topics set | Project launched |
 | 2026-10-09 | 10 | Brainstormed the walkthrough with Stefan (format, running order, player, architecture, content); wrote and committed the spec; received the Claude Design explorations; wrote the Phase 10 plan with checkpoints A–E and the first script draft (about 1,080 words) | CHECKPOINT A: Stefan edits the script; then 10.2 |
+| 2026-10-09 | 10 | Issue #20 created; built 10.2–10.6 subagent-driven (engine, audio pipeline with placeholder voice, voice with watchdog and action runner, player, bar/cursor/cards with settle and take-over), each with an independent review; fix rounds on 10.5 (settle) and 10.6 (focusable rows, query settle, ?tour jump). 988 unit and 247 e2e tests green; not pushed | CHECKPOINT A: Stefan's script edits → 10.7 |

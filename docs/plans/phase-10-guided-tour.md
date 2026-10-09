@@ -105,7 +105,7 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
   - `isInterlude(route: string): boolean` (`/tour/` prefix)
 - Produces (`hash.ts`): `textHash(text: string): string`: FNV-1a 32-bit over the text with runs of whitespace collapsed and ends trimmed, as 8 lowercase hex digits.
 
-- [ ] **Step 1: Write the failing tests** (`engine.test.ts`, on `fixtures.ts`):
+- [x] **Step 1: Write the failing tests** (`engine.test.ts`, on `fixtures.ts`):
   - `nextStep` from the last step of chapter 0 → `{ chapter: 1, step: 0, beat: 0 }`; from the last step of the last chapter → `null`.
   - `prevStep({0,0,2})` → `null`; `prevStep({1,0,1})` → last step of chapter 0, beat 0.
   - `nextBeat` crosses a step boundary and a chapter boundary.
@@ -113,11 +113,11 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
   - `buildTimeline` with a manifest missing one beat uses `estimateMs`; `total` = sum of beats; `chapterStartMs[1]` = sum of chapter 0's beats.
   - `estimateMs('one two three')` = 1500; a 10-word line = 4000.
   - `tourUrlAction`: no `tour` → none; `tour=decision-1` → open at that chapter's index; `tour=nope` → strip; `tour=` (empty) → strip.
-- [ ] **Step 2:** Run `pnpm vitest run src/prototype/tour` — expect FAIL (modules missing).
-- [ ] **Step 3:** Write `hash.test.ts`: `textHash('a  b ')` equals `textHash('a b')`; two different lines differ; result matches `/^[0-9a-f]{8}$/`.
-- [ ] **Step 4:** Implement `types.ts`, `engine.ts`, `hash.ts`, `fixtures.ts`.
-- [ ] **Step 5:** Run `pnpm vitest run src/prototype/tour` — expect PASS. Run `pnpm check`.
-- [ ] **Step 6:** Commit: `feat: tour engine and types`.
+- [x] **Step 2:** Run `pnpm vitest run src/prototype/tour` — expect FAIL (modules missing).
+- [x] **Step 3:** Write `hash.test.ts`: `textHash('a  b ')` equals `textHash('a b')`; two different lines differ; result matches `/^[0-9a-f]{8}$/`.
+- [x] **Step 4:** Implement `types.ts`, `engine.ts`, `hash.ts`, `fixtures.ts`.
+- [x] **Step 5:** Run `pnpm vitest run src/prototype/tour` — expect PASS. Run `pnpm check`.
+- [x] **Step 6:** Commit: `feat: tour engine and types`.
 
 ### Task 10.3: Manifest, placeholder audio and script printer
 
@@ -129,18 +129,18 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
 - Consumes: `Chapter`, `Manifest` (10.2), `textHash` (10.2).
 - Produces: `MANIFEST: Manifest` and `clipUrl(beatId: string): string` (`/tour/audio/<id>.m4a`) from `manifest.ts`; `loadTour(): Promise<{ CHAPTERS: Chapter[]; textHash: (s: string) => string }>` from `scripts/tour-load.mjs` (Vite `createServer({ appType: 'custom', server: { middlewareMode: true } })` + `ssrLoadModule`, closed after use).
 
-- [ ] **Step 1:** Write `manifest.test.ts`: `clipUrl('cold-1')` = `'/tour/audio/cold-1.m4a'`; `MANIFEST` is an object.
-- [ ] **Step 2:** Run it — FAIL. Implement `manifest.ts`. Run — PASS.
-- [ ] **Step 3:** Implement `scripts/tour-audio.mjs`. For each beat in order:
+- [x] **Step 1:** Write `manifest.test.ts`: `clipUrl('cold-1')` = `'/tour/audio/cold-1.m4a'`; `MANIFEST` is an object.
+- [x] **Step 2:** Run it — FAIL. Implement `manifest.ts`. Run — PASS.
+- [x] **Step 3:** Implement `scripts/tour-audio.mjs`. For each beat in order:
   - recorded clip present → keep it; if its `textHash` differs from the line's, report it as **out of date**;
   - otherwise (no entry, placeholder, or file missing) → `say -o <tmp>.aiff "<text>"`, then `ffmpeg -y -i <tmp>.aiff -af loudnorm=I=-16:TP=-1.5:LRA=11 -ac 1 -c:a aac -b:a 64k -map_metadata -1 public/tour/audio/<id>.m4a`, entry `source: 'placeholder'`;
   - duration of every clip from `ffprobe -v error -show_entries format=duration -of csv=p=0`, rounded to ms;
   - delete clips and entries for beat ids no longer in the script; write the manifest with keys in script order, 2-space JSON;
   - `--check` flag: write nothing, exit 1 if any beat is placeholder, missing or out of date (used in 10.14 and 10.16).
   - Print a summary: `N beats · R recorded · P placeholder · O out of date · total m:ss`.
-- [ ] **Step 4:** Implement `scripts/tour-print.mjs`: prints `CHAPTERS` as Markdown (chapter title, step route/scenario/persona, one line per beat with its actions in brackets) to stdout, so `pnpm tour:script > docs/tour/script.md` regenerates the readable script once beats are the source.
-- [ ] **Step 5:** Add `"tour:audio": "node scripts/tour-audio.mjs"`, `"tour:script": "node scripts/tour-print.mjs"`. Run `pnpm tour:audio` — expect `0 beats … total 0:00` and `{}` unchanged.
-- [ ] **Step 6:** `pnpm check`. Commit: `feat: tour audio manifest and placeholder pipeline`.
+- [x] **Step 4:** Implement `scripts/tour-print.mjs`: prints `CHAPTERS` as Markdown (chapter title, step route/scenario/persona, one line per beat with its actions in brackets) to stdout, so `pnpm tour:script > docs/tour/script.md` regenerates the readable script once beats are the source.
+- [x] **Step 5:** Add `"tour:audio": "node scripts/tour-audio.mjs"`, `"tour:script": "node scripts/tour-print.mjs"`. Run `pnpm tour:audio` — expect `0 beats … total 0:00` and `{}` unchanged.
+- [x] **Step 6:** `pnpm check`. Commit: `feat: tour audio manifest and placeholder pipeline`.
 
 ### Task 10.4: Voice and action runner
 
@@ -160,13 +160,13 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
   - `cardSide(targetRect: DOMRect | null, viewportWidth: number, override?: 'left' | 'right'): 'left' | 'right'` (override wins; target centre right of the middle → `'left'`; no target → `'right'`)
   - `runActions(actions: TourAction[], host: ActionHost, signal: AbortSignal): Promise<{ skipped: string[] }>`: in order; `outline` sets it and scrolls the target into view; `click` moves the cursor to the target's centre (`click: true`) then calls `el.click()`; `type` moves, clicks to focus, types at 25 ms ÷ rate (0 under reduced motion); `card` resolves the side from the current outline's rect; `wait` sleeps ms ÷ rate; a missing target is skipped, pushed to `skipped` and `console.warn`ed; abort stops at the next await.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `voice.test.ts` (fake timers, stubbed `HTMLMediaElement.prototype.play/pause`): silent voice resolves after ms ÷ 10; pause holds it, resume finishes the remainder; audio voice resolves on the `ended` event; on an `error` event it resolves after `msFor ÷ rate`; `stop()` resolves a pending play.
   - `actions.test.ts`: `click` on a rendered `<button data-story-target="x">` calls `moveCursor(…, true)` before the click handler runs; `type` into a React-controlled `<input data-story-target="r">` (rendered with Testing Library) ends with the component's state equal to the text; a missing target resolves after 2000 ms (fake timers) with `skipped: ['click:nope']` and one `console.warn`; aborting the signal mid-`wait` stops before the next action; `cardSide` cases: right-half target → left, left-half → right, null → right, override → override.
-- [ ] **Step 2:** Run `pnpm vitest run src/prototype/tour` — FAIL.
-- [ ] **Step 3:** Implement `voice.ts` and `actions.ts`.
-- [ ] **Step 4:** Run — PASS. `pnpm check`.
-- [ ] **Step 5:** Commit: `feat: tour voice and action runner`.
+- [x] **Step 2:** Run `pnpm vitest run src/prototype/tour` — FAIL.
+- [x] **Step 3:** Implement `voice.ts` and `actions.ts`.
+- [x] **Step 4:** Run — PASS. `pnpm check`.
+- [x] **Step 5:** Commit: `feat: tour voice and action runner`.
 
 ### Task 10.5: Player
 
@@ -183,7 +183,7 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
   - `createTourPlayer(deps: PlayerDeps): UseBoundStore<StoreApi<TourState & TourControls>>`
 - Behaviour: entering a step = `exitStory()` on first open, `loadScenario` (always, R6), `setPersona`, `navigate(route)`, `stepKey + 1`, clear outline and card. A beat = `Promise.all([voice.play(id), run(actions, host, signal)])`; then `nextBeat`; a step change re-enters; no next beat = end (R5). Each entry or navigation aborts the previous run (one `AbortController` per run; a run checks its token before every state write).
 
-- [ ] **Step 1: Write the failing tests** (fake voice whose `play` returns controllable promises; fake demo, navigate, run that records calls; `fixtures.ts`):
+- [x] **Step 1: Write the failing tests** (fake voice whose `play` returns controllable promises; fake demo, navigate, run that records calls; `fixtures.ts`):
   - `open(0, false)`: status `paused`, `loadScenario` called with step 0's scenario even when the fake demo already reports that scenario (Review focus 5), `setPersona`, `navigate` with its route, `stepKey` 1, `exitStory` called once.
   - `play()`: beat 0's voice and actions start together; resolving the voice alone does not advance; resolving both advances to beat 1.
   - Crossing a step boundary re-enters (second `loadScenario`, `stepKey` 2).
@@ -191,10 +191,10 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
   - `takeOver()` while playing → `driving`, `voice.pause` called, cursor hidden; `resume()` → re-enters the same step (scenario reloaded, `stepKey` + 1) and plays from beat 0 (Review focus 3).
   - Rapid `next(); next(); next()` while playing → position is three steps on; the runs started by the first two are aborted (their signals `aborted`), and only the last step's actions were recorded after the third call (Review focus 2).
   - `jump(1)` → chapter 1 step 0 beat 0, entered; `setRate(1.5)` → `voice.setRate(1.5)`; `exit()` → `reset()`, `voice.stop()`, status `idle`.
-- [ ] **Step 2:** Run — FAIL.
-- [ ] **Step 3:** Implement `player.ts`.
-- [ ] **Step 4:** Run — PASS. `pnpm check`.
-- [ ] **Step 5:** Commit: `feat: tour player`.
+- [x] **Step 2:** Run — FAIL.
+- [x] **Step 3:** Implement `player.ts`.
+- [x] **Step 4:** Run — PASS. `pnpm check`.
+- [x] **Step 5:** Commit: `feat: tour player`.
 
 ### Task 10.6: Tour layer, bar, cursor and cards
 
@@ -214,13 +214,13 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
   - Card: fixed, 320 px, side from state, kinds rendered per spec §4.3; an image card's thumbnail opens a `Modal` with the full image when the tour is paused.
   - Outline: one `<style>` rule for `[data-story-target="…"]`, as `StoryPanel`, with the target scrolled clear of the bar.
   - Listeners (in `TourLayer`): URL sync with `tourUrlAction` (open paused; strip; while open, re-add `?tour=<chapter-id>` with `replace` when a product link drops it); Space toggles play/pause and ←/→ step when focus is on `body`, `main` or inside the bar; a capture-phase `pointerdown` outside the bar and card while playing → `takeOver()`; `keydown` inside a form field or control in `<main>` while playing → `takeOver()`; `visibilitychange` to hidden → `pause()`; unmount → `voice.stop()`.
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `TourBar.test.tsx`: renders "Play tour" when paused and "Pause tour" when playing; driving shows "Paused. You’re driving." and "Resume tour"; ten progress segments with their labels; speed cycles through the three labels; captions toggle hides the caption line.
   - `TourLayer.test.tsx` (MemoryRouter, fixtures, silent voice): `/?tour=<chapter>` opens paused at that chapter; `?tour=nope` is stripped; Space on `body` starts playing; a `pointerdown` on `main` while playing → `driving`; `document.visibilityState = 'hidden'` + `visibilitychange` → `paused` (Review focus 4); unmounting calls the voice's `stop`; `StoryLayer` renders nothing while the tour is open.
-- [ ] **Step 2:** Run — FAIL.
-- [ ] **Step 3:** Implement the files and the `AppShell` / `StoryLayer` changes.
-- [ ] **Step 4:** Run — PASS. `pnpm check`; `pnpm e2e` (existing suites unaffected).
-- [ ] **Step 5:** Commit: `feat: tour bar, cursor and cards`.
+- [x] **Step 2:** Run — FAIL.
+- [x] **Step 3:** Implement the files and the `AppShell` / `StoryLayer` changes.
+- [x] **Step 4:** Run — PASS. `pnpm check`; `pnpm e2e` (existing suites unaffected).
+- [x] **Step 5:** Commit: `feat: tour bar, cursor and cards`.
 
 ### Task 10.7: Cold open (vertical slice) — **CHECKPOINT B**
 
