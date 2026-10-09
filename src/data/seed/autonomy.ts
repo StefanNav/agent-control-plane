@@ -1,4 +1,4 @@
-import type { Branch, ReviewLevelRecord, ReviewRules, SamplingDraw } from '../types'
+import type { Branch, Promotion, ReviewLevelRecord, ReviewRules, SamplingDraw } from '../types'
 import { E13_SHIFT, fromMarch } from './redate'
 
 /**
@@ -125,5 +125,64 @@ export const samplingDraws: SamplingDraw[] = [
       { output: 'Add: influenza 2026–27 · 14 Oct', outputSub: 'From the state registry', source: 'State immunization registry', chart: 'Influenza 2026–27' },
       { output: 'Keep: Tdap · 2019', outputSub: 'Already on the list', source: 'Lakeshore chart, 2019', chart: 'Tdap' },
     ],
+  },
+]
+
+/** What 14a and 14b say about PRM-0007 that the state doesn't hold (R11). */
+export const PROMOTION_CONTENT: Record<
+  string,
+  {
+    summary: string
+    signedAsIs: { target: number; result: number }
+    rejected: { target: number; result: number }
+    defects: { target: number; base: { defects: number; checks: number } }
+    reducedDays: number
+    outputs: string
+    note: string
+    atLevel: [string, string][]
+    stepDownOn: string
+    triggers: string[]
+    staysTheSame: { text: string; tag?: string }[]
+    agenda: { item: number; of: number }
+  }
+> = {
+  'prm-0007': {
+    summary: 'At Supervised, this branch writes to the chart without a pharmacist signing each add. Adds are checked by sample, and every step-down trigger stays armed.',
+    signedAsIs: { target: 98.0, result: 99.1 },
+    rejected: { target: 0.5, result: 0.1 },
+    // 2 of 412 at baseline: today's checked draw (ACT-90330) is the 412th (R11).
+    defects: { target: 0.5, base: { defects: 2, checks: 411 } },
+    reducedDays: 14,
+    outputs: '4,212 adds',
+    note: 'The 2 defects were duplicate allergies spelled differently, in October. SOP v1.2.1 fixed them; none since.',
+    atLevel: [
+      ['In the chart', 'Adds appear as “added by Allergy Recon Agent, checked by sample”'],
+      ['Pharmacists', 'Stop signing each add; still sign updates to reaction or severity'],
+      ['Review level', 'Resets to Normal: 1 in 10 adds checked'],
+      ['Steps down to Draft on', 'Any defect in a check · a new agent or SOP version · any linked incident'],
+    ],
+    stepDownOn: 'Any defect in a check · a new agent or SOP version · any linked incident',
+    triggers: ['Any new agent or SOP version', 'Any defect in an independent check', 'Any linked incident', 'Rejections above 0.5 % for 3 days'],
+    staysTheSame: [
+      { text: 'Updating a reaction or severity stays at Draft' },
+      { text: 'Removing an allergy is never allowed', tag: 'HS-07 v1' },
+      { text: 'Conditions C1 and C3 from the original approval' },
+    ],
+    agenda: { item: 2, of: 4 },
+  },
+}
+
+/** Marcus asked to promote one branch of reconcile allergy lists to Supervised on 03 Mar → 25 Nov (14a). */
+export const promotions: Promotion[] = [
+  {
+    id: 'prm-0007',
+    activityId: 'allergy-recon',
+    branchId: 'outside-records',
+    privilegeCode: PRV_0087.code,
+    from: 'draft',
+    to: 'supervised',
+    requestedBy: 'marcus',
+    requestedAt: d('2027-03-03T11:00:00'),
+    state: 'sponsor',
   },
 ]

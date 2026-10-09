@@ -205,3 +205,10 @@ test('I4 (review): in every scenario, nothing is signed after now and privilege 
     expect(s.privileges.filter((p) => p.grantedAt && p.grantedAt > s.now).map((p) => p.code), id).toEqual([])
   }
 })
+
+test('promotion-at-board (14b, R17): Priya signed on 08 Dec; the board meets 09 Dec 15:00; Dr. Lee’s item is open', () => {
+  const s = buildScenario('promotion-at-board')
+  expect(s.now).toBe('2026-12-09T15:10:00')
+  expect(s.promotions.find((p) => p.id === 'prm-0007')).toMatchObject({ state: 'board', sponsor: { by: 'priya', at: '2026-12-08T10:20:00' } })
+  expect(s.exceptions.find((e) => e.type === 'Review: promotion · Allergy Recon Agent')!.state).toBe('new')
+})

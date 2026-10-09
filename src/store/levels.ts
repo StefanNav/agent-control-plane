@@ -27,7 +27,7 @@ export function levelOf(s: DemoState, activityId: string): ReviewLevelRecord {
 }
 
 /** The record to change, created from the template the first time (mutations only). */
-function recordFor(s: DemoState, activityId: string): ReviewLevelRecord {
+export function recordFor(s: DemoState, activityId: string): ReviewLevelRecord {
   let record = s.reviewLevels.find((r) => r.activityId === activityId)
   if (!record) {
     record = structuredClone(levelOf(s, activityId))

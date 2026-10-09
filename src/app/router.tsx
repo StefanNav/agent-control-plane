@@ -22,6 +22,8 @@ import { DivisionSettingsPage } from '../features/settings/DivisionSettingsPage'
 import { EpicPage } from '../features/epic/EpicPage'
 import { ActivityPage } from '../features/activity/ActivityPage'
 import { SamplingPage } from '../features/sampling/SamplingPage'
+import { BoardDecisionPage } from '../features/promotion/BoardDecisionPage'
+import { PromotionPage } from '../features/promotion/PromotionPage'
 import { AgentEvidencePage } from '../features/evidence/AgentEvidencePage'
 import { EvidencePage } from '../features/evidence/EvidencePage'
 import { GatewayPage } from '../features/gateway/GatewayPage'
@@ -70,6 +72,8 @@ const PAGES: Record<string, ReactNode> = {
   '/portfolio/activities/:activityId': <ActivityPage />,
   '/portfolio/activities/:activityId/branches/:branchId': <ActivityPage />,
   '/operations/sampling': <SamplingPage />,
+  '/inventory/promotions/:promotionId': <PromotionPage />,
+  '/portfolio/promotions/:promotionId': <BoardDecisionPage />,
 }
 
 function childrenFor(shell: ShellKind): RouteObject[] {

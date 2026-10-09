@@ -4,6 +4,7 @@ import { addDays, formatDate, minutesBetween } from '../../lib/clock'
 import { counts, LEVEL_TITLE, levelOf, levelSince, RATE, ruleRows, sinceLabel } from '../../store/levels'
 import { personName } from '../../store/onboardingRules'
 import { can } from '../../store/permissions'
+import { criteria } from '../../store/promotions'
 import { currentPrivilege, selectPrivilegeCards } from '../board/selectors'
 
 export const LEVELS: Level[] = ['shadow', 'draft', 'supervised', 'autonomous']
@@ -145,8 +146,18 @@ export function selectPrivilegeTab(s: DemoState, activityId: string) {
   const { activity, agent } = find(s, activityId)!
   const prv = currentPrivilege(s, activity.id)
   const card = prv ? (selectPrivilegeCards(s, agent.id).find((c) => c.code === `${prv.code} v${prv.version}`) ?? null) : null
+  // 14a: a promotion of one of its branches waiting for the sponsor (R11: no seeded inbox item).
+  const waiting = s.promotions.find((p) => p.activityId === activity.id && (p.state === 'sponsor' || p.state === 'returned' || p.state === 'board'))
+  const branchName = waiting ? (activity.branches.find((b) => b.id === waiting.branchId)?.name ?? '') : ''
   return {
     card,
+    promotion: waiting
+      ? {
+          id: waiting.id,
+          text: `${personName(s, waiting.requestedBy)} asked to promote “${branchName.charAt(0).toLowerCase()}${branchName.slice(1)}” to ${LEVEL_NAME[waiting.to]} on ${formatDate(waiting.requestedAt)}.`,
+          to: `/inventory/promotions/${waiting.id}`,
+        }
+      : null,
     title: `${activity.name} · ${activity.branches.length} branches`,
     branches: activity.branches.map((b) => {
       const level = branchLevel(activity, b.id)
@@ -161,10 +172,13 @@ export function selectPrivilegeTab(s: DemoState, activityId: string) {
   }
 }
 
-/** The Evidence tab (composed): the evidence the privilege in force was signed on. */
+/** The Evidence tab (composed): the evidence the privilege in force was signed on, and the latest promotion's criteria. */
 export function selectEvidenceTab(s: DemoState, activityId: string) {
   const prv = currentPrivilege(s, activityId)
+  const promotion = [...s.promotions].reverse().find((p) => p.activityId === activityId)
+  const branch = promotion && s.activities.find((a) => a.id === activityId)?.branches.find((b) => b.id === promotion.branchId)
   return {
+    promotion: promotion && branch ? { head: `${branch.name} · criteria for ${LEVEL_NAME[promotion.to]}`, criteria: promotion.evidence?.criteria ?? criteria(s, promotion.id) } : null,
     rows: prv
       ? ([
           ['Evidence', prv.evidence],

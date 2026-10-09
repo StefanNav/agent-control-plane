@@ -3,6 +3,7 @@ import { applyPause } from '../../store/mutations'
 import { DEMO_NOW } from '../../lib/clock'
 import { applyAccept, applyDeploy, applyHardStopApproval, applyReplay, applySystemsSignOff, changeId } from '../../store/changes'
 import { applyAddEpicDraft, applyFlag, applyFlagAnswer } from '../../store/feedback'
+import { applySignPromotion } from '../../store/promotions'
 import { ACT_89012, DR_90455 } from '../seed/feedback'
 import { V150 } from '../seed/catalogue'
 import { advanceClock, settleBefore } from './clock'
@@ -30,6 +31,7 @@ export type ScenarioId =
   | 'shadow-day-21'
   | 'change-detected-v150'
   | 'epic-fixed-later'
+  | 'promotion-at-board'
 
 /** Every scenario id, for validating a `?scenario=` param. */
 export const SCENARIO_IDS: readonly ScenarioId[] = [
@@ -52,6 +54,7 @@ export const SCENARIO_IDS: readonly ScenarioId[] = [
   'shadow-day-21',
   'change-detected-v150',
   'epic-fixed-later',
+  'promotion-at-board',
 ]
 
 const medRec = (s: DemoState) => s.agents.find((a) => a.id === 'med-rec')!
@@ -99,6 +102,19 @@ export function epicFixedLater(s: DemoState): DemoState {
   settleBefore(s, '2026-12-17T00:00:00')
   applyAddEpicDraft(s, DR_90455, ACT_89012)
   return advanceClock(s, '2026-12-17T09:52:00')
+}
+
+/** 14a's reason, verbatim. */
+export const PRIYA_PROMOTION_REASON = 'Adding an outside allergy only makes prescribing more cautious. 90 days of evidence, every criterion met, and step-down on any defect.'
+
+/**
+ * 14b (R1, R17): Priya signs PRM-0007 at 10:20 on 08 Dec; it is Tier 3, so it goes to the board,
+ * which meets at 15:00 the next day. Dr. Lee opens it at 15:10.
+ */
+export function promotionAtBoard(s: DemoState): DemoState {
+  applySignPromotion(s, 'prm-0007', PRIYA_PROMOTION_REASON, 'priya', '2026-12-08T10:20:00')
+  advanceClock(s, '2026-12-09T15:10:00')
+  return settleBefore(s, '2026-12-09T00:00:00')
 }
 
 /** E7 7c's incident, as it stands at 11:58 (before Priya approves at 13:10). */
@@ -222,6 +238,7 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
   'shadow-day-21': medRecAt('shadow-day-21'),
   'change-detected-v150': changeDetected,
   'epic-fixed-later': epicFixedLater,
+  'promotion-at-board': promotionAtBoard,
 }
 
 /** A fresh state for the scenario. */

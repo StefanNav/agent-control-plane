@@ -221,6 +221,8 @@ export interface Privilege {
   signReason?: string
   /** When the division's lapse policy acted on it (8a): back to Shadow, or the activity paused. */
   lapsedAt?: string
+  /** Branches granted above the activity's level, e.g. { 'outside-records': 'supervised' } (14a, 14b). */
+  branchLevels?: Record<string, Level>
 }
 
 /** A rule enforced at the gateway, outside the model. */
@@ -521,6 +523,39 @@ export interface SamplingDraw {
   note?: string
   checkedBy?: string
   checkedAt?: string
+}
+
+/** One criterion for moving a branch up (14a's evidence table, 14b's stats). */
+export interface PromotionCriterion {
+  label: string
+  /** 14a: "≥ 98.0 %"; 14b: "target ≥ 98 %". */
+  target: string
+  short: string
+  /** 14a: "0.49 % · 2 of 412"; 14b: "2 of 412". */
+  result: string
+  value: string
+  met: boolean
+}
+
+/** A request to move one branch of an activity up a level (E14): the sponsor signs; above Tier 2 the board decides. */
+export interface Promotion {
+  id: string
+  activityId: string
+  branchId: string
+  privilegeCode: string
+  from: Level
+  to: Level
+  requestedBy: string
+  requestedAt: string
+  /** sponsor: waiting for the sponsor; board: with the AI review board; returned: back to the owner. */
+  state: 'sponsor' | 'board' | 'returned' | 'approved' | 'denied'
+  /** Frozen when the sponsor signs, so the board sees what was signed. */
+  evidence?: { days: number; outputs: string; criteria: PromotionCriterion[] }
+  sponsor?: { by: string; at: string; reason: string }
+  board?: { meeting: string; item: number; of: number }
+  /** The sponsor's "Request changes", or the board's re-review question. */
+  returned?: { by: string; at: string; note: string }
+  decision?: ReviewDecision
 }
 
 /** An informational event: kept in the log, never sent to anyone. */
@@ -879,6 +914,8 @@ export interface DemoState {
   reviewLevels: ReviewLevelRecord[]
   /** Today's random sample of signed outputs, checked independently (13b). */
   samplingDraws: SamplingDraw[]
+  /** One branch at a time, up a level (E14). */
+  promotions: Promotion[]
   /** Hospital-wide counts before today's activity (4f "Last 24 hours"); `actionsToday` for 7a. */
   stats24h: {
     closedEarlier: number

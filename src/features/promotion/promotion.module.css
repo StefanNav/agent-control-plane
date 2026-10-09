@@ -1,0 +1,283 @@
+/* E14: promote one branch. Tables 13–14 px; the signature and decision are forms (16 px). */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.caps {
+  margin: 0;
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cs-meta);
+}
+
+.link {
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--cs-ink);
+}
+
+.pair {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.name {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-ink);
+}
+
+.selected .name,
+.strong {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.meta {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.muted {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.ladder {
+  display: block;
+  width: 360px;
+}
+
+/* 14b's paper draws the ladder at 120 px a level. */
+.ladderBoard {
+  display: block;
+  width: 492px;
+}
+
+.result {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.met {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--cs-text2);
+}
+
+.note {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.label {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-ink);
+}
+
+/* "Your signature" (14a). */
+.sign {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px 32px 32px;
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 6px;
+  background: var(--cs-raised);
+}
+
+.signTitle {
+  margin: 0;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quote {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-ink);
+}
+
+/* "Who decides" (14a). */
+.side {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+  background: var(--cs-raised);
+}
+
+.sideHead {
+  padding: 16px 20px 15px;
+}
+
+.sideTitle {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 10px;
+  min-height: 41px;
+  box-sizing: border-box;
+  padding: 10px 20px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-ink);
+}
+
+.step[data-state='current'] {
+  font-weight: 600;
+}
+
+.stepN {
+  font-size: 12px;
+  color: var(--cs-meta);
+}
+
+.stepMeta {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--cs-meta);
+}
+
+.sideNote {
+  margin: 0;
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.sideNote strong {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.legend {
+  padding: 0 20px 16px;
+}
+
+/* 14b: the paper and the decision. */
+.board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  column-gap: 40px;
+  align-items: start;
+  padding: 32px 40px 48px;
+}
+
+.paper {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 28px 32px 32px;
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 6px;
+  background: var(--cs-raised);
+}
+
+.paperTitle {
+  margin: 0;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.paperSub {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-text2);
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-ink);
+}
+
+.lines span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.decision {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px 20px;
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+  background: var(--cs-raised);
+}
+
+.condition {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-ink);
+}
+
+.mono {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

@@ -12,6 +12,7 @@ import { applyFlag, applyFlagAnswer, applySeenFix, type FlagAnswer } from './fee
 import { applyBlockCaller, applyDismissCaller, applyMessageOwner } from './gateway'
 import { applyDeclineReviewChange, applyProposeReviewChange, applyShareFinding, applySignReviewChange, unitById } from './reviewers'
 import { applyCheck, applyRules, applyTighten, validRules } from './levels'
+import { applyDecidePromotion, applyResendPromotion, applyReturnPromotion, applySignPromotion, criteria, promotionContext, promotionOf } from './promotions'
 import { can, lockReason } from './permissions'
 import { applyAddRole, applyCreateDivision, applyDivisionSettings, applyInvite, applyRemoveRole, applyReturnToShadow, diffDivision, divisionSlug, ROLE_LABEL, roleDivision, type DivisionPatch, type NewDivisionInput, type RoleInput } from './settings'
 import { runAction, type ActionResult } from './runAction'
@@ -122,6 +123,14 @@ export interface DemoActions {
   updateReviewRules: (activityId: string, rules: ReviewRules, reason: string) => ActionResult
   /** Record an independent check of a drawn output (13b); a defect can move the level by rule. Owner. */
   recordCheck: (drawId: string, input: { result: 'right' | 'defect' | 'cantTell'; note?: string }) => ActionResult
+  /** The sponsor signs a one-branch promotion (14a): above Tier 2 it goes to the board. Every criterion must be met. */
+  signPromotion: (id: string, input: { reason: string; accepted: boolean }) => ActionResult
+  /** The sponsor sends a promotion back to the owner with a note (14a "Request changes"). */
+  returnPromotion: (id: string, note: string) => ActionResult
+  /** The owner sends a returned promotion to the sponsor again (composed). */
+  resendPromotion: (id: string) => ActionResult
+  /** The AI review board decides a Tier 3 promotion (14b), with a reason. */
+  decidePromotion: (id: string, input: { kind: ReviewDecision['kind']; conditions: Condition[]; reason: string }) => ActionResult
   /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
   startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
   /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
@@ -907,6 +916,74 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Recorded check', target: draw.actionCode, reason: input.result },
               mutate: (draft) => {
                 applyCheck(draft, drawId, input, draft.personaId, draft.now)
+              },
+            })
+          },
+          signPromotion: (id, { reason, accepted }) => {
+            const s = get()
+            const p = promotionOf(s, id)
+            const ctx = p && promotionContext(s, p)
+            if (!p || !ctx) return { ok: false, reason: 'Not found' }
+            const spec = {
+              action: 'signPrivilege' as const,
+              ctx: { agentId: ctx.agent.id },
+              audit: { action: 'Signed promotion', target: `${p.privilegeCode} · ${ctx.branch.name}`, reason: reason.trim() },
+              mutate: (draft: DemoState) => {
+                applySignPromotion(draft, id, reason.trim(), draft.personaId, draft.now)
+              },
+            }
+            if (!can(s, s.personaId, spec.action, spec.ctx)) return { ok: false, reason: lockReason(spec.action, s.personaId) }
+            if (p.state !== 'sponsor') return { ok: false, reason: 'Not waiting for a signature' }
+            if (criteria(s, id).some((c) => !c.met)) return { ok: false, reason: 'Every criterion must be met' }
+            if (!reason.trim()) return { ok: false, reason: 'Write a reason' }
+            if (!accepted) return { ok: false, reason: 'Accept accountability to sign' }
+            return act(spec)
+          },
+          returnPromotion: (id, note) => {
+            const s = get()
+            const p = promotionOf(s, id)
+            const ctx = p && promotionContext(s, p)
+            if (!p || !ctx) return { ok: false, reason: 'Not found' }
+            if (p.state !== 'sponsor') return { ok: false, reason: 'Not waiting for a signature' }
+            if (!note.trim()) return { ok: false, reason: 'Write a note' }
+            return act({
+              action: 'signPrivilege',
+              ctx: { agentId: ctx.agent.id },
+              audit: { action: 'Returned promotion', target: p.privilegeCode, reason: note.trim() },
+              mutate: (draft) => {
+                applyReturnPromotion(draft, id, note.trim(), draft.personaId, draft.now)
+              },
+            })
+          },
+          resendPromotion: (id) => {
+            const s = get()
+            const p = promotionOf(s, id)
+            const ctx = p && promotionContext(s, p)
+            if (!p || !ctx) return { ok: false, reason: 'Not found' }
+            if (p.state !== 'returned') return { ok: false, reason: 'Nothing to send' }
+            return act({
+              action: 'requestGoLive',
+              ctx: { agentId: ctx.agent.id },
+              audit: { action: 'Sent promotion again', target: p.privilegeCode },
+              mutate: (draft) => {
+                applyResendPromotion(draft, id, draft.personaId, draft.now)
+              },
+            })
+          },
+          decidePromotion: (id, input) => {
+            const s = get()
+            const p = promotionOf(s, id)
+            const ctx = p && promotionContext(s, p)
+            if (!p || !ctx) return { ok: false, reason: 'Not found' }
+            if (p.state === 'sponsor' || p.state === 'returned') return { ok: false, reason: `Waiting for ${s.people.find((x) => x.id === ctx.agent.sponsorId)?.name ?? 'the sponsor'}’s signature` }
+            if (p.state !== 'board') return { ok: false, reason: 'Already decided' }
+            if (!input.reason.trim()) return { ok: false, reason: 'Write a reason' }
+            return act({
+              action: 'approveGoLive',
+              ctx: { agentId: ctx.agent.id },
+              audit: { action: 'Decided promotion', target: p.privilegeCode, reason: `${DECISION_WORDS[input.kind]} · ${input.reason.trim()}` },
+              mutate: (draft) => {
+                applyDecidePromotion(draft, id, { ...input, reason: input.reason.trim() }, draft.personaId, draft.now)
               },
             })
           },

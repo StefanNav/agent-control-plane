@@ -1,6 +1,6 @@
 import { useParams, useSearchParams } from 'react-router'
 import { AutonomyLadder, PrivilegeCard } from '../../components'
-import { Card, DefinitionList, LogRow, RuleTag, Table, Tabs } from '../../design-system'
+import { Card, DefinitionList, LinkButton, LogRow, Notice, RuleTag, Table, Tabs } from '../../design-system'
 import { Body } from '../../layout/layouts'
 import { NotFound } from '../../layout/NotFound'
 import { PageHeader } from '../../layout/PageHeader/PageHeader'
@@ -47,6 +47,18 @@ function PrivilegeTab({ activityId }: { activityId: string }) {
   const view = selectPrivilegeTab(state, activityId)
   return (
     <Body>
+      {view.promotion ? (
+        <Notice
+          mark="review"
+          actions={
+            <LinkButton to={view.promotion.to} variant="ghost" size="sm">
+              Review the promotion
+            </LinkButton>
+          }
+        >
+          {view.promotion.text}
+        </Notice>
+      ) : null}
       {view.card ? (
         <div className={styles.cardWrap}>
           <PrivilegeCard view={view.card} />
@@ -82,7 +94,7 @@ function PrivilegeTab({ activityId }: { activityId: string }) {
                   </span>
                 ),
               },
-              { id: 'note', header: 'Note', width: '160px', render: (b) => (b.note.kind === 'tag' ? <RuleTag>{b.note.text}</RuleTag> : b.note.text) },
+              { id: 'note', header: 'Note', width: '160px', render: (b) => (b.note.kind === 'tag' ? <span><RuleTag>{b.note.text}</RuleTag></span> : b.note.text) },
             ]}
           />
         </section>
@@ -100,6 +112,22 @@ function EvidenceTab({ activityId }: { activityId: string }) {
       <Card>
         <DefinitionList items={view.rows.map(([key, value]) => ({ key, value }))} />
       </Card>
+      {view.promotion ? (
+        <section className={styles.section} aria-label="Promotion criteria">
+          <h2 className={styles.caps}>{view.promotion.head}</h2>
+          <Table
+            ariaLabel="Promotion criteria"
+            rows={view.promotion.criteria}
+            getRowId={(c) => c.label}
+            columns={[
+              { id: 'label', header: 'Criterion', width: 'minmax(0, 1fr)', render: (c) => c.label },
+              { id: 'target', header: 'Target', width: '110px', render: (c) => c.target },
+              { id: 'result', header: 'Result', width: '160px', render: (c) => c.result },
+              { id: 'met', header: 'Status', width: '120px', render: (c) => (c.met ? 'Met' : 'Not met') },
+            ]}
+          />
+        </section>
+      ) : null}
     </Body>
   )
 }
