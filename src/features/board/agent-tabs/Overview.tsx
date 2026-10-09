@@ -7,6 +7,11 @@ import type { AgentOverview } from '../selectors'
 import styles from './agent.module.css'
 import { ACTIVITY_COLUMNS, RECENT_COLUMNS } from './columns'
 
+/** Paused as a whole (6d): no edit-rate trend to show, and room for "Paused · was Shadow" and what was routed. */
+const STOPPED_COLUMNS = ACTIVITY_COLUMNS.filter((c) => c.id !== 'trend').map((c) =>
+  c.id === 'level' ? { ...c, width: '176px' } : c.id === 'today' ? { ...c, width: '168px' } : c,
+)
+
 /** The agent view's Overview tab (4c); while paused, the 6d layout with the resume panel. */
 export function Overview({ view, resume = null }: { view: AgentOverview; resume?: ReactNode }) {
   // Paused as a whole (6d) hides the working sections; one paused activity keeps them.
@@ -56,7 +61,7 @@ export function Overview({ view, resume = null }: { view: AgentOverview; resume?
           <h2 className={styles.label}>Activities</h2>
           <Table
             ariaLabel="Activities"
-            columns={ACTIVITY_COLUMNS}
+            columns={stopped ? STOPPED_COLUMNS : ACTIVITY_COLUMNS}
             rows={view.activities}
             getRowId={(a) => a.id}
           />

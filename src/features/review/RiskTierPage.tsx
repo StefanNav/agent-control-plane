@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { TIER_RULES } from '../../data/seed/catalogue'
 import type { Tier } from '../../data/types'
-import { Button, Field, LinkButton, Notice, RadioCardGroup, Table, Textarea } from '../../design-system'
+import { Button, Field, LinkButton, Notice, Segmented, Table, Textarea } from '../../design-system'
 import { NotFound } from '../../layout/NotFound'
 import { Split } from '../../layout/layouts'
 import { useDemo } from '../../store'
@@ -97,17 +97,15 @@ export function RiskTierPage() {
               <>
                 <section className={onboarding.section} data-story-target="risk-tier-choice">
                   <h3 className={onboarding.caps}>Tier</h3>
-                  <RadioCardGroup
-                    name="tier"
+                  <Segmented
                     aria-label="Tier"
-                    columns={4}
                     value={String(pick)}
                     onChange={(v) => setChosen(Number(v) as Tier)}
+                    disabled={!allowed}
                     options={TIERS.map((t) => ({
                       value: String(t),
-                      title: `Tier ${t} · ${TIER_RULES[t].label}`,
-                      description: t === view.suggested ? 'Suggested' : t === pick ? 'Your choice' : TIER_RULES[t].sub,
-                      disabled: !allowed,
+                      label: `Tier ${t} · ${TIER_RULES[t].label}`,
+                      sub: t === view.suggested ? 'Suggested' : t === pick ? 'Your choice' : TIER_RULES[t].sub,
                     }))}
                   />
                 </section>

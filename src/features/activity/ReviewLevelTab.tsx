@@ -67,7 +67,7 @@ export function ReviewLevelTab({ activityId }: { activityId: string }) {
                       </span>
                     ),
                   },
-                  { id: 'counts', header: '', width: '150px', render: (r) => (r.counts ? <span className={styles.counts}>{r.counts}</span> : null) },
+                  { id: 'counts', header: '', hiddenHeader: 'Counts', width: '150px', render: (r) => (r.counts ? <span className={styles.counts}>{r.counts}</span> : null) },
                 ]}
               />
             </section>

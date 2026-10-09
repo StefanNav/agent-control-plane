@@ -41,8 +41,10 @@ export function selectReviewers(s: DemoState, divisionId: string, weeks: 4 | 8, 
         const median = slice(flagged.weekly.median)
         const edit = slice(flagged.weekly.edit)
         const miss = slice(flagged.weekly.missRate)
-        const card = (label: string, values: number[], fmt: (v: number) => string, note?: string) => ({
+        const card = (label: string, values: number[], fmt: (v: number) => string, note?: string, rising = false) => ({
           label,
+          /** Drawn in the warning colour: only the independent check's misses rising (11a). */
+          warn: rising && values.at(-1)! > values[0]!,
           value: fmt(values.at(-1)!),
           was: `was ${fmt(values[0]!)}`,
           values,
@@ -56,7 +58,7 @@ export function selectReviewers(s: DemoState, divisionId: string, weeks: 4 | 8, 
           cards: [
             card('Median time to approve', median, (v) => `${v} s`),
             card('Edit rate', edit, pct),
-            card('Independent check · misses in approved lists', miss, pct, `${flagged.misses.found} of ${flagged.misses.sampled} sampled · small numbers, so confirm first`),
+            card('Independent check · misses in approved lists', miss, pct, `${flagged.misses.found} of ${flagged.misses.sampled} sampled · small numbers, so confirm first`, true),
           ],
           first: { median: median[0]!, miss: miss[0]! },
         }

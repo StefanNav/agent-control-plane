@@ -3,7 +3,7 @@ import type { DemoState, Level, Status } from '../../data/types'
 import { formatAgo, formatClock, formatDate } from '../../lib/clock'
 import { nextArchiveCode } from '../../store/mutations'
 import { conditionRange, firstMissingField, openStep, recordItems } from '../../store/onboardingRules'
-import { onBoard, personName, selectAgentRows, selectDivisionSummaries } from '../board/selectors'
+import { onBoard, personName, recordLabel, selectAgentRows, selectDivisionSummaries } from '../board/selectors'
 
 const LEVEL: Record<Level, string> = { shadow: 'Shadow', draft: 'Draft', supervised: 'Supervised', autonomous: 'Autonomous' }
 
@@ -39,7 +39,7 @@ export function selectInventory(s: DemoState) {
         level: a.lifecycle === 'disabled' ? 'Disabled' : a.lifecycle === 'paused' ? 'Paused' : LEVEL[a.level],
         levelStatus: stopped ? 'paused' : null,
         status: a.judgment.status,
-        label: a.judgment.label,
+        label: recordLabel(a.judgment.label),
         sponsor: personName(s, a.sponsorId),
         tier: `Tier ${a.riskTier}`,
         review: formatDate(a.reviewDate),
@@ -119,7 +119,7 @@ export function selectRecord(s: DemoState, agentId: string) {
     ] as [string, string][],
     operations: {
       status: a.judgment.status,
-      label: a.judgment.label,
+      label: recordLabel(a.judgment.label),
       build: `${a.version}${a.sop ? ` · SOP ${a.sop}` : ''}`,
       lastData: `${formatClock(a.monitor.lastSeen)} · ${formatAgo(a.monitor.lastSeen, s.now)}`,
     },

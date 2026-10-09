@@ -7,11 +7,11 @@ test('normal is a plain word: no box, no icon', () => {
   expect(screen.getByText('Within scope').className).toMatch(/plain/)
 })
 
-test('stale is dashed with a dashed ring', () => {
+test('stale is dashed with a dashed square (O1)', () => {
   const { container } = render(<StatusChip status="stale" label="No data for 3h" />)
   const chip = container.querySelector('[data-status="stale"]')!
   expect(chip.className).toMatch(/dashed/)
-  expect(chip.querySelector('path')?.getAttribute('stroke-dasharray')).toBe('2.2 1.75')
+  expect(chip.querySelector('path')?.getAttribute('stroke-dasharray')).toBe('2 2')
 })
 
 test('critical draws a triangle', () => {

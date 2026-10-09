@@ -13,7 +13,7 @@ test('risk tier (2b): Dana raises the suggestion to Tier 3 with a reason and bui
   await page.goto('/inventory/agents/med-rec/risk-tier?scenario=review-risk-tier')
   await expect(page.getByText('Suggested · Tier 2', { exact: false })).toBeVisible()
   await expect(page.getByRole('table', { name: 'Risk factors' })).toContainText('About 140 admissions a day on 2 units')
-  await page.getByRole('radio', { name: /Tier 3 · High/ }).click()
+  await page.getByRole('button', { name: /Tier 3 · High/ }).click()
   const set = page.getByRole('button', { name: 'Set Tier 3 and build the packet' })
   await expect(set).toHaveAttribute('aria-disabled', 'true')
   await page.getByRole('textbox', { name: /Reason for changing the suggested tier/ }).fill('Med rec errors carry into every inpatient order. Pharmacist review catches most, not all.')

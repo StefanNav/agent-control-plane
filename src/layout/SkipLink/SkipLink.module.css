@@ -1,0 +1,20 @@
+/* Off screen until a keyboard user reaches it; then it sits over the prototype bar's corner. */
+.skip {
+  position: fixed;
+  top: 4px;
+  left: 8px;
+  z-index: 70;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--cs-raised);
+  color: var(--cs-ink);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skip:focus {
+  transform: none;
+}

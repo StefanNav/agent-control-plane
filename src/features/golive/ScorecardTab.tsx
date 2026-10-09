@@ -89,7 +89,7 @@ export function ScorecardTab({ agentId }: { agentId: string }) {
             </div>
             {view.causesTitle ? (
               <section>
-                <h3 className={styles.caps}>{view.causesTitle}</h3>
+                <h2 className={styles.caps}>{view.causesTitle}</h2>
                 <div className={styles.causes}>
                   {view.causes.map((c) => (
                     <div key={c.label} className={styles.cause}>
@@ -108,7 +108,7 @@ export function ScorecardTab({ agentId }: { agentId: string }) {
             ) : null}
             {view.cases.length ? (
               <section>
-                <h3 className={styles.caps}>{view.casesTitle}</h3>
+                <h2 className={styles.caps}>{view.casesTitle}</h2>
                 <Table
                   ariaLabel="Sample cases"
                   rows={view.cases}
@@ -122,7 +122,7 @@ export function ScorecardTab({ agentId }: { agentId: string }) {
                     { id: 'diff', header: 'Differences', width: 'minmax(0, 1fr)', render: (c) => c.differences },
                     {
                       id: 'open',
-                      header: '',
+                      header: '', hiddenHeader: 'Action',
                       width: '80px',
                       render: (c) => (
                         <LinkButton to={`/operations/agents/${agentId}/cases/${c.id}`} variant="ghost">

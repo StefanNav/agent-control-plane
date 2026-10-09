@@ -263,6 +263,8 @@ export function selectSignature(s: DemoState, code: string) {
       ['Review date', reviewIso ? `${formatDate(reviewIso)} ${reviewYear} · in ${dayGap(s.now, reviewIso)} days · a lapse sends the activity back to Shadow` : '—'],
       ['Step-down triggers', 'Edit rate above 15 % for 3 days · any wrong-patient draft · any new agent version'],
     ] as [string, string][],
+    /** The facts' hard stops again, as tag and name (3c draws each as a rule tag). */
+    hardStops: hardStops.map((h) => ({ tag: `${h.code} v${h.version}`, title: h.title })),
     review: reviewIso ? `${formatDate(reviewIso)} ${reviewYear} · in ${dayGap(s.now, reviewIso)} days · a lapse sends the activity back to Shadow` : '',
     evidence: card && mode !== 'renew' ? { head: `Shadow evidence · ${daysInclusive(card.from, card.to)} days · ${n(card.cases)} cases`, criteria: criteria.map((c) => ({ id: c.id, label: c.label, target: `${c.direction === 'atLeast' ? '≥' : '≤'} ${pct(c.target)}`, result: pct(c.result), met: c.met })) } : null,
     evidenceLine: p.evidence,

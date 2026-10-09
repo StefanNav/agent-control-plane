@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { StatusChip } from '../../components'
-import { Button, Icon, Notice, RuleTag, Table } from '../../design-system'
+import { Button, Icon, Notice, RuleTag, Table, VisuallyHidden } from '../../design-system'
 import { Split } from '../../layout/layouts'
 import { useDemo } from '../../store'
 import { selectChanges } from './selectors'
@@ -96,7 +96,7 @@ function DiffLine({ kind, children }: { kind: 'removed' | 'kept' | 'added'; chil
         {kind === 'removed' ? '−' : kind === 'added' ? '+' : ''}
       </span>
       {kind === 'removed' ? <s>{children}</s> : <span>{children}</span>}
-      <span className={styles.srOnly}>{kind === 'removed' ? ' (removed)' : kind === 'added' ? ' (added)' : ''}</span>
+      <VisuallyHidden>{kind === 'removed' ? ' (removed)' : kind === 'added' ? ' (added)' : ''}</VisuallyHidden>
     </span>
   )
 }
@@ -132,6 +132,7 @@ function Revalidate({ view }: { view: ChangesView }) {
         <ul className={styles.checks} aria-label="Checks">
           {view.checks.map((c) => (
             <li key={c.id} className={styles.check}>
+              <VisuallyHidden>{c.done ? 'Done: ' : 'Not yet: '}</VisuallyHidden>
               <span className={c.done ? styles.boxDone : styles.box} aria-hidden="true">
                 {c.done ? <Icon name="check" size={10} color="var(--cs-on-acc)" /> : null}
               </span>

@@ -10,7 +10,19 @@ type Recent = AgentOverview['recent'][number]
 
 export const ACTIVITY_COLUMNS: Column<Activity>[] = [
   { id: 'name', header: 'Activity', width: 'minmax(0, 1.4fr)', render: (a) => <span className={styles.rowTitle}>{a.name}</span> },
-  { id: 'level', header: 'Level', width: '140px', render: (a) => (a.level === 'Shadow' ? <StatusChip status="shadow" label="Shadow" /> : a.level) },
+  {
+    id: 'level',
+    header: 'Level',
+    width: '140px',
+    render: (a) =>
+      a.level === 'Shadow' ? (
+        <StatusChip status="shadow" label="Shadow" />
+      ) : a.level.startsWith('Paused') ? (
+        <StatusChip status="paused" label={a.level} />
+      ) : (
+        a.level
+      ),
+  },
   { id: 'signed', header: 'Signed by', width: 'minmax(0, 1fr)', render: (a) => `${a.grantor}${a.grantedAt ? ` · ${a.grantedAt}` : ''}` },
   { id: 'review', header: 'Review', width: '88px', render: (a) => <span className={styles.mono}>{a.review}</span> },
   { id: 'today', header: 'Today', width: '112px', render: (a) => a.today || '—' },

@@ -1,6 +1,7 @@
 import { useId, type ComponentPropsWithRef, type MouseEvent, type ReactNode } from 'react'
 import { cx } from '../../../lib/cx'
 import { Icon } from '../../icons/Icon'
+import { VisuallyHidden } from '../VisuallyHidden/VisuallyHidden'
 import styles from './Button.module.css'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'blocked'
@@ -51,9 +52,9 @@ export function Button({
       {locked ? <Icon name="lock" size={12} color="var(--cs-meta)" /> : icon}
       {children}
       {locked ? (
-        <span id={reasonId} className={styles.srOnly} aria-hidden="true">
+        <VisuallyHidden id={reasonId} aria-hidden="true">
           {locked}
-        </span>
+        </VisuallyHidden>
       ) : null}
     </button>
   )

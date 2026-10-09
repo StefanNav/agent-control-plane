@@ -29,6 +29,14 @@ export function currentPrivilege(s: DemoState, activityId: string) {
  */
 export const onBoard = (a: Agent) => a.lifecycle !== 'retired' && a.lifecycle !== 'onboarding' && a.lifecycle !== 'inReview'
 
+/**
+ * A judgment as the agent's own record shows it (4c header, 8c): held drafts say so, and a pause is
+ * left to the level, which already reads Paused. Boards keep the short label (4a, 4b).
+ */
+export function recordLabel(label: string): string {
+  return label.replace(/^(Review: \d+ drafts?)$/, '$1 held').replace(/ · paused$/, '')
+}
+
 /** Board order: critical, then anything needing a human, then fine, paused, shadow. Ties keep seed order. */
 export function severityRank(status: Status): number {
   return { crit: 0, warn: 1, review: 1, stale: 1, normal: 2, paused: 3, shadow: 4 }[status]
@@ -217,7 +225,10 @@ function activitiesOf(s: DemoState, agentId: string) {
     .filter((act) => act.agentId === agentId)
     .map((act) => {
       const prv = currentPrivilege(s, act.id)
-      const agentPaused = s.agents.find((a) => a.id === agentId)?.lifecycle === 'paused'
+      const agent = s.agents.find((a) => a.id === agentId)
+      const agentPaused = agent?.lifecycle === 'paused'
+      // 6d: drafts in progress went to pharmacists at the pause; a Shadow activity had none to route.
+      const routed = agentPaused && act.level !== 'shadow' && agent?.pause ? ` · ${agent.pause.routed} routed` : ''
       return {
         id: act.id,
         name: act.name,
@@ -229,7 +240,7 @@ function activitiesOf(s: DemoState, agentId: string) {
         grantedAt: prv?.grantedAt ? formatDate(prv.grantedAt) : '',
         review: prv?.reviewDate ? formatDate(prv.reviewDate) : '—',
         domain: prv?.domain ?? '',
-        today: act.today ?? '',
+        today: act.today ? `${act.today}${routed}` : '',
       }
     })
 }
@@ -353,7 +364,7 @@ export function selectAgentOverview(s: DemoState, agentId: string) {
         }
       : null,
     idLine: `${a.version}${a.sop ? ` · SOP ${a.sop}` : ''} · ${a.code}`,
-    judgment: a.judgment,
+    judgment: { ...a.judgment, label: recordLabel(a.judgment.label) },
     lifecycle: a.lifecycle,
     banner: e
       ? {

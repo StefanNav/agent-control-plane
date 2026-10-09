@@ -14,7 +14,7 @@ export const CHIPS: Array<{ status: Status; label: string; note: string }> = [
   { status: 'review', label: 'Review: 3 drafts', note: 'teal · ring, outlined · what is waiting' },
   { status: 'warn', label: 'Edit rate rising', note: 'amber · diamond, outlined · the trend' },
   { status: 'crit', label: 'Wrong-patient draft · paused', note: 'red · triangle, outlined · reason first' },
-  { status: 'stale', label: 'No data for 3h', note: 'neutral · dashed ring and box · how long' },
+  { status: 'stale', label: 'No data for 3h', note: 'neutral · dashed square and box · how long' },
   { status: 'shadow', label: 'Shadow', note: 'muted · half circle · present, not acting' },
   { status: 'paused', label: 'Paused by Marcus', note: 'muted · pause bars · who paused' },
 ]

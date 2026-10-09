@@ -34,3 +34,4 @@ export {
 } from './primitives/WizardSteps/WizardSteps'
 export { Menu, type MenuGroup, type MenuItem, type MenuProps } from './primitives/Menu/Menu'
 export { Modal, type ModalProps } from './primitives/Modal/Modal'
+export { VisuallyHidden, type VisuallyHiddenProps } from './primitives/VisuallyHidden/VisuallyHidden'

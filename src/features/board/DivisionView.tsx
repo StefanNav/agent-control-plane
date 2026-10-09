@@ -28,6 +28,9 @@ export function DivisionView() {
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement
       if (event.key.toLowerCase() !== 'e' || event.metaKey || event.ctrlKey || target.closest('input, textarea, select, [contenteditable]')) return
+      // Only while focus is on the page itself or on this board (WCAG 2.1.4): never from the bar, a menu or a dialog.
+      const onPage = target === document.body || target.id === 'main' || target.closest('[data-shortcut-scope="division"]')
+      if (!onPage || target.closest('[role="menu"], [role="dialog"]')) return
       navigate('/operations/inbox')
     }
     document.addEventListener('keydown', onKey)
@@ -41,7 +44,7 @@ export function DivisionView() {
   const lateMin = minutesBetween(division.monitor.lastAt, state.now)
 
   return (
-    <div className={styles.layout}>
+    <div className={styles.layout} data-shortcut-scope="division">
       <div className={styles.main}>
         <div className={styles.head}>
           <span className={styles.crumb}>Operations / Lakeshore Health / {division.name}</span>
@@ -79,6 +82,7 @@ export function DivisionView() {
               setParams(p, { replace: true })
             }}
             onOpen={(id) => navigate(`/operations/agents/${id}`)}
+            selectOnFocus
           />
         </div>
       </div>

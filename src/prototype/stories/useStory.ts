@@ -46,7 +46,9 @@ export function useStoryActions(stories: readonly Story[] = STORIES) {
       /** From step 1, loading the story's scenario even if it was already being followed. */
       start: (id: StoryId) => {
         const story = storyById(id, stories)
-        if (story) open(story, 1, true)
+        if (!story) return
+        useStory.getState().requestPanelFocus()
+        open(story, 1, true)
       },
       /** Another step of the active story, or the current one ("Return to it"). */
       go: (step: number) => {

@@ -271,3 +271,25 @@
   align-items: baseline;
   justify-content: space-between;
 }
+
+/* 3b: a line that agrees is quiet, a check in meta. */
+.agrees {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--cs-meta);
+}
+
+/* 3c: each hard stop as its rule tag and name, wrapping as a line of text does. */
+.hardStops {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 12px;
+  row-gap: 4px;
+}
+
+.hardStop {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

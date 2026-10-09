@@ -1,3 +1,4 @@
+import { Icon } from '../../design-system'
 import { useDemo } from '../../store'
 import styles from './audit.module.css'
 
@@ -9,6 +10,9 @@ export function ReadOnlyChip() {
       : null,
   )
   return person ? (
-    <span className={styles.readOnly}>Read only · {person.title.toLowerCase()}</span>
+    <span className={styles.readOnly}>
+      <Icon name="lock" size={12} color="var(--cs-meta)" />
+      Read only · {person.title.toLowerCase()}
+    </span>
   ) : null
 }

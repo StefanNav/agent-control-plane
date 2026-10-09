@@ -153,7 +153,7 @@ test('intake to signed privilege: Dana → Marcus → Sam → Priya → Dana →
   // Dana sets Tier 3 with a reason and builds the packet (2b).
   await viewAs('Dana')
   await page.goto('/inventory/agents/med-rec/risk-tier')
-  await page.getByRole('radio', { name: /Tier 3 · High/ }).click()
+  await page.getByRole('button', { name: /Tier 3 · High/ }).click()
   await page.getByRole('textbox', { name: /Reason for changing the suggested tier/ }).fill('Med rec errors carry into every inpatient order.')
   await page.getByRole('button', { name: 'Set Tier 3 and build the packet' }).click()
 

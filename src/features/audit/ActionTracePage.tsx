@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ActionTrace } from '../../components'
-import { Button, Card, Checkbox, Field, Input, LinkButton, Modal } from '../../design-system'
+import { Button, Card, Checkbox, Field, Icon, Input, LinkButton, Modal } from '../../design-system'
+import { cx } from '../../lib/cx'
 import { NotFound } from '../../layout/NotFound'
 import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { useDemo } from '../../store'
@@ -91,7 +92,14 @@ export function ActionTracePage() {
               </div>
               {trace.policy.rows.map(([rule, result]) => (
                 <div key={rule} className={styles.kvIndented}>
-                  <span className={result === 'blocked' ? styles.ink : undefined}>{rule}</span>
+                  <span className={cx(styles.rule, result === 'blocked' && styles.ink)}>
+                    {result === 'blocked' ? (
+                      <Icon name="lock" size={12} color="var(--cs-ink)" />
+                    ) : (
+                      <Icon name="check" size={12} color="var(--cs-meta)" />
+                    )}
+                    {rule}
+                  </span>
                   <span className={styles.value}>{result}</span>
                 </div>
               ))}

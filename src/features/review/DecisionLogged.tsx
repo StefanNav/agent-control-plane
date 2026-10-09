@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { StatusChip } from '../../components'
 import { RuleTag, Table } from '../../design-system'
 import { Split } from '../../layout/layouts'
 import { useDemo } from '../../store'
@@ -29,7 +30,7 @@ export function DecisionLogged({ agentId }: { agentId: string }) {
                 getRowId={(c) => c.id}
                 minRowHeight={56}
                 columns={[
-                  { id: 'id', header: '', width: '56px', render: (c) => <span><RuleTag>{c.id}</RuleTag></span> },
+                  { id: 'id', header: '', hiddenHeader: 'ID', width: '56px', render: (c) => <span><RuleTag>{c.id}</RuleTag></span> },
                   { id: 'condition', header: 'Condition', width: 'minmax(0, 1fr)', render: (c) => c.text },
                   { id: 'applies', header: 'Applies to', width: '200px', render: (c) => c.appliesTo },
                   { id: 'checked', header: 'Checked by', width: '170px', render: (c) => c.checkedBy },
@@ -47,7 +48,12 @@ export function DecisionLogged({ agentId }: { agentId: string }) {
                 minRowHeight={56}
                 columns={[
                   { id: 'activity', header: 'Activity', width: 'minmax(0, 1fr)', render: (p) => <span className={styles.factor}>{p.activity}</span> },
-                  { id: 'level', header: 'Level', width: '190px', render: (p) => p.level },
+                  {
+                    id: 'level',
+                    header: 'Level',
+                    width: '190px',
+                    render: (p) => (p.level.startsWith('Shadow') ? <StatusChip status="shadow" label={p.level} /> : p.level),
+                  },
                   { id: 'domain', header: 'Domain', width: '220px', render: (p) => p.domain },
                   {
                     id: 'conditions',

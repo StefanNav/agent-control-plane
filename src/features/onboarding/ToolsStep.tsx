@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { HardStopCard } from '../../components'
-import { Button, Icon, RuleTag, Table } from '../../design-system'
+import { Button, Icon, RuleTag, Table, VisuallyHidden } from '../../design-system'
 import { cx } from '../../lib/cx'
 import { Split } from '../../layout/layouts'
 import { useDemo } from '../../store'
@@ -46,7 +46,7 @@ export function ToolsStep({ agentId }: { agentId: string }) {
                 { id: 'for', header: 'For', width: 'minmax(0, 1fr)', render: (r) => r.for },
                 {
                   id: 'match',
-                  header: '',
+                  header: '', hiddenHeader: 'Check',
                   width: '140px',
                   render: () => (
                     <span className={styles.status}>
@@ -109,7 +109,8 @@ export function ToolsStep({ agentId }: { agentId: string }) {
                 <div key={l.code} className={styles.limitRow}>
                   <Icon name="lock" color="var(--cs-text2)" />
                   <RuleTag>{l.label}</RuleTag>
-                  <button type="button" className={styles.limitMain} onClick={() => setOpen(l.code)} aria-label={`Show ${l.code} ${l.title}`}>
+                  <button type="button" className={styles.limitMain} onClick={() => setOpen(l.code)}>
+                    <VisuallyHidden>Show {l.code}: </VisuallyHidden>
                     <span className={styles.listName}>{l.title}</span>
                     <span className={styles.listSub}>
                       From “{l.from}” · {l.library ? `library ${l.library}` : 'plain language'}

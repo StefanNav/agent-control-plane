@@ -204,7 +204,7 @@ No icon library is used. Swap in the codebase's icon set only if it has exact eq
 | Review | teal ring | 1 px rev | rev 600 | Review: 3 drafts |
 | Warning | amber diamond | 1 px warn | warnT 600 | Edit rate rising |
 | Critical | red triangle | 1 px crit | crit 600 | Wrong-patient draft · paused |
-| Monitor stale | dashed ring, meta | **1 px dashed** icon | strong 600 | No data for 3h |
+| Monitor stale | dashed square (was a dashed ring; see open issue 1), meta | **1 px dashed** icon | strong 600 | No data for 3h |
 | Shadow | half ring, icon | 1 px lineStrong | meta 400 | Shadow |
 | Paused | pause bars, icon | 1 px lineStrong | meta 400 | Paused by Marcus |
 
@@ -419,6 +419,7 @@ Per-frame copy is final. Take it from the files.
 
 ## Known open issues / decisions to confirm
 1. **Ring overload.** Review, stale and Shadow are all circles. If solid vs dashed fails at 12 px on the wall display, stale becomes a dashed square.
+   - *Settled 2026-10-09 (prototype Phase 9):* in greyscale at a third of its size, the wall's stale and review marks were indistinguishable, so stale is now a dashed square (`M5 2H10V10H2V2Z`, stroke 1.5, dash 2 2) everywhere it appears.
 2. **Wall display scale.** 12 px mono doesn't read across a room. 4e needs its own type scale.
 3. **Dialog elevation.** The component sheet shows the impact-preview dialog flat (border, no shadow). Built screens use the modal shadow. Use the shadow.
 4. v3 epics E16–E21 aren't designed. Their stories are in `reference/epics-and-stories.txt`.

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router'
 import { StatusChip } from '../../components'
-import { Button, LinkButton } from '../../design-system'
+import { Button, Icon, LinkButton } from '../../design-system'
 import { cx } from '../../lib/cx'
 import { NotFound } from '../../layout/NotFound'
 import { PageHeader } from '../../layout/PageHeader/PageHeader'
@@ -54,7 +54,16 @@ export function CasePage() {
                   {l.agent}
                 </span>
                 <span role="cell">{l.pharmacist}</span>
-                <span role="cell">{l.result}</span>
+                <span role="cell">
+                  {l.result === 'Agrees' ? (
+                    <span className={styles.agrees}>
+                      <Icon name="check" size={12} color="var(--cs-meta)" />
+                      Agrees
+                    </span>
+                  ) : (
+                    <StatusChip status="warn" label={l.result} />
+                  )}
+                </span>
                 <span role="cell" className={styles.src}>
                   {l.source}
                 </span>

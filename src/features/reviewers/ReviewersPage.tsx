@@ -85,7 +85,7 @@ export function ReviewersPage() {
                         <span className={styles.value}>
                           {c.value} <span className={styles.meta}>{c.was}</span>
                         </span>
-                        <Sparkline values={c.values} width={240} height={44} color="var(--cs-ink)" />
+                        <Sparkline values={c.values} width={256} height={44} endDot={false} color={c.warn ? 'var(--cs-warn-text)' : 'var(--cs-text2)'} />
                         <span className={styles.axis}>
                           <span>{c.from}</span>
                           <span>{c.to}</span>

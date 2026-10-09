@@ -57,7 +57,7 @@ export function AgentEvidencePage() {
             minRowHeight={73}
             columnGap={16}
             columns={[
-              { id: 'n', header: '', width: '28px', render: (r) => <span className={styles.number}>{r.n}</span> },
+              { id: 'n', header: '', hiddenHeader: 'Number', width: '28px', render: (r) => <span className={styles.number}>{r.n}</span> },
               { id: 'element', header: 'Element', width: '190px', render: (r) => <span className={styles.name}>{r.name}</span> },
               {
                 id: 'records',

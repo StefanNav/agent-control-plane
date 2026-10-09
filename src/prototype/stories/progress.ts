@@ -12,6 +12,10 @@ export interface StoryStore {
   setProgress: (progress: StoryProgress | null) => void
   /** Leave the story: no progress, and story links reached by Back are ignored. */
   exit: () => void
+  /** A story was started from the page: the panel takes focus once (memory only, Phase 9 R6). */
+  focusPanel: boolean
+  requestPanelFocus: () => void
+  panelFocused: () => void
 }
 
 /**
@@ -29,6 +33,9 @@ export function createStoryStore(
         exited: false,
         setProgress: (progress) => set(progress ? { progress, exited: false } : { progress }),
         exit: () => set({ progress: null, exited: true }),
+        focusPanel: false,
+        requestPanelFocus: () => set({ focusPanel: true }),
+        panelFocused: () => set({ focusPanel: false }),
       }),
       {
         name: 'acp-story',

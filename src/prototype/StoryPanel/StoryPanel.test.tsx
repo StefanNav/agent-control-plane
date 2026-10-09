@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, useLocation } from 'react-router'
 import { useDemo } from '../../store'
@@ -26,7 +26,7 @@ function show(step: number, at: string) {
 }
 
 afterEach(() => {
-  useStory.setState({ progress: null, exited: false })
+  useStory.setState({ progress: null, exited: false, focusPanel: false })
   useDemo.getState().reset()
 })
 
@@ -106,4 +106,47 @@ test('Exit clears the story and its params, and stays on the screen', async () =
   expect(screen.getByRole('status', { name: 'location' })).toHaveTextContent(
     /^\/operations\/agents\/med-rec\?tab=scorecard$/,
   )
+})
+
+describe('keyboard and screen readers (Phase 9 R6)', () => {
+  test('Hide hands focus to Show, and Show back to Hide', async () => {
+    show(2, '/operations/agents/med-rec?tab=scorecard&story=marcus&step=2')
+    await userEvent.click(screen.getByRole('button', { name: 'Hide' }))
+    expect(screen.getByRole('button', { name: 'Show' })).toHaveFocus()
+    await userEvent.click(screen.getByRole('button', { name: 'Show' }))
+    expect(screen.getByRole('button', { name: 'Hide' })).toHaveFocus()
+  })
+
+  test('a status line announces each step', async () => {
+    show(1, '/operations?story=marcus&step=1')
+    expect(screen.getByText('Step 1 of 3: One')).toHaveAttribute('role', 'status')
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.getByText('Step 2 of 3: Two')).toHaveAttribute('role', 'status')
+  })
+
+  test('a story started from the UI puts focus on the step title, once', () => {
+    useStory.setState({ focusPanel: true })
+    show(1, '/operations?story=marcus&step=1')
+    expect(screen.getByRole('heading', { name: 'One' })).toHaveFocus()
+    expect(useStory.getState().focusPanel).toBe(false)
+  })
+
+  test('starting the story again while the panel is hidden opens it and focuses the step', async () => {
+    show(1, '/operations?story=marcus&step=1')
+    await userEvent.click(screen.getByRole('button', { name: 'Hide' }))
+    act(() => useStory.setState({ focusPanel: true }))
+    expect(screen.getByRole('heading', { name: 'One' })).toHaveFocus()
+  })
+
+  test('a deep link or refresh leaves focus alone', () => {
+    show(1, '/operations?story=marcus&step=1')
+    expect(screen.getByRole('heading', { name: 'One' })).not.toHaveFocus()
+  })
+
+  test('dialogs let focus into the panel', async () => {
+    show(1, '/operations?story=marcus&step=1')
+    expect(screen.getByRole('complementary', { name: 'Story' })).toHaveAttribute('data-modal-companion')
+    await userEvent.click(screen.getByRole('button', { name: 'Hide' }))
+    expect(screen.getByRole('complementary', { name: 'Story' })).toHaveAttribute('data-modal-companion')
+  })
 })

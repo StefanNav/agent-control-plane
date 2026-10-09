@@ -85,6 +85,8 @@ export function AutonomyLadder({ variant, size = 'row', labels = false, steps }:
 
 /** Screen-reader text for the compact ladder, e.g. "Shadow current, Draft proposed" or "Shadow current, Draft held". */
 function describe(steps: LadderStep[]): string {
+  // A branch locked by policy has no current step; it still needs a name.
+  if (steps.every((step) => step.state === 'locked')) return 'Locked by policy'
   return steps
     .filter((step) => step.state === 'current' || step.state === 'proposed' || step.state === 'held')
     .map((step) => `${NAMES[step.level]} ${step.state}`)

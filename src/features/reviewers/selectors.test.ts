@@ -81,3 +81,8 @@ test('review fix I6: 11a points only to a threshold step-down, not a version one
   const { buildScenario } = await import('../../data/scenarios')
   expect(selectReviewers(buildScenario('step-down-version'), 'medications', 8, 'marcus')!.stepDown).toBeNull()
 })
+
+test('11a: the weekly trends are quiet grey, except misses rising, which warn', () => {
+  const cards = selectReviewers(createSeed(), 'medications', 8, 'marcus')!.weekly!.cards
+  expect(cards.map((c) => c.warn)).toEqual([false, false, true])
+})

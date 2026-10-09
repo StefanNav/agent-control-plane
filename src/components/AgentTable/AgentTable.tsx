@@ -33,6 +33,8 @@ export interface AgentTableProps {
   selectedId?: string | null
   onSelect?: (id: string) => void
   onOpen?: (id: string) => void
+  /** Focusing a row selects it, so a side panel follows the keyboard (division board). */
+  selectOnFocus?: boolean
   /** `full` = component-sheet widths; `withPanel` = division view beside the 344px agent panel (4b). */
   layout?: 'full' | 'withPanel'
   ariaLabel: string
@@ -44,7 +46,7 @@ const WIDTHS = {
 } as const
 
 /** The division view's agent rows (component 02): judgment first, quality next to volume. */
-export function AgentTable({ rows, selectedId = null, onSelect, onOpen, layout = 'full', ariaLabel }: AgentTableProps) {
+export function AgentTable({ rows, selectedId = null, onSelect, onOpen, selectOnFocus = false, layout = 'full', ariaLabel }: AgentTableProps) {
   const w = WIDTHS[layout]
   const number = (row: AgentRowView, value: string, extra?: string) => (
     <span className={cx(styles.number, row.status === 'stale' && styles.withdrawn, extra)}>{value}</span>
@@ -136,6 +138,7 @@ export function AgentTable({ rows, selectedId = null, onSelect, onOpen, layout =
       selectedId={selectedId}
       onSelect={onSelect}
       onOpen={onOpen}
+      selectOnFocus={selectOnFocus}
       density="board"
       columnGap={12}
     />
