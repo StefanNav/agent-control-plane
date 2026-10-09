@@ -163,6 +163,7 @@ export function InventoryPage() {
                   variant="ghost"
                   locked={allowed ? undefined : lockReason('retire', state.personaId)}
                   onClick={() => setRetiring(true)}
+                  data-story-target="inventory-retire"
                 >
                   Disable or retire…
                 </Button>

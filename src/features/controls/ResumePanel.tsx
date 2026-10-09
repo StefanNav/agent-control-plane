@@ -24,7 +24,7 @@ export function ResumePanel({ agentId }: { agentId: string }) {
   }
 
   return (
-    <section aria-label="Resume" className={styles.panel}>
+    <section aria-label="Resume" className={styles.panel} data-story-target="resume-panel">
       <div className={styles.head}>
         <h2 className={styles.title}>{view.title}</h2>
         <span className={styles.stamp}>{view.stamp}</span>

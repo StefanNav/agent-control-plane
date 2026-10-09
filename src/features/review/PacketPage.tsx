@@ -123,7 +123,7 @@ export function PacketPage() {
               <h2 className={onboarding.caps}>Systems · {view.owner}</h2>
               <SystemsVerbsGrid rows={grid.rows.map((r) => ({ ...r, cells: Object.fromEntries(Object.entries(r.cells).map(([v, c]) => [v, c === 'changed' ? 'granted' : c])) as typeof r.cells }))} policyId="ORG-POL-02" />
             </section>
-            <section className={onboarding.setGroup}>
+            <section className={onboarding.setGroup} data-story-target="packet-hardstops">
               <h2 className={onboarding.caps}>Hard stops · tested on the last 30 days · {view.tech}</h2>
               <div className={onboarding.list}>
                 {set.limits.rows.map((l) => (
@@ -160,7 +160,7 @@ export function PacketPage() {
         }
         side={
           view.state === 'notNeeded' ? (
-            <SideCard label="Your decision" title="No board for Tier 1" sub={`${view.lead} set Tier 1 · Low, so no committee decides.`}>
+            <SideCard storyTarget="packet-decision" label="Your decision" title="No board for Tier 1" sub={`${view.lead} set Tier 1 · Low, so no committee decides.`}>
               <div className={onboarding.form}>
                 <Notice mark="none" lead={`Shadow started ${view.shadowFrom ?? ''}.`}>
                   The sponsor’s approval and the tier were enough. The packet stays on the record.
@@ -168,7 +168,7 @@ export function PacketPage() {
               </div>
             </SideCard>
           ) : view.state === 'notBuilt' ? (
-            <SideCard label="Your decision" title="Your decision" sub="Not on the agenda yet">
+            <SideCard storyTarget="packet-decision" label="Your decision" title="Your decision" sub="Not on the agenda yet">
               <div className={onboarding.form}>
                 <Notice mark="lock" lead="No packet yet.">
                   The packet is built when {view.lead} sets the risk tier.
@@ -176,7 +176,7 @@ export function PacketPage() {
               </div>
             </SideCard>
           ) : decided ? (
-            <SideCard label="Decision" title={DECISION_WORDS[decided.kind].replace(/^./, (c) => c.toUpperCase())} sub={`${view.chair} · ${view.meeting}`}>
+            <SideCard storyTarget="packet-decision" label="Decision" title={DECISION_WORDS[decided.kind].replace(/^./, (c) => c.toUpperCase())} sub={`${view.chair} · ${view.meeting}`}>
               <div className={onboarding.form}>
                 <p className={styles.quote}>“{decided.reason}”</p>
                 {decided.conditions.length ? <span className={onboarding.note}>Conditions {conditionRange(decided.conditions.map((c) => c.id))} sit on every privilege they apply to.</span> : null}
@@ -186,13 +186,13 @@ export function PacketPage() {
               </div>
             </SideCard>
           ) : !allowed ? (
-            <SideCard label="Your decision" title="The board decides" sub={`${view.chair} records the decision at the ${view.meeting} meeting.`}>
+            <SideCard storyTarget="packet-decision" label="Your decision" title="The board decides" sub={`${view.chair} records the decision at the ${view.meeting} meeting.`}>
               <div className={onboarding.form}>
                 <Button locked={lockReason('approveGoLive', state.personaId)}>Record decision</Button>
               </div>
             </SideCard>
           ) : (
-            <SideCard label="Your decision" title="Your decision" sub="Logged with your reason. Conditions carry onto every privilege for this agent.">
+            <SideCard storyTarget="packet-decision" label="Your decision" title="Your decision" sub="Logged with your reason. Conditions carry onto every privilege for this agent.">
               <div className={onboarding.form}>
                 <RadioCardGroup name="decision" aria-label="Decision" value={kind} onChange={setKind} options={KINDS.map((k) => ({ ...k, description: k.value === 'reReview' ? `Back to ${view.lead} with questions, next meeting` : k.description }))} />
                 {kind === 'approveWithConditions' ? (

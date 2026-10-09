@@ -75,7 +75,7 @@ export function BranchHistory({ activityId, branchId }: { activityId: string; br
             />
           </section>
           {view.restore ? (
-            <div className={styles.restore}>
+            <div className={styles.restore} data-story-target="branch-restore">
               {view.restore.locked ? (
                 <Button locked={view.restore.locked}>{view.restore.label}</Button>
               ) : (

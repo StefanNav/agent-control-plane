@@ -4,6 +4,7 @@ import { SCENARIO_IDS, type ScenarioId } from '../data/scenarios'
 import { TopNav } from '../layout/TopNav/TopNav'
 import { personaById } from '../prototype/personas'
 import { PrototypeBar } from '../prototype/PrototypeBar/PrototypeBar'
+import { StoryLayer } from '../prototype/StoryPanel/StoryLayer'
 import { useDemo } from '../store'
 import type { NavSection, RouteHandle, ShellKind } from './nav'
 import styles from './AppShell.module.css'
@@ -48,6 +49,7 @@ export function AppShell({ shell }: { shell: ShellKind }) {
       <main>
         <Outlet />
       </main>
+      <StoryLayer />
     </div>
   )
 }

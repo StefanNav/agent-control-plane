@@ -54,22 +54,24 @@ export function ReviewersPage() {
           main={
             <>
               {view.insight ? (
-                <Notice
-                  mark="warn"
-                  lead={view.insight.lead}
-                  actions={
-                    <>
-                      <LinkButton to={unitLink(view.insight.unitId)} variant="ghost">
-                        Open {view.rows.find((r) => r.id === view.insight!.unitId)!.unit}
-                      </LinkButton>
-                      <LinkButton to={unitLink(view.insight.unitId, true)} variant="ghost">
-                        Raise sampling
-                      </LinkButton>
-                    </>
-                  }
-                >
-                  {view.insight.text}
-                </Notice>
+                <div data-story-target="reviewers-finding">
+                  <Notice
+                    mark="warn"
+                    lead={view.insight.lead}
+                    actions={
+                      <>
+                        <LinkButton to={unitLink(view.insight.unitId)} variant="ghost">
+                          Open {view.rows.find((r) => r.id === view.insight!.unitId)!.unit}
+                        </LinkButton>
+                        <LinkButton to={unitLink(view.insight.unitId, true)} variant="ghost">
+                          Raise sampling
+                        </LinkButton>
+                      </>
+                    }
+                  >
+                    {view.insight.text}
+                  </Notice>
+                </div>
               ) : (
                 <Notice mark="none">No unit shows reviewers checking less.</Notice>
               )}

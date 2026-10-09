@@ -156,7 +156,7 @@ function Signature({ view }: { view: View }) {
 
   if (sig.mode === 'signed' && sig.signed) {
     return (
-      <section className={styles.sign} aria-label="Your signature">
+      <section className={styles.sign} aria-label="Your signature" data-story-target="promotion-signature">
         <h2 className={styles.signTitle}>Signature</h2>
         <Notice mark={view.chip.label === 'With the board' ? 'review' : 'none'} lead={sig.signed.lead}>
           {sig.signed.text}
@@ -167,7 +167,7 @@ function Signature({ view }: { view: View }) {
   }
   if (sig.mode === 'returned' && sig.returned) {
     return (
-      <section className={styles.sign} aria-label="Your signature">
+      <section className={styles.sign} aria-label="Your signature" data-story-target="promotion-signature">
         <h2 className={styles.signTitle}>Your signature</h2>
         <Notice mark="review" lead={sig.returned.lead}>
           {sig.returned.text}
@@ -186,7 +186,7 @@ function Signature({ view }: { view: View }) {
   }
   const locked = sig.mode === 'locked' ? lockReason('signPrivilege', state.personaId) : !sig.met ? 'Every criterion must be met' : undefined
   return (
-    <section className={styles.sign} aria-label="Your signature">
+    <section className={styles.sign} aria-label="Your signature" data-story-target="promotion-signature">
       <h2 className={styles.signTitle}>Your signature</h2>
       {sig.question ? (
         <Notice mark="review" lead={sig.question.lead}>

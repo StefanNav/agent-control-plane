@@ -57,7 +57,7 @@ export function ToolsStep({ agentId }: { agentId: string }) {
               ]}
             />
           </section>
-          <section className={styles.section}>
+          <section className={styles.section} data-story-target="tools-hardstops">
             <h3 className={styles.caps}>
               Hard stops · {view.limits.length} from {view.owner}’s never list
             </h3>
@@ -137,6 +137,7 @@ export function ToolsStep({ agentId }: { agentId: string }) {
       }
       side={
         <StepSide
+          storyTarget="tools-send"
           title={view.ready || view.state === 'waiting' ? 'Tools and hard stops · done' : `Tools and hard stops · ${view.progress.tested} of ${view.progress.total}`}
           sub={view.ready ? `${view.items.done} of ${view.items.total} items done · only ${view.sponsor}’s approval left` : `${view.items.done} of ${view.items.total} items done across the record`}
           progress={view.items.done / view.items.total}

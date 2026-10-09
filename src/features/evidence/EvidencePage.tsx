@@ -72,7 +72,7 @@ export function EvidencePage() {
           <div className={styles.column}>
             {built ? <Notice mark="none">{`${built.code} · RUAIH evidence packet · ${built.pages.toLocaleString('en-US')} pages. Logged.`}</Notice> : null}
             <StatStrip stats={view.stats} />
-            <section className={styles.section} aria-label="Coverage">
+            <section className={styles.section} aria-label="Coverage" data-story-target="evidence-coverage">
               <h2 className={styles.caps}>Coverage · numbers are records mapped</h2>
               <Table<Row | MoreRow>
                 ariaLabel="Coverage"

@@ -60,7 +60,7 @@ export function EpicPage() {
               {STAND_IN}
             </p>
           ) : null}
-          <table className={styles.table} aria-label="Home medications">
+          <table className={styles.table} aria-label="Home medications" data-story-target="epic-medlist">
             <thead>
               <tr>
                 <th>Medication</th>

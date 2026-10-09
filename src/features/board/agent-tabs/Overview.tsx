@@ -22,32 +22,34 @@ export function Overview({ view, resume = null }: { view: AgentOverview; resume?
         {view.paused ? <Notice lead={view.paused.lead}>{view.paused.text}</Notice> : null}
         {view.paused ? resume : null}
         {!stopped && !view.retired && view.banner ? (
-          <Notice
-            mark={noticeMark(view.banner.status)}
-            lead={view.banner.headline}
-            actions={
-              <>
-                <LinkButton
-                  to={`/operations/inbox/${view.banner.exceptionId}`}
-                  variant="ghost"
-                  size="sm"
-                >
-                  {view.banner.action}
-                </LinkButton>
-                {view.banner.ruleTag ? (
+          <div data-story-target="agent-summary">
+            <Notice
+              mark={noticeMark(view.banner.status)}
+              lead={view.banner.headline}
+              actions={
+                <>
                   <LinkButton
-                    to={`/inventory/agents/${view.id}/onboarding/tools`}
+                    to={`/operations/inbox/${view.banner.exceptionId}`}
                     variant="ghost"
                     size="sm"
                   >
-                    Open {view.banner.ruleTag}
+                    {view.banner.action}
                   </LinkButton>
-                ) : null}
-              </>
-            }
-          >
-            {view.banner.cause}
-          </Notice>
+                  {view.banner.ruleTag ? (
+                    <LinkButton
+                      to={`/inventory/agents/${view.id}/onboarding/tools`}
+                      variant="ghost"
+                      size="sm"
+                    >
+                      Open {view.banner.ruleTag}
+                    </LinkButton>
+                  ) : null}
+                </>
+              }
+            >
+              {view.banner.cause}
+            </Notice>
+          </div>
         ) : null}
         {stopped || view.retired ? null : <StatStrip stats={view.stats} />}
         <section className={styles.section}>

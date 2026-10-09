@@ -95,7 +95,7 @@ export function RiskTierPage() {
               </Notice>
             ) : (
               <>
-                <section className={onboarding.section}>
+                <section className={onboarding.section} data-story-target="risk-tier-choice">
                   <h3 className={onboarding.caps}>Tier</h3>
                   <RadioCardGroup
                     name="tier"

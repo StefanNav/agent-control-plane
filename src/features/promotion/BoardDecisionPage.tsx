@@ -83,7 +83,7 @@ function Decision({ view }: { view: View }) {
 
   if (view.mode === 'waiting') {
     return (
-      <section className={styles.decision} aria-label="Your decision">
+      <section className={styles.decision} data-story-target="board-decision" aria-label="Your decision">
         <h2 className={styles.sideTitle}>Your decision</h2>
         <Notice mark="review" lead={`Waiting for ${view.sponsor}’s signature.`}>
           The board decides once the sponsor signs.
@@ -93,7 +93,7 @@ function Decision({ view }: { view: View }) {
   }
   if (view.mode === 'logged' && view.decision) {
     return (
-      <section className={styles.decision} aria-label="Decision logged">
+      <section className={styles.decision} data-story-target="board-decision" aria-label="Decision logged">
         <h2 className={styles.sideTitle}>Decision logged</h2>
         <Notice mark="none" lead={`${DECISION_WORDS[view.decision.kind].replace(/^./, (c) => c.toUpperCase())} by ${view.decision.by} · ${view.decision.at}.`}>
           {view.decision.reason}
@@ -118,7 +118,7 @@ function Decision({ view }: { view: View }) {
     setError(result.ok ? undefined : result.reason)
   }
   return (
-    <section className={styles.decision} aria-label="Your decision">
+    <section className={styles.decision} data-story-target="board-decision" aria-label="Your decision">
       <div className={styles.pair}>
         <h2 className={styles.sideTitle}>Your decision</h2>
         <span className={styles.muted}>Logged with your reason. Conditions carry onto {view.idLine.split(' ')[0]}.</span>

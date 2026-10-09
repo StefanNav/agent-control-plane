@@ -60,31 +60,33 @@ export function ScorecardTab({ agentId }: { agentId: string }) {
         ) : (
           <>
             <span className={styles.line}>{view.line}</span>
-            <Table
-              ariaLabel="Criteria"
-              rows={view.criteria}
-              getRowId={(c) => c.id}
-              minRowHeight={56}
-              columns={[
-                { id: 'criterion', header: 'Criterion', width: 'minmax(0, 1fr)', render: (c) => <span className={styles.strong}>{c.label}</span> },
-                { id: 'target', header: 'Target', width: '96px', render: (c) => c.target },
-                { id: 'result', header: 'Result', width: '96px', render: (c) => <span className={styles.result}>{c.result}</span> },
-                { id: 'trend', header: `${view.criteria[0]?.trend.length ?? 21} days`, width: '96px', render: (c) => <Sparkline values={c.trend} width={72} height={20} color={c.met ? 'var(--cs-text2)' : 'var(--cs-warn)'} /> },
-                {
-                  id: 'status',
-                  header: 'Status',
-                  width: '130px',
-                  render: (c) =>
-                    c.met ? (
-                      <span className={styles.met}>
-                        <Icon name="check" size={12} color="var(--cs-meta)" /> Met
-                      </span>
-                    ) : (
-                      <StatusChip status="warn" label="Below target" />
-                    ),
-                },
-              ]}
-            />
+            <div data-story-target="scorecard-criteria">
+              <Table
+                ariaLabel="Criteria"
+                rows={view.criteria}
+                getRowId={(c) => c.id}
+                minRowHeight={56}
+                columns={[
+                  { id: 'criterion', header: 'Criterion', width: 'minmax(0, 1fr)', render: (c) => <span className={styles.strong}>{c.label}</span> },
+                  { id: 'target', header: 'Target', width: '96px', render: (c) => c.target },
+                  { id: 'result', header: 'Result', width: '96px', render: (c) => <span className={styles.result}>{c.result}</span> },
+                  { id: 'trend', header: `${view.criteria[0]?.trend.length ?? 21} days`, width: '96px', render: (c) => <Sparkline values={c.trend} width={72} height={20} color={c.met ? 'var(--cs-text2)' : 'var(--cs-warn)'} /> },
+                  {
+                    id: 'status',
+                    header: 'Status',
+                    width: '130px',
+                    render: (c) =>
+                      c.met ? (
+                        <span className={styles.met}>
+                          <Icon name="check" size={12} color="var(--cs-meta)" /> Met
+                        </span>
+                      ) : (
+                        <StatusChip status="warn" label="Below target" />
+                      ),
+                  },
+                ]}
+              />
+            </div>
             {view.causesTitle ? (
               <section>
                 <h3 className={styles.caps}>{view.causesTitle}</h3>

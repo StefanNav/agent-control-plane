@@ -68,7 +68,7 @@ export function IncidentPage() {
             </section>
           ) : null}
           {inc.corrections.length ? (
-            <section className={styles.section}>
+            <section className={styles.section} data-story-target="incident-corrections">
               <h2 className={styles.label}>Corrections</h2>
               <table className={styles.table} aria-label="Corrections">
                 <tbody>

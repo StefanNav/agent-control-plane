@@ -40,7 +40,7 @@ export function ReturnedPanel({ agentId }: { agentId: string }) {
         >
           <ReturnedNote agentId={agentId} />
           {target ? (
-            <section className={styles.section}>
+            <section className={styles.section} data-story-target="returned-retest">
               <h3 className={styles.caps}>
                 {target.label} · {target.reopened ? 're-test' : 're-tested'}
               </h3>

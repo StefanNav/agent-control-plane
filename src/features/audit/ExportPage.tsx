@@ -97,7 +97,7 @@ export function ExportPage() {
         }
       />
       <div className={styles.split}>
-        <div className={styles.form}>
+        <div className={styles.form} data-story-target="export-contents">
           <div className={styles.intro}>
             <h2 className={styles.title}>What to export</h2>
             <p className={styles.lead}>

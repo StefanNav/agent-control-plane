@@ -35,7 +35,7 @@ export function ReviewLevelTab({ activityId }: { activityId: string }) {
               </div>
               <p className={styles.help}>{view.help}</p>
             </section>
-            <section className={styles.section} aria-label="Rules that move the level">
+            <section className={styles.section} aria-label="Rules that move the level" data-story-target="review-rules">
               <div className={styles.sectionHead}>
                 <h2 className={styles.caps}>{view.rulesHead}</h2>
                 {view.canEditRules ? (
