@@ -38,3 +38,40 @@ test('others read the names, and whose inbox it is in; no step-down, no 15a', ()
   expect(view.happened[2]!.sub).toMatch(/^Marcus, Priya and Dana · exception EXC-\d{4} in Marcus’s inbox$/)
   expect(selectStepDown(createSeed(), 'med-rec', 'marcus')).toBeNull()
 })
+
+test('15b: the branch stepped down when v1.3.0 was deployed; re-validation is running; restore is locked', async () => {
+  const { selectBranchHistory } = await import('./selectors')
+  const { selectActivityPage } = await import('../activity/selectors')
+  const s = buildScenario('step-down-version')
+  const page = selectActivityPage(s, 'allergy-recon', 'outside-records', 'priya')!
+  expect(page.status).toBe('Draft since 14 Dec 14:20 · was Supervised')
+  expect(page.idLine).toBe('PRV-0087 v7 · Allergy Recon Agent v1.3.0')
+  const view = selectBranchHistory(s, 'allergy-recon', 'outside-records', 'priya')!
+  expect(view.notice).toEqual({
+    lead: 'Stepped down to Draft when Allergy Recon Agent v1.3.0 was deployed.',
+    text: 'Any new agent or SOP version re-earns Supervised. Until then pharmacists sign each add again; nothing was lost.',
+  })
+  expect(view.revalidation).toMatchObject({
+    head: 'Re-validation · replay of the last 30 days on v1.3.0',
+    progress: '1,412 of 2,104 adds replayed',
+    left: 'about 40 min left',
+    stats: [
+      { label: 'Same result as v1.2.0', value: '99.6 %' },
+      { label: 'Different, and better', value: '0.3 %' },
+      { label: 'Different, and worse', value: '0.1 % · 2 adds' },
+    ],
+  })
+  expect(view.rows.map((r) => [r.date, r.title, r.sub, r.ladder.map((l) => l.state)])).toEqual([
+    ['14 Dec 14:20', 'Stepped down to Draft', 'New agent version v1.3.0, deployed by Sam', ['passed', 'current', 'held', 'locked']],
+    ['09 Dec', 'Promoted to Supervised', 'Board approved with C4 · Dr. Lee', ['passed', 'passed', 'current', 'locked']],
+    ['08 Dec', 'Priya signed the promotion', 'Sent to the board', ['passed', 'current', 'proposed', 'locked']],
+    ['09 Sep', 'Draft', 'Priya signed PRV-0087 v1', ['passed', 'current', 'available', 'locked']],
+  ])
+  expect(view.restore).toMatchObject({ label: 'Sign to restore Supervised', locked: 'Opens when the replay finishes' })
+  expect(view.triggers.map((t) => [t.text, t.fired, t.to])).toEqual([
+    ['Any new agent or SOP version', 'fired 14 Dec', 'to Draft'],
+    ['Any defect in an independent check', null, 'to Draft'],
+    ['Any linked incident', null, 'to Draft'],
+    ['Rejections above 0.5 % for 3 days', null, 'to Draft'],
+  ])
+})

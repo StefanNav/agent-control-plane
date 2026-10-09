@@ -3,9 +3,9 @@ import { applyPause } from '../../store/mutations'
 import { DEMO_NOW } from '../../lib/clock'
 import { applyAccept, applyDeploy, applyHardStopApproval, applyReplay, applySystemsSignOff, changeId } from '../../store/changes'
 import { applyAddEpicDraft, applyFlag, applyFlagAnswer } from '../../store/feedback'
-import { applySignPromotion } from '../../store/promotions'
-import { applyThresholdStepDown } from '../../store/stepdowns'
-import { STEP_DOWN_MED_REC } from '../seed/autonomy'
+import { applyDecidePromotion, applySignPromotion, c4 } from '../../store/promotions'
+import { applyThresholdStepDown, applyVersionDeploy } from '../../store/stepdowns'
+import { ALLERGY_V130, STEP_DOWN_MED_REC } from '../seed/autonomy'
 import { ACT_89012, DR_90455 } from '../seed/feedback'
 import { V150 } from '../seed/catalogue'
 import { advanceClock, settleBefore } from './clock'
@@ -34,6 +34,7 @@ export type ScenarioId =
   | 'change-detected-v150'
   | 'epic-fixed-later'
   | 'promotion-at-board'
+  | 'step-down-version'
 
 /** Every scenario id, for validating a `?scenario=` param. */
 export const SCENARIO_IDS: readonly ScenarioId[] = [
@@ -57,6 +58,7 @@ export const SCENARIO_IDS: readonly ScenarioId[] = [
   'change-detected-v150',
   'epic-fixed-later',
   'promotion-at-board',
+  'step-down-version',
 ]
 
 const medRec = (s: DemoState) => s.agents.find((a) => a.id === 'med-rec')!
@@ -127,6 +129,25 @@ export function stepDownThreshold(s: DemoState): DemoState {
   settleBefore(s, '2026-12-09T00:00:00')
   applyThresholdStepDown(s, STEP_DOWN_MED_REC.activityId, { trigger: STEP_DOWN_MED_REC.trigger, routed: STEP_DOWN_MED_REC.routed }, STEP_DOWN_MED_REC.at)
   return advanceClock(s, '2026-12-09T09:52:00')
+}
+
+/** 14b's decision reason, verbatim. */
+export const BOARD_PROMOTION_REASON = 'Good evidence on a branch that only adds caution. A longer Normal period before sampling drops.'
+
+/**
+ * 15b (R1, R12, R17): Dr. Lee approves the promotion with C4 at 15:20 on 09 Dec; on 14 Dec at 14:20
+ * Sam deploys Allergy Recon v1.3.0 straight to the gateway, so the promoted branch drops back to
+ * Draft and re-validates. Priya opens it at 14:52, with the replay still running.
+ */
+export function stepDownVersion(s: DemoState): DemoState {
+  promotionAtBoard(s)
+  const decided = '2026-12-09T15:20:00'
+  applyDecidePromotion(s, 'prm-0007', { kind: 'approveWithConditions', conditions: [c4(decided)], reason: BOARD_PROMOTION_REASON }, 'drlee', decided)
+  const deploy = '2026-12-14T14:20:00'
+  advanceClock(s, deploy)
+  settleBefore(s, '2026-12-14T00:00:00')
+  applyVersionDeploy(s, ALLERGY_V130.agentId, { build: ALLERGY_V130.build, by: ALLERGY_V130.by }, deploy)
+  return advanceClock(s, '2026-12-14T14:52:00')
 }
 
 /** E7 7c's incident, as it stands at 11:58 (before Priya approves at 13:10). */
@@ -242,6 +263,7 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
   'change-detected-v150': changeDetected,
   'epic-fixed-later': epicFixedLater,
   'promotion-at-board': promotionAtBoard,
+  'step-down-version': stepDownVersion,
 }
 
 /** A fresh state for the scenario. */

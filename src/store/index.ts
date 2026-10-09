@@ -13,6 +13,7 @@ import { applyBlockCaller, applyDismissCaller, applyMessageOwner } from './gatew
 import { applyDeclineReviewChange, applyProposeReviewChange, applyShareFinding, applySignReviewChange, unitById } from './reviewers'
 import { applyCheck, applyRules, applyTighten, validRules } from './levels'
 import { applyDecidePromotion, applyResendPromotion, applyReturnPromotion, applySignPromotion, criteria, promotionContext, promotionOf } from './promotions'
+import { applyRestore, replayDone } from './stepdowns'
 import { can, lockReason } from './permissions'
 import { applyAddRole, applyCreateDivision, applyDivisionSettings, applyInvite, applyRemoveRole, applyReturnToShadow, diffDivision, divisionSlug, ROLE_LABEL, roleDivision, type DivisionPatch, type NewDivisionInput, type RoleInput } from './settings'
 import { runAction, type ActionResult } from './runAction'
@@ -131,6 +132,8 @@ export interface DemoActions {
   resendPromotion: (id: string) => ActionResult
   /** The AI review board decides a Tier 3 promotion (14b), with a reason. */
   decidePromotion: (id: string, input: { kind: ReviewDecision['kind']; conditions: Condition[]; reason: string }) => ActionResult
+  /** "Sign to restore Supervised" (15b): the sponsor, once the re-validation replay meets every criterion (BR-07). */
+  restoreLevel: (stepDownId: string) => ActionResult
   /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
   startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
   /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
@@ -986,6 +989,24 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                 applyDecidePromotion(draft, id, { ...input, reason: input.reason.trim() }, draft.personaId, draft.now)
               },
             })
+          },
+          restoreLevel: (stepDownId) => {
+            const s = get()
+            const d = s.stepDowns.find((x) => x.id === stepDownId)
+            if (!d || !d.branchId) return { ok: false, reason: 'Not found' }
+            const spec = {
+              action: 'signPrivilege' as const,
+              ctx: { agentId: d.agentId },
+              audit: { action: 'Restored level', target: d.written.split(' ')[0]!, reason: `Re-validated ${d.build?.to ?? ''}`.trim() },
+              mutate: (draft: DemoState) => {
+                applyRestore(draft, stepDownId, draft.personaId, draft.now)
+              },
+            }
+            if (!can(s, s.personaId, spec.action, spec.ctx)) return { ok: false, reason: lockReason(spec.action, s.personaId) }
+            if (d.restoredAt) return { ok: false, reason: 'Already restored' }
+            if (!replayDone(s, d)) return { ok: false, reason: 'Opens when the replay finishes' }
+            if (!d.revalidation?.meets) return { ok: false, reason: 'The replay doesn’t meet every criterion' }
+            return act(spec)
           },
           startOnboarding: (intakeId, { ownerId, techOwnerId }) => {
             const s = get()

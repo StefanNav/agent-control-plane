@@ -1,6 +1,6 @@
 import type { LadderState, LadderStep } from '../../components'
 import type { DemoState, Level, Privilege, ReviewLevel } from '../../data/types'
-import { addDays, formatDate, minutesBetween } from '../../lib/clock'
+import { addDays, formatClock, formatDate, minutesBetween } from '../../lib/clock'
 import { counts, LEVEL_TITLE, levelOf, levelSince, RATE, ruleRows, sinceLabel } from '../../store/levels'
 import { personName } from '../../store/onboardingRules'
 import { can } from '../../store/permissions'
@@ -46,6 +46,13 @@ export function ladderAt(level: Level, opts: { lockedBy?: string; proposed?: Lev
   })
 }
 
+/** "Draft since 14 Dec 14:20 · was Supervised" while a branch is stepped down (15b), else its level. */
+function branchStatus(s: DemoState, activity: DemoState['activities'][number], branchId: string) {
+  const d = s.stepDowns.find((x) => x.activityId === activity.id && x.branchId === branchId && !x.restoredAt)
+  if (!d) return LEVEL_NAME[branchLevel(activity, branchId)]
+  return `${LEVEL_NAME[d.to]} since ${formatDate(d.at)} ${formatClock(d.at)} · was ${LEVEL_NAME[d.from]}`
+}
+
 /** The header and tabs of the activity page (13a) or a branch of it (15b), or null for an unknown id. */
 export function selectActivityPage(s: DemoState, activityId: string, branchId: string | null, viewerId: string) {
   const found = find(s, activityId)
@@ -64,7 +71,7 @@ export function selectActivityPage(s: DemoState, activityId: string, branchId: s
     branchId: branch?.id ?? null,
     breadcrumb: `${division?.name ?? ''} / ${agent.name} / Privileges${prv ? ` / ${prv.code}` : ''}`,
     title: branch ? branch.name : activity.name,
-    status: branch ? LEVEL_NAME[branchLevel(activity, branch.id)] : `${LEVEL_NAME[activity.level]} · review level ${LEVEL_TITLE(activity.reviewLevel)}`,
+    status: branch ? branchStatus(s, activity, branch.id) : `${LEVEL_NAME[activity.level]} · review level ${LEVEL_TITLE(activity.reviewLevel)}`,
     idLine: `${prv ? `${prv.code} v${prv.version} · ` : ''}${agent.name} ${agent.version}`,
     defaultTab,
     tabs: TABS.map((t) => ({ ...t, to: t.id === defaultTab ? base : `${base}?tab=${t.id}` })),

@@ -151,3 +151,98 @@
   line-height: 20px;
   color: var(--cs-meta);
 }
+
+/* 15b: re-validation and history. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 20px 18px;
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+  background: var(--cs-raised);
+}
+
+.progressHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.progressHead strong {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statValue {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.date {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  color: var(--cs-meta);
+}
+
+.ladder {
+  display: block;
+  width: 320px;
+}
+
+.restore {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.restore strong {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.triggers {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trigger {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-ink);
+}
+
+.trigger[data-fired='true'] .triggerText {
+  font-weight: 600;
+}
+
+.triggerTo {
+  flex: none;
+  font-size: 13px;
+  color: var(--cs-text2);
+}

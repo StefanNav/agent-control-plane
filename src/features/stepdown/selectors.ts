@@ -1,8 +1,9 @@
-import { STEP_DOWN_MED_REC } from '../../data/seed/autonomy'
+import { PROMOTION_CONTENT, STEP_DOWN_MED_REC } from '../../data/seed/autonomy'
 import type { DemoState } from '../../data/types'
 import { addDays, formatClock, formatDate } from '../../lib/clock'
 import { personName } from '../../store/onboardingRules'
-import { sinceText, STEPPED_DOWN } from '../../store/stepdowns'
+import { can, lockReason } from '../../store/permissions'
+import { LOWER, replayDone, sinceText, STEPPED_DOWN } from '../../store/stepdowns'
 import { ladderAt, LEVEL_NAME } from '../activity/selectors'
 
 /** "You, Priya and Dana" for Marcus; "Marcus, Priya and Dana" for anyone else. */
@@ -74,5 +75,82 @@ export function selectStepDown(s: DemoState, agentId: string, viewerId: string) 
       { at: formatClock(d.at), title: `Stepped down to ${LEVEL_NAME[d.to]}`, sub: 'At the gateway, by rule' },
       ...(item ? [{ at: formatClock(item.raisedAt), title: `Told ${d.told.map((id) => personName(s, id)).join(', ')}`, sub: code }] : []),
     ],
+  }
+}
+
+const stamp = (iso: string) => `${formatDate(iso)} ${formatClock(iso)}`
+
+/** 15b: a branch's history of levels, the re-validation after a version step-down, and its triggers. */
+export function selectBranchHistory(s: DemoState, activityId: string, branchId: string, viewerId: string) {
+  const activity = s.activities.find((a) => a.id === activityId)
+  const agent = s.agents.find((a) => a.id === activity?.agentId)
+  const branch = activity?.branches.find((b) => b.id === branchId)
+  if (!activity || !agent || !branch) return null
+  const steps = s.stepDowns.filter((d) => d.activityId === activityId && d.branchId === branchId)
+  const open = steps.find((d) => !d.restoredAt)
+  const promotion = [...s.promotions].reverse().find((p) => p.activityId === activityId && p.branchId === branchId)
+  const versions = s.privileges.filter((p) => p.activityId === activityId && p.grantedAt).sort((a, b) => a.version - b.version)
+  const firstDraft = versions.find((p) => p.level === 'draft' && p.state !== 'steppedDown')
+
+  const rows: { at: string; date: string; title: string; sub: string; ladder: ReturnType<typeof ladderAt> }[] = []
+  if (firstDraft) rows.push({ at: firstDraft.grantedAt!, date: formatDate(firstDraft.grantedAt!), title: LEVEL_NAME.draft, sub: `${personName(s, firstDraft.grantedBy)} signed ${firstDraft.code} v${firstDraft.version}`, ladder: ladderAt('draft') })
+  if (promotion?.sponsor) {
+    rows.push({ at: promotion.sponsor.at, date: formatDate(promotion.sponsor.at), title: `${personName(s, promotion.sponsor.by)} signed the promotion`, sub: promotion.board ? 'Sent to the board' : 'Takes effect at the gateway', ladder: ladderAt(promotion.from, { proposed: promotion.to }) })
+  }
+  if (promotion?.state === 'approved' || (promotion?.decision && promotion.decision.kind.startsWith('approve'))) {
+    const at = promotion.decision?.at ?? promotion.sponsor!.at
+    const ids = promotion.decision?.conditions.map((c) => c.id) ?? []
+    rows.push({ at, date: formatDate(at), title: `Promoted to ${LEVEL_NAME[promotion.to]}`, sub: promotion.decision ? `Board approved${ids.length ? ` with ${ids.join(', ')}` : ''} · ${personName(s, promotion.decision.by)}` : `${personName(s, promotion.sponsor!.by)} signed · no board at this tier`, ladder: ladderAt(promotion.to) })
+  }
+  for (const d of steps) {
+    rows.push({ at: d.at, date: stamp(d.at), title: `Stepped down to ${LEVEL_NAME[d.to]}`, sub: d.build ? `New agent version ${d.build.to}, deployed by ${personName(s, d.build.by)}` : d.trigger, ladder: ladderAt(d.to, { held: d.from }) })
+    if (d.restoredAt) {
+      const signed = versions.find((p) => p.grantedAt === d.restoredAt)
+      rows.push({ at: d.restoredAt, date: stamp(d.restoredAt), title: `Restored to ${LEVEL_NAME[d.from]}`, sub: `${personName(s, d.restoredBy)} signed ${signed ? `${signed.code} v${signed.version}` : 'again'}`, ladder: ladderAt(d.from) })
+    }
+  }
+  rows.sort((a, b) => b.at.localeCompare(a.at))
+
+  const r = open?.revalidation
+  const done = open ? replayDone(s, open) : false
+  const canSign = can(s, viewerId, 'signPrivilege', { agentId: agent.id })
+  const triggerFrom = promotion?.from ?? LOWER[branch.level ?? activity.level] ?? 'shadow'
+  const triggers = promotion ? (PROMOTION_CONTENT[promotion.id]?.triggers ?? []) : (versions.at(-1)?.stepDownTriggers ?? [])
+  return {
+    notice: open?.build
+      ? {
+          lead: `Stepped down to ${LEVEL_NAME[open.to]} when ${agent.name} ${open.build.to} was deployed.`,
+          text: `Any new agent or SOP version re-earns ${LEVEL_NAME[open.from]}. Until then pharmacists sign each add again; nothing was lost.`,
+        }
+      : null,
+    revalidation:
+      open?.build && r
+        ? {
+            head: `Re-validation · replay of the last 30 days on ${open.build.to}`,
+            progress: `${(done ? r.cases : r.replayed).toLocaleString('en-US')} of ${r.cases.toLocaleString('en-US')} adds replayed`,
+            left: done ? 'Finished' : r.left,
+            ratio: done ? 1 : r.replayed / r.cases,
+            stats: [
+              { label: `Same result as ${open.build.from}`, value: `${r.same} %` },
+              { label: 'Different, and better', value: `${r.better} %` },
+              { label: 'Different, and worse', value: `${r.worse} % · ${r.worseCount} adds` },
+            ],
+          }
+        : null,
+    rows,
+    restore: open
+      ? {
+          id: open.id,
+          label: `Sign to restore ${LEVEL_NAME[open.from]}`,
+          locked: !canSign ? lockReason('signPrivilege', viewerId) : !done ? 'Opens when the replay finishes' : r?.meets ? null : 'The replay doesn’t meet every criterion',
+          lead: 'Opens when the replay finishes',
+          text: `and meets every criterion. Returning to a level already approved needs your signature, not the board (BR-07).`,
+        }
+      : null,
+    triggersSub: 'Armed at every level above Shadow',
+    triggers: triggers.map((text) => {
+      const fired = steps.filter((d) => d.trigger === text).at(-1)
+      return { text, fired: fired ? `fired ${formatDate(fired.at)}` : null, to: `to ${LEVEL_NAME[triggerFrom]}` }
+    }),
   }
 }

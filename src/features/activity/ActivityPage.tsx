@@ -5,6 +5,7 @@ import { Body } from '../../layout/layouts'
 import { NotFound } from '../../layout/NotFound'
 import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { useDemo } from '../../store'
+import { BranchHistory } from '../stepdown/BranchHistory'
 import { ReviewLevelTab } from './ReviewLevelTab'
 import { historyRows, selectActivityPage, selectEvidenceTab, selectPrivilegeTab, type ActivityTab } from './selectors'
 import styles from './activity.module.css'
@@ -32,6 +33,8 @@ export function ActivityPage() {
         <PrivilegeTab activityId={view.activityId} />
       ) : tab === 'evidence' ? (
         <EvidenceTab activityId={view.activityId} />
+      ) : view.branchId ? (
+        <BranchHistory activityId={view.activityId} branchId={view.branchId} />
       ) : (
         <HistoryTab activityId={view.activityId} />
       )}

@@ -216,3 +216,12 @@ test('promotion-at-board (14b, R17): Priya signed on 08 Dec; the board meets 09 
   expect(s.promotions.find((p) => p.id === 'prm-0007')).toMatchObject({ state: 'board', sponsor: { by: 'priya', at: '2026-12-08T10:20:00' } })
   expect(s.exceptions.find((e) => e.type === 'Review: promotion · Allergy Recon Agent')!.state).toBe('new')
 })
+
+test('step-down-version (15b, R17): 14 Dec 14:52, the promoted branch is back at Draft; Med Rec is untouched', () => {
+  const s = buildScenario('step-down-version')
+  expect(s.now).toBe('2026-12-14T14:52:00')
+  expect(s.activities.find((a) => a.id === 'allergy-recon')!.branches[0]!.level).toBe('draft')
+  expect(s.agents.find((a) => a.id === 'allergy-recon')!.version).toBe('v1.3.0')
+  expect(s.agents.find((a) => a.id === 'med-rec')!.version).toBe('v1.3.0')
+  expect(s.promotions[0]!.state).toBe('approved')
+})

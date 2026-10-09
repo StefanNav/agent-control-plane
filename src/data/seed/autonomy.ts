@@ -211,3 +211,11 @@ export const STEP_DOWN_MED_REC = {
   ],
   at: e15('2027-03-18T06:00:00'),
 }
+
+/** 15b's build: Allergy Recon v1.3.0, deployed by Sam, and the re-validation replay as it stands 32 minutes in. */
+export const ALLERGY_V130 = {
+  agentId: 'allergy-recon',
+  build: 'v1.3.0',
+  by: 'sam',
+  revalidation: { cases: 2104, replayed: 1412, left: 'about 40 min left', same: 99.6, better: 0.3, worse: 0.1, worseCount: 2, minutes: 72, meets: true },
+}
