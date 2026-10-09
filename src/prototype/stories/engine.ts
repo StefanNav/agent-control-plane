@@ -52,6 +52,8 @@ export function openStep(
   if (progress.loaded === needed) return { progress: next, load: null }
   const own = story.steps[n - 1]!
   const kept = own.scenarioPatch === needed && own.keep?.(state) === true
+  // A kept step still records `needed` as loaded: the visitor's own state stands in for that scenario,
+  // so the steps after it, which share it, won't load it over what the visitor did.
   return { progress: next, load: kept ? null : needed }
 }
 

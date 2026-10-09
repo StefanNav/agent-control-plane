@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { useLocation, useMatches } from 'react-router'
+import { useEffect, useEffectEvent, useLayoutEffect } from 'react'
+import { useLocation, useMatches, useNavigationType } from 'react-router'
 import type { RouteHandle } from './nav'
 import { pageTitle } from './pageTitle'
 
@@ -7,8 +7,9 @@ import { pageTitle } from './pageTitle'
 let navigated = false
 
 /**
- * The browser tab's title (R3), and focus after navigation (R4): when a link took itself away with
- * the old page, focus goes to the new page's heading instead of falling back to the top of the document.
+ * The browser tab's title (R3), scroll on navigation (R8), and focus after navigation (R4): when a
+ * link took itself away with the old page, focus goes to the new page's heading instead of falling
+ * back to the top of the document.
  */
 export function usePageChrome() {
   const matches = useMatches()
@@ -25,6 +26,14 @@ export function usePageChrome() {
   useEffect(() => {
     document.title = pageTitle(title)
   }, [title])
+
+  // A new page reached by a link opens at its top (R8). Back and Forward (POP) are left to the browser,
+  // which restores where the visitor was; a change of query only (a tab, a row, a story step) stays put.
+  const navigationType = useNavigationType()
+  const toTop = useEffectEvent(() => {
+    if (navigationType !== 'POP') window.scrollTo(0, 0)
+  })
+  useLayoutEffect(() => toTop(), [pathname])
 
   useEffect(() => {
     if (!navigated) {

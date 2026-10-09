@@ -68,3 +68,23 @@ test('resizing across 1024 px swaps them', () => {
   act(() => resize(true))
   expect(screen.getByText('app')).toBeInTheDocument()
 })
+
+test('older Safari (addListener only) still swaps them', () => {
+  let matches = true
+  const listeners = new Set<() => void>()
+  vi.stubGlobal('matchMedia', (query: string) => ({
+    get matches() {
+      return matches
+    },
+    media: query,
+    addListener: (fn: () => void) => listeners.add(fn),
+    removeListener: (fn: () => void) => listeners.delete(fn),
+  }))
+  show()
+  expect(screen.getByText('app')).toBeInTheDocument()
+  act(() => {
+    matches = false
+    listeners.forEach((fn) => fn())
+  })
+  expect(screen.getByRole('heading', { name: 'Best viewed on a desktop' })).toBeInTheDocument()
+})

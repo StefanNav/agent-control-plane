@@ -9,8 +9,14 @@ const WIDE = '(min-width: 1024px)'
 
 function subscribe(onChange: () => void) {
   const query = window.matchMedia?.(WIDE)
-  query?.addEventListener('change', onChange)
-  return () => query?.removeEventListener('change', onChange)
+  if (!query) return () => {}
+  // Safari before 14 has only the older listener API.
+  if (typeof query.addEventListener !== 'function') {
+    query.addListener(onChange)
+    return () => query.removeListener(onChange)
+  }
+  query.addEventListener('change', onChange)
+  return () => query.removeEventListener('change', onChange)
 }
 
 /** True at 1024 px and wider, or when the browser can't tell (spec §4.7, R11). */
