@@ -247,3 +247,51 @@ test('access follows accountability (Dana): Sam gets Discharge, can act there, t
   await expect(revoke()).toHaveAttribute('aria-disabled', 'true')
   expect(errors).toEqual([])
 })
+
+async function switchTo(page: import('@playwright/test').Page, name: string) {
+  await page.getByRole('button', { name: /^Viewing as/ }).click()
+  await page.getByRole('menuitem', { name: new RegExp(`^${name}`) }).click()
+}
+
+test('autonomy is earned (Marcus, Priya, Dr. Lee): a clean check, the sponsor signs one branch, the board approves', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/operations/sampling')
+  await expect(page.getByRole('heading', { name: 'Encounter 7731 · 8 East · allergy list' })).toBeVisible()
+  await page.getByRole('button', { name: 'Record check' }).click()
+  await expect(page.getByText('6 drawn · 3 to check')).toBeVisible()
+
+  await switchTo(page, 'Priya')
+  await page.goto('/portfolio/activities/allergy-recon?tab=privilege')
+  await page.getByRole('link', { name: 'Review the promotion' }).click()
+  await expect(page.getByText('0.48 % · 2 of 413')).toBeVisible()
+  await page.getByRole('textbox', { name: 'Reason' }).fill('Adding an outside allergy only makes prescribing more cautious. 90 days of evidence, every criterion met, and step-down on any defect.')
+  await page.getByRole('checkbox', { name: /I accept accountability/ }).check()
+  await page.getByRole('button', { name: 'Sign and send to the board' }).click()
+
+  await switchTo(page, 'Dr. Lee')
+  await page.goto('/operations/inbox')
+  await page.getByText('Review: promotion · Allergy Recon Agent').first().click()
+  await page.getByRole('link', { name: 'Open the promotion' }).click()
+  await page.getByRole('textbox', { name: 'Reason' }).fill('Good evidence on a branch that only adds caution. A longer Normal period before sampling drops.')
+  await page.getByRole('button', { name: 'Record decision' }).click()
+  await expect(page.getByText('Decision logged')).toBeVisible()
+
+  await switchTo(page, 'Priya')
+  await page.goto('/portfolio/activities/allergy-recon')
+  await expect(page.getByRole('group', { name: 'Review level' }).locator('[data-current="true"]')).toContainText('Normal')
+  await expect(page.getByText('Held until 06 Feb (C4)')).toBeVisible()
+  await page.goto('/portfolio/activities/allergy-recon?tab=privilege')
+  await expect(page.locator('[data-row-id="outside-records"]')).toContainText('At Supervised')
+  expect(errors).toEqual([])
+})
+
+test('autonomy never outlives its evidence (Marcus, Priya): a threshold breach, then a new build', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/operations/agents/med-rec?scenario=step-down-threshold')
+  await expect(page.getByText('Reconcile home medications stepped down from Draft to Shadow at 06:00.')).toBeVisible()
+  await switchTo(page, 'Priya')
+  await page.goto('/portfolio/activities/allergy-recon/branches/outside-records?scenario=step-down-version')
+  await expect(page.getByText('Stepped down to Draft when Allergy Recon Agent v1.3.0 was deployed.')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Sign to restore Supervised' })).toHaveAttribute('aria-disabled', 'true')
+  expect(errors).toEqual([])
+})
