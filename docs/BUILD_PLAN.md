@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 8: Stories and portfolio layer (◐ in progress) |
+| **Current phase** | Phase 8: Stories and portfolio layer (⏸ at checkpoint, awaiting Stefan's review) |
 | **Branch** | `phase-8-stories` |
-| **Last completed** | Phase 7 approved and squash-merged (PR #17) (2026-10-09) |
-| **Next task** | Phase 8 Task 8.7 Step 4: fresh review of the branch, fix findings test-first, then handoff notes and checkpoint (8.0–8.6 done) |
+| **Last completed** | Phase 8 built, reviewed and fixed; PR [#18](https://github.com/StefanNav/agent-control-plane/pull/18) open (2026-10-09) |
+| **Next task** | Wait for Stefan's review of PR #18. After approval: squash-merge, close #9, set Phase 8 ☑ and Start here to Phase 9 Task 9.0 |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none open |
+| **Latest preview** | https://agent-control-plane-git-phase-8-stories-stefannavs-projects.vercel.app (PR #18) |
 
 ### How to resume in a new session
 
@@ -96,7 +96,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 5 | Onboarding and go-live | ☑ Merged | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | [#15](https://github.com/StefanNav/agent-control-plane/pull/15) | [phase-5-onboarding.md](plans/phase-5-onboarding.md) |
 | 6 | Governance and fast follows | ☑ Merged | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | [#16](https://github.com/StefanNav/agent-control-plane/pull/16) | [phase-6-governance.md](plans/phase-6-governance.md) |
 | 7 | Earned autonomy | ☑ Merged | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | [#17](https://github.com/StefanNav/agent-control-plane/pull/17) | [phase-7-autonomy.md](plans/phase-7-autonomy.md) |
-| 8 | Stories and portfolio layer | ⏸ At checkpoint | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | – | [phase-8-stories.md](plans/phase-8-stories.md) |
+| 8 | Stories and portfolio layer | ⏸ At checkpoint | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | [#18](https://github.com/StefanNav/agent-control-plane/pull/18) | [phase-8-stories.md](plans/phase-8-stories.md) |
 | 9 | Polish and launch | ☐ Not started | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | – | to write (Task 9.0) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
@@ -741,4 +741,4 @@ One row per working session. Newest last.
 | 2026-10-08 | 6 | Stefan approved; PR #16 squash-merged; #7 closed | Phase 7 Task 7.0 |
 | 2026-10-08 | 7 | Built Phase 7 (seed v8, RUAIH evidence 12a/12b, wide ladder, review levels 13a, sampling queue 13b, promotion 14a/14b, step-downs 15a/15b, 2 journeys, frame audit) with side-by-side visual checks. Fresh review: 4 Important + 4 re-graded fixed test-first; 9 minors deferred (see handoff notes). PR #17 open | Stefan reviews Phase 7 → merge → Phase 8 Task 8.0 |
 | 2026-10-09 | 7 | Stefan approved; PR #17 squash-merged; #8 closed | Phase 8 Task 8.0 (new session) |
-| 2026-10-09 | 8 | Built Phase 8 (story engine, seven stories with targets, narration panel, Stories menu, landing, About, desktop gate, rewind fix, story e2e incl. a shared link to every step). Fresh review: 3 Important fixed test-first; 5 minors deferred (see handoff notes). PR open | Stefan reviews Phase 8 → merge → Phase 9 Task 9.0 |
+| 2026-10-09 | 8 | Built Phase 8 (story engine, seven stories with targets, narration panel, Stories menu, landing, About, desktop gate, rewind fix, story e2e incl. a shared link to every step). Fresh review: 3 Important fixed test-first; 5 minors deferred (see handoff notes). PR #18 open | Stefan reviews Phase 8 → merge → Phase 9 Task 9.0 |
