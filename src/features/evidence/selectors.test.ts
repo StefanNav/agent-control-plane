@@ -99,3 +99,10 @@ test('the packet estimate: Med Rec over 12 months reads 214 pages, about 2 min (
   expect(packetEstimate(1, 3)).toEqual({ pages: 84, minutes: 1 })
   expect(packetEstimate(20, 12)).toEqual({ pages: 4280, minutes: 43 })
 })
+
+test('a step-down is a quality-monitoring record: 12a counts it and 12b names it (R4, R5)', async () => {
+  const { buildScenario } = await import('../../data/scenarios')
+  const s = buildScenario('step-down-threshold')
+  expect(ruaihCell(s, 'med-rec', 4)).toEqual({ count: 23 })
+  expect(selectAgentEvidence(s, 'med-rec')!.rows[3]!.chips).toEqual(['Weekly scorecard', 'Step-down 09 Dec'])
+})

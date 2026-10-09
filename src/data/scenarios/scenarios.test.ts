@@ -49,12 +49,16 @@ test('awaiting-signature (3c, R17): 06 Nov 09:52, PRV-0142 v3 waits for Priya, S
   expect(s.exceptions.find((e) => e.type === 'Review: your signature')).toMatchObject({ ownerId: 'priya', state: 'new' })
 })
 
-test('step-down-threshold: admission med rec dropped to Shadow by rule', () => {
+test('step-down-threshold (15a, R17): 09 Dec 09:52, admission med rec dropped Draft → Shadow at 06:00 by rule', () => {
   const s = buildScenario('step-down-threshold')
+  expect(s.now).toBe('2026-12-09T09:52:00')
   expect(s.activities.find((a) => a.id === 'med-rec-admission')!.level).toBe('shadow')
-  const prv = s.privileges.find((p) => p.activityId === 'med-rec-admission')!
-  expect(prv.state).toBe('steppedDown')
-  expect(prv.trigger).toBeTruthy()
+  const prv = s.privileges.filter((p) => p.code === 'PRV-0142').sort((a, b) => b.version - a.version)[0]!
+  expect(prv).toMatchObject({ version: 4, state: 'steppedDown', level: 'shadow', movedBy: 'PRV-0142 v3', trigger: 'Edit rate above 15% for 3 days' })
+  expect(s.agents.find((a) => a.id === 'med-rec')!.judgment).toEqual({ status: 'warn', label: 'Stepped down automatically' })
+  expect(s.stepDowns).toHaveLength(1)
+  // Nothing from 08 Dec sits overdue the next morning.
+  expect(s.exceptions.filter((e) => e.raisedAt < '2026-12-09T00:00:00' && e.state !== 'resolved' && e.state !== 'dismissed' && !e.link && e.kind !== 'incident' && e.type !== 'Review overdue')).toEqual([])
 })
 
 test('scenarios do not share state', () => {

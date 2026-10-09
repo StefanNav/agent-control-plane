@@ -5,6 +5,7 @@ import { addDays, formatDate, tomorrowAt } from '../lib/clock'
 import { markCallerOnboarding } from './gateway'
 import { nextArchiveCode, nextExceptionCode, nextHardStopCode, nextPrivilegeCode, nextVersion } from './mutations'
 import { conditionRange, criteriaStatus, jobFields, onboardingContext, personName, recordItems, recordOfActivity, riskFactors, systemsProgress, templateFor } from './onboardingRules'
+import { closeStepDowns } from './stepdowns'
 
 /**
  * Onboarding state changes, shared by store actions and scenarios so a scenario builds exactly
@@ -625,6 +626,8 @@ export function applySignPrivilege(s: DemoState, code: string, input: { reason?:
     if (agent.judgment.status === 'shadow') agent.judgment = { status: 'normal', label: 'Within scope' }
     agent.reviewDate = reviewDate
     resolveItems(s, agent.id, 'Review: your signature', by, at, 'Signed')
+    // A new signature ends any step-down on the activity (15a): moving up always needs one.
+    closeStepDowns(s, activity.id, by, at)
     recordOfActivity(s, activity.id)?.history.push({ at, by, text: `${personName(s, by)} · signed ${latest.code} v${latest.version}`, sub: `Shadow → ${level.charAt(0).toUpperCase()}${level.slice(1)}${input.reason ? ' · below target, reason recorded' : ''}`, decision: true })
     return s
   }

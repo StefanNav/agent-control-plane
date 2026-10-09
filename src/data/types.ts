@@ -558,6 +558,35 @@ export interface Promotion {
   decision?: ReviewDecision
 }
 
+/**
+ * An activity or branch dropped one level by rule, at the gateway (E15): a threshold breach (15a),
+ * a new version (15b) or an incident. Nothing steps back up without a signature.
+ */
+export interface StepDown {
+  id: string
+  agentId: string
+  activityId: string
+  branchId?: string
+  cause: 'threshold' | 'version' | 'incident'
+  from: Level
+  to: Level
+  at: string
+  /** The privilege version whose trigger fired, and the one the step-down wrote: 'PRV-0142 v3', 'PRV-0142 v4'. */
+  fired: string
+  written: string
+  trigger: string
+  /** Drafts in progress sent back to pharmacists. */
+  routed: number
+  told: string[]
+  exceptionId?: string
+  /** 15b: the build that was deployed. */
+  build?: { from: string; to: string; by: string }
+  /** 15b: the re-validation replay of the last 30 days on the new build. */
+  revalidation?: { cases: number; replayed: number; left: string; same: number; better: number; worse: number; worseCount: number; doneAt: string; meets: boolean }
+  restoredAt?: string
+  restoredBy?: string
+}
+
 /** An informational event: kept in the log, never sent to anyone. */
 export interface LogEvent {
   id: string
@@ -916,6 +945,8 @@ export interface DemoState {
   samplingDraws: SamplingDraw[]
   /** One branch at a time, up a level (E14). */
   promotions: Promotion[]
+  /** Levels dropped by rule (E15). */
+  stepDowns: StepDown[]
   /** Hospital-wide counts before today's activity (4f "Last 24 hours"); `actionsToday` for 7a. */
   stats24h: {
     closedEarlier: number

@@ -1,5 +1,6 @@
 import type { Branch, Promotion, ReviewLevelRecord, ReviewRules, SamplingDraw } from '../types'
-import { E13_SHIFT, fromMarch } from './redate'
+import { formatDate } from '../../lib/clock'
+import { E13_SHIFT, E15_SHIFT, fromMarch } from './redate'
 
 /**
  * Earned autonomy (E13–E15): review levels, today's sample, the promotion and the step-downs.
@@ -186,3 +187,27 @@ export const promotions: Promotion[] = [
     state: 'sponsor',
   },
 ]
+
+/** 15a is drawn on 18 Mar and shown on 09 Dec (R1, `E15_SHIFT`): the day after Ana's flag about the same split. */
+const e15 = (iso: string) => fromMarch(iso, E15_SHIFT)
+
+/**
+ * 15a's threshold breach on Med Rec's admission activity: 14 days of edit rate (the last three above
+ * the 15 % trigger on PRV-0142), the cause, and the three days before the trigger fired (R1, R12).
+ */
+export const STEP_DOWN_MED_REC = {
+  activityId: 'med-rec-admission',
+  trigger: 'Edit rate above 15% for 3 days',
+  series: [8.6, 8.9, 8.7, 9.1, 8.8, 8.9, 8.6, 9.0, 8.8, 9.4, 12.9, 16.8, 17.9, 18.4],
+  firstDay: e15('2027-03-05T00:00:00'),
+  threshold: 15,
+  routed: 18,
+  units: '7 West and 8 East worklists, within a minute',
+  cause: `Pharmacists are splitting frequency fields since the Epic upgrade on ${formatDate(e15('2027-03-14T00:00:00'))}`,
+  days: [
+    { at: e15('2027-03-16T00:00:00'), value: 16.8, sub: 'Day 1 above 15 %' },
+    { at: e15('2027-03-17T00:00:00'), value: 17.9, sub: 'Day 2 · Marcus warned' },
+    { at: e15('2027-03-18T00:00:00'), value: 18.4, sub: 'Day 3 · trigger fired' },
+  ],
+  at: e15('2027-03-18T06:00:00'),
+}

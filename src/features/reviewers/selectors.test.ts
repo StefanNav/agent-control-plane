@@ -70,3 +70,9 @@ test('11b: 6 North by shift, the misses the check found, and the three responses
 test('an unknown unit is not found', () => {
   expect(selectUnit(createSeed(), 'nope', 'marcus', null)).toBeNull()
 })
+
+test('11a points to the step-down while Med Rec has one (Phase 7 R16)', async () => {
+  const { buildScenario } = await import('../../data/scenarios')
+  expect(selectReviewers(createSeed(), 'medications', 8, 'marcus')!.stepDown).toBeNull()
+  expect(selectReviewers(buildScenario('step-down-threshold'), 'medications', 8, 'marcus')!.stepDown).toEqual({ text: '7 West and 8 East: see the step-down', to: '/operations/agents/med-rec' })
+})

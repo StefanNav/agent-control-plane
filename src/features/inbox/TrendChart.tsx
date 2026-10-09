@@ -10,12 +10,17 @@ export interface TrendChartProps {
   days: string[]
   /** The target, drawn as a dashed line. */
   target?: number
+  /** What the dashed line is, under the chart: "target" (5a) or "step-down threshold" (15a). */
+  targetLabel?: string
+  /** Mark the last n points in the accent colour: the days that broke the threshold (15a). */
+  highlight?: number
+  /** Drawing width: 640 in the inbox (5a), the main column on 15a. */
+  width?: number
   unit?: string
   /** Colour of the latest point: the exception's status colour. */
   accent?: string
 }
 
-const W = 640
 const H = 112
 const PAD_X = 6
 const FLOOR = H - 6
@@ -28,6 +33,9 @@ export function TrendChart({
   values,
   days,
   target,
+  targetLabel = 'target',
+  highlight = 1,
+  width: W = 640,
   unit = '%',
   accent = 'var(--cs-warn)',
 }: TrendChartProps) {
@@ -65,7 +73,7 @@ export function TrendChart({
         }
 
   return (
-    <figure className={styles.figure}>
+    <figure className={styles.figure} style={{ width: W }}>
       <figcaption className={styles.caption}>{label}</figcaption>
       <div className={styles.plot}>
         <svg
@@ -121,14 +129,11 @@ export function TrendChart({
               strokeWidth={2}
             />
           ) : null}
-          <circle
-            cx={x(last)}
-            cy={y(values[last] ?? 0)}
-            r={4}
-            fill={accent}
-            stroke="var(--cs-raised)"
-            strokeWidth={2}
-          />
+          {values.map((v, i) =>
+            i > last - highlight ? (
+              <circle key={i} data-highlight cx={x(i)} cy={y(v)} r={4} fill={accent} stroke="var(--cs-raised)" strokeWidth={2} />
+            ) : null,
+          )}
         </svg>
         {tip ? (
           <span className={styles.tip} style={{ left: `${tip.left}%` }} aria-hidden="true">
@@ -139,7 +144,7 @@ export function TrendChart({
       </div>
       <div className={styles.axis} aria-hidden="true">
         <span>{days[0]}</span>
-        {target !== undefined ? <span>Dashed line · target {fmt(target)}</span> : null}
+        {target !== undefined ? <span>Dashed line · {targetLabel} {fmt(target)}</span> : null}
         <span>Today</span>
       </div>
       <table className={styles.srOnly}>

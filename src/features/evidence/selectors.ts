@@ -28,10 +28,14 @@ const gapsOf = (s: DemoState) => {
 const packets = (s: DemoState) => s.exports.filter((e) => e.format === 'packet')
 const elementName = (n: RuaihElement) => RUAIH_ELEMENTS.find((e) => e.n === n)!.name
 
-/** Records the state made since the mapping was taken: flags (5), accepted re-validations (4) (R4). */
+/** Records the state made since the mapping was taken: flags (5), accepted re-validations and step-downs (4) (R4). */
 function liveRecords(s: DemoState, agentId: string, element: RuaihElement): number {
   if (element === 5) return s.flags.filter((f) => f.agentId === agentId && f.at >= RUAIH_MAPPED_AT).length
-  if (element === 4) return s.changes.filter((c) => c.agentId === agentId && c.status === 'accepted' && (c.closedAt ?? '') >= RUAIH_MAPPED_AT).length
+  if (element === 4)
+    return (
+      s.changes.filter((c) => c.agentId === agentId && c.status === 'accepted' && (c.closedAt ?? '') >= RUAIH_MAPPED_AT).length +
+      s.stepDowns.filter((d) => d.agentId === agentId && d.at >= RUAIH_MAPPED_AT).length
+    )
   return 0
 }
 
@@ -122,7 +126,11 @@ function chips(s: DemoState, a: Agent, element: RuaihElement): string[] {
       return [...jd, privilegeChip(s, a.id), decision ? `Board minutes ${formatDate(decision.at)}` : null].filter((c): c is string => Boolean(c))
     }
     case 4:
-      return ['Weekly scorecard', ...s.changes.filter((c) => c.agentId === a.id && c.status === 'accepted').map((c) => `Re-validation ${c.to.build}`)]
+      return [
+        'Weekly scorecard',
+        ...s.stepDowns.filter((d) => d.agentId === a.id).map((d) => `Step-down ${formatDate(d.at)}`),
+        ...s.changes.filter((c) => c.agentId === a.id && c.status === 'accepted').map((c) => `Re-validation ${c.to.build}`),
+      ]
     case 5: {
       const flags = s.flags.filter((f) => f.agentId === a.id).sort((x, y) => x.code.localeCompare(y.code))
       const latest = flags.at(-1)

@@ -4,6 +4,8 @@ import { DEMO_NOW } from '../../lib/clock'
 import { applyAccept, applyDeploy, applyHardStopApproval, applyReplay, applySystemsSignOff, changeId } from '../../store/changes'
 import { applyAddEpicDraft, applyFlag, applyFlagAnswer } from '../../store/feedback'
 import { applySignPromotion } from '../../store/promotions'
+import { applyThresholdStepDown } from '../../store/stepdowns'
+import { STEP_DOWN_MED_REC } from '../seed/autonomy'
 import { ACT_89012, DR_90455 } from '../seed/feedback'
 import { V150 } from '../seed/catalogue'
 import { advanceClock, settleBefore } from './clock'
@@ -58,7 +60,6 @@ export const SCENARIO_IDS: readonly ScenarioId[] = [
 ]
 
 const medRec = (s: DemoState) => s.agents.find((a) => a.id === 'med-rec')!
-const admissionPrivilege = (s: DemoState) => s.privileges.find((p) => p.activityId === 'med-rec-admission')!
 
 const PAUSED_AT = '2026-12-08T09:47:00'
 
@@ -115,6 +116,17 @@ export function promotionAtBoard(s: DemoState): DemoState {
   applySignPromotion(s, 'prm-0007', PRIYA_PROMOTION_REASON, 'priya', '2026-12-08T10:20:00')
   advanceClock(s, '2026-12-09T15:10:00')
   return settleBefore(s, '2026-12-09T00:00:00')
+}
+
+/**
+ * 15a (R1, R12, R17): the edit rate on admission med rec was above 15 % on 07, 08 and 09 Dec, so at
+ * 06:00 on 09 Dec the trigger on PRV-0142 fires at the gateway. Marcus opens it at 09:52.
+ */
+export function stepDownThreshold(s: DemoState): DemoState {
+  advanceClock(s, STEP_DOWN_MED_REC.at)
+  settleBefore(s, '2026-12-09T00:00:00')
+  applyThresholdStepDown(s, STEP_DOWN_MED_REC.activityId, { trigger: STEP_DOWN_MED_REC.trigger, routed: STEP_DOWN_MED_REC.routed }, STEP_DOWN_MED_REC.at)
+  return advanceClock(s, '2026-12-09T09:52:00')
 }
 
 /** E7 7c's incident, as it stands at 11:58 (before Priya approves at 13:10). */
@@ -184,17 +196,8 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
   // E3 3c / Countersign Screens 1b: 06 Nov 09:52, PRV-0142 v3 waits for Priya, Shadow → Draft (R17).
   'awaiting-signature': medRecAt('awaiting-signature'),
 
-  // E15 15a: a threshold breach drops admission med rec from Draft to Shadow.
-  'step-down-threshold': (s) => {
-    s.activities.find((a) => a.id === 'med-rec-admission')!.level = 'shadow'
-    Object.assign(admissionPrivilege(s), {
-      state: 'steppedDown',
-      level: 'shadow',
-      movedBy: 'MR-12 v1',
-      trigger: 'Edit rate above 15% for 3 days',
-    })
-    return s
-  },
+  // E15 15a (R1, R17): the next morning, a threshold breach drops admission med rec from Draft to Shadow.
+  'step-down-threshold': stepDownThreshold,
 
   // E5 5d: 12:00. Nobody answered the stale-monitor item by 10:46, so it escalated to Priya;
   // Marcus claimed the Med Rec review at 09:55, so that one did not.
