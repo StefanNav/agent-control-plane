@@ -96,7 +96,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 5 | Onboarding and go-live | ☑ Merged | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | [#15](https://github.com/StefanNav/agent-control-plane/pull/15) | [phase-5-onboarding.md](plans/phase-5-onboarding.md) |
 | 6 | Governance and fast follows | ☑ Merged | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | [#16](https://github.com/StefanNav/agent-control-plane/pull/16) | [phase-6-governance.md](plans/phase-6-governance.md) |
 | 7 | Earned autonomy | ☑ Merged | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | [#17](https://github.com/StefanNav/agent-control-plane/pull/17) | [phase-7-autonomy.md](plans/phase-7-autonomy.md) |
-| 8 | Stories and portfolio layer | ◐ In progress | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | – | [phase-8-stories.md](plans/phase-8-stories.md) |
+| 8 | Stories and portfolio layer | ⏸ At checkpoint | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | – | [phase-8-stories.md](plans/phase-8-stories.md) |
 | 9 | Polish and launch | ☐ Not started | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | – | to write (Task 9.0) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
@@ -524,10 +524,34 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 - [x] 8.4 Stories: Sam, Dr. Lee, Ana, Jordan
 - [x] 8.5 About page `/about`
 - [x] 8.6 Desktop gate below 1024 px
-- [ ] 8.7 E2E: every story runs from step 1 to the end; checkpoint
+- [x] 8.7 E2E: every story runs from step 1 to the end; checkpoint
 
 **Done when:** all 7 stories complete in Playwright and by hand on the preview URL.
-**Handoff notes:** _written at the end of the phase._
+**Handoff notes (Phase 8 → Phase 9)**
+
+- **What exists**
+  - Story engine (`src/prototype/stories/`): `types.ts` (`Story`, `Step`, `StoryProgress`), `engine.ts` (pure: `clampStep`, `scenarioAt`, `stepHref`, `onStepRoute`, `openStep`, `urlAction`, `validProgress`), `progress.ts` (`useStory`, persisted `acp-story` v1; `exited` is memory-only), `apply.ts` (`applyStep`: load scenario, switch persona, save progress), `useStory.ts` (`useStoryActions`, `useStoryUrlSync`, `useActiveStory`), `index.ts` (`STORIES` in persona order, `storyById`).
+  - Seven stories, one file each (`marcus.ts` 9 steps, `priya.ts` 8, `dana.ts` 7, `sam.ts` 5, `drlee.ts` 4, `ana.ts` 4, `jordan.ts` 4); 37 `data-story-target` attributes across `src/features` (table in the plan file). `StepSide` and `SideCard` take an optional `storyTarget`.
+  - Narration panel (`src/prototype/StoryPanel/`): `StoryPanel` (Back / Next or Finish / Exit, Hide/Show, "Return to it", ink outline via one `<style>` rule, scroll so the target clears the panel: `scroll.ts` `scrollDelta`), `StoryLayer` (URL sync + panel) in the `app` and `prototype` shells, not `/wall`.
+  - Prototype bar: Stories menu (start any story; "Exit story" while one runs); Reset demo also leaves the story.
+  - Pages: Landing `/` (`src/prototype/Landing/`), About `/about` (`src/prototype/About/`), desktop gate below 1024 px wrapping the router in `main.tsx` (`src/prototype/DesktopGate/`); shared copy in `src/prototype/copy.ts` (`PITCH`, `REPO_URL`).
+  - Fix: `rewindTo` rolls a privilege back by its own review interval (R8).
+- **Review fixes (fresh reviewer; 0 Critical, 3 Important, all test-first):**
+  - I1: Back after Exit (or Finish, Explore freely, Reset) no longer restarts the story and reloads its scenario: leaving sets an in-memory `exited` flag, so a story link reached by Back is stripped; a link in a fresh page still opens.
+  - I2: the panel no longer covers the target it outlines: the target scrolls until it clears the panel's columns, not just the viewport (Dana step 4's caller panel was under it).
+  - I3: the walk-through and shared-link e2e assert the dialog on the three steps whose route opens one, and that every target ends clear of the panel.
+- **Deferred minors:** scroll position carries into a dialog step (no scroll reset between steps without a target); focus falls to `body` on Hide/Show and step changes aren't announced (no live region); a keyboard user can't reach the panel while a dialog traps focus (Escape first); `DesktopGate` has no `addListener` fallback for Safari < 14; `openStep` records `loaded` for a kept step although nothing loaded (correct, but worth a comment).
+- **Gotchas**
+  - A step's scenario holds for the steps after it; crossing back over a patch reloads the earlier scenario (Back from Marcus 7 to 6 undoes the step-5 dismissal by design).
+  - `useStoryUrlSync` reacts only to changes of the `story`/`step` params (reading progress at run time), so a store update that lands before the router's navigation can't bounce the step back.
+  - Story narration is checked by unit tests for 2–3 sentences and no gendered pronouns; numbers in it must match the screen in that step's scenario.
+  - The gate renders outside the router: no `Link` there.
+  - The repo isn't uniformly Prettier-formatted; only new files and files that were clean were formatted.
+- **What Phase 9 needs to know**
+  - Accessibility pass: the panel's Hide/Show focus and a live region for step changes; the Modal focus trap vs the panel; keyboard order on the landing cards.
+  - `/wall` still has no corner control in place of the hidden prototype bar (spec §4.1).
+  - The panel and the gate were checked visually at 1440 and 800 px; the 1024–1280 band scrolls horizontally under a fixed panel (spec §4.7).
+  - README, social image and page meta can reuse `PITCH` and the story summaries.
 
 ## Phase 9: Polish and launch
 
@@ -692,6 +716,7 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-09 | Story choices: Priya's "overdue review" step runs at baseline (Duplicate Rx 7 days overdue; 06 Nov has none); Sam starts at `onboarding-tools-tested` (1d as drawn); Jordan's incident is INC-0031 at `resume-requested` (7c); Dana retires IV-to-Oral (6f); Ana's nine days later loads `epic-fixed-later` by patch, not `?day=later` | Phase 8 R7: each step shows its frame's moment |
 | 2026-10-09 | Landing, About and desktop-gate copy is ours (no frames), written from the Vision and PRD with Signal as the brand and a "fictional" disclaimer; cards follow persona order. "Explore freely" exits any story, switches to Marcus and goes to Marcus's landing, keeping the data | Phase 8 R9, R10 |
 | 2026-10-09 | Desktop gate wraps the router (`matchMedia('(min-width: 1024px)')` via `useSyncExternalStore`), so below 1024 px nothing of the app renders: no scenario loads, no dialog opens. Without `matchMedia` the app renders | Phase 8 R11 (spec D6, §4.7) |
+| 2026-10-09 | Phase 8 ran in the order 8.1, 8.3, 8.4, 8.2, 8.5, 8.6, 8.7 (the landing cards read the stories). Leaving a story (Exit, Finish, Explore freely, Reset) sets an in-memory flag so Back to a story link doesn't restart it; the panel scrolls a target clear of itself | Phase 8 R12 and review fixes I1, I2 |
 
 ## Session log
 
@@ -716,3 +741,4 @@ One row per working session. Newest last.
 | 2026-10-08 | 6 | Stefan approved; PR #16 squash-merged; #7 closed | Phase 7 Task 7.0 |
 | 2026-10-08 | 7 | Built Phase 7 (seed v8, RUAIH evidence 12a/12b, wide ladder, review levels 13a, sampling queue 13b, promotion 14a/14b, step-downs 15a/15b, 2 journeys, frame audit) with side-by-side visual checks. Fresh review: 4 Important + 4 re-graded fixed test-first; 9 minors deferred (see handoff notes). PR #17 open | Stefan reviews Phase 7 → merge → Phase 8 Task 8.0 |
 | 2026-10-09 | 7 | Stefan approved; PR #17 squash-merged; #8 closed | Phase 8 Task 8.0 (new session) |
+| 2026-10-09 | 8 | Built Phase 8 (story engine, seven stories with targets, narration panel, Stories menu, landing, About, desktop gate, rewind fix, story e2e incl. a shared link to every step). Fresh review: 3 Important fixed test-first; 5 minors deferred (see handoff notes). PR open | Stefan reviews Phase 8 → merge → Phase 9 Task 9.0 |
