@@ -99,3 +99,44 @@ describe('15b: a new version steps the promoted branch down, one level, until th
     expect(store.getState().restoreLevel(id)).toEqual({ ok: false, reason: 'Already restored' })
   })
 })
+
+describe('review fixes I2 and I4: branches follow their activity down; every armed trigger fires', () => {
+  const approvedStore = async () => {
+    const { createDemoStore } = await import('./index')
+    const { createMemoryStorage } = await import('./storage')
+    const store = createDemoStore(createMemoryStorage())
+    store.getState().loadScenario('promotion-at-board')
+    store.getState().setPersona('drlee')
+    expect(store.getState().decidePromotion('prm-0007', { kind: 'approve', conditions: [], reason: 'Good evidence.' })).toEqual({ ok: true })
+    return store
+  }
+  const branch = (s: import('../data/types').DemoState) => s.activities.find((a) => a.id === 'allergy-recon')!.branches[0]!
+
+  test('a threshold step-down of the activity drops its Supervised branch one level too (I2)', async () => {
+    const store = await approvedStore()
+    const s = structuredClone((await import('./index')).dataOf(store.getState()))
+    applyThresholdStepDown(s, 'allergy-recon', { trigger: 'Rejections above 0.5% for 3 days', routed: 0 }, '2026-12-10T06:00:00')
+    expect(s.activities.find((a) => a.id === 'allergy-recon')!.level).toBe('shadow')
+    expect(branch(s).level).toBe('draft')
+    expect(latestByCode(s, 'PRV-0087')!.branchLevels).toEqual({ 'outside-records': 'draft' })
+  })
+
+  test('a defect in an independent check drops the Supervised branch to Draft (I4)', async () => {
+    const store = await approvedStore()
+    store.getState().setPersona('marcus')
+    expect(store.getState().recordCheck('draw-act-90412', { result: 'defect' })).toEqual({ ok: true })
+    const s = store.getState()
+    expect(branch(s).level).toBe('draft')
+    expect(s.stepDowns.at(-1)).toMatchObject({ cause: 'defect', branchId: 'outside-records', from: 'supervised', to: 'draft', trigger: 'Any defect in an independent check', detail: '1 defect in a check · ACT-90412' })
+    expect(latestByCode(s, 'PRV-0087')).toMatchObject({ state: 'steppedDown', branchLevels: { 'outside-records': 'draft' } })
+  })
+
+  test('a linked incident drops the Supervised branch to Draft (I4)', async () => {
+    const store = await approvedStore()
+    store.getState().setPersona('jordan')
+    expect(store.getState().openIncident('allergy-recon', { title: 'Wrong allergy added', actionIds: [] })).toEqual({ ok: true })
+    const s = store.getState()
+    expect(branch(s).level).toBe('draft')
+    expect(s.stepDowns.at(-1)).toMatchObject({ cause: 'incident', trigger: 'Any linked incident' })
+  })
+})

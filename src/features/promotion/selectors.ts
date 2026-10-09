@@ -5,7 +5,7 @@ import { formatClock, formatDate } from '../../lib/clock'
 import { reviewDateFrom } from '../../store/onboarding'
 import { personName } from '../../store/onboardingRules'
 import { can } from '../../store/permissions'
-import { c4, criteria, daysAtLevel, needsBoard, nextMeeting, promotionContext, promotionOf } from '../../store/promotions'
+import { c4, criteria, daysAtLevel, lapsedCriteria, needsBoard, nextMeeting, promotionContext, promotionOf } from '../../store/promotions'
 import { nextVersion } from '../../store/mutations'
 import { branchLevel, LEVEL_NAME, ladderAt } from '../activity/selectors'
 
@@ -126,6 +126,7 @@ export function selectBoardDecision(s: DemoState, id: string, viewerId: string) 
   const signed = p.sponsor && p.state !== 'sponsor' && p.state !== 'returned'
   const chair = s.roles.find((r) => r.role === 'committee')?.personId
   const canDecide = can(s, viewerId, 'approveGoLive', { agentId: agent.id })
+  const lapsed = p.state === 'board' ? lapsedCriteria(s, p.id) : []
   const by = (k: 'Signed as is' | 'Rejected by the pharmacist' | 'Defects in independent checks' | 'Days at Reduced review') => b.criteria.find((c) => c.label === k)!
   return {
     id: p.id,
@@ -150,6 +151,9 @@ export function selectBoardDecision(s: DemoState, id: string, viewerId: string) 
     stepDownHead: `Steps down to ${LEVEL_NAME[p.from]} on`,
     stepDownOn: content.stepDownOn,
     mode: p.state === 'board' ? (canDecide ? ('decide' as const) : ('locked' as const)) : p.decision ? ('logged' as const) : ('waiting' as const),
+    // Review fix I1: what no longer holds since the sponsor signed; approval waits for evidence that does.
+    changed: lapsed.length && p.state === 'board' ? { lead: `The evidence changed since ${b.sponsor} signed.`, text: lapsed.map((c) => `${c.label}: now ${c.result} (${c.target}).`).join(' ') } : null,
+    approvable: !(lapsed.length && p.state === 'board'),
     sponsor: b.sponsor,
     from: LEVEL_NAME[p.from],
     proposed: [c4(s.now)],

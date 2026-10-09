@@ -1,6 +1,7 @@
 import { ALLERGY_V130, STEP_DOWN_MED_REC } from '../data/seed/autonomy'
 import type { AgentException, DemoState, Level, Privilege, StepDown } from '../data/types'
 import { addMinutes, formatDate } from '../lib/clock'
+import { lowerBranches } from './branches'
 import { applyNewVersionLevels } from './levels'
 import { nextExceptionCode, nextVersion } from './mutations'
 import { raiseItem, resolveItems } from './onboarding'
@@ -52,6 +53,10 @@ export function applyThresholdStepDown(s: DemoState, activityId: string, input: 
   delete written.proposedLevel
   s.privileges.push(written)
   activity.level = lower
+  // Review fix I2: its branches drop with it.
+  const branchLevels = lowerBranches(activity)
+  if (branchLevels) written.branchLevels = branchLevels
+  else delete written.branchLevels
   relevel(s, agent.id)
   agent.judgment = { status: 'warn', label: STEPPED_DOWN }
   const told = [agent.ownerId, agent.sponsorId, programLead(s)].filter((id): id is string => Boolean(id))
@@ -117,73 +122,115 @@ export function closeStepDowns(s: DemoState, activityId: string, by: string, at:
 export const sinceText = (at: string, now: string) => (at.slice(0, 10) === now.slice(0, 10) ? at.slice(11, 16) : formatDate(at))
 
 export const VERSION_TRIGGER = 'Any new agent or SOP version'
+export const DEFECT_TRIGGER = 'Any defect in an independent check'
+export const INCIDENT_TRIGGER = 'Any linked incident'
 export const restoreItem = (level: Level) => `Review: restore ${NAME[level]}`
 
 /**
- * A new build deployed straight to the gateway (no hold, 15b, R12): every branch or activity above
- * Draft drops one level, a new privilege version records it, a re-validation replay starts, the
- * sponsor is asked to sign it back and the owner is told; Reduced review goes back to Normal. Draft
- * and Shadow don't move (a pharmacist already signs every output there). The same build twice is a no-op.
+ * The branch triggers armed above Draft (14a, 15b): a new version, a defect in a check, a linked
+ * incident. Each branch of the activity above Draft drops one level; a new privilege version records
+ * it; the owner and sponsor are told. A version step-down also starts a re-validation replay and asks
+ * the sponsor to sign it back (BR-07); after a defect or an incident, a new promotion re-earns it.
+ */
+function stepDownBranches(
+  s: DemoState,
+  activityId: string,
+  input: { cause: 'version' | 'defect' | 'incident'; trigger: string; detail?: string; build?: { from: string; to: string; by: string } },
+  at: string,
+): StepDown[] {
+  const activity = s.activities.find((a) => a.id === activityId)
+  const agent = s.agents.find((a) => a.id === activity?.agentId)
+  if (!activity || !agent) return []
+  const made: StepDown[] = []
+  const above = activity.branches.filter((b) => LEVELS.indexOf(b.level ?? activity.level) > LEVELS.indexOf('draft'))
+  for (const branch of above) {
+    const latest = inForce(s, activity.id)
+    const level = branch.level ?? activity.level
+    const lower = LOWER[level]
+    if (!latest || !lower || openStepDown(s, activity.id, branch.id)) continue
+    const version = nextVersion(s, latest.code)
+    latest.state = 'closed'
+    s.privileges.push({
+      ...latest,
+      id: `${latest.code.toLowerCase()}-v${version}`,
+      version,
+      state: 'steppedDown',
+      movedBy: `${latest.code} v${latest.version}`,
+      trigger: input.trigger,
+      branchLevels: { ...latest.branchLevels, [branch.id]: lower },
+    })
+    branch.level = lower
+    const replay = input.build && agent.id === ALLERGY_V130.agentId && input.build.to === ALLERGY_V130.build ? ALLERGY_V130.revalidation : null
+    const step: StepDown = {
+      id: `sd-${activity.id}-${branch.id}-${s.stepDowns.length + 1}`,
+      agentId: agent.id,
+      activityId: activity.id,
+      branchId: branch.id,
+      cause: input.cause,
+      from: level,
+      to: lower,
+      at,
+      fired: `${latest.code} v${latest.version}`,
+      written: `${latest.code} v${version}`,
+      trigger: input.trigger,
+      ...(input.detail ? { detail: input.detail } : {}),
+      routed: 0,
+      told: [agent.ownerId, agent.sponsorId],
+      ...(input.build ? { build: input.build } : {}),
+      ...(replay ? { revalidation: { ...replay, doneAt: addMinutes(at, replay.minutes) } } : {}),
+    }
+    s.stepDowns.push(step)
+    made.push(step)
+    if (input.cause === 'version') {
+      raiseItem(s, {
+        agentId: agent.id,
+        type: restoreItem(level),
+        reason: `${branch.name} stepped down to ${NAME[lower]} when ${agent.name} ${input.build?.to ?? ''} was deployed`,
+        action: 'sign when the replay meets every criterion',
+        actionSub: `Returning to ${NAME[level]} needs your signature, not the board`,
+        ownerId: agent.sponsorId,
+        copied: [agent.ownerId],
+        link: { label: 'Open the branch', to: `/portfolio/activities/${activity.id}/branches/${branch.id}` },
+        at,
+      })
+    }
+    s.logEvents.push({
+      id: `log-stepdown-${branch.id}-${s.stepDowns.length}`,
+      at,
+      agentId: agent.id,
+      text: `${branch.name} stepped down to ${NAME[lower]}`,
+      sub: input.cause === 'version' ? `New agent version ${input.build?.to ?? ''} · re-validation started` : `By rule · ${input.detail ?? input.trigger}`,
+      to: [agent.ownerId, agent.sponsorId],
+    })
+  }
+  return made
+}
+
+/**
+ * A new build deployed straight to the gateway (no hold, 15b, R12): every branch above Draft drops one
+ * level and re-validates; Reduced review goes back to Normal. Draft and Shadow don't move (a pharmacist
+ * already signs every output there). The same build twice is a no-op.
  */
 export function applyVersionDeploy(s: DemoState, agentId: string, input: { build: string; by: string }, at: string): DemoState {
   const agent = s.agents.find((a) => a.id === agentId)
   if (!agent || agent.version === input.build) return s
   const from = agent.version
   agent.version = input.build
-  const replay = agentId === ALLERGY_V130.agentId && input.build === ALLERGY_V130.build ? ALLERGY_V130.revalidation : null
-  for (const activity of s.activities.filter((a) => a.agentId === agentId)) {
-    const above = activity.branches.filter((b) => LEVELS.indexOf(b.level ?? activity.level) > LEVELS.indexOf('draft'))
-    for (const branch of above) {
-      const latest = inForce(s, activity.id)
-      const level = branch.level ?? activity.level
-      const lower = LOWER[level]
-      if (!latest || !lower) continue
-      const version = nextVersion(s, latest.code)
-      latest.state = 'closed'
-      const written: Privilege = {
-        ...latest,
-        id: `${latest.code.toLowerCase()}-v${version}`,
-        version,
-        state: 'steppedDown',
-        movedBy: `${latest.code} v${latest.version}`,
-        trigger: VERSION_TRIGGER,
-        branchLevels: { ...latest.branchLevels, [branch.id]: lower },
-      }
-      s.privileges.push(written)
-      branch.level = lower
-      const link = `/portfolio/activities/${activity.id}/branches/${branch.id}`
-      raiseItem(s, {
-        agentId,
-        type: restoreItem(level),
-        reason: `${branch.name} stepped down to ${NAME[lower]} when ${agent.name} ${input.build} was deployed`,
-        action: 'sign when the replay meets every criterion',
-        actionSub: `Returning to ${NAME[level]} needs your signature, not the board`,
-        ownerId: agent.sponsorId,
-        copied: [agent.ownerId],
-        link: { label: 'Open the branch', to: link },
-        at,
-      })
-      s.stepDowns.push({
-        id: `sd-${activity.id}-${branch.id}-${s.stepDowns.length + 1}`,
-        agentId,
-        activityId: activity.id,
-        branchId: branch.id,
-        cause: 'version',
-        from: level,
-        to: lower,
-        at,
-        fired: `${latest.code} v${latest.version}`,
-        written: `${written.code} v${written.version}`,
-        trigger: VERSION_TRIGGER,
-        routed: 0,
-        told: [agent.ownerId, agent.sponsorId],
-        build: { from, to: input.build, by: input.by },
-        ...(replay ? { revalidation: { ...replay, doneAt: addMinutes(at, replay.minutes) } } : {}),
-      })
-      s.logEvents.push({ id: `log-stepdown-${branch.id}-${s.stepDowns.length}`, at, agentId, text: `${branch.name} stepped down to ${NAME[lower]}`, sub: `New agent version ${input.build} · re-validation started`, to: [agent.ownerId] })
-    }
-  }
+  for (const activity of s.activities.filter((a) => a.agentId === agentId)) stepDownBranches(s, activity.id, { cause: 'version', trigger: VERSION_TRIGGER, build: { from, to: input.build, by: input.by } }, at)
   applyNewVersionLevels(s, agentId, at)
+  return s
+}
+
+/** Review fix I4: a defect found in an independent check drops the activity's branches above Draft (14a's trigger). */
+export function applyDefectStepDown(s: DemoState, activityId: string, actionCode: string, at: string): DemoState {
+  stepDownBranches(s, activityId, { cause: 'defect', trigger: DEFECT_TRIGGER, detail: `1 defect in a check · ${actionCode}` }, at)
+  return s
+}
+
+/** Review fix I4: an incident opened on the agent drops its branches above Draft (14a's trigger). */
+export function applyIncidentStepDown(s: DemoState, agentId: string, incidentCode: string, at: string): DemoState {
+  for (const activity of s.activities.filter((a) => a.agentId === agentId))
+    stepDownBranches(s, activity.id, { cause: 'incident', trigger: INCIDENT_TRIGGER, detail: `Linked incident · ${incidentCode}` }, at)
   return s
 }
 

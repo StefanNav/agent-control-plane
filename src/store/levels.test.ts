@@ -127,3 +127,18 @@ describe('13b: recorded checks move the level by rule (R9)', () => {
     expect(marcus.getState().recordCheck('nope', { result: 'right' })).toEqual({ ok: false, reason: 'Not found' })
   })
 })
+
+test('Review focus 2: a third defect at Tightened changes nothing more (plan pin)', () => {
+  const store = fresh('marcus')
+  store.getState().recordCheck('draw-act-90412', { result: 'defect' })
+  store.getState().recordCheck('draw-act-90377', { result: 'defect' })
+  const extra = { ...store.getState().samplingDraws.find((d) => d.id === 'draw-act-90377')!, id: 'draw-extra', actionCode: 'ACT-90499' }
+  delete extra.result
+  delete extra.checkedBy
+  delete extra.checkedAt
+  store.setState({ samplingDraws: [...store.getState().samplingDraws, extra] })
+  const changes = levelOf(store.getState(), 'allergy-recon').changes.length
+  expect(store.getState().recordCheck('draw-extra', { result: 'defect' })).toEqual({ ok: true })
+  expect(store.getState().activities.find((a) => a.id === 'allergy-recon')!.reviewLevel).toBe('tightened')
+  expect(levelOf(store.getState(), 'allergy-recon').changes).toHaveLength(changes)
+})

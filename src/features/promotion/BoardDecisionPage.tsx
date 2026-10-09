@@ -74,7 +74,7 @@ export function BoardDecisionPage() {
 function Decision({ view }: { view: View }) {
   const state = useDemo((s) => s)
   const decide = useDemo((s) => s.decidePromotion)
-  const [kind, setKind] = useState<ReviewDecision['kind']>('approveWithConditions')
+  const [kind, setKind] = useState<ReviewDecision['kind']>(view.approvable ? 'approveWithConditions' : 'reReview')
   const [conditions, setConditions] = useState<Condition[]>(view.proposed)
   const [adding, setAdding] = useState('')
   const [reason, setReason] = useState('')
@@ -133,8 +133,13 @@ function Decision({ view }: { view: View }) {
           { value: 'approveWithConditions', title: 'Approve with conditions', description: 'Takes effect today, with conditions' },
           { value: 'reReview', title: 'Re-review', description: `Back to ${view.sponsor} with questions` },
           { value: 'deny', title: 'Deny', description: `Stays at ${view.from}` },
-        ] as { value: ReviewDecision['kind']; title: string; description: string }[]).map((o) => ({ ...o, disabled: view.mode !== 'decide' }))}
+        ] as { value: ReviewDecision['kind']; title: string; description: string }[]).map((o) => ({ ...o, disabled: view.mode !== 'decide' || (!view.approvable && o.value.startsWith('approve')) }))}
       />
+      {view.changed ? (
+        <Notice mark="warn" lead={view.changed.lead}>
+          {view.changed.text}
+        </Notice>
+      ) : null}
       {kind === 'approveWithConditions' ? (
         <section className={styles.section} aria-label="Conditions">
           <span className={styles.strong}>Conditions</span>

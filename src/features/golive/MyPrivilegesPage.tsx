@@ -72,7 +72,7 @@ export function MyPrivilegesPage() {
               header: '',
               width: '96px',
               render: (r) => (
-                <LinkButton to={`/inventory/privileges/${r.code.toLowerCase()}/sign`} variant={r.overdue ? 'primary' : 'ghost'}>
+                <LinkButton to={r.to} variant={r.overdue ? 'primary' : 'ghost'}>
                   {r.action}
                 </LinkButton>
               ),

@@ -76,3 +76,8 @@ test('11a points to the step-down while Med Rec has one (Phase 7 R16)', async ()
   expect(selectReviewers(createSeed(), 'medications', 8, 'marcus')!.stepDown).toBeNull()
   expect(selectReviewers(buildScenario('step-down-threshold'), 'medications', 8, 'marcus')!.stepDown).toEqual({ text: '7 West and 8 East: see the step-down', to: '/operations/agents/med-rec' })
 })
+
+test('review fix I6: 11a points only to a threshold step-down, not a version one', async () => {
+  const { buildScenario } = await import('../../data/scenarios')
+  expect(selectReviewers(buildScenario('step-down-version'), 'medications', 8, 'marcus')!.stepDown).toBeNull()
+})

@@ -165,6 +165,8 @@ export function selectMyPrivileges(s: DemoState, personaId: string, tab: 'all' |
         dueSoon,
         status: !reviewed ? 'Shadow · no review date' : overdue ? `Review overdue · ${dayWord(days)}` : dueSoon ? `Due in ${dayWord(days)}` : `In ${dayWord(days)}${paused ? ' · paused' : ''}`,
         action: overdue ? 'Review' : 'Open',
+        // Review fix I7: an overdue review is signed (3c); otherwise "Open" goes to the activity's page (13a).
+        to: overdue ? `/inventory/privileges/${p.code.toLowerCase()}/sign` : `/portfolio/activities/${p.activityId}`,
       }
     })
   const rows = tab === 'overdue' ? all.filter((r) => r.overdue) : tab === 'due' ? all.filter((r) => r.dueSoon) : all

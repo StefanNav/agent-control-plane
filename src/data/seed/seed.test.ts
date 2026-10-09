@@ -1,4 +1,5 @@
 import * as catalogue from './catalogue'
+import * as autonomy from './autonomy'
 import * as evidence from './evidence'
 import { DEMO_NOW } from '../../lib/clock'
 import { createSeed, SEED_VERSION } from './index'
@@ -357,7 +358,7 @@ describe('Phase 6: v2 frames re-dated to December (R1, R2)', () => {
 
   test('no seed or catalogue string shows a March date, and Med Rec never reads v1.4.2 (Review focus 5)', () => {
     const seedNow = createSeed()
-    const modules = [...Object.values(catalogue), ...Object.values(evidence)]
+    const modules = [...Object.values(catalogue), ...Object.values(evidence), ...Object.values(autonomy)]
     const all = [...strings(seedNow), ...strings(modules)]
     // Phase 7: the E12–E15 frames run March to July 2027; none of their dates may leak (R1).
     expect(all.filter((t) => /\b\d{2} (Mar|Apr|May|Jun|Jul)\b/.test(t))).toEqual([])

@@ -53,3 +53,9 @@ test('Priya sees the queue read only; the Rules tab lists the Reduced activities
   ])
   expect(view.units).toEqual([])
 })
+
+test('Review focus 3: someone with no division of their own sees Medications’ queue, read only (plan pin)', () => {
+  const view = selectSampling(createSeed(), 'jordan', 'today', null)
+  expect(view.status).toBe('Marcus · 3 activities on Reduced review')
+  expect(view.detail!.canRecord).toBe(false)
+})

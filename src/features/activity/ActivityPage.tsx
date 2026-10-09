@@ -143,7 +143,7 @@ function HistoryTab({ activityId }: { activityId: string }) {
     <Body>
       <Card>
         {rows.map((r) => (
-          <LogRow key={r.at} time={r.date} sub={r.sub}>
+          <LogRow key={r.key} time={r.date} sub={r.sub}>
             {r.title}
           </LogRow>
         ))}

@@ -31,3 +31,14 @@ test('an unknown activity is Not found; one with no rules of its own reads Norma
   await expect(page.getByRole('group', { name: 'Review level' }).locator('[data-current="true"]')).toContainText('Normal')
   expect(errors).toEqual([])
 })
+
+test('review fix I7: Priya reaches the activity page from My privileges', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/')
+  await viewAs(page, 'Priya')
+  await page.goto('/portfolio/privileges')
+  await page.locator('[data-row-id="prv-0087"]').getByRole('link', { name: 'Open' }).click()
+  await expect(page).toHaveURL(/\/portfolio\/activities\/allergy-recon$/)
+  await expect(page.getByRole('heading', { name: 'Reconcile allergy lists' })).toBeVisible()
+  expect(errors).toEqual([])
+})

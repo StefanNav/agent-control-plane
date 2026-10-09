@@ -24,6 +24,8 @@ export function selectStepDown(s: DemoState, agentId: string, viewerId: string) 
   const activity = s.activities.find((a) => a.id === d?.activityId)
   const agent = s.agents.find((a) => a.id === agentId)
   if (!d || !activity || !agent) return null
+  // Review fix I3: while paused, the 6d layout and its resume panel come first.
+  if (agent.lifecycle === 'paused' || agent.pause) return null
   const name = activity.name.replace(/ at admission$/, '')
   const content = d.activityId === STEP_DOWN_MED_REC.activityId ? STEP_DOWN_MED_REC : null
   const item = s.exceptions.find((e) => e.id === d.exceptionId)
@@ -103,7 +105,7 @@ export function selectBranchHistory(s: DemoState, activityId: string, branchId: 
     rows.push({ at, date: formatDate(at), title: `Promoted to ${LEVEL_NAME[promotion.to]}`, sub: promotion.decision ? `Board approved${ids.length ? ` with ${ids.join(', ')}` : ''} · ${personName(s, promotion.decision.by)}` : `${personName(s, promotion.sponsor!.by)} signed · no board at this tier`, ladder: ladderAt(promotion.to) })
   }
   for (const d of steps) {
-    rows.push({ at: d.at, date: stamp(d.at), title: `Stepped down to ${LEVEL_NAME[d.to]}`, sub: d.build ? `New agent version ${d.build.to}, deployed by ${personName(s, d.build.by)}` : d.trigger, ladder: ladderAt(d.to, { held: d.from }) })
+    rows.push({ at: d.at, date: stamp(d.at), title: `Stepped down to ${LEVEL_NAME[d.to]}`, sub: d.build ? `New agent version ${d.build.to}, deployed by ${personName(s, d.build.by)}` : (d.detail ?? d.trigger), ladder: ladderAt(d.to, { held: d.from }) })
     if (d.restoredAt) {
       const signed = versions.find((p) => p.grantedAt === d.restoredAt)
       rows.push({ at: d.restoredAt, date: stamp(d.restoredAt), title: `Restored to ${LEVEL_NAME[d.from]}`, sub: `${personName(s, d.restoredBy)} signed ${signed ? `${signed.code} v${signed.version}` : 'again'}`, ladder: ladderAt(d.from) })
@@ -122,7 +124,10 @@ export function selectBranchHistory(s: DemoState, activityId: string, branchId: 
           lead: `Stepped down to ${LEVEL_NAME[open.to]} when ${agent.name} ${open.build.to} was deployed.`,
           text: `Any new agent or SOP version re-earns ${LEVEL_NAME[open.from]}. Until then pharmacists sign each add again; nothing was lost.`,
         }
-      : null,
+      : open
+        ? // Review fix I4: a defect or an incident (composed): re-earned by a new promotion, not restored.
+          { lead: `Stepped down to ${LEVEL_NAME[open.to]}: ${open.detail ?? open.trigger}.`, text: `Nothing steps back up by itself: a new promotion re-earns ${LEVEL_NAME[open.from]}.` }
+        : null,
     revalidation:
       open?.build && r
         ? {
@@ -138,7 +143,7 @@ export function selectBranchHistory(s: DemoState, activityId: string, branchId: 
           }
         : null,
     rows,
-    restore: open
+    restore: open?.cause === 'version'
       ? {
           id: open.id,
           label: `Sign to restore ${LEVEL_NAME[open.from]}`,

@@ -49,3 +49,12 @@ test('14b at the board: what Priya signed, frozen; the decision form for Dr. Lee
   expect(view.logged).toBe('Logged as Dr. Lee · AI review board chair')
   expect(selectBoardDecision(createSeed(), 'prm-0007', 'drlee')!.mode).toBe('waiting')
 })
+
+test('review fix I1: when the evidence changed since Priya signed, 14b says so and offers only re-review or deny', async () => {
+  const { applyCheck } = await import('../../store/levels')
+  const s = buildScenario('promotion-at-board')
+  applyCheck(s, 'draw-act-90412', { result: 'defect' }, 'marcus', s.now)
+  const view = selectBoardDecision(s, 'prm-0007', 'drlee')!
+  expect(view.changed).toEqual({ lead: 'The evidence changed since Priya signed.', text: 'Defects in independent checks: now 0.73 % · 3 of 413 (≤ 0.5 %). Days at Reduced review: now 0 (≥ 14).' })
+  expect(view.approvable).toBe(false)
+})

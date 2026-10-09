@@ -567,7 +567,7 @@ export interface StepDown {
   agentId: string
   activityId: string
   branchId?: string
-  cause: 'threshold' | 'version' | 'incident'
+  cause: 'threshold' | 'version' | 'defect' | 'incident'
   from: Level
   to: Level
   at: string
@@ -575,6 +575,8 @@ export interface StepDown {
   fired: string
   written: string
   trigger: string
+  /** What set it off, when the trigger alone doesn't say: "1 defect in a check · ACT-90412". */
+  detail?: string
   /** Drafts in progress sent back to pharmacists. */
   routed: number
   told: string[]

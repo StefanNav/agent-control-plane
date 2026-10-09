@@ -12,8 +12,8 @@ import { applyFlag, applyFlagAnswer, applySeenFix, type FlagAnswer } from './fee
 import { applyBlockCaller, applyDismissCaller, applyMessageOwner } from './gateway'
 import { applyDeclineReviewChange, applyProposeReviewChange, applyShareFinding, applySignReviewChange, unitById } from './reviewers'
 import { applyCheck, applyRules, applyTighten, validRules } from './levels'
-import { applyDecidePromotion, applyResendPromotion, applyReturnPromotion, applySignPromotion, criteria, promotionContext, promotionOf } from './promotions'
-import { applyRestore, replayDone } from './stepdowns'
+import { applyDecidePromotion, applyResendPromotion, applyReturnPromotion, applySignPromotion, criteria, lapsedCriteria, promotionContext, promotionOf } from './promotions'
+import { applyIncidentStepDown, applyRestore, replayDone } from './stepdowns'
 import { can, lockReason } from './permissions'
 import { applyAddRole, applyCreateDivision, applyDivisionSettings, applyInvite, applyRemoveRole, applyReturnToShadow, diffDivision, divisionSlug, ROLE_LABEL, roleDivision, type DivisionPatch, type NewDivisionInput, type RoleInput } from './settings'
 import { runAction, type ActionResult } from './runAction'
@@ -587,6 +587,8 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                   corrections: [],
                   timeline,
                 })
+                // Review fix I4: a linked incident is a step-down trigger for branches above Draft (14a, 15b).
+                applyIncidentStepDown(draft, agentId, code, draft.now)
               },
             })
           },
@@ -981,6 +983,9 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
             if (p.state === 'sponsor' || p.state === 'returned') return { ok: false, reason: `Waiting for ${s.people.find((x) => x.id === ctx.agent.sponsorId)?.name ?? 'the sponsor'}’s signature` }
             if (p.state !== 'board') return { ok: false, reason: 'Already decided' }
             if (!input.reason.trim()) return { ok: false, reason: 'Write a reason' }
+            const lapsed = lapsedCriteria(s, id)
+            if ((input.kind === 'approve' || input.kind === 'approveWithConditions') && lapsed.length)
+              return { ok: false, reason: `The evidence changed since ${s.people.find((x) => x.id === p.sponsor?.by)?.name ?? 'the sponsor'} signed: ${lapsed[0]!.label.charAt(0).toLowerCase()}${lapsed[0]!.label.slice(1)} no longer meet the target` }
             return act({
               action: 'approveGoLive',
               ctx: { agentId: ctx.agent.id },

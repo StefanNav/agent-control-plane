@@ -68,6 +68,14 @@ export function criteria(s: DemoState, id: string): PromotionCriterion[] {
   ]
 }
 
+/**
+ * The criteria the sponsor signed that no longer hold now (review fix I1): the board decides on
+ * evidence that still stands, so a defect or a level change since the signature blocks approval.
+ */
+export function lapsedCriteria(s: DemoState, id: string): PromotionCriterion[] {
+  return criteria(s, id).filter((c) => !c.met)
+}
+
 /** The AI review board's next meeting after `at` (the second Wednesday, 15:00). */
 export const nextMeeting = (at: string) => BOARD_MEETINGS.find((m) => m > at) ?? addDays(at, 28)
 
@@ -107,7 +115,8 @@ function promote(s: DemoState, p: Promotion, conditions: Condition[], by: string
   delete next.lapsedAt
   s.privileges.push(next)
   branch.level = p.to
-  if (activity.reviewLevel !== 'normal') applyLevelChange(s, activity.id, 'normal', 'rule', `Promoted to ${LEVEL_NAME[p.to]} · ${next.code} v${next.version}`, at)
+  // 14a "Resets to Normal": from Reduced only, as the decision itself (not a rule firing); never loosens Tightened (review fixes I1, I8).
+  if (activity.reviewLevel === 'reduced') applyLevelChange(s, activity.id, 'normal', by, `Promoted to ${LEVEL_NAME[p.to]} · ${next.code} v${next.version}`, at)
   if (conditions.some((c) => c.id === C4_ID)) {
     recordFor(s, activity.id).noReducedBefore = `${addDays(at, HOLD_DAYS).slice(0, 10)}T00:00:00`
   }

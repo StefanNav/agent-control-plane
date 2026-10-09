@@ -75,3 +75,25 @@ test('15b: the branch stepped down when v1.3.0 was deployed; re-validation is ru
     ['Rejections above 0.5 % for 3 days', null, 'to Draft'],
   ])
 })
+
+test('review fix I3: a paused agent shows 6d (and its resume panel), not 15a', async () => {
+  const { applyPause } = await import('../../store/mutations')
+  const s = buildScenario('step-down-threshold')
+  applyPause(s, ['med-rec'], { scope: 'agent', reason: 'Holding while we find the cause' }, 'marcus', s.now)
+  expect(selectStepDown(s, 'med-rec', 'marcus')).toBeNull()
+})
+
+test('review fix I4: after a defect, 15b says what stepped it down; a new promotion, not a restore, re-earns it', async () => {
+  const { selectBranchHistory } = await import('./selectors')
+  const { applyDecidePromotion } = await import('../../store/promotions')
+  const { applyCheck } = await import('../../store/levels')
+  const s = buildScenario('promotion-at-board')
+  applyDecidePromotion(s, 'prm-0007', { kind: 'approve', conditions: [], reason: 'Good' }, 'drlee', '2026-12-09T15:20:00')
+  applyCheck(s, 'draw-act-90412', { result: 'defect' }, 'marcus', '2026-12-09T15:30:00')
+  const view = selectBranchHistory(s, 'allergy-recon', 'outside-records', 'priya')!
+  expect(view.notice).toEqual({ lead: 'Stepped down to Draft: 1 defect in a check · ACT-90412.', text: 'Nothing steps back up by itself: a new promotion re-earns Supervised.' })
+  expect(view.restore).toBeNull()
+  expect(view.revalidation).toBeNull()
+  expect(view.rows[0]).toMatchObject({ title: 'Stepped down to Draft', sub: '1 defect in a check · ACT-90412' })
+  expect(view.triggers.find((t) => t.text === 'Any defect in an independent check')!.fired).toBe('fired 09 Dec')
+})

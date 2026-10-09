@@ -1,6 +1,7 @@
 import { TEMPLATE_RULES } from '../data/seed/autonomy'
 import type { DemoState, ReviewLevel, ReviewLevelRecord, ReviewRules } from '../data/types'
 import { addDays, formatDate } from '../lib/clock'
+import { applyDefectStepDown } from './stepdowns'
 
 /** How much of a level's signed output a second pharmacist checks (13a's three cards). */
 export const RATE: Record<ReviewLevel, { title: string; label: string; every: number }> = {
@@ -166,6 +167,8 @@ export function applyCheck(s: DemoState, drawId: string, input: { result: 'right
   if (input.result === 'right') return s
   record.defects += 1
   record.defectDays.push(at.slice(0, 10))
+  // Review fix I4: a defect is also a step-down trigger for any branch above Draft (14a, 15b).
+  applyDefectStepDown(s, activity.id, draw.actionCode, at)
   if (activity.reviewLevel === 'reduced') return applyLevelChange(s, activity.id, 'normal', 'rule', `1 defect in a check · ${draw.actionCode}`, at)
   if (activity.reviewLevel === 'normal') {
     const { defects, batches } = record.rules.tighten

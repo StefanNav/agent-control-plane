@@ -102,7 +102,7 @@ export function selectReviewers(s: DemoState, divisionId: string, weeks: 4 | 8, 
     shared: flagged ? s.logEvents.find((e) => e.id.startsWith(`log-share-${flagged.id}-`)) : undefined,
     // Phase 7 R16: 11a's "7 West and 8 East: see the step-down" while an agent here has one open.
     stepDown: (() => {
-      const d = s.stepDowns.find((x) => !x.restoredAt && s.agents.find((a) => a.id === x.agentId)?.divisionId === division.id)
+      const d = s.stepDowns.find((x) => x.cause === 'threshold' && !x.restoredAt && s.agents.find((a) => a.id === x.agentId)?.divisionId === division.id)
       const drifting = units.filter((u) => readUnit(u) === 'Agent drifting, reviewers catching it').map((u) => u.name)
       if (!d || !drifting.length) return null
       return { text: `${drifting.length > 1 ? `${drifting.slice(0, -1).join(', ')} and ${drifting.at(-1)}` : drifting[0]}: see the step-down`, to: `/operations/agents/${d.agentId}` }

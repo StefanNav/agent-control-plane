@@ -1,5 +1,5 @@
 import type { LadderState, LadderStep } from '../../components'
-import type { DemoState, Level, Privilege, ReviewLevel } from '../../data/types'
+import type { DemoState, Level, ReviewLevel } from '../../data/types'
 import { addDays, formatClock, formatDate, minutesBetween } from '../../lib/clock'
 import { counts, LEVEL_TITLE, levelOf, levelSince, RATE, ruleRows, sinceLabel } from '../../store/levels'
 import { personName } from '../../store/onboardingRules'
@@ -196,17 +196,20 @@ export function selectEvidenceTab(s: DemoState, activityId: string) {
   }
 }
 
-/** History (composed): each change of the activity's level, from its privilege versions, newest first. */
+/**
+ * History (composed): each change of the activity's level, newest first: the signatures that moved it
+ * and the step-downs a rule made (review fix I5: a stepped-down version isn't anyone's signature).
+ */
 export function historyRows(s: DemoState, activityId: string) {
-  const versions = s.privileges.filter((p) => p.activityId === activityId && p.grantedAt).sort((a, b) => a.version - b.version)
-  const levelOfVersion = (p: Privilege) => p.level
-  const rows: { at: string; title: string; sub: string; ladder: LadderStep[] }[] = []
+  const versions = s.privileges.filter((p) => p.activityId === activityId && p.grantedAt && p.state !== 'steppedDown').sort((a, b) => a.version - b.version)
+  const rows: { key: string; at: string; date: string; title: string; sub: string; ladder: LadderStep[] }[] = []
   let previous: Level | null = null
   for (const p of versions) {
-    const level = levelOfVersion(p)
-    if (level === previous) continue
-    previous = level
-    rows.push({ at: p.grantedAt!, title: LEVEL_NAME[level], sub: `${personName(s, p.grantedBy)} signed ${p.code} v${p.version}`, ladder: ladderAt(level) })
+    if (p.level === previous) continue
+    previous = p.level
+    rows.push({ key: `${p.code}-v${p.version}`, at: p.grantedAt!, date: formatDate(p.grantedAt!), title: LEVEL_NAME[p.level], sub: `${personName(s, p.grantedBy)} signed ${p.code} v${p.version}`, ladder: ladderAt(p.level) })
   }
-  return rows.reverse().map((r) => ({ ...r, date: formatDate(r.at) }))
+  for (const d of s.stepDowns.filter((x) => x.activityId === activityId && !x.branchId))
+    rows.push({ key: d.id, at: d.at, date: `${formatDate(d.at)} ${formatClock(d.at)}`, title: `Stepped down to ${LEVEL_NAME[d.to]}`, sub: `By rule · ${d.trigger}`, ladder: ladderAt(d.to, { held: d.from }) })
+  return rows.sort((a, b) => b.at.localeCompare(a.at))
 }

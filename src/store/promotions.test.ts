@@ -65,7 +65,7 @@ test('the board decides only after the sponsor signs; approving writes PRV-0087 
   expect(activity.branches.find((b) => b.id === 'outside-records')!.level).toBe('supervised')
   expect(activity.reviewLevel).toBe('normal')
   expect(levelOf(s, 'allergy-recon')).toMatchObject({ noReducedBefore: '2027-02-07T00:00:00' })
-  expect(levelOf(s, 'allergy-recon').changes.at(-1)).toMatchObject({ from: 'reduced', to: 'normal', by: 'rule', why: 'Promoted to Supervised · PRV-0087 v6' })
+  expect(levelOf(s, 'allergy-recon').changes.at(-1)).toMatchObject({ from: 'reduced', to: 'normal', by: 'drlee', why: 'Promoted to Supervised · PRV-0087 v6' })
   expect(s.exceptions.find((e) => e.type === 'Review: promotion · Allergy Recon Agent')!.state).toBe('resolved')
   expect(store.getState().decidePromotion('prm-0007', { kind: 'approve', conditions: [], reason: 'Again' })).toEqual({ ok: false, reason: 'Already decided' })
 })
@@ -98,4 +98,40 @@ test('Tier 2 and below: the sponsor’s signature is enough', () => {
   const s = store.getState()
   expect(s.promotions.find((x) => x.id === 'prm-0007')!.state).toBe('approved')
   expect(s.activities.find((a) => a.id === 'allergy-recon')!.branches[0]!.level).toBe('supervised')
+})
+
+describe('review fixes I1 and I8: the board decides on evidence that still holds, and never loosens review', () => {
+  test('after two defects the board can’t approve on Priya’s frozen evidence; re-review still works', () => {
+    const store = fresh('priya')
+    store.getState().signPromotion('prm-0007', { reason: REASON, accepted: true })
+    store.getState().setPersona('marcus')
+    store.getState().recordCheck('draw-act-90412', { result: 'defect' })
+    store.getState().recordCheck('draw-act-90377', { result: 'defect' })
+    expect(store.getState().activities.find((a) => a.id === 'allergy-recon')!.reviewLevel).toBe('tightened')
+    store.getState().setPersona('drlee')
+    const before = dataOf(store.getState())
+    expect(store.getState().decidePromotion('prm-0007', { kind: 'approve', conditions: [], reason: 'Looks good' })).toEqual({
+      ok: false,
+      reason: 'The evidence changed since Priya signed: defects in independent checks no longer meet the target',
+    })
+    expect(dataOf(store.getState())).toEqual(before)
+    expect(store.getState().decidePromotion('prm-0007', { kind: 'reReview', conditions: [], reason: 'Two defects since you signed.' })).toEqual({ ok: true })
+    expect(store.getState().activities.find((a) => a.id === 'allergy-recon')!.reviewLevel).toBe('tightened')
+  })
+
+  test('approval moves Reduced to Normal as the board’s decision, not a rule firing; Tightened stays Tightened', async () => {
+    const { applyDecidePromotion, applySignPromotion } = await import('./promotions')
+    const { ruleRows } = await import('./levels')
+    const s = createSeed()
+    applySignPromotion(s, 'prm-0007', REASON, 'priya', '2026-12-08T10:00:00')
+    applyDecidePromotion(s, 'prm-0007', { kind: 'approve', conditions: [], reason: 'Good' }, 'drlee', '2026-12-08T11:00:00')
+    expect(levelOf(s, 'allergy-recon').changes.at(-1)).toMatchObject({ from: 'reduced', to: 'normal', by: 'drlee', why: 'Promoted to Supervised · PRV-0087 v6' })
+    expect(ruleRows(s, 'allergy-recon').find((r) => r.id === 'restore')!.now).toBe('off')
+
+    const t = createSeed()
+    applySignPromotion(t, 'prm-0007', REASON, 'priya', '2026-12-08T10:00:00')
+    t.activities.find((a) => a.id === 'allergy-recon')!.reviewLevel = 'tightened'
+    applyDecidePromotion(t, 'prm-0007', { kind: 'approve', conditions: [], reason: 'Good' }, 'drlee', '2026-12-08T11:00:00')
+    expect(t.activities.find((a) => a.id === 'allergy-recon')!.reviewLevel).toBe('tightened')
+  })
 })

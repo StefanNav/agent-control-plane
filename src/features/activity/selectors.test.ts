@@ -63,3 +63,14 @@ test('13a: the level, its rules, the last 90 days and the side cards, counted fr
   ])
   expect(view.told).toBe('Priya and Marcus are told each time')
 })
+
+test('review fix I5: the activity history shows a step-down as the rule that made it, not a signature', async () => {
+  const { buildScenario } = await import('../../data/scenarios')
+  const { historyRows } = await import('./selectors')
+  const rows = historyRows(buildScenario('step-down-threshold'), 'med-rec-admission')
+  expect(rows.map((r) => [r.date, r.title, r.sub])).toEqual([
+    ['09 Dec 06:00', 'Stepped down to Shadow', 'By rule · Edit rate above 15% for 3 days'],
+    ['06 Nov', 'Draft', 'Priya signed PRV-0142 v3'],
+  ])
+  expect(new Set(rows.map((r) => r.key)).size).toBe(rows.length)
+})
