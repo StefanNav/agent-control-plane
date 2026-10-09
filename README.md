@@ -74,3 +74,7 @@ Signal, Lakeshore Health and every person here are fictional, and all data is mo
 Built phase by phase from a written spec with Claude Code; every phase was a reviewed pull request.
 
 By [StefanNav](https://github.com/StefanNav).
+
+## Copyright
+
+© 2026 StefanNav. All rights reserved. This repository is public so the work can be viewed as a portfolio piece; no license is granted. Please ask before copying, reusing or adapting any part of it: code, designs or text.
