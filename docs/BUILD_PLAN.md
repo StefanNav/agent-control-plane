@@ -518,7 +518,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 **Goal:** Visitors can follow any persona's story or explore freely (spec §4).
 
 - [x] 8.0 Write `docs/plans/phase-8-stories.md`; commit
-- [ ] 8.1 Story engine: `Story`/`Step` types, `?story=&step=` URL sync, scenario load on start, narration panel, `data-story-target` outline; **Review focus 4 test** (unknown story ignored, out-of-range step clamped)
+- [x] 8.1 Story engine: `Story`/`Step` types, `?story=&step=` URL sync, scenario load on start, narration panel, `data-story-target` outline; **Review focus 4 test** (unknown story ignored, out-of-range step clamped)
 - [ ] 8.2 Landing page `/`
 - [ ] 8.3 Stories: Marcus, Priya, Dana (add `data-story-target` attributes to screens as needed)
 - [ ] 8.4 Stories: Sam, Dr. Lee, Ana, Jordan
@@ -685,6 +685,9 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-08 | Promotions: evidence from state, frozen at the sponsor's signature; a missed criterion locks signing; Tier 3 goes to the next board meeting, Tier 2 and below take effect at once; C4 holds Reduced off for 60 days | R11 |
 | 2026-10-08 | Step-downs: one level at a time, by rule, with a new privilege version; a version change steps down only above Draft and only builds that weren't held; restoring needs the sponsor once the replay meets every criterion (BR-07) | R12 |
 | 2026-10-08 | 15a replaces the agent view's Overview while stepped down and keeps Controls; design-doc references ("Set in E2", "in E15") are rewritten | R13, R16 |
+| 2026-10-09 | Stories: story ids are persona ids; steps are 1-based (`?story=marcus&step=3`). A step shows the latest `scenarioPatch` at or before it (else the story's scenario); starting always loads, crossing to a different scenario loads (forward or back), steps that share one keep the visitor's changes, and `keep(state)` accepts the visitor's own equivalent action (Marcus's pause, Dr. Lee's approval). Opening a step switches to the story's persona | Phase 8 R1, R2: every step works from a link, and nothing the visitor did is overwritten without a time skip |
+| 2026-10-09 | Story URL mirrors progress: product links that drop `?story=&step=` get them back; a link to another step opens it where the visitor is; an unknown story is stripped; a bad step is clamped and rewritten. Progress is its own store (`acp-story` v1), so a refresh never reloads a scenario; stale progress is dropped; Reset and Exit clear it | Phase 8 R3, R4 (Review focus 4) |
+| 2026-10-09 | Narration panel: bottom-right, 360 px, z-index 60 (above dialogs, so narration stays readable), Hide/Show, "Return to it" off path, Finish = Exit; 280 px of space under the page while it shows. The step's target gets a 2 px ink outline from one `<style>` rule and is scrolled into view; dialog steps have no target | Phase 8 R5, R6 |
 
 ## Session log
 

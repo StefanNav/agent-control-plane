@@ -33,16 +33,15 @@
   gap: 14px;
 }
 
-.muted {
-  color: var(--cs-off);
-}
-
 .link {
   color: var(--cs-raised);
   text-decoration: none;
 }
 
 .action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   height: 24px;
   padding: 0 6px;
   border: none;
