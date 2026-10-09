@@ -18,11 +18,11 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | All phases merged: the prototype is launched (Phase 9 ☑) |
-| **Branch** | `main` |
-| **Last completed** | Phase 9 approved and squash-merged (PR #19); production verified: routes, stories and axe pass against the live URL (2026-10-09) |
-| **Next task** | None planned. Open items: Stefan uploads `public/og.png` as the GitHub social preview (Settings → Social preview); deferred minors are listed in each phase's handoff notes |
-| **Blockers** | None |
+| **Current phase** | Phase 10: Guided tour (◐ in progress) |
+| **Branch** | `phase-10-guided-tour` |
+| **Last completed** | Spec approved; plan written; Task 10.1 script draft written (`docs/tour/script.md`); Claude Design explorations received in `reference/tour-inbox/` (2026-10-09) |
+| **Next task** | **CHECKPOINT A:** Stefan edits the script and confirms the order. Meanwhile 10.2 (engine) can start. 10.0 Step 3 (GitHub milestone and issue #20) waits for Stefan's OK |
+| **Blockers** | Stefan's photo for the credit (needed by 10.12) |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
 | **Latest preview** | none open |
@@ -98,6 +98,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 7 | Earned autonomy | ☑ Merged | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | [#17](https://github.com/StefanNav/agent-control-plane/pull/17) | [phase-7-autonomy.md](plans/phase-7-autonomy.md) |
 | 8 | Stories and portfolio layer | ☑ Merged | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | [#18](https://github.com/StefanNav/agent-control-plane/pull/18) | [phase-8-stories.md](plans/phase-8-stories.md) |
 | 9 | Polish and launch | ☑ Merged | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | [#19](https://github.com/StefanNav/agent-control-plane/pull/19) | [phase-9-polish.md](plans/phase-9-polish.md) |
+| 10 | Guided tour | ◐ In progress | `phase-10-guided-tour` | #20 (to create) | – | [phase-10-guided-tour.md](plans/phase-10-guided-tour.md) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
@@ -618,6 +619,33 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 
 ---
 
+## Phase 10: Guided tour
+
+**Goal:** A narrated tour that plays the prototype by itself (Stefan's voice, a cursor on real controls, decision and artifact cards, a pausable player bar), the Attune brand, and About as the case study.
+**Spec:** [`specs/2026-10-09-guided-tour-design.md`](specs/2026-10-09-guided-tour-design.md) · **Detailed steps:** [`plans/phase-10-guided-tour.md`](plans/phase-10-guided-tour.md)
+
+- [x] 10.0 Plan and tracking (GitHub milestone and issue wait for Stefan's OK)
+- [x] 10.1 Script draft → **CHECKPOINT A** (Stefan edits; may reorder)
+- [ ] 10.2 Types, engine and text hash
+- [ ] 10.3 Manifest, placeholder audio and script printer
+- [ ] 10.4 Voice and action runner
+- [ ] 10.5 Player
+- [ ] 10.6 Tour layer, bar, cursor and cards
+- [ ] 10.7 Cold open (vertical slice) → **CHECKPOINT B** (first chapter on a preview)
+- [ ] 10.8 Chapters 3 and 4 (onboarding, decision 1)
+- [ ] 10.9 Chapters 6 and 7 (decision 3, step-down)
+- [ ] 10.10 Interludes (why, process, validate) and the last chapter
+- [ ] 10.11 Chapter 5 (decision 2) and the explorations → **CHECKPOINT C** (whole tour, placeholder voice)
+- [ ] 10.12 Landing, credit and the Attune rename
+- [ ] 10.13 Recording page (dev only)
+- [ ] 10.14 Recording → **CHECKPOINT D** (real voice)
+- [ ] 10.15 Case study (About)
+- [ ] 10.16 Phase checkpoint → **CHECKPOINT E** (PR review; merge only on approval)
+
+**Done when:** the tour plays end to end in Stefan's voice in under 7:30; every chapter runs with no skipped actions in e2e; `pnpm tour:audio --check` passes; the brand reads Attune everywhere; Stefan approves the PR.
+
+---
+
 ## Frame tracker
 
 Tick **Built** when the screen exists at its route; tick **QA'd** after the side-by-side visual check at a checkpoint. Phase 9 re-swept all 54 frames side by side on 2026-10-09 (`QA=1 pnpm capture tests/capture/qa.spec.ts`) and fixed the drift it found (see the Phase 9 handoff notes).
@@ -772,6 +800,9 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-09 | Visual sweep of all 54 frames (`pnpm capture`, `QA=1`); drift fixed and pinned in `fidelity.spec.ts`; frame-faithful pickers on 2b and 7d are `Segmented` (gained `disabled`); the record's wording of a judgment comes from `recordLabel()`, not the seed (SEED_VERSION stays 8) | Phase 9 R11 |
 | 2026-10-09 | Launch: README with screenshots, Open Graph/Twitter meta with an absolute 1200 × 630 `og.png`, SVG favicon; `BASE_URL` runs e2e against a deployment; the wall's corner control is its "Exit wall display" link | Phase 9 R12, R13, R15 |
 | 2026-10-09 | Launch: README keeps its credits ("Built phase by phase … with Claude Code", "By StefanNav"); no license file; repo homepage, description and topics set; production checked with `BASE_URL` (routes, stories, axe) | Stefan's approval of PR #19 |
+| 2026-10-09 | Phase 10: a narrated, self-playing tour of the live prototype (not a recorded video), following the Med Rec agent from intake to step-down; three decisions marked in place; player bar along the bottom; actions click the real UI; every step loads its own scenario; one clip per sentence; a dev-only recording page; About becomes the case study; AI chat is v2 (spec T1–T11) | Stefan's walkthrough for a job application: clear, deep, not overwhelming, no video editing |
+| 2026-10-09 | Brand becomes **Attune** (replacing Signal) in Task 10.12; the top-nav wordmark stays AIMS for now | Stefan's call; a name clearly distinct from the real company |
+| 2026-10-09 | Design explorations and Stefan's photo arrive in `reference/tour-inbox/` (git-ignored); images are viewed for names and converted before anything enters `public/` | The forbidden-terms check can't read pixels |
 
 ## Session log
 
@@ -801,3 +832,4 @@ One row per working session. Newest last.
 | 2026-10-09 | 9 | Wrote the Phase 9 plan (rulings R1–R15) after recon: axe on all 36 routes + 14 variants (10 rules, all small; contrast clean), tab-stop and click-target scan, O1 greyscale check (stale and review rings indistinguishable by shape → dashed square) | Task 9.1 |
 | 2026-10-09 | 9 | Built Phase 9 (axe gate on every route, keyboard paths and focus, page titles, scroll on navigation, story panel with dialogs, O1 stale square, 54-frame visual sweep with 9 drift fixes, README, social image, meta). Fresh review: 3 Important + 1 re-graded fixed test-first; 4 minors deferred. PR #19 open | Stefan reviews Phase 9 → merge → launch steps |
 | 2026-10-09 | 9 | Stefan approved; PR #19 squash-merged; #10 closed. Production deploy verified (og.png, favicon, meta, deep links; 57 route and story e2e and 58 axe e2e pass against the live URL). Repo homepage, description and topics set | Project launched |
+| 2026-10-09 | 10 | Brainstormed the walkthrough with Stefan (format, running order, player, architecture, content); wrote and committed the spec; received the Claude Design explorations; wrote the Phase 10 plan with checkpoints A–E and the first script draft (about 1,080 words) | CHECKPOINT A: Stefan edits the script; then 10.2 |

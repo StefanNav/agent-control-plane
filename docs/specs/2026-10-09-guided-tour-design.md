@@ -250,7 +250,7 @@ The notes' "open questions to validate with real users" feed chapter 8 (§7.4).
 
 ### 7.5 Assets from Stefan
 
-1. **Claude Design exports** via a handoff package (prompt in the session): Command Board options and design system directions, PNG at 2× (2880 px for a 1440 frame), with a manifest naming each, its status (chosen / kept as an alternative / rejected) and the reason if recorded.
+1. **Claude Design exports** via a handoff package (received 2026-10-09: 4 board layouts, 5 design system directions across 23 images, and `handoff.md` with status and reasons; in `reference/tour-inbox/attune-design-explorations/`): Command Board options and design system directions, PNG at 2× (2880 px for a 1440 frame), with a manifest naming each, its status (chosen / kept as an alternative / rejected) and the reason if recorded.
 2. **Photo**: square, at least 400 px, for the credit.
 3. **Voice**: recorded on the local recording page after the tour runs with placeholders.
 
@@ -268,7 +268,7 @@ Images go to `public/tour/artifacts/` after review (§8), optimised (WebP, max 1
 
 "Attune" replaces "Signal" everywhere the brand shows: prototype bar, landing, About, desktop gate, page titles (`… · Attune Agent Control Plane`), `index.html` title and Open Graph tags, README, `CLAUDE.md`, and the tests that assert them. `public/og.png` is regenerated with `pnpm capture`. Earlier specs and phase plans are records and stay as written; a decision-log row records the rename.
 
-**Open item:** the product's top-nav wordmark stays **AIMS** as designed, unless Stefan wants it changed.
+**Wordmark:** the product's top-nav wordmark stays **AIMS** as designed (Stefan, 2026-10-09: keep it for now; it may change later).
 
 ## 10. Testing
 
