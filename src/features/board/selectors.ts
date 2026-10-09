@@ -29,7 +29,6 @@ export function currentPrivilege(s: DemoState, activityId: string) {
  */
 export const onBoard = (a: Agent) => a.lifecycle !== 'retired' && a.lifecycle !== 'onboarding' && a.lifecycle !== 'inReview'
 
-/** Board order: critical, then anything needing a human, then fine, paused, shadow. Ties keep seed order. */
 /**
  * A judgment as the agent's own record shows it (4c header, 8c): held drafts say so, and a pause is
  * left to the level, which already reads Paused. Boards keep the short label (4a, 4b).
@@ -38,6 +37,7 @@ export function recordLabel(label: string): string {
   return label.replace(/^(Review: \d+ drafts?)$/, '$1 held').replace(/ · paused$/, '')
 }
 
+/** Board order: critical, then anything needing a human, then fine, paused, shadow. Ties keep seed order. */
 export function severityRank(status: Status): number {
   return { crit: 0, warn: 1, review: 1, stale: 1, normal: 2, paused: 3, shadow: 4 }[status]
 }

@@ -44,7 +44,7 @@
 - **Three layers:** `src/design-system` (tokens and primitives, no hospital knowledge) → `src/components` (the ten Countersign product components: props in, callbacks out) → `src/features` (screens that read through selectors and change data only through store actions).
 - **The mock hospital** is one versioned Zustand store with named scenarios (moments in time such as "resume requested" or "nine days later"). Every change goes through `can()` for permissions and writes the audit log, so any action can be traced back.
 - **The story engine** (`src/prototype/stories`) keeps `?story=&step=` in the URL, loads the moment each step needs, and keeps what the visitor did between steps.
-- **Tests:** 747 unit tests (Vitest and Testing Library) and 254 end-to-end tests (Playwright), including every route, every story from a shared link, keyboard paths, and an axe accessibility check (WCAG 2.1 AA) on every screen. `pnpm capture` screenshots each frame beside its design for visual QA.
+- **Tests:** 749 unit tests (Vitest and Testing Library) and 247 end-to-end tests (Playwright), including every route, every story from a shared link, keyboard paths, and an axe accessibility check (WCAG 2.1 AA) on every screen. `pnpm capture` screenshots each frame beside its design for visual QA.
 
 ## Run it locally
 

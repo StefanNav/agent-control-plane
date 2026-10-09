@@ -3,8 +3,12 @@ import { useLocation, useMatches, useNavigationType } from 'react-router'
 import type { RouteHandle } from './nav'
 import { pageTitle } from './pageTitle'
 
-/** False until the page's first route has rendered: a fresh load leaves focus where the browser puts it. */
-let navigated = false
+/**
+ * The pathname focus last ran for, for the life of the page. A fresh load starts at null, so it leaves
+ * focus where the browser puts it; repeating a pathname (StrictMode's second run in dev, an AppShell
+ * remounting on the same page) changes nothing; a new pathname, even in another shell, is a navigation.
+ */
+let lastPathname: string | null = null
 
 /**
  * The browser tab's title (R3), scroll on navigation (R8), and focus after navigation (R4): when a
@@ -36,15 +40,15 @@ export function usePageChrome() {
   useLayoutEffect(() => toTop(), [pathname])
 
   useEffect(() => {
-    if (!navigated) {
-      navigated = true
-      return
-    }
+    const previous = lastPathname
+    lastPathname = pathname
+    if (previous === null || previous === pathname) return
     const active = document.activeElement
     if (active && active !== document.body && active.isConnected) return
     const heading = document.querySelector<HTMLElement>('main h1')
     if (!heading) return
     if (!heading.hasAttribute('tabindex')) heading.tabIndex = -1
-    heading.focus()
+    // The page's scroll is already settled (top for a link, restored on Back); focus mustn't move it.
+    heading.focus({ preventScroll: true })
   }, [pathname])
 }

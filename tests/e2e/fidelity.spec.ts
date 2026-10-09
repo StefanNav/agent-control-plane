@@ -106,3 +106,16 @@ test('11a: 6 North’s trends are grey, the rising independent check amber, with
   expect(strokes).toEqual([await colour('--cs-text2'), await colour('--cs-text2'), await colour('--cs-warn-text')])
   await expect(weekly.locator('svg circle')).toHaveCount(0)
 })
+
+test('4b: the side panel shows the selected agent’s chip whole, and keeps level, grantor and review on one line', async ({ page }) => {
+  await page.goto('/operations/divisions/medications')
+  const panel = page.getByRole('complementary', { name: 'Selected agent' })
+  const chip = panel.locator('[data-status="review"]')
+  await expect(chip).toHaveText('Review: 3 drafts')
+  const clipped = await chip.evaluate((el) => [el, ...el.querySelectorAll('*')].some((n) => n.scrollWidth > n.clientWidth + 1))
+  expect(clipped).toBe(false)
+  for (const text of ['Dr. Lee', 'rev 05 Feb']) {
+    const height = await panel.getByText(text, { exact: true }).first().evaluate((el) => el.getBoundingClientRect().height)
+    expect(height, text).toBeLessThanOrEqual(18)
+  }
+})

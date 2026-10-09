@@ -143,8 +143,9 @@
 
 .judgment {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 4px 8px;
   padding-top: 4px;
 }
 
@@ -176,6 +177,11 @@
   font-size: 12px;
   line-height: 16px;
   color: var(--cs-text2);
+}
+
+/* Level, grantor and review date stay whole; only the domain wraps. */
+.activityMeta > :not(:last-child) {
+  white-space: nowrap;
 }
 
 .week {
