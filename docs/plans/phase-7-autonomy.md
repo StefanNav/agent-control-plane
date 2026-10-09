@@ -117,7 +117,7 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
   - v1 (closed, Draft, granted by Priya 09 Sep 10:00).
   - v5 (active, Draft, granted 16 Oct 10:00, review 14 Jan, conditions C1 and C3 from 14b).
   
-  v2–v4 were renewals at the same level and aren't kept; History shows level changes only. Later auto codes shift by one (nothing pins them). 3d is unchanged: it skips closed versions.
+  v2–v4 were renewals at the same level and aren't kept; History shows level changes only. Later auto codes shift by one (nothing pins them). 3d is unchanged ("All · 17"): it skips closed versions.
 - **R3 Counts from data:**
   - 12a: "Agents in scope **41** · 5 divisions", "Elements covered **279 of 287** · 7 elements × 41 agents", "**33** more agents"; "Last export **01 Dec** · Mock survey" (EXP-0003 gains `note: 'Mock survey'`); "Exports · 2" counts packet exports.
   - 12b: "PRV-0142 v3" (15a's "v4"), "Board minutes 14 Oct", "Risk tier 3", "HS-04 fired × 3" from the hard stop. Records that refer to later events appear only once they exist (R5).
@@ -315,7 +315,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
    - At baseline these are unchanged:
      - 4a, 4b and Allergy Recon's board row ("Draft", "Within scope")
      - Marcus's 5a counts and Priya's 5d counts
-     - 3d's "All · 16"
+     - 3d's "All · 17"
 
    Pinned in Task 7.1 (seed scan) and each task's e2e.
 
@@ -376,7 +376,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - `packetEstimate(agents: number, months: number) → { pages, minutes }`
 - **Pages:** `EvidencePage` (12a; `?tab=gaps|exports`), `AgentEvidencePage` (12b; `?tab=exports`, `?export=1` opens the modal), `ExportPacketModal`, `MappingRulesModal`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **Seed:**
     - `SEED_VERSION` is 8; EXP-0003's note is "Mock survey".
     - **No future leaks:** the Phase 6 scan (`seed.test.ts`, "no seed or catalogue string shows a March date") also covers every export of `evidence.ts` (and, from Task 7.3, `autonomy.ts`). It rejects `/\b\d{2} (Mar|Apr|May|Jun|Jul)\b/` and "v1.2.4", as well as "v1.4.2" (the Claim Scrubber exemption stands).
@@ -396,10 +396,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - As Dana, `/reports/evidence` shows "279 of 287" and "Show 3 more" lists the 8th gap.
     - Open Med Rec → "Export packet" → "Export packet" shows "EXP-0004" and "Exports · 3".
     - `/reports/evidence/nope` shows Not found.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with visual checks against 12a and 12b.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(evidence): RUAIH coverage and export packet (seed v8)"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with visual checks against 12a and 12b.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(evidence): RUAIH coverage and export packet (seed v8)"`.
 
 ### Task 7.2: Autonomy ladder: held state, wide size and legend
 
@@ -422,18 +422,18 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - Locked by policy
 - The compact aria label includes held: "Shadow current, Draft held".
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - A `held` segment has `data-state="held"`.
   - `wide` with `labels` renders the four level names, with the current and proposed names bold and a lock icon beside a locked name.
   - The aria label for `[current, held, available, locked]` reads "Shadow current, Draft held".
   - `LadderLegend` renders the six lines.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement.**
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement.**
   - Measure 14a's segments and labels (segment width, gap, height, label size).
   - Build the hatch from existing tokens; add none unless a colour is missing.
   - Add a wide ladder and the legend to the gallery's ladder section.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(components): ladder held state, wide size and legend"`.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(components): ladder held state, wide size and legend"`.
 
 ### Task 7.3: The activity page and its review level (13a)
 
@@ -509,7 +509,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - **"At Reduced":** "About 7 checks a day of ~340 outputs"; Checked by "Marcus · sampling queue"; Drawn "at random, 06:00 daily"; Since 24 Nov "84 checks · 0 defects"; Back to Normal "on 1 defect"; "**A defect** is a signed output that’s wrong: the agent erred and the reviewer didn’t catch it."
   - **"Level changes":** "Priya and Marcus are told each time", newest first.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **`levels.test.ts`:**
     - `ruleRows` for Allergy Recon gives fired / watching / off / off with the frame's text.
     - Marcus tightening Allergy Recon with a reason sets Tightened, records "Reduced → Tightened" by Marcus with the reason, and tells Priya and Marcus.
@@ -525,13 +525,13 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - As Priya, `/portfolio/activities/allergy-recon` shows "Watching" and "84 checks · 0 defects".
     - "Tighten now…" with a reason shows "Tightened" outlined and the change at the top of Level changes.
     - `/portfolio/activities/nope` shows Not found.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 13a.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 13a.
   - The composed Privilege tab: `PrivilegeCard` for the latest version and the branches table from 14a (wide ladders, `labels`).
   - The Evidence tab: the privilege's evidence line until a promotion exists (Task 7.5 adds its criteria).
   - The History tab: level changes from the privilege versions (Task 7.7 extends it for branches).
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(activity): review level and its rules (13a)"`.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(activity): review level and its rules (13a)"`.
 
 ### Task 7.4: The sampling queue (13b)
 
@@ -580,7 +580,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - A viewer who isn't the owner sees the result read-only and "Record check" locked.
 - **`DivisionTabs`** adds `{ id: 'sampling', label: 'Sampling', to: '/operations/sampling' }`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **`levels.test.ts`:**
     - Marcus records "Defect" on ACT-90412: Allergy Recon becomes Normal, the change reads "Reduced → Normal" by rule, Priya and Marcus are told.
     - "Defect" on ACT-90377 the same day → Tightened.
@@ -595,10 +595,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - **e2e `sampling.spec.ts`:**
     - As Marcus, `/operations/divisions/medications` → Sampling → choose "Defect" → Record check. The next draw (ACT-90377) is selected.
     - As Priya, `/portfolio/activities/allergy-recon` shows Normal.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 13b.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(sampling): sampling queue moves the review level (13b)"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 13b.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(sampling): sampling queue moves the review level (13b)"`.
 
 ### Task 7.5: Sponsor signs the promotion (14a); the board decides (14b)
 
@@ -693,7 +693,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
 - **Activity Privilege tab:** while a promotion of a branch waits, "Marcus asked to promote “add an allergy from outside records” to Supervised on 25 Nov." with "Review the promotion". **Evidence tab:** the latest promotion's criteria.
 - **Scenario `promotion-at-board`** (R17) and its id in `ScenarioId`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **`promotions.test.ts`:**
     - Priya signing with the reason and `accepted` sets `board` with meeting 09 Dec 15:00 and item 2 of 4, freezes the evidence, and raises Dr. Lee's "Review: promotion · Allergy Recon Agent" due 09 Dec 15:00.
     - Priya signing twice is refused. Marcus signing is refused. Signing without `accepted` is refused.
@@ -714,10 +714,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - As Dr. Lee, the inbox item → 14b → "Record decision" → "Decision logged".
     - As Priya, the Privilege tab shows the branch at Supervised.
     - `/portfolio/promotions/nope` shows Not found.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual checks against 14a and 14b.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(promotion): sponsor signs one branch; the board decides Tier 3 (14a, 14b)"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual checks against 14a and 14b.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(promotion): sponsor signs one branch; the board decides Tier 3 (14a, 14b)"`.
 
 ### Task 7.6: Step down on a threshold breach (15a)
 
@@ -789,7 +789,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
 - **11a:** "By unit · last 4 weeks" adds "7 West and 8 East: see the step-down" (→ `/operations/agents/med-rec`) while Med Rec has an open threshold step-down (R16).
 - **Scenario `step-down-threshold`** rewritten (R17).
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **`stepdowns.test.ts`:**
     - Applying the threshold step-down at 09 Dec 06:00:
       - moves `med-rec-admission` Draft → Shadow
@@ -808,10 +808,10 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - As Marcus with `?scenario=step-down-threshold`, the Med Rec view shows "stepped down from Draft to Shadow at 06:00" and the Controls menu.
     - "Open the exception" opens the inbox item.
     - 11a shows "7 West and 8 East: see the step-down".
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 15a.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(stepdown): threshold breach drops Draft to Shadow (15a)"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 15a.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(stepdown): threshold breach drops Draft to Shadow (15a)"`.
 
 ### Task 7.7: Step down on a version change (15b)
 
@@ -858,7 +858,7 @@ The failure modes most likely to bite a visitor that no screen test naturally co
     - "**One level at a time.** Supervised drops to Draft, Draft to Shadow. Nothing steps up by itself."
 - **Scenario `step-down-version`** (R17) and its id.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
   - **`stepdowns.test.ts`:**
     - After the board approves, deploying v1.3.0 at 14 Dec 14:20:
       - moves `outside-records` Supervised → Draft
@@ -875,14 +875,14 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - **e2e `stepdown.spec.ts` (version):**
     - As Priya with `?scenario=step-down-version`, `/portfolio/activities/allergy-recon/branches/outside-records` shows "History" selected, "1,412 of 2,104 adds replayed", and "Sign to restore Supervised" with `aria-disabled="true"`.
     - `/portfolio/activities/allergy-recon/branches/nope` shows Not found.
-- [ ] **Step 2: Run.** Expected: FAIL.
-- [ ] **Step 3: Implement**, with the visual check against 15b.
-- [ ] **Step 4: Run.** Expected: PASS.
-- [ ] **Step 5: Commit** with `git commit -m "feat(stepdown): version change drops Supervised to Draft (15b)"`.
+- [x] **Step 2: Run.** Expected: FAIL.
+- [x] **Step 3: Implement**, with the visual check against 15b.
+- [x] **Step 4: Run.** Expected: PASS.
+- [x] **Step 5: Commit** with `git commit -m "feat(stepdown): version change drops Supervised to Draft (15b)"`.
 
 ### Task 7.8: Journeys, frame audit and checkpoint
 
-- [ ] **Step 1: e2e journeys** (`tests/e2e/journeys.spec.ts`):
+- [x] **Step 1: e2e journeys** (`tests/e2e/journeys.spec.ts`):
   - **"autonomy is earned":**
     1. **Marcus** at `/operations/sampling` records "Right as signed" on ACT-90412.
     2. **Priya** signs PRM-0007 from the activity page.
@@ -891,11 +891,11 @@ The failure modes most likely to bite a visitor that no screen test naturally co
   - **"autonomy never outlives its evidence":**
     1. Load `?scenario=step-down-threshold` as **Marcus**: Med Rec shows 15a.
     2. Load `?scenario=step-down-version` as **Priya**: 15b with restore locked.
-- [ ] **Step 2:** `pnpm check` and `pnpm e2e` green.
-- [ ] **Step 3: Frame audit.**
+- [x] **Step 2:** `pnpm check` and `pnpm e2e` green.
+- [x] **Step 3: Frame audit.**
   - Every row in the BUILD_PLAN frame tracker is built (☑ Built) and visually checked against its frame.
   - The route table has no placeholder left for phases ≤ 7; `Placeholder` remains only for Phase 8 routes (`/`, `/about`).
-- [ ] **Step 4: Checkpoint** per the BUILD_PLAN protocol:
+- [x] **Step 4: Checkpoint** per the BUILD_PLAN protocol:
   - Push, then open the PR "Phase 7: Earned autonomy" with `Closes #8`.
   - Run the fresh whole-branch review and apply its fixes test-first.
   - Visual QA of 12a, 12b, 13a, 13b, 14a, 14b, 15a and 15b against their scenarios; tick them in the frame tracker.
