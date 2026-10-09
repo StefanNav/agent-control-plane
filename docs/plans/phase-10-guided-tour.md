@@ -71,7 +71,7 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
 
 - [x] **Step 1:** Write this plan.
 - [x] **Step 2:** Add Phase 10 to `docs/BUILD_PLAN.md`: Start here (current phase 10, branch `phase-10-guided-tour`, next task), a row in Phase overview, a "Phase 10: Guided tour" section with this plan's task list, decision-log rows (tour T1–T11, Attune, AIMS kept), a session-log row.
-- [ ] **Step 3:** With Stefan's OK, create GitHub milestone "Phase 10: Guided tour" and issue #20 ("Phase 10: Guided tour", body = the task list), label `phase-10`. Run the forbidden-terms check on the body first.
+- [x] **Step 3:** With Stefan's OK, create GitHub milestone "Phase 10: Guided tour" and issue #20 ("Phase 10: Guided tour", body = the task list), label `phase-10`. Run the forbidden-terms check on the body first.
 - [x] **Step 4:** Commit: `docs: Phase 10 plan`.
 
 ### Task 10.1: Script draft — **CHECKPOINT A**

@@ -21,8 +21,8 @@ Update this block every time a session stops, even mid-phase.
 | **Current phase** | Phase 10: Guided tour (◐ in progress) |
 | **Branch** | `phase-10-guided-tour` |
 | **Last completed** | Spec approved; plan written; Task 10.1 script draft written (`docs/tour/script.md`); Claude Design explorations received in `reference/tour-inbox/` (2026-10-09) |
-| **Next task** | **CHECKPOINT A:** Stefan edits the script and confirms the order. Meanwhile 10.2 (engine) can start. 10.0 Step 3 (GitHub milestone and issue #20) waits for Stefan's OK |
-| **Blockers** | Stefan's photo for the credit (needed by 10.12) |
+| **Next task** | 10.2 (engine), executed subagent-driven (Stefan, 2026-10-09). In parallel, **CHECKPOINT A**: Stefan is editing the script; 10.7 onward waits for it |
+| **Blockers** | None now. Stefan's photo comes later (10.12 ships the credit without it if needed) |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
 | **Latest preview** | none open |
@@ -98,7 +98,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 7 | Earned autonomy | ☑ Merged | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | [#17](https://github.com/StefanNav/agent-control-plane/pull/17) | [phase-7-autonomy.md](plans/phase-7-autonomy.md) |
 | 8 | Stories and portfolio layer | ☑ Merged | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | [#18](https://github.com/StefanNav/agent-control-plane/pull/18) | [phase-8-stories.md](plans/phase-8-stories.md) |
 | 9 | Polish and launch | ☑ Merged | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | [#19](https://github.com/StefanNav/agent-control-plane/pull/19) | [phase-9-polish.md](plans/phase-9-polish.md) |
-| 10 | Guided tour | ◐ In progress | `phase-10-guided-tour` | #20 (to create) | – | [phase-10-guided-tour.md](plans/phase-10-guided-tour.md) |
+| 10 | Guided tour | ◐ In progress | `phase-10-guided-tour` | [#20](https://github.com/StefanNav/agent-control-plane/issues/20) | – | [phase-10-guided-tour.md](plans/phase-10-guided-tour.md) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
@@ -624,7 +624,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 **Goal:** A narrated tour that plays the prototype by itself (Stefan's voice, a cursor on real controls, decision and artifact cards, a pausable player bar), the Attune brand, and About as the case study.
 **Spec:** [`specs/2026-10-09-guided-tour-design.md`](specs/2026-10-09-guided-tour-design.md) · **Detailed steps:** [`plans/phase-10-guided-tour.md`](plans/phase-10-guided-tour.md)
 
-- [x] 10.0 Plan and tracking (GitHub milestone and issue wait for Stefan's OK)
+- [x] 10.0 Plan and tracking
 - [x] 10.1 Script draft → **CHECKPOINT A** (Stefan edits; may reorder)
 - [ ] 10.2 Types, engine and text hash
 - [ ] 10.3 Manifest, placeholder audio and script printer
