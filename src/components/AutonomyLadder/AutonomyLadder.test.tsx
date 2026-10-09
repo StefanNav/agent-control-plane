@@ -39,6 +39,12 @@ test('a held level (until a step-down) is its own state, and the label says so (
   expect(screen.getByRole('img')).toHaveAccessibleName('Shadow current, Draft held')
 })
 
+test('a branch locked by policy still has a name (14a)', () => {
+  const locked = STEPPED.map((step) => ({ ...step, state: 'locked' as const }))
+  render(<AutonomyLadder variant="compact" size="wide" steps={locked} />)
+  expect(screen.getByRole('img')).toHaveAccessibleName('Locked by policy')
+})
+
 test('the wide ladder names the levels; current and proposed in bold, locked with a lock (14a)', () => {
   const steps: LadderStep[] = [
     { level: 'shadow', state: 'passed' },

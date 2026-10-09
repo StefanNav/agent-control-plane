@@ -29,7 +29,7 @@ export function DecisionLogged({ agentId }: { agentId: string }) {
                 getRowId={(c) => c.id}
                 minRowHeight={56}
                 columns={[
-                  { id: 'id', header: '', width: '56px', render: (c) => <span><RuleTag>{c.id}</RuleTag></span> },
+                  { id: 'id', header: '', hiddenHeader: 'ID', width: '56px', render: (c) => <span><RuleTag>{c.id}</RuleTag></span> },
                   { id: 'condition', header: 'Condition', width: 'minmax(0, 1fr)', render: (c) => c.text },
                   { id: 'applies', header: 'Applies to', width: '200px', render: (c) => c.appliesTo },
                   { id: 'checked', header: 'Checked by', width: '170px', render: (c) => c.checkedBy },

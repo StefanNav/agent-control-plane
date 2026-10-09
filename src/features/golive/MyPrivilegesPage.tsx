@@ -70,7 +70,7 @@ export function MyPrivilegesPage() {
               { id: 'status', header: 'Status', width: '190px', render: (r) => (r.overdue ? <StatusChip status="warn" label={r.status} /> : r.status) },
               {
                 id: 'action',
-                header: '',
+                header: '', hiddenHeader: 'Action',
                 width: '96px',
                 render: (r) => (
                   <LinkButton to={r.to} variant={r.overdue ? 'primary' : 'ghost'}>

@@ -76,9 +76,9 @@ export function IncidentPage() {
                     <tr key={c.id}>
                       <td className={styles.mark}>
                         {c.done ? (
-                          <Icon name="check" size={12} color="var(--cs-ink)" />
+                          <Icon name="check" size={12} color="var(--cs-ink)" title="Done" />
                         ) : (
-                          <span className={styles.box} aria-label="Open" />
+                          <span className={styles.box} role="img" aria-label="Open" />
                         )}
                       </td>
                       <td className={styles.correction}>

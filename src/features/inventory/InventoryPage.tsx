@@ -265,7 +265,7 @@ export function InventoryPage() {
                   },
                   {
                     id: 'action',
-                    header: '',
+                    header: '', hiddenHeader: 'Action',
                     width: '96px',
                     render: (r) => {
                       const to = `/inventory/agents/${r.agentId}/onboarding/${r.stepId}${r.field ? `?field=${r.field}` : ''}`
@@ -314,7 +314,7 @@ export function InventoryPage() {
                 },
                 {
                   id: 'open',
-                  header: '',
+                  header: '', hiddenHeader: 'Action',
                   width: '90px',
                   render: (r) => (
                     <LinkButton to={`/inventory/agents/${r.agentId}/onboarding/intake`} variant="ghost">

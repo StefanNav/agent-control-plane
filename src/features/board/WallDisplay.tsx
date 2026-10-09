@@ -19,7 +19,7 @@ export function WallDisplay() {
   const state = useDemo((s) => s)
   const wall = useMemo(() => selectWall(state), [state])
   return (
-    <div data-theme="dark" className={styles.wall}>
+    <main data-theme="dark" className={styles.wall}>
       <div className={styles.head}>
         <span className={styles.headText}>
           <span className={styles.kicker}>LAKESHORE HEALTH · AGENT BOARD</span>
@@ -88,6 +88,6 @@ export function WallDisplay() {
       <Link to="/operations" className={styles.exit}>
         Exit wall display
       </Link>
-    </div>
+    </main>
   )
 }

@@ -41,7 +41,7 @@ export function EpicPage() {
         ))}
       </div>
       <div className={styles.body}>
-        <main className={styles.main}>
+        <div className={styles.main}>
           <div className={styles.listHead}>
             <div>
               <h2 className={styles.listTitle}>Home medications · prior to admission</h2>
@@ -95,7 +95,7 @@ export function EpicPage() {
               ))}
             </tbody>
           </table>
-        </main>
+        </div>
         <AgentPanel view={view} />
       </div>
     </div>

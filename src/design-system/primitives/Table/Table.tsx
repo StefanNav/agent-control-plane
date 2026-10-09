@@ -1,5 +1,6 @@
 import type { KeyboardEvent, ReactNode } from 'react'
 import { cx } from '../../../lib/cx'
+import { VisuallyHidden } from '../VisuallyHidden/VisuallyHidden'
 import styles from './Table.module.css'
 
 export interface Column<Row> {
@@ -9,6 +10,8 @@ export interface Column<Row> {
   width: string
   align?: 'left' | 'right'
   render: (row: Row) => ReactNode
+  /** Name for screen readers when `header` shows nothing, e.g. an icon or action column. */
+  hiddenHeader?: string
 }
 
 export interface TableGroup {
@@ -130,6 +133,7 @@ export function Table<Row>({
               className={cx(styles.label, column.align === 'right' && styles.right)}
             >
               {column.header}
+              {column.hiddenHeader ? <VisuallyHidden>{column.hiddenHeader}</VisuallyHidden> : null}
             </span>
           ))}
         </div>
