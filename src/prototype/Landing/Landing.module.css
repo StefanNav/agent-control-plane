@@ -1,0 +1,107 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 720px;
+}
+
+.intro h1 {
+  margin: 0;
+  color: var(--cs-ink);
+}
+
+.lead {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cs-strong);
+}
+
+.text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.stories {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.storiesHead {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.storiesHead h2 {
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card {
+  gap: 8px;
+  padding: 16px 16px 12px;
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+}
+
+.name {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.storyTitle {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--cs-strong);
+}
+
+.summary {
+  flex: 1;
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-text2);
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.foot > * {
+  white-space: nowrap;
+}

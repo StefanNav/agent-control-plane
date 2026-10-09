@@ -519,7 +519,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 
 - [x] 8.0 Write `docs/plans/phase-8-stories.md`; commit
 - [x] 8.1 Story engine: `Story`/`Step` types, `?story=&step=` URL sync, scenario load on start, narration panel, `data-story-target` outline; **Review focus 4 test** (unknown story ignored, out-of-range step clamped)
-- [ ] 8.2 Landing page `/`
+- [x] 8.2 Landing page `/`
 - [x] 8.3 Stories: Marcus, Priya, Dana (add `data-story-target` attributes to screens as needed)
 - [x] 8.4 Stories: Sam, Dr. Lee, Ana, Jordan
 - [ ] 8.5 About page `/about`
@@ -690,6 +690,7 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-09 | Narration panel: bottom-right, 360 px, z-index 60 (above dialogs, so narration stays readable), Hide/Show, "Return to it" off path, Finish = Exit; 280 px of space under the page while it shows. The step's target gets a 2 px ink outline from one `<style>` rule and is scrolled into view; dialog steps have no target | Phase 8 R5, R6 |
 | 2026-10-09 | `rewindTo` rolls a later signing back by the privilege's own interval (review date − signed), not the tier's cycle | Phase 8 R8: seeded Medications privileges are 91-day cycles on Tier 1 agents, so October and November scenarios showed five reviews "overdue · 269 days" |
 | 2026-10-09 | Story choices: Priya's "overdue review" step runs at baseline (Duplicate Rx 7 days overdue; 06 Nov has none); Sam starts at `onboarding-tools-tested` (1d as drawn); Jordan's incident is INC-0031 at `resume-requested` (7c); Dana retires IV-to-Oral (6f); Ana's nine days later loads `epic-fixed-later` by patch, not `?day=later` | Phase 8 R7: each step shows its frame's moment |
+| 2026-10-09 | Landing, About and desktop-gate copy is ours (no frames), written from the Vision and PRD with Signal as the brand and a "fictional" disclaimer; cards follow persona order. "Explore freely" exits any story, switches to Marcus and goes to Marcus's landing, keeping the data | Phase 8 R9, R10 |
 
 ## Session log
 

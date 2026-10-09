@@ -32,6 +32,7 @@ import { UnitPage } from '../features/reviewers/UnitPage'
 import { PeoplePage } from '../features/settings/PeoplePage'
 import { NotFound } from '../layout/NotFound'
 import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
+import { Landing } from '../prototype/Landing/Landing'
 import { AppShell } from './AppShell'
 import type { RouteHandle, ShellKind } from './nav'
 import { Placeholder } from './Placeholder'
@@ -40,6 +41,7 @@ import { redirects, routeTable } from './routes'
 
 /** Real screens by route path. Routes not listed here render their Placeholder. */
 const PAGES: Record<string, ReactNode> = {
+  '/': <Landing />,
   '/about/components': <ComponentGallery />,
   '/operations': <HospitalBoard />,
   '/operations/divisions/:divisionId': <DivisionView />,
