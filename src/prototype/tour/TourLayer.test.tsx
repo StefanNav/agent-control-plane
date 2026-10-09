@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useEffect } from 'react'
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router'
@@ -16,6 +16,12 @@ const CARDS: Record<string, CardContent> = {
     title: 'Grant privileges in stages',
     options: [{ label: 'All at once' }, { label: 'In stages', chosen: true }],
     tradeoff: 'Slower to go live.',
+  },
+  'image-1': {
+    kind: 'image',
+    src: '/tour/artifacts/board-01.jpg',
+    alt: 'An early board',
+    caption: 'Direction A',
   },
 }
 
@@ -174,8 +180,10 @@ describe('keyboard', () => {
     fireEvent.keyDown(screen.getByRole('heading', { level: 1 }), { key: ' ' })
     expect(t.state().status).toBe('paused')
     fireEvent.keyDown(screen.getByRole('button', { name: 'Exit tour' }), { key: ' ' })
-    fireEvent.keyDown(screen.getByRole('textbox', { name: 'Reason' }), { key: ' ' })
     expect(t.state().status).toBe('paused')
+    // In a field, Space is typing: the visitor takes over (Ruling 12) rather than playing.
+    fireEvent.keyDown(screen.getByRole('textbox', { name: 'Reason' }), { key: ' ' })
+    expect(t.state().status).toBe('driving')
   })
 
   test('→ and ← step through the tour from the page or the bar', async () => {
@@ -234,12 +242,75 @@ describe('taking over (spec §4.5)', () => {
     expect(t.state().status).toBe('driving')
   })
 
-  test('while paused, using the page changes nothing', async () => {
+  test('while paused, a pointer down on the page hands it over too, so Play restarts the step (Ruling 12)', async () => {
     const t = setup('/?tour=decision-1')
     await waitFor(() => expect(t.state().status).toBe('paused'))
     fireEvent.pointerDown(screen.getByRole('main'))
+    expect(t.state().status).toBe('driving')
+    expect(screen.getByRole('button', { name: 'Resume tour' })).toBeInTheDocument()
+  })
+
+  test('while paused, typing in a field hands it over too (Ruling 12)', async () => {
+    const t = setup('/?tour=decision-1')
+    await waitFor(() => expect(t.state().status).toBe('paused'))
     fireEvent.keyDown(screen.getByRole('textbox', { name: 'Reason' }), { key: 'a' })
+    expect(t.state().status).toBe('driving')
+  })
+
+  test('while paused, the tour bar and Space are still the tour’s', async () => {
+    const t = setup('/?tour=decision-1')
+    await waitFor(() => expect(t.state().status).toBe('paused'))
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Captions' }))
     expect(t.state().status).toBe('paused')
+    fireEvent.keyDown(document.body, { key: ' ' })
+    expect(t.state().status).toBe('playing')
+  })
+
+  test('the tour’s own enlarged image is not the page: closing it keeps the tour paused', async () => {
+    const t = setup('/?tour=decision-1')
+    await waitFor(() => expect(t.state().status).toBe('paused'))
+    act(() => runtime.player.setState({ card: { id: 'image-1', side: 'right' } }))
+    await userEvent.click(screen.getByRole('button', { name: 'An early board, open larger' }))
+    const dialog = screen.getByRole('dialog', { name: 'Direction A' })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Close' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(t.state().status).toBe('paused')
+  })
+})
+
+describe('starting a story closes the tour (Ruling 14)', () => {
+  test('from the Stories menu: the tour is closed and the story panel shows its first step', async () => {
+    const t = setup('/?tour=decision-1')
+    await waitFor(() => expect(t.where()).toBe('/operations?tour=decision-1'))
+    await userEvent.click(screen.getByRole('button', { name: 'Stories' }))
+    await userEvent.click(screen.getByRole('menuitem', { name: /Supervise by exception/ }))
+    expect(t.state().status).toBe('idle')
+    expect(bar()).not.toBeInTheDocument()
+    expect(screen.getByRole('complementary', { name: 'Story' })).toBeInTheDocument()
+    await waitFor(() => expect(t.where()).toBe('/operations?story=marcus&step=1'))
+    expect(useStory.getState().progress).toMatchObject({ storyId: 'marcus', step: 1 })
+  })
+
+  test('scheduled as in the browser (no act), the closing tour leaves the story’s URL alone', async () => {
+    const actEnvironment = Reflect.get(globalThis, 'IS_REACT_ACT_ENVIRONMENT')
+    Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', false)
+    try {
+      const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+      // A step with a query of its own, so stale params would show.
+      const t = setup('/?tour=why')
+      await wait(50)
+      t.state().next()
+      await wait(50)
+      expect(t.where()).toBe('/operations/agents/med-rec?tour=why')
+      screen.getByRole('button', { name: 'Stories' }).click()
+      await wait(50)
+      screen.getByRole('menuitem', { name: /Supervise by exception/ }).click()
+      await wait(50)
+      expect(t.state().status).toBe('idle')
+      expect(t.where()).toBe('/operations?story=marcus&step=1')
+    } finally {
+      Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', actEnvironment)
+    }
   })
 })
 

@@ -268,6 +268,8 @@ describe('runActions', () => {
     render(createElement(Field))
     const { host, log } = makeHost({ reducedMotion: () => true })
     const input = screen.getByLabelText('reason')
+    const focusedWhileTyping: boolean[] = []
+    input.addEventListener('input', () => focusedWhileTyping.push(document.activeElement === input))
     await act(async () => {
       await runActions(
         [{ kind: 'type', target: 'r', text: 'Rolled back after the dose error' }],
@@ -276,7 +278,7 @@ describe('runActions', () => {
       )
     })
     expect(log.slice(0, 2)).toEqual(['reveal:r', 'cursor:0,0,true'])
-    expect(input).toHaveFocus()
+    expect(focusedWhileTyping).toEqual([true])
     expect(input).toHaveValue('Rolled back after the dose error')
     expect(screen.getByLabelText('state')).toHaveTextContent('Rolled back after the dose error')
   })
@@ -300,6 +302,43 @@ describe('runActions', () => {
     await vi.advanceTimersByTimeAsync(10)
     expect(input.value).toBe('abcd')
     expect(done).toBe(true)
+  })
+
+  test('a finished type hands focus back to the page, so Space keeps working the tour (Ruling 13)', async () => {
+    vi.useFakeTimers()
+    const input = addTarget('r', undefined, 'input') as HTMLInputElement
+    const focused: boolean[] = []
+    input.addEventListener('input', () => focused.push(document.activeElement === input))
+    const { host } = makeHost()
+    const typed = runActions(
+      [{ kind: 'type', target: 'r', text: 'abc' }],
+      host,
+      new AbortController().signal,
+    )
+    await vi.advanceTimersByTimeAsync(100)
+    await typed
+    expect(input.value).toBe('abc')
+    expect(focused).toEqual([true, true, true])
+    expect(document.activeElement).not.toBe(input)
+    expect(document.activeElement).toBe(document.body)
+  })
+
+  test('a type cut short by an abort leaves focus in the field, with the visitor', async () => {
+    vi.useFakeTimers()
+    const input = addTarget('r', undefined, 'input') as HTMLInputElement
+    const controller = new AbortController()
+    const { host } = makeHost()
+    const typed = runActions(
+      [{ kind: 'type', target: 'r', text: 'abcdef' }],
+      host,
+      controller.signal,
+    )
+    await vi.advanceTimersByTimeAsync(30)
+    controller.abort()
+    await vi.advanceTimersByTimeAsync(100)
+    await typed
+    expect(input.value).toBe('ab')
+    expect(document.activeElement).toBe(input)
   })
 
   test('type into something that is not a text field is skipped', async () => {

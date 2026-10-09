@@ -86,7 +86,7 @@ function ImageCard({
         width={960}
         actions={<Button onClick={close}>Close</Button>}
       >
-        <img src={content.src} alt={content.alt} className={styles.full} />
+        <img data-tour="image" src={content.src} alt={content.alt} className={styles.full} />
       </Modal>
     </>
   )

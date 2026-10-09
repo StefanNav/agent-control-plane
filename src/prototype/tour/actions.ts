@@ -194,6 +194,9 @@ export async function runActions(
         if (!(await pressOn(el))) break
         el.focus({ preventScroll: true })
         await typeInto(el, action.text, host.reducedMotion() ? 0 : TYPE_MS / host.rate(), signal)
+        // Done typing: give focus back to the page, so Space keeps working the tour (Ruling 13).
+        // A run cut short leaves it where it is: the visitor has taken over.
+        if (!signal.aborted) el.blur()
         break
       }
       case 'card': {

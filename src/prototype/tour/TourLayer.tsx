@@ -6,6 +6,7 @@ import { markScreen } from './screen'
 import { TourBar } from './TourBar'
 import { TourCard } from './TourCard'
 import { TourCursor } from './TourCursor'
+import type { TourStatus } from './player'
 import { tourRuntime, type TourRuntime } from './useTour'
 
 const SAFE_TARGET = /^[a-z0-9-]+$/
@@ -49,6 +50,19 @@ function inTour(el: Element | null): boolean {
   return el?.closest('[data-tour]') != null
 }
 
+/**
+ * Is this input the visitor using the page? Not inside the tour's UI, and not while the tour's own
+ * dialog (an image card's full image) is open: that dialog takes every pointer and key until it closes.
+ */
+function onPage(el: Element | null): boolean {
+  return !inTour(el) && document.querySelector('[data-tour="image"]') === null
+}
+
+/** Playing or paused: input on the page hands the tour over (spec §4.5, Ruling 12). */
+function handsOver(status: TourStatus): boolean {
+  return status === 'playing' || status === 'paused'
+}
+
 function isControl(el: Element | null): boolean {
   return el?.closest(CONTROL) != null
 }
@@ -56,37 +70,31 @@ function isControl(el: Element | null): boolean {
 /**
  * Keep `?tour=` and the player in step (spec §4.1, R2): a link opens its chapter paused, an unknown
  * chapter is stripped, the URL names the chapter while the tour is open (a product link that drops it
- * gets it back), and closing drops it. The player's own navigations are left to land first, so a
- * URL write never races one and undoes it.
+ * gets it back), and closing drops it. A navigation on its way (the player's, or a story's that closed
+ * the tour) is left to land first, so a URL write never races one and undoes it.
  */
-function useTourUrl({ player, chapters, bindNavigate }: TourRuntime) {
+function useTourUrl(runtime: TourRuntime) {
+  const { player, chapters, bindNavigate } = runtime
   const navigate = useNavigate()
   const location = useLocation()
   const [params, setParams] = useSearchParams()
   const status = player((s) => s.status)
   const chapter = player((s) => s.pos.chapter)
-  /** The player asked for a navigation that hasn't landed: the URL is about to change. */
-  const pending = useRef(false)
   /** Was the tour open at the last sync? */
   const wasOpen = useRef(false)
 
-  useEffect(
-    () =>
-      bindNavigate((to) => {
-        pending.current = true
-        navigate(to)
-      }),
-    [bindNavigate, navigate],
-  )
+  useEffect(() => bindNavigate((to) => navigate(to)), [bindNavigate, navigate])
 
   // Every navigation lands with a new key.
   useEffect(() => {
-    pending.current = false
-  }, [location.key])
+    runtime.navigationLanded()
+  }, [runtime, location.key])
 
   const sync = useEffectEvent(() => {
-    if (pending.current) return
-    const open = status !== 'idle'
+    if (runtime.isNavigating()) return
+    // The player's state now, not this render's: a sibling's effect may have just closed the tour.
+    const now = player.getState()
+    const open = now.status !== 'idle'
     const closed = wasOpen.current && !open
     wasOpen.current = open
     const current = params.get('tour')
@@ -101,7 +109,7 @@ function useTourUrl({ player, chapters, bindNavigate }: TourRuntime) {
         { replace: true },
       )
     if (open) {
-      const id = chapters[chapter]?.id
+      const id = chapters[now.pos.chapter]?.id
       if (id !== undefined && current !== id) write(id)
     } else if (closed) {
       if (current !== null) write(null)
@@ -119,21 +127,21 @@ function useTourUrl({ player, chapters, bindNavigate }: TourRuntime) {
 /**
  * The visitor's input while the tour is open (spec §4.5, §4.6, Review focus 4): Space plays and
  * pauses and ←/→ step, unless focus is on a control (the bar's own are fine for ←/→); a pointer down
- * or a key on a control outside the tour's UI while it plays is a take-over; a hidden tab pauses; and
- * the layer going away pauses and silences the voice.
+ * or a key on a control outside the tour's UI while it plays or is paused is a take-over (Ruling 12);
+ * a hidden tab pauses; and the layer going away pauses and silences the voice.
  */
 function useTourInput({ player, voice }: TourRuntime) {
   useEffect(() => {
     const onPointerDown = (event: PointerEvent) => {
-      if (player.getState().status !== 'playing') return
-      if (inTour(elementOf(event.target))) return
+      if (!handsOver(player.getState().status)) return
+      if (!onPage(elementOf(event.target))) return
       player.getState().takeOver()
     }
     // Capture, so a page that stops a key's propagation can't hide it.
     const onKeyCapture = (event: KeyboardEvent) => {
-      if (player.getState().status !== 'playing' || PASSIVE_KEYS.has(event.key)) return
+      if (!handsOver(player.getState().status) || PASSIVE_KEYS.has(event.key)) return
       const target = elementOf(event.target)
-      if (inTour(target) || !isControl(target)) return
+      if (!onPage(target) || !isControl(target)) return
       player.getState().takeOver()
     }
     const onKey = (event: KeyboardEvent) => {

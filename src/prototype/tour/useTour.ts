@@ -25,6 +25,14 @@ export interface TourRuntime {
   player: TourPlayer
   /** Hand the player the router's navigate (TourLayer, on mount); returns the unbind. */
   bindNavigate(fn: (to: string) => void): () => void
+  /**
+   * Is a navigation on its way: one the player asked for, or the one that follows `exitTourIfOpen`?
+   * URL sync waits for it to land, so it never writes `?tour` over a URL that is about to change.
+   */
+  isNavigating(): boolean
+  expectNavigation(): void
+  /** TourLayer: the router has landed somewhere new. */
+  navigationLanded(): void
 }
 
 export interface TourRuntimeOptions {
@@ -48,6 +56,7 @@ export function createTourRuntime(
   const voice =
     options.voice === 'silent' ? createSilentVoice(msFor) : createAudioVoice(msFor, clipUrl)
   let navigateTo: ((to: string) => void) | null = null
+  let navigating = false
   const player: TourPlayer = createTourPlayer({
     chapters,
     timeline,
@@ -57,7 +66,11 @@ export function createTourRuntime(
       setPersona: (id) => useDemo.getState().setPersona(id),
       reset: () => useDemo.getState().reset(),
     },
-    navigate: (to) => navigateTo?.(to),
+    navigate: (to) => {
+      if (!navigateTo) return
+      navigating = true
+      navigateTo(to)
+    },
     exitStory: () => useStory.getState().exit(),
     run: runActions,
     reveal: (el) =>
@@ -77,6 +90,13 @@ export function createTourRuntime(
       return () => {
         if (navigateTo === fn) navigateTo = null
       }
+    },
+    isNavigating: () => navigating,
+    expectNavigation: () => {
+      navigating = true
+    },
+    navigationLanded: () => {
+      navigating = false
     },
   }
 }
@@ -112,6 +132,18 @@ export function useTourOpen(): boolean {
 /** Point the player's navigation at a router; returns the unbind. */
 export function bindNavigate(fn: (to: string) => void): () => void {
   return tourRuntime().bindNavigate(fn)
+}
+
+/**
+ * Close the tour if it is open, for something about to take the screen with its own navigation (a
+ * story starting, Ruling 14). Call it just before that navigation: the tour resets the demo, and
+ * leaves the URL to the navigation that follows.
+ */
+export function exitTourIfOpen(): void {
+  const tour = tourRuntime()
+  if (tour.player.getState().status === 'idle') return
+  tour.expectNavigation()
+  tour.player.getState().exit()
 }
 
 /** Call inside a Play or Resume click, before playing, so the browser lets the clips play (Ruling 11). */
