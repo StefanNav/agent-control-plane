@@ -33,9 +33,13 @@ function setup(overrides: Partial<TourBarProps> = {}) {
     ...overrides,
   }
   const view = render(<TourBar {...props} />)
-  const rerender = (next: Partial<TourBarProps>) =>
-    view.rerender(<TourBar {...props} {...next} />)
-  return { calls, controls, rerender, bar: () => screen.getByRole('complementary', { name: 'Tour' }) }
+  const rerender = (next: Partial<TourBarProps>) => view.rerender(<TourBar {...props} {...next} />)
+  return {
+    calls,
+    controls,
+    rerender,
+    bar: () => screen.getByRole('complementary', { name: 'Tour' }),
+  }
 }
 
 test('is an aside named Tour that stays usable beside a dialog', () => {
@@ -67,11 +71,14 @@ test('driving, it says so and offers Resume tour, which unlocks the audio first'
   expect(calls).toEqual(['unlock', 'resume'])
 })
 
-test.each<TourStatus>(['playing', 'paused'])('%s, it does not say the visitor is driving', (status) => {
-  setup({ status: status as TourBarProps['status'] })
-  expect(screen.queryByText('Paused. You’re driving.')).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Resume tour' })).not.toBeInTheDocument()
-})
+test.each<TourStatus>(['playing', 'paused'])(
+  '%s, it does not say the visitor is driving',
+  (status) => {
+    setup({ status: status as TourBarProps['status'] })
+    expect(screen.queryByText('Paused. You’re driving.')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Resume tour' })).not.toBeInTheDocument()
+  },
+)
 
 test('one progress segment per chapter, labelled, each jumping to its chapter (Ruling 6)', async () => {
   const { calls } = setup()

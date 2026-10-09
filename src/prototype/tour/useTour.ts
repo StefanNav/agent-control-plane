@@ -64,11 +64,7 @@ export function createTourRuntime(
       revealClear(el, document.querySelector('[data-tour="bar"]'), prefersReducedMotion()),
     reducedMotion: prefersReducedMotion,
     settle: (stepKey, signal) =>
-      settleScreen(
-        stepKey,
-        routePathname(stepAt(chapters, player.getState().pos).route),
-        signal,
-      ),
+      settleScreen(stepKey, routePathname(stepAt(chapters, player.getState().pos).route), signal),
   })
   return {
     chapters,

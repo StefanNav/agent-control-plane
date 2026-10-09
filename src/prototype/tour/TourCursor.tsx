@@ -32,7 +32,12 @@ export function TourCursor({ x, y, visible, clicks, rate }: TourCursorProps) {
       style={{ transform: `translate(${x}px, ${y}px)`, transitionDuration: glideMs }}
     >
       {clicks > mountedAt ? (
-        <span key={clicks} data-tour="ring" className={styles.ring} style={{ animationDelay: glideMs }} />
+        <span
+          key={clicks}
+          data-tour="ring"
+          className={styles.ring}
+          style={{ animationDelay: glideMs }}
+        />
       ) : null}
       <svg className={styles.arrow} width="20" height="20" viewBox="0 0 20 20">
         <path d="M1.5 1.5v14.6l4.1-3.9 2.7 6.1 2.7-1.2-2.7-6h5.7Z" />

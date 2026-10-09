@@ -44,7 +44,9 @@ describe('settleScreen (Ruling 10)', () => {
   })
 
   test('resolves a frame after the step’s screen has mounted on the step’s pathname, and not before', async () => {
-    const settled = track(settleScreen(2, '/operations/agents/med-rec', new AbortController().signal))
+    const settled = track(
+      settleScreen(2, '/operations/agents/med-rec', new AbortController().signal),
+    )
     await vi.advanceTimersByTimeAsync(100)
     expect(settled.done).toBe(false)
 

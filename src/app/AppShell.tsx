@@ -62,7 +62,9 @@ export function AppShell({ shell }: { shell: ShellKind }) {
         </TourScreen>
       </main>
       {/* Room under the page so nothing ends up beneath the tour bar (R4). */}
-      {tourOpen ? <div data-tour-space aria-hidden="true" style={{ height: TOUR_BAR_HEIGHT }} /> : null}
+      {tourOpen ? (
+        <div data-tour-space aria-hidden="true" style={{ height: TOUR_BAR_HEIGHT }} />
+      ) : null}
       <StoryLayer />
       <TourLayer />
     </div>

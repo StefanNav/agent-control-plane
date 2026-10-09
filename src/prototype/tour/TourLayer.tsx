@@ -147,7 +147,10 @@ function useTourInput({ player, voice }: TourRuntime) {
         if (status === 'playing') return pause()
         voice.unlock()
         play()
-      } else if ((event.key === 'ArrowRight' || event.key === 'ArrowLeft') && (!control || inTour(target))) {
+      } else if (
+        (event.key === 'ArrowRight' || event.key === 'ArrowLeft') &&
+        (!control || inTour(target))
+      ) {
         event.preventDefault()
         if (event.key === 'ArrowRight') next()
         else prev()

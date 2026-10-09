@@ -81,7 +81,10 @@ export function revealClear(el: Element, bar: Element | null, reduced: boolean):
   if (delta === 0) return Promise.resolve()
   const page = document.scrollingElement ?? document.documentElement
   const from = window.scrollY
-  const to = Math.min(Math.max(0, page.scrollHeight - window.innerHeight), Math.max(0, from + delta))
+  const to = Math.min(
+    Math.max(0, page.scrollHeight - window.innerHeight),
+    Math.max(0, from + delta),
+  )
   if (to === from) return Promise.resolve()
   if (reduced) {
     window.scrollBy({ top: delta, behavior: 'auto' })
