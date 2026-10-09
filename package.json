@@ -14,7 +14,8 @@
     "check": "pnpm typecheck && pnpm lint && pnpm test && vite build",
     "e2e": "playwright test",
     "designs": "serve designs -l 4599",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "capture": "playwright test -c playwright.capture.config.ts"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.3.0",
