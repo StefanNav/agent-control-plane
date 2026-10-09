@@ -6,6 +6,8 @@ export type ShellKind = 'app' | 'prototype' | 'kiosk'
 /** Route `handle` shape; AppShell reads `nav` to mark the current section. */
 export interface RouteHandle {
   nav: NavSection | null
+  /** The page's name for the browser tab; `null` on the not-found route. */
+  title: string | null
 }
 
 export const NAV_ITEMS: { id: NavSection; label: string; to: string }[] = [

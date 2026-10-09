@@ -4,3 +4,8 @@
   min-height: 100vh;
   background: var(--cs-bg);
 }
+
+/* The skip link's target: focusable so it takes focus, never ringed (it isn't a control). */
+.main:focus {
+  outline: none;
+}

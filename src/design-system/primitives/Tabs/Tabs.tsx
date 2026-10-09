@@ -32,7 +32,8 @@ export function Tabs({ items, current, onSelect, ariaLabel }: TabsProps) {
             key={item.id}
             type="button"
             className={className}
-            aria-current={isCurrent ? 'page' : undefined}
+            // A button tab switches what this page shows; it is pressed, not a page of its own.
+            aria-pressed={isCurrent}
             onClick={() => onSelect?.(item.id)}
           >
             {item.label}

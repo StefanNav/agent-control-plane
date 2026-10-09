@@ -57,3 +57,14 @@ test('Exit marks the story as left for this page only; following one again clear
   store.getState().setProgress({ storyId: 'marcus', step: 1, loaded: 'baseline' })
   expect(store.getState().exited).toBe(false)
 })
+
+test('a story started from the UI asks the panel for focus once, in memory only (Phase 9 R6)', () => {
+  const storage = createMemoryStorage()
+  const store = createStoryStore(storage, stories)
+  expect(store.getState().focusPanel).toBe(false)
+  store.getState().requestPanelFocus()
+  expect(store.getState().focusPanel).toBe(true)
+  expect(createStoryStore(storage, stories).getState().focusPanel).toBe(false)
+  store.getState().panelFocused()
+  expect(store.getState().focusPanel).toBe(false)
+})

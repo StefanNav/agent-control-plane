@@ -132,6 +132,7 @@ function Revalidate({ view }: { view: ChangesView }) {
         <ul className={styles.checks} aria-label="Checks">
           {view.checks.map((c) => (
             <li key={c.id} className={styles.check}>
+              <VisuallyHidden>{c.done ? 'Done: ' : 'Not yet: '}</VisuallyHidden>
               <span className={c.done ? styles.boxDone : styles.box} aria-hidden="true">
                 {c.done ? <Icon name="check" size={10} color="var(--cs-on-acc)" /> : null}
               </span>

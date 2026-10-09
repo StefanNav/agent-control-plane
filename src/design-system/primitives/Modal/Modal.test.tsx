@@ -103,3 +103,60 @@ test('clicking the scrim does not close the dialog', async () => {
   expect(onClose).not.toHaveBeenCalled()
   expect(screen.getByRole('dialog')).toBeInTheDocument()
 })
+
+describe('a companion region (the story panel) stays reachable (Phase 9 R5)', () => {
+  function WithCompanion({ onClose = () => {} }: { onClose?: () => void }) {
+    return (
+      <>
+        <button>Elsewhere</button>
+        <div data-modal-companion>
+          <button>Next</button>
+        </div>
+        <Modal
+          open
+          onClose={onClose}
+          title="Pause Med Rec Agent?"
+          actions={
+            <>
+              <button>Cancel</button>
+              <button>Pause agent</button>
+            </>
+          }
+        >
+          {null}
+        </Modal>
+      </>
+    )
+  }
+
+  test('Tab runs from the dialog into the companion and back', async () => {
+    render(<WithCompanion />)
+    const cancel = screen.getByRole('button', { name: 'Cancel' })
+    const next = screen.getByRole('button', { name: 'Next' })
+    expect(cancel).toHaveFocus()
+    await userEvent.tab()
+    expect(screen.getByRole('button', { name: 'Pause agent' })).toHaveFocus()
+    await userEvent.tab()
+    expect(next).toHaveFocus()
+    await userEvent.tab()
+    expect(cancel).toHaveFocus()
+    await userEvent.tab({ shift: true })
+    expect(next).toHaveFocus()
+  })
+
+  test('focus in the companion stays; focus anywhere else is pulled back', () => {
+    render(<WithCompanion />)
+    screen.getByRole('button', { name: 'Next' }).focus()
+    expect(screen.getByRole('button', { name: 'Next' })).toHaveFocus()
+    screen.getByRole('button', { name: 'Elsewhere' }).focus()
+    expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus()
+  })
+
+  test('Escape from the companion still closes the dialog', async () => {
+    const onClose = vi.fn()
+    render(<WithCompanion onClose={onClose} />)
+    screen.getByRole('button', { name: 'Next' }).focus()
+    await userEvent.keyboard('{Escape}')
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+})

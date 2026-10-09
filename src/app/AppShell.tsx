@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Outlet, useMatches, useSearchParams } from 'react-router'
 import { SCENARIO_IDS, type ScenarioId } from '../data/scenarios'
+import { SkipLink } from '../layout/SkipLink/SkipLink'
 import { TopNav } from '../layout/TopNav/TopNav'
 import { personaById } from '../prototype/personas'
 import { PrototypeBar } from '../prototype/PrototypeBar/PrototypeBar'
@@ -8,6 +9,7 @@ import { StoryLayer } from '../prototype/StoryPanel/StoryLayer'
 import { useDemo } from '../store'
 import type { NavSection, RouteHandle, ShellKind } from './nav'
 import styles from './AppShell.module.css'
+import { usePageChrome } from './usePageChrome'
 
 function useCurrentSection(): NavSection | null {
   const matches = useMatches()
@@ -39,14 +41,16 @@ function useScenarioParam() {
 
 export function AppShell({ shell }: { shell: ShellKind }) {
   useScenarioParam()
+  usePageChrome()
   const current = useCurrentSection()
   const initial = personaById(useDemo((s) => s.personaId)).initial
   if (shell === 'kiosk') return <Outlet />
   return (
     <div className={styles.shell}>
+      <SkipLink />
       <PrototypeBar />
       {shell === 'app' ? <TopNav current={current} avatarInitial={initial} /> : null}
-      <main>
+      <main id="main" tabIndex={-1} className={styles.main}>
         <Outlet />
       </main>
       <StoryLayer />

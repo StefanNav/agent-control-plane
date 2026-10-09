@@ -126,3 +126,25 @@ test('headHeight sets a taller header row for two-line headers (12a)', () => {
   const head = screen.getAllByRole('row').find((row) => !row.hasAttribute('data-row-id'))!
   expect(head.style.height).toBe('74px')
 })
+
+describe('selectOnFocus: the selection follows the keyboard (Phase 9 R7)', () => {
+  test('focusing an unselected row selects it; the selected row does not re-select', () => {
+    const { onSelect } = setup({ selectOnFocus: true, selectedId: 'r1' })
+    bodyRows()[1]!.focus()
+    expect(onSelect).toHaveBeenCalledWith('r2')
+    onSelect.mockClear()
+    bodyRows()[0]!.focus()
+    expect(onSelect).not.toHaveBeenCalled()
+  })
+
+  test('without it, focus never selects', () => {
+    const { onSelect } = setup({ selectedId: 'r1' })
+    bodyRows()[1]!.focus()
+    expect(onSelect).not.toHaveBeenCalled()
+  })
+})
+
+test('an empty header can carry a name for screen readers', () => {
+  setup({ columns: [...COLUMNS, { id: 'open', header: '', hiddenHeader: 'Action', width: '80px', render: () => null }] })
+  expect(screen.getByRole('columnheader', { name: 'Action' })).toBeInTheDocument()
+})

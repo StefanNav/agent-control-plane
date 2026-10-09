@@ -28,6 +28,8 @@ export interface TableProps<Row> {
   selectedId?: string | null
   onSelect?: (id: string) => void
   onOpen?: (id: string) => void
+  /** Focusing a row (Tab or arrows) selects it, so a side panel follows the keyboard. */
+  selectOnFocus?: boolean
   /** `board` = 32px rows (monitoring boards); `default` = 44px rows. */
   density?: 'board' | 'default'
   /** Body text size. Default 13 (dense); 14 for non-dense tables. */
@@ -53,6 +55,7 @@ export function Table<Row>({
   selectedId = null,
   onSelect,
   onOpen,
+  selectOnFocus = false,
   density = 'default',
   textSize = 13,
   groups,
@@ -104,6 +107,10 @@ export function Table<Row>({
         style={minRowHeight ? { ...grid, minHeight: minRowHeight } : grid}
         onClick={() => onSelect?.(id)}
         onDoubleClick={() => onOpen?.(id)}
+        onFocus={(event) => {
+          // Focus landing in a cell's own control (a link, a button) doesn't move the selection.
+          if (selectOnFocus && event.target === event.currentTarget && !selected) onSelect?.(id)
+        }}
         onKeyDown={(event) => onRowKeyDown(event, id)}
       >
         {columns.map((column) => (

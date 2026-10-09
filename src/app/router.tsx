@@ -86,7 +86,7 @@ function childrenFor(shell: ShellKind): RouteObject[] {
     .map((route) => ({
       path: route.path,
       element: PAGES[route.path] ?? <Placeholder route={route} />,
-      handle: { nav: route.nav } satisfies RouteHandle,
+      handle: { nav: route.nav, title: route.title } satisfies RouteHandle,
       errorElement: <RouteError />,
     }))
 }
@@ -102,7 +102,7 @@ export const routes: RouteObject[] = [
         element: <Navigate to={to} replace />,
         errorElement: <RouteError />,
       })),
-      { path: '*', element: <NotFound />, handle: { nav: null } satisfies RouteHandle, errorElement: <RouteError /> },
+      { path: '*', element: <NotFound />, handle: { nav: null, title: null } satisfies RouteHandle, errorElement: <RouteError /> },
     ],
   },
   { element: <AppShell shell="prototype" />, children: childrenFor('prototype') },

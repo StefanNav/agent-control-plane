@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { useLocation } from 'react-router'
-import { Button } from '../../design-system'
+import { Button, VisuallyHidden } from '../../design-system'
 import { personaById } from '../personas'
 import { onStepRoute } from '../stories/engine'
 import { STORIES } from '../stories/index'
+import { useStory } from '../stories/progress'
 import type { Story } from '../stories/types'
 import { useActiveStory, useStoryActions } from '../stories/useStory'
 import { scrollDelta } from './scroll'
@@ -45,13 +46,34 @@ export function StoryPanel({ stories = STORIES }: { stories?: readonly Story[] }
   const { pathname } = useLocation()
   const [hidden, setHidden] = useState(false)
   const panelRef = useRef<HTMLElement>(null)
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  const toggleRef = useRef<HTMLButtonElement>(null)
+  const toggled = useRef(false)
+  const focusPanel = useStory((s) => s.focusPanel)
   const step = active ? active.story.steps[active.progress.step - 1] : undefined
   useScrollToTarget(
     step?.target,
     active ? `${active.story.id}-${active.progress.step}` : '',
     panelRef,
   )
+  // Hide and Show swap the panel, so the button that was pressed is gone: hand focus to its partner.
+  useEffect(() => {
+    if (!toggled.current) return
+    toggled.current = false
+    toggleRef.current?.focus()
+  }, [hidden])
+  // A story started from the page (landing card, Stories menu) opens the panel and takes focus to its step (R6).
+  if (focusPanel && hidden) setHidden(false)
+  useEffect(() => {
+    if (!focusPanel || !active || hidden) return
+    titleRef.current?.focus()
+    useStory.getState().panelFocused()
+  }, [focusPanel, hidden, active])
   if (!active || !step) return null
+  const toggle = (next: boolean) => {
+    toggled.current = true
+    setHidden(next)
+  }
 
   const { story, progress } = active
   const n = progress.step
@@ -66,26 +88,29 @@ export function StoryPanel({ stories = STORIES }: { stories?: readonly Story[] }
       {target ? (
         <style>{`[data-story-target="${target}"] { outline: 2px solid var(--cs-ink); outline-offset: 2px; }`}</style>
       ) : null}
+      <VisuallyHidden role="status">{`${count}: ${step.title}`}</VisuallyHidden>
       {hidden ? (
-        <aside ref={panelRef} aria-label="Story" className={styles.collapsed}>
+        <aside ref={panelRef} aria-label="Story" className={styles.collapsed} data-modal-companion>
           <span className={styles.storyTitle}>{story.title}</span>
           <span className={styles.count}>{count}</span>
-          <button type="button" className={styles.textButton} onClick={() => setHidden(false)}>
+          <button ref={toggleRef} type="button" className={styles.textButton} onClick={() => toggle(false)}>
             Show
           </button>
         </aside>
       ) : (
         <>
           <div className={styles.space} aria-hidden="true" />
-          <aside ref={panelRef} aria-label="Story" className={styles.panel}>
+          <aside ref={panelRef} aria-label="Story" className={styles.panel} data-modal-companion>
             <div className={styles.head}>
               <span className={styles.storyTitle}>{story.title}</span>
               <span className={styles.count}>{count}</span>
-              <button type="button" className={styles.textButton} onClick={() => setHidden(true)}>
+              <button ref={toggleRef} type="button" className={styles.textButton} onClick={() => toggle(true)}>
                 Hide
               </button>
             </div>
-            <h2 className={styles.title}>{step.title}</h2>
+            <h2 ref={titleRef} tabIndex={-1} className={styles.title}>
+              {step.title}
+            </h2>
             <p className={styles.body}>{step.body}</p>
             {onStepRoute(step, pathname) ? null : (
               <p className={styles.note}>

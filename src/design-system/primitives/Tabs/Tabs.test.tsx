@@ -37,3 +37,20 @@ test('unlinked tabs report selection', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'History' }))
   expect(onSelect).toHaveBeenCalledWith('history')
 })
+
+test('unlinked tabs are a switch: pressed, not a current page (Phase 9)', () => {
+  render(
+    <Tabs
+      ariaLabel="Fix one thing"
+      current="overview"
+      onSelect={() => {}}
+      items={[
+        { id: 'overview', label: 'Overview' },
+        { id: 'history', label: 'History' },
+      ]}
+    />,
+  )
+  expect(screen.getByRole('button', { name: 'Overview' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'History' })).toHaveAttribute('aria-pressed', 'false')
+  expect(screen.getByRole('button', { name: 'Overview' })).not.toHaveAttribute('aria-current')
+})
