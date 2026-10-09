@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
-import { Button, Checkbox, Field, Menu, Notice, RadioCardGroup, Select } from '../../design-system'
+import { Button, Checkbox, Field, Menu, Notice, Segmented, Select } from '../../design-system'
 import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { formatDate } from '../../lib/clock'
 import { useDemo } from '../../store'
@@ -137,14 +137,13 @@ export function ExportPage() {
           <div className={styles.section}>
             <span className={styles.label}>Format</span>
             <div className={styles.formats}>
-              <RadioCardGroup
-                name="export-format"
+              <Segmented
                 aria-label="Format"
                 value={format}
                 onChange={setFormat}
                 options={[
-                  { value: 'packet', title: 'PDF packet and CSV', description: 'For the surveyor' },
-                  { value: 'csv', title: 'CSV only', description: 'For analysis' },
+                  { value: 'packet', label: 'PDF packet and CSV', sub: 'For the surveyor' },
+                  { value: 'csv', label: 'CSV only', sub: 'For analysis' },
                 ]}
               />
             </div>

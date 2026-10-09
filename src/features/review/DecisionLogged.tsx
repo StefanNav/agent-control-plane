@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { StatusChip } from '../../components'
 import { RuleTag, Table } from '../../design-system'
 import { Split } from '../../layout/layouts'
 import { useDemo } from '../../store'
@@ -47,7 +48,12 @@ export function DecisionLogged({ agentId }: { agentId: string }) {
                 minRowHeight={56}
                 columns={[
                   { id: 'activity', header: 'Activity', width: 'minmax(0, 1fr)', render: (p) => <span className={styles.factor}>{p.activity}</span> },
-                  { id: 'level', header: 'Level', width: '190px', render: (p) => p.level },
+                  {
+                    id: 'level',
+                    header: 'Level',
+                    width: '190px',
+                    render: (p) => (p.level.startsWith('Shadow') ? <StatusChip status="shadow" label={p.level} /> : p.level),
+                  },
                   { id: 'domain', header: 'Domain', width: '220px', render: (p) => p.domain },
                   {
                     id: 'conditions',

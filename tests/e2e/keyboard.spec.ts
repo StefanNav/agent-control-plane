@@ -76,7 +76,7 @@ test('a dialog opened from the keyboard keeps focus, and gives it back (R4)', as
   await page.getByRole('menuitem', { name: /Pause this agent…/ }).focus()
   await page.keyboard.press('Enter')
   await expect(page.getByRole('dialog', { name: 'Pause Med Rec Agent?' })).toBeVisible()
-  expect(await focusedInside(page, '[role="dialog"]')).toBe(true)
+  await expect.poll(() => focusedInside(page, '[role="dialog"]')).toBe(true)
   await page.keyboard.press('Escape')
   await expect(page.getByRole('dialog')).toHaveCount(0)
   await expect(controls).toBeFocused()
@@ -85,7 +85,7 @@ test('a dialog opened from the keyboard keeps focus, and gives it back (R4)', as
 test('in a story step that opens a dialog, Tab reaches the panel and Next works (Review focus 2)', async ({ page }) => {
   await page.goto(stepHref(marcus, 6))
   await expect(page.getByRole('dialog')).toBeVisible()
-  expect(await focusedInside(page, '[role="dialog"]')).toBe(true)
+  await expect.poll(() => focusedInside(page, '[role="dialog"]')).toBe(true)
   expect(await tabUntil(page, () => focusedInside(page, 'aside[aria-label="Story"]'), 20)).toBe(true)
   await expect(panel(page).getByRole('button', { name: 'Hide' })).toBeFocused()
   const next = panel(page).getByRole('button', { name: 'Next' })

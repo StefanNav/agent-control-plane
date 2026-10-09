@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { AutonomyLadder, StatusChip } from '../../components'
-import { Button, Checkbox, DefinitionList, Field, Icon, LinkButton, Notice, Table, Textarea } from '../../design-system'
+import { Button, Checkbox, DefinitionList, Field, Icon, LinkButton, Notice, RuleTag, Table, Textarea } from '../../design-system'
 import { NotFound } from '../../layout/NotFound'
 import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { useDemo } from '../../store'
@@ -46,7 +46,25 @@ export function SignPage() {
           <section className={onboarding.card} aria-label="The privilege">
             <AutonomyLadder variant="full" steps={view.ladder.map((step, i) => ({ level: step.level, state: ladderState(i), caption: step.caption }))} />
             <div className={onboarding.table}>
-              <DefinitionList items={view.facts.map(([key, value]) => ({ key, value }))} keyWidth={160} />
+              <DefinitionList
+                items={view.facts.map(([key, value]) => ({
+                  key,
+                  value:
+                    key === 'Hard stops' && view.hardStops.length ? (
+                      <span className={styles.hardStops}>
+                        {view.hardStops.map((h) => (
+                          <span key={h.tag} className={styles.hardStop}>
+                            <RuleTag>{h.tag}</RuleTag>
+                            <span>{h.title}</span>
+                          </span>
+                        ))}
+                      </span>
+                    ) : (
+                      value
+                    ),
+                }))}
+                keyWidth={160}
+              />
             </div>
             {view.evidence ? (
               <section>

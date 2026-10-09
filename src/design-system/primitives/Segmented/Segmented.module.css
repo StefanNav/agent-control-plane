@@ -64,3 +64,7 @@
   color: var(--cs-ink);
   font-weight: 600;
 }
+
+.segment[aria-disabled] {
+  cursor: not-allowed;
+}

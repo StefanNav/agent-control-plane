@@ -10,7 +10,7 @@ test('inventory tabs count from data: 41 agents, 1 draft, 3 intakes (REQ-0081, R
   expect(selectInventory(s).counts).toEqual({ agents: 41, drafts: 1, intake: 3, retired: 6 })
   expect(selectInventory(s).agents).toHaveLength(41)
   const medRec = selectInventory(s).agents.find((r) => r.id === 'med-rec')!
-  expect(medRec).toMatchObject({ name: 'Med Rec Agent', division: 'Medications', level: 'Draft', status: 'review', label: 'Review: 3 drafts', sponsor: 'Priya', tier: 'Tier 3', review: '05 Feb' })
+  expect(medRec).toMatchObject({ name: 'Med Rec Agent', division: 'Medications', level: 'Draft', status: 'review', label: 'Review: 3 drafts held', sponsor: 'Priya', tier: 'Tier 3', review: '05 Feb' })
   expect(selectInventory(s).retired.map((r) => r.code)).toEqual(['RET-06', 'RET-05', 'RET-04', 'RET-03', 'RET-02', 'RET-01'])
 })
 
@@ -24,7 +24,7 @@ test('one record (8c): governance and operations', () => {
       ['Privileges', '1 Draft · 1 Shadow'],
       ['Next review', '05 Feb 2027'],
     ],
-    operations: { status: 'review', label: 'Review: 3 drafts', build: 'v1.3.0 · SOP v1.3.1', lastData: '09:51 · 1 min ago' },
+    operations: { status: 'review', label: 'Review: 3 drafts held', build: 'v1.3.0 · SOP v1.3.1', lastData: '09:51 · 1 min ago' },
   })
 })
 

@@ -208,10 +208,13 @@ function Signature({ view }: { view: View }) {
       <span className={styles.buttons}>
         {locked ? (
           <Button locked={locked}>{sig.button}</Button>
-        ) : (
+        ) : reason.trim() && accepted ? (
           <Button variant="primary" onClick={() => run(sign(view.id, { reason, accepted }))}>
             {sig.button}
           </Button>
+        ) : (
+          // Gating (handoff "Interactions"): blocked until there is a reason and the box is ticked, as on 3c.
+          <Button variant="blocked">{sig.button}</Button>
         )}
         {sig.mode === 'sign' ? <Button onClick={() => setReturning(true)}>Request changes</Button> : <Button locked={lockReason('signPrivilege', state.personaId)}>Request changes</Button>}
         <Button

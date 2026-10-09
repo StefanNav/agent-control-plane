@@ -1,6 +1,6 @@
 import { buildScenario } from '../../data/scenarios'
 import { createSeed } from '../../data/seed'
-import { monitorFreshness, selectAgentOverview, selectAgentPanel, selectAgentRows, selectDivisionSummaries, severityRank } from './selectors'
+import { monitorFreshness, recordLabel, selectAgentOverview, selectAgentPanel, selectAgentRows, selectDivisionSummaries, severityRank } from './selectors'
 
 const s = createSeed()
 
@@ -186,4 +186,12 @@ test('I7 (review): the Activities tab reads the privilege in force, not a closed
   const { currentPrivilege } = await import('./selectors')
   const s = buildScenario('review-decided')
   expect(currentPrivilege(s, 'med-rec-admission')).toMatchObject({ code: 'PRV-0142', version: 2, state: 'active' })
+})
+
+test('the record reads a judgment as 4c and 8c draw it: drafts are held, a pause shows in Level', () => {
+  expect(recordLabel('Review: 3 drafts')).toBe('Review: 3 drafts held')
+  expect(recordLabel('Review: 1 draft')).toBe('Review: 1 draft held')
+  expect(recordLabel('Wrong-patient draft · paused')).toBe('Wrong-patient draft')
+  expect(recordLabel('Edit rate rising')).toBe('Edit rate rising')
+  expect(recordLabel('Review: final set')).toBe('Review: final set')
 })

@@ -572,7 +572,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 
 ## Frame tracker
 
-Tick **Built** when the screen exists at its route; tick **QA'd** after the side-by-side visual check at a checkpoint.
+Tick **Built** when the screen exists at its route; tick **QA'd** after the side-by-side visual check at a checkpoint. Phase 9 re-swept all 54 frames side by side on 2026-10-09 (`QA=1 pnpm capture tests/capture/qa.spec.ts`) and fixed the drift it found (see the Phase 9 handoff notes).
 
 | Frame | Name | Route | Phase | Built | QA'd |
 |---|---|---|---|---|---|
