@@ -221,6 +221,21 @@ export const LADDER_AGENT: LadderStep[] = [
   { level: 'autonomous', state: 'locked', caption: 'Locked', evidence: 'Administrative tasks only' },
 ]
 
+/** 14a's promoted branch and 15a's step-down, for the wide ladder (Phase 7). */
+export const LADDER_PROMOTION: LadderStep[] = [
+  { level: 'shadow', state: 'passed' },
+  { level: 'draft', state: 'current' },
+  { level: 'supervised', state: 'proposed' },
+  { level: 'autonomous', state: 'locked' },
+]
+
+export const LADDER_STEPPED: LadderStep[] = [
+  { level: 'shadow', state: 'current' },
+  { level: 'draft', state: 'held' },
+  { level: 'supervised', state: 'available' },
+  { level: 'autonomous', state: 'locked' },
+]
+
 export const GRID: SystemsVerbsRow[] = [
   { system: 'Epic', detail: 'Encounter, home med list, allergies', cells: { read: 'granted', draft: 'granted', write: 'none', submit: 'none', sign: 'locked', order: 'locked' } },
   { system: 'Pharmacy worklist', detail: '7 West and 8 East queues', cells: { read: 'granted', draft: 'granted', write: 'changed', submit: 'none', sign: 'locked', order: 'locked' } },

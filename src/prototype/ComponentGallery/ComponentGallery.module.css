@@ -51,6 +51,12 @@
   gap: 12px;
 }
 
+/* 14a's wide ladder is 360 px. */
+.wideLadder {
+  display: block;
+  width: 360px;
+}
+
 .iconItem {
   display: inline-flex;
   align-items: center;

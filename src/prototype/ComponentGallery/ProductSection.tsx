@@ -3,6 +3,7 @@ import {
   ActionTrace,
   AgentTable,
   AutonomyLadder,
+  LadderLegend,
   ExceptionList,
   HardStopCard,
   InstructionCard,
@@ -25,6 +26,8 @@ import {
   GRID,
   INBOX,
   LADDER_AGENT,
+  LADDER_PROMOTION,
+  LADDER_STEPPED,
   LADDER_SIGNING,
   PRIVILEGES,
   TRACE_STEPS,
@@ -108,6 +111,15 @@ export function ProductSection() {
           <AutonomyLadder variant="compact" steps={LADDER_AGENT} />
           <AutonomyLadder variant="compact" size="panel" steps={LADDER_SIGNING} />
           <AutonomyLadder variant="compact" size="panel" steps={LADDER_AGENT} />
+        </div>
+        <div className={styles.row}>
+          <span className={styles.wideLadder}>
+            <AutonomyLadder variant="compact" size="wide" labels steps={LADDER_PROMOTION} />
+          </span>
+          <span className={styles.wideLadder}>
+            <AutonomyLadder variant="compact" size="wide" labels steps={LADDER_STEPPED} />
+          </span>
+          <LadderLegend />
         </div>
       </Sub>
 
