@@ -65,6 +65,29 @@ export const actions: AgentAction[] = [
   recent('ACT-88171', '2026-12-08T09:02:17', 'med-rec', 'Draft med list · enc 4403', 'Ana R., PharmD · 7 West', 'Edited 1 line, signed', 'HS-04 v2'),
   recent('ACT-88236', '2026-12-08T09:41:07', 'discharge-meds', 'Draft med list · enc 5120', 'Ana R., PharmD · 7 West', 'Signed as is'),
   recent('ACT-88231', '2026-12-08T09:36:52', 'discharge-meds', 'Draft med list · enc 5117', 'Ana R., PharmD · 7 West', 'Edited'),
+  // 10a: Ana's draft for this admission (DR-88412), drafted at 09:32 with the read, the checks and her edit.
+  {
+    id: 'act-88209',
+    code: 'ACT-88209',
+    at: '2026-12-08T09:32:00',
+    title: 'Draft med list · enc 4417',
+    agentId: 'med-rec',
+    agentVersion: 'v1.3.0',
+    sop: 'v1.3.1',
+    actingFor: 'Ana R., PharmD · 7 West',
+    reviewerOutcome: 'Edited 1 line',
+    context: { privilege: 'PRV-0142 v3 · Draft', checks: 3, conditions: ['C1 · pharmacist signs', 'C3 · dialysis excluded'] },
+    steps: [
+      { at: '2026-12-08T09:31:12.406', kind: 'input', title: 'Admission · enc 4417 · 7 West', meta: 'Epic ADT' },
+      { at: '2026-12-08T09:31:14.820', kind: 'tool', title: 'epic.medlist.read', detail: 'Epic home med list · 2 medications' },
+      { at: '2026-12-08T09:31:16.233', kind: 'tool', title: 'fills.outside.read', detail: 'Outside pharmacy fills · 3 medications' },
+      { at: '2026-12-08T09:31:18.517', kind: 'tool', title: 'epic.notes.read', detail: 'Admission interview note · 1 medication' },
+      { at: '2026-12-08T09:31:52.104', kind: 'policyPassed', title: 'Patient matches the encounter', ruleTag: 'HS-11 v1' },
+      { at: '2026-12-08T09:31:58.611', kind: 'policyPassed', title: 'No dose changed', ruleTag: 'HS-04 v2' },
+      { at: '2026-12-08T09:32:00.240', kind: 'output', title: 'Draft med list · 6 lines', detail: '1 possible duplicate marked for the pharmacist' },
+      { at: '2026-12-08T09:50:00.000', kind: 'reviewer', title: 'Edited by Ana R. · metoprolol frequency', detail: 'every 12 h + BID → BID' },
+    ],
+  },
   // 3b's case 4105 in shadow: the draft compared with Ana R.'s final list (28 Oct).
   {
     id: 'act-61840',

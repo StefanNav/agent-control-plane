@@ -2,12 +2,17 @@ import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
-import { PERSONA_IDS, type Condition, type DemoState, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
+import { PERSONA_IDS, type Condition, type DemoState, type FlagReason, type ReviewChange, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
-import { applyPause, applyResume, nextArchiveCode, nextIncidentCode, nextVersion } from './mutations'
+import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
 import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, signMode, testResult, type SystemsChange } from './onboarding'
 import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems, shadowProgress } from './onboardingRules'
+import { applyAccept, applyHardStopApproval, applyReplay, applySystemsSignOff, pendingChecks } from './changes'
+import { applyFlag, applyFlagAnswer, applySeenFix, type FlagAnswer } from './feedback'
+import { applyBlockCaller, applyDismissCaller, applyMessageOwner } from './gateway'
+import { applyDeclineReviewChange, applyProposeReviewChange, applyShareFinding, applySignReviewChange, unitById } from './reviewers'
 import { can, lockReason } from './permissions'
+import { applyAddRole, applyCreateDivision, applyDivisionSettings, applyInvite, applyRemoveRole, applyReturnToShadow, diffDivision, divisionSlug, ROLE_LABEL, roleDivision, type DivisionPatch, type NewDivisionInput, type RoleInput } from './settings'
 import { runAction, type ActionResult } from './runAction'
 import { safeStorage } from './storage'
 
@@ -72,6 +77,44 @@ export interface DemoActions {
   closeIncident: (incidentId: string, reason: string) => ActionResult
   /** Build a records export for a survey or audit; it is logged (7d). */
   buildExport: (input: { agentIds: string[]; from: string; to: string; format: 'packet' | 'csv'; masked: boolean }) => ActionResult
+  /** Who answers for a division, what a lapsed review does, who unanswered items reach (8a). Program lead only. */
+  updateDivisionSettings: (divisionId: string, patch: DivisionPatch) => ActionResult
+  /** A new division, or a split of `from` with the agents that move (8a, composed). Program lead only. */
+  createDivision: (input: NewDivisionInput, from?: string) => ActionResult
+  /** Give a person a role in a division (8b "Add a role"). Program lead only. */
+  addRole: (personId: string, input: RoleInput) => ActionResult
+  /** Take a role away (composed "Remove"); never the last program lead or a division's named owner or sponsor. */
+  removeRole: (personId: string, input: RoleInput) => ActionResult
+  /** Add a person with one role (8b "Invite"). Program lead only. */
+  invitePerson: (input: { name: string; title: string } & RoleInput) => ActionResult
+  /** Flag a draft from Epic in one action (10a); it reaches the agent's owner. Frontline pharmacists only. */
+  flagDraft: (draftId: string, input: { reason: FlagReason; note?: string }) => ActionResult
+  /** Answer a pharmacist's flag (R14): a fix in progress, not a defect, or a reply. */
+  answerFlag: (exceptionId: string, answer: FlagAnswer) => ActionResult
+  /** Replay the last 30 days on a held build (9a); it finishes at once. Agent owner. */
+  startReplay: (changeId: string) => ActionResult
+  /** Sign off a held build's systems change (9a). Agent owner. */
+  signOffSystems: (changeId: string) => ActionResult
+  /** Approve a held build's new hard-stop version (9a). Clinical sponsor. */
+  approveChangeHardStop: (changeId: string) => ActionResult
+  /** Accept a held build once its checks are done: it starts serving (9a). Agent owner. */
+  acceptChange: (changeId: string) => ActionResult
+  /** Dismiss "Your flag led to a fix" (10b). The flag's own pharmacist only. */
+  dismissFixNotice: (flagId: string) => ActionResult
+  /** Block an unregistered caller at the gateway, with a reason (9b). Program lead. */
+  blockCaller: (callerId: string, reason: string) => ActionResult
+  /** Say an unregistered caller isn't an agent, with a reason (9b). Program lead. */
+  dismissCaller: (callerId: string, reason: string) => ActionResult
+  /** Message a caller's likely owner; logged on the caller (9b). Program lead. */
+  messageCallerOwner: (callerId: string, text: string) => ActionResult
+  /** Send a unit's sampling or review-level change to the sponsor for sign-off (11b). */
+  proposeReviewChange: (unitId: string, option: ReviewChange['option']) => ActionResult
+  /** The sponsor signs it; it runs 14 days (11b). */
+  signReviewChange: (id: string) => ActionResult
+  /** The sponsor declines it, with a reason. */
+  declineReviewChange: (id: string, reason: string) => ActionResult
+  /** "Share with Priya" (11a): an FYI in the log. */
+  shareReviewerFinding: (unitId: string) => ActionResult
   /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
   startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
   /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
@@ -182,6 +225,67 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
           if (exception.state === 'resolved' || exception.state === 'dismissed') return { error: { ok: false, reason: 'Already resolved' } as ActionResult }
           return { exception }
         }
+        /** The sponsor signs (reason null) or declines a unit's review change, once (11b). */
+        const reviewDecision = (id: string, reason: string | null): ActionResult => {
+          const change = get().reviewChanges.find((c) => c.id === id)
+          const unit = change ? unitById(change.unitId) : undefined
+          if (!change || !unit) return { ok: false, reason: 'Not found' }
+          if (change.state !== 'waiting') return { ok: false, reason: 'Already decided' }
+          const why = reason?.trim() ?? ''
+          if (reason !== null && !why) return { ok: false, reason: 'Say why' }
+          return act({
+            action: 'signReviewChange',
+            ctx: { divisionId: unit.divisionId },
+            audit: { action: reason === null ? 'Signed review change' : 'Declined review change', target: unit.name, ...(why ? { reason: why } : {}) },
+            mutate: (draft) => {
+              if (reason === null) applySignReviewChange(draft, id, draft.personaId, draft.now)
+              else applyDeclineReviewChange(draft, id, why, draft.personaId, draft.now)
+            },
+          })
+        }
+        /** Block a caller or dismiss it (9b): once, with a reason, by the program lead. */
+        const decideCaller = (
+          callerId: string,
+          reason: string,
+          audit: string,
+          apply: (s: DemoState, id: string, reason: string, by: string, at: string) => DemoState,
+        ): ActionResult => {
+          const caller = get().callers.find((c) => c.id === callerId)
+          if (!caller) return { ok: false, reason: 'Not found' }
+          if (caller.decision) return { ok: false, reason: 'Already decided' }
+          const why = reason.trim()
+          if (!why) return { ok: false, reason: 'Give a reason. Every choice is logged with a reason.' }
+          return act({
+            action: 'decideCaller',
+            audit: { action: audit, target: caller.name, reason: why },
+            mutate: (draft) => {
+              apply(draft, callerId, why, draft.personaId, draft.now)
+            },
+          })
+        }
+        /** One of a held build's checks (9a): its person, once, while the build is held. */
+        const changeStep = (
+          changeId: string,
+          check: 'replay' | 'systems' | 'hardStop',
+          action: 'revalidateChange' | 'approveTools',
+          audit: string,
+          apply: (s: DemoState, id: string, by: string, at: string) => DemoState,
+        ): ActionResult => {
+          const s = get()
+          const change = s.changes.find((c) => c.id === changeId)
+          const agent = s.agents.find((a) => a.id === change?.agentId)
+          if (!change || !agent) return { ok: false, reason: 'Not found' }
+          if (change.status !== 'held') return { ok: false, reason: `${change.to.build} is no longer held` }
+          if (change.checks[check]) return { ok: false, reason: 'Already done' }
+          return act({
+            action,
+            ctx: { agentId: agent.id },
+            audit: { action: audit, target: `${agent.code} ${change.to.build}` },
+            mutate: (draft) => {
+              apply(draft, changeId, draft.personaId, draft.now)
+            },
+          })
+        }
         return {
           ...createSeed(),
           setPersona: (id) => set({ personaId: id }),
@@ -276,28 +380,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               ctx: { agentId: agent.id },
               audit: { action: 'Returned to Shadow', target: agent.code, reason: `${activity.name} · ${why}` },
               mutate: (draft) => {
-                const target = draft.activities.find((a) => a.id === activityId)!
-                const was = target.level
-                target.level = 'shadow'
-                const owner = draft.agents.find((a) => a.id === agent.id)!
-                const main = draft.activities.filter((a) => a.agentId === agent.id).find((a) => a.level !== 'shadow')
-                owner.level = main?.level ?? 'shadow'
-                const current = draft.privileges.find((p) => p.activityId === activityId && p.state !== 'closed')
-                if (!current) return
-                current.state = 'closed'
-                const version = nextVersion(draft, current.code)
-                draft.privileges.push({
-                  ...current,
-                  id: `${current.code.toLowerCase()}-v${version}`,
-                  version,
-                  level: 'shadow',
-                  proposedLevel: was,
-                  state: 'awaiting',
-                  grantedBy: undefined,
-                  grantedAt: undefined,
-                  movedBy: draft.personaId,
-                  trigger: why,
-                })
+                applyReturnToShadow(draft, activityId, draft.personaId, why)
               },
             })
           },
@@ -566,6 +649,212 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Built export', target: code, reason: `${input.format === 'packet' ? 'PDF packet and CSV' : 'CSV'}${input.masked ? ' · identifiers masked' : ''}` },
               mutate: (draft) => {
                 draft.exports.push({ id: code.toLowerCase(), code, ...input, by: draft.personaId, at: draft.now })
+              },
+            })
+          },
+          updateDivisionSettings: (divisionId, patch) => {
+            const s = get()
+            const division = s.divisions.find((d) => d.id === divisionId)
+            if (!division) return { ok: false, reason: 'Division not found' }
+            const changes = diffDivision(division, patch)
+            if (!changes.length) return { ok: false, reason: 'Nothing to save' }
+            const known = (id?: string) => id === undefined || s.people.some((p) => p.id === id)
+            if (!known(patch.ownerId) || !known(patch.sponsorId) || !known(patch.escalation?.first) || !known(patch.escalation?.then)) return { ok: false, reason: 'Choose someone from People and roles' }
+            if (patch.graceDays !== undefined && patch.graceDays < 1) return { ok: false, reason: 'The grace period is at least a day' }
+            return act({
+              action: 'manageDivisions',
+              ctx: { divisionId },
+              audit: { action: 'Changed division settings', target: division.name, reason: changes.join(' · ') },
+              mutate: (draft) => {
+                applyDivisionSettings(draft, divisionId, patch, draft.personaId, draft.now)
+              },
+            })
+          },
+          createDivision: (input, from) => {
+            const s = get()
+            const name = input.name.trim()
+            const parent = from ? s.divisions.find((d) => d.id === from) : undefined
+            if (from && !parent) return { ok: false, reason: 'Division not found' }
+            if (!name) return { ok: false, reason: 'Name the division' }
+            if (s.divisions.some((d) => d.name.toLowerCase() === name.toLowerCase() || d.id === divisionSlug(name))) return { ok: false, reason: 'A division with that name exists' }
+            if (!s.people.some((p) => p.id === input.ownerId)) return { ok: false, reason: 'Choose an owner' }
+            if (!s.people.some((p) => p.id === input.sponsorId)) return { ok: false, reason: 'Choose a clinical sponsor' }
+            if (parent && !input.agentIds.length) return { ok: false, reason: 'Choose the agents to move' }
+            if (input.agentIds.some((id) => s.agents.find((a) => a.id === id)?.divisionId !== parent?.id)) return { ok: false, reason: 'Only agents in this division can move' }
+            return act({
+              action: 'manageDivisions',
+              audit: { action: 'Created division', target: name, ...(parent ? { reason: `Split from ${parent.name} · ${input.agentIds.length} ${input.agentIds.length === 1 ? 'agent' : 'agents'}` } : {}) },
+              mutate: (draft) => {
+                applyCreateDivision(draft, { ...input, name }, from ?? null, draft.personaId, draft.now)
+              },
+            })
+          },
+          addRole: (personId, input) => {
+            const s = get()
+            const person = s.people.find((p) => p.id === personId)
+            if (!person) return { ok: false, reason: 'Person not found' }
+            const divisionId = roleDivision(input)
+            const division = s.divisions.find((d) => d.id === divisionId)
+            if (divisionId !== 'all' && !division) return { ok: false, reason: 'Choose a division' }
+            const where = division?.name ?? 'all divisions'
+            if (s.roles.some((r) => r.personId === personId && r.divisionId === divisionId && r.role === input.role)) return { ok: false, reason: `${person.name} already has that role in ${where}` }
+            return act({
+              action: 'manageDivisions',
+              audit: { action: 'Added role', target: person.name, reason: `${ROLE_LABEL[input.role]} · ${division?.name ?? 'All divisions'}` },
+              mutate: (draft) => {
+                applyAddRole(draft, personId, input, draft.now)
+              },
+            })
+          },
+          removeRole: (personId, input) => {
+            const s = get()
+            const person = s.people.find((p) => p.id === personId)
+            if (!person) return { ok: false, reason: 'Person not found' }
+            const divisionId = roleDivision(input)
+            if (!s.roles.some((r) => r.personId === personId && r.divisionId === divisionId && r.role === input.role)) return { ok: false, reason: `${person.name} doesn’t have that role` }
+            if (input.role === 'programLead' && s.roles.filter((r) => r.role === 'programLead').length === 1) return { ok: false, reason: 'Lakeshore needs a program lead' }
+            const division = s.divisions.find((d) => d.id === divisionId)
+            const possessive = (name: string) => (name.endsWith('s') ? `${name}’` : `${name}’s`)
+            if (division && input.role === 'owner' && division.ownerId === personId)
+              return { ok: false, reason: `${person.name} is ${possessive(division.name)} division owner. Choose another owner in Division settings first.` }
+            if (division && input.role === 'techOwner') {
+              // Review fix I2: the named technical owner keeps access to their agents, so the role can't go first.
+              const named = s.agents.filter((a) => a.divisionId === division.id && a.techOwnerId === personId && a.lifecycle !== 'retired').length
+              if (named) return { ok: false, reason: `${person.name} is technical owner of ${named} ${division.name} ${named === 1 ? 'agent' : 'agents'}. Name another technical owner for them first.` }
+            }
+            if (division && input.role === 'sponsor' && division.sponsorId === personId)
+              return { ok: false, reason: `${person.name} is ${possessive(division.name)} clinical sponsor. Choose another sponsor in Division settings first.` }
+            return act({
+              action: 'manageDivisions',
+              audit: { action: 'Removed role', target: person.name, reason: `${ROLE_LABEL[input.role]} · ${division?.name ?? 'All divisions'}` },
+              mutate: (draft) => {
+                applyRemoveRole(draft, personId, input)
+              },
+            })
+          },
+          invitePerson: (input) => {
+            const s = get()
+            const name = input.name.trim()
+            if (!name) return { ok: false, reason: 'Name the person' }
+            const divisionId = roleDivision(input)
+            if (divisionId !== 'all' && !s.divisions.some((d) => d.id === divisionId)) return { ok: false, reason: 'Choose a division' }
+            return act({
+              action: 'manageDivisions',
+              audit: { action: 'Invited', target: name, reason: `${ROLE_LABEL[input.role]} · ${s.divisions.find((d) => d.id === divisionId)?.name ?? 'All divisions'}` },
+              mutate: (draft) => {
+                applyInvite(draft, input, draft.now)
+              },
+            })
+          },
+          flagDraft: (draftId, input) => {
+            const s = get()
+            const draft = s.epicDrafts.find((d) => d.id === draftId)
+            if (!draft) return { ok: false, reason: 'Draft not found' }
+            if (s.flags.some((f) => f.draftId === draftId && f.byId === s.personaId)) return { ok: false, reason: 'You already flagged this draft' }
+            const code = `FB-${String(Math.max(0, ...s.flags.map((f) => Number(f.code.slice(3)) || 0)) + 1).padStart(4, '0')}`
+            return act({
+              action: 'flagDraft',
+              ctx: { agentId: draft.agentId },
+              audit: { action: 'Flagged from Epic', target: code, ...(input.note?.trim() ? { reason: input.note.trim() } : {}) },
+              mutate: (draft) => {
+                applyFlag(draft, { draftId, ...input }, draft.personaId, draft.now)
+              },
+            })
+          },
+          answerFlag: (exceptionId, answer) => {
+            const { exception, error } = openException(exceptionId)
+            if (!exception) return error
+            const flag = get().flags.find((f) => f.exceptionId === exceptionId)
+            if (!flag) return { ok: false, reason: 'Not a flag' }
+            const text = answer.text.trim()
+            if (!text) return { ok: false, reason: answer.kind === 'notDefect' ? 'Say why it isn’t a defect' : `Write a note for ${flag.byName}` }
+            return act({
+              action: 'resolveException',
+              ctx: { agentId: exception.agentId },
+              audit: { action: answer.kind === 'reply' ? 'Replied to flag' : answer.kind === 'inProgress' ? 'Working on a fix' : 'Not a defect', target: flag.code, reason: text },
+              mutate: (draft) => {
+                applyFlagAnswer(draft, exceptionId, answer, draft.personaId, draft.now)
+              },
+            })
+          },
+          startReplay: (changeId) => changeStep(changeId, 'replay', 'revalidateChange', 'Replayed build', applyReplay),
+          signOffSystems: (changeId) => changeStep(changeId, 'systems', 'revalidateChange', 'Signed off systems', applySystemsSignOff),
+          approveChangeHardStop: (changeId) => changeStep(changeId, 'hardStop', 'approveTools', 'Approved hard stop', applyHardStopApproval),
+          acceptChange: (changeId) => {
+            const s = get()
+            const change = s.changes.find((c) => c.id === changeId)
+            const agent = s.agents.find((a) => a.id === change?.agentId)
+            if (!change || !agent) return { ok: false, reason: 'Not found' }
+            if (change.status !== 'held') return { ok: false, reason: `${change.to.build} is no longer held` }
+            const pending = pendingChecks(s, change)
+            if (pending.length) return { ok: false, reason: `Waiting for: ${pending.join(', ')}` }
+            return act({
+              action: 'revalidateChange',
+              ctx: { agentId: agent.id },
+              audit: { action: 'Accepted build', target: `${agent.code} ${change.to.build}` },
+              mutate: (draft) => {
+                applyAccept(draft, changeId, draft.personaId, draft.now)
+              },
+            })
+          },
+          dismissFixNotice: (flagId) => {
+            const s = get()
+            const flag = s.flags.find((f) => f.id === flagId)
+            if (!flag) return { ok: false, reason: 'Not found' }
+            if (flag.byId !== s.personaId) return { ok: false, reason: 'Only the pharmacist who flagged it can dismiss this' }
+            if (flag.status !== 'fixed' || flag.seenFixAt) return { ok: false, reason: 'Nothing to dismiss' }
+            return act({
+              action: 'flagDraft',
+              ctx: { agentId: flag.agentId },
+              audit: { action: 'Dismissed fix notice', target: flag.code },
+              mutate: (draft) => {
+                applySeenFix(draft, flagId, draft.now)
+              },
+            })
+          },
+          blockCaller: (callerId, reason) => decideCaller(callerId, reason, 'Blocked at the gateway', applyBlockCaller),
+          dismissCaller: (callerId, reason) => decideCaller(callerId, reason, 'Not an agent', applyDismissCaller),
+          messageCallerOwner: (callerId, text) => {
+            const s = get()
+            const caller = s.callers.find((c) => c.id === callerId)
+            if (!caller) return { ok: false, reason: 'Not found' }
+            if (!caller.likelyOwner) return { ok: false, reason: 'No owner to message' }
+            const body = text.trim()
+            if (!body) return { ok: false, reason: 'Write the message' }
+            return act({
+              action: 'decideCaller',
+              audit: { action: 'Messaged owner', target: caller.name, reason: `${caller.likelyOwner.name} · ${body}` },
+              mutate: (draft) => {
+                applyMessageOwner(draft, callerId, body, draft.personaId, draft.now)
+              },
+            })
+          },
+          proposeReviewChange: (unitId, option) => {
+            const s = get()
+            const unit = unitById(unitId)
+            if (!unit) return { ok: false, reason: 'Not found' }
+            if (s.reviewChanges.some((c) => c.unitId === unitId && c.state === 'waiting'))
+              return { ok: false, reason: `A change for ${unit.name} is waiting for ${s.people.find((p) => p.id === s.divisions.find((d) => d.id === unit.divisionId)?.sponsorId)?.name ?? 'the sponsor'}` }
+            return act({
+              action: 'proposeReviewChange',
+              ctx: { divisionId: unit.divisionId },
+              audit: { action: 'Proposed review change', target: unit.name, reason: option },
+              mutate: (draft) => {
+                applyProposeReviewChange(draft, unitId, option, draft.personaId, draft.now)
+              },
+            })
+          },
+          signReviewChange: (id) => reviewDecision(id, null),
+          declineReviewChange: (id, reason) => reviewDecision(id, reason),
+          shareReviewerFinding: (unitId) => {
+            const unit = unitById(unitId)
+            if (!unit) return { ok: false, reason: 'Not found' }
+            return act({
+              action: 'proposeReviewChange',
+              ctx: { divisionId: unit.divisionId },
+              audit: { action: 'Shared finding', target: unit.name },
+              mutate: (draft) => {
+                applyShareFinding(draft, unitId, draft.personaId, draft.now)
               },
             })
           },

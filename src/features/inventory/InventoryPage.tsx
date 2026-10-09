@@ -78,17 +78,22 @@ export function InventoryPage() {
   const mineOnly = draftFilter === 'mine' || (draftFilter === null && mine.length > 0)
   const setMineOnly = (on: boolean) => setDraftFilter(on ? 'mine' : 'all')
   const programLead = personName(state, state.roles.find((r) => r.role === 'programLead')?.personId)
+  const unregistered = state.callers.filter((c) => c.group === 'unregistered' && c.decision?.kind !== 'onboarding').length
   return (
     <>
       <PageHeader
         breadcrumb="Inventory"
         title="Inventory"
         actions={
-          tab === 'drafts' ? (
-            <LinkButton to="/inventory?tab=intake">Approved intake · {counts.intake}</LinkButton>
-          ) : (
-            <LinkButton to="/reports/export">Export inventory</LinkButton>
-          )
+          <>
+            {/* 9b (R16): callers seen at the gateway without a registry record. */}
+            {unregistered ? <LinkButton to="/inventory/unregistered">Seen at the gateway · {unregistered}</LinkButton> : null}
+            {tab === 'drafts' ? (
+              <LinkButton to="/inventory?tab=intake">Approved intake · {counts.intake}</LinkButton>
+            ) : (
+              <LinkButton to="/reports/export">Export inventory</LinkButton>
+            )}
+          </>
         }
         tabs={
           <Tabs

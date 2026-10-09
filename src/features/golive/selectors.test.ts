@@ -1,7 +1,8 @@
+import { applyDivisionSettings } from '../../store/settings'
 import { buildScenario } from '../../data/scenarios'
 import { createSeed } from '../../data/seed'
 import { shadowProgress } from '../../store/onboardingRules'
-import { selectCase, selectScorecard } from './selectors'
+import { selectCase, selectMyPrivileges, selectScorecard } from './selectors'
 
 test('3a: the shadow scorecard on day 21 of 21', () => {
   const s = buildScenario('shadow-day-21')
@@ -58,4 +59,22 @@ test('3c: the signature for PRV-0142 v3 on 06 Nov', async () => {
   expect(selectSignature(createSeed(), 'prv-0142')!.mode).toBe('signed')
   expect(selectSignature(createSeed(), 'prv-0098')!.mode).toBe('renew')
   expect(selectSignature(createSeed(), 'nope')).toBeNull()
+})
+
+describe('review fix I1: the 3d notice says what the division’s policy does', () => {
+  const text = (patch: Parameters<typeof applyDivisionSettings>[2]) =>
+    selectMyPrivileges(applyDivisionSettings(createSeed(), 'medications', patch, 'dana', '2026-12-08T09:52:00'), 'priya', 'all').overdue?.text
+
+  test('raise an exception only', () => {
+    expect(text({ lapsePolicy: 'nothing' })).toBe('Duplicate Rx Agent passed its review date on 01 Dec. Flag duplicate therapy keeps its level until someone acts. Marcus and Dana are copied.')
+  })
+  test('pause the activity, after it acted', () => {
+    expect(text({ lapsePolicy: 'pause' })).toBe('Duplicate Rx Agent passed its review date on 01 Dec. Flag duplicate therapy was paused on 08 Dec; pending work went to pharmacists. Marcus and Dana are copied.')
+  })
+  test('back to Shadow at once, after it acted', () => {
+    expect(text({ lapsePolicy: 'shadowNow' })).toBe('Duplicate Rx Agent passed its review date on 01 Dec. Flag duplicate therapy returned to Shadow on 08 Dec; re-sign it to bring it back. Marcus and Dana are copied.')
+  })
+  test('a shorter grace period names its day and time', () => {
+    expect(text({ graceDays: 7 })).toBe('Duplicate Rx Agent passed its review date on 01 Dec. If you don’t review it by 08 Dec 17:00, flag duplicate therapy returns to Shadow and its flags stop reaching pharmacists. Marcus and Dana are copied.')
+  })
 })

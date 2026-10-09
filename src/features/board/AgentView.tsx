@@ -11,13 +11,15 @@ import { PauseFlow } from '../controls/PauseFlow'
 import { ResumePanel } from '../controls/ResumePanel'
 import { RetireDialog } from '../inventory/RetireDialog'
 import type { PauseScope } from '../controls/selectors'
+import { ChangesTab } from '../changes/ChangesTab'
+import { selectChanges } from '../changes/selectors'
 import { ScorecardTab } from '../golive/ScorecardTab'
 import { ActionsTab, ActivitiesTab, HistoryTab, PrivilegesTab } from './agent-tabs/Tabs'
 import { Overview } from './agent-tabs/Overview'
 import { DraftAgentView } from './DraftAgentView'
 import { selectAgentOverview } from './selectors'
 
-const TABS = ['overview', 'activities', 'scorecard', 'actions', 'privileges', 'history'] as const
+const TABS = ['overview', 'activities', 'scorecard', 'actions', 'privileges', 'changes', 'history'] as const
 type Tab = (typeof TABS)[number]
 const LABELS: Record<Tab, string> = {
   overview: 'Overview',
@@ -25,6 +27,7 @@ const LABELS: Record<Tab, string> = {
   scorecard: 'Scorecard',
   actions: 'Actions',
   privileges: 'Privileges',
+  changes: 'Changes',
   history: 'History',
 }
 
@@ -45,7 +48,11 @@ export function AgentView() {
   if (draft) return <DraftAgentView agentId={draft.id} />
   if (!view) return <NotFound />
 
-  const tab = (TABS.find((t) => t === params.get('tab')) ?? 'overview') as Tab
+  // 9a: the Changes tab exists only for an agent with a change record (R11).
+  const changes = selectChanges(state, agentId, state.personaId)
+  const tabs = TABS.filter((t) => t !== 'changes' || changes)
+  const tab = (tabs.find((t) => t === params.get('tab')) ?? 'overview') as Tab
+  const heldHeader = changes?.header ?? null
   const control = parseControl(params.get('control'))
   const agent = state.agents.find((a) => a.id === agentId)
   /** Paused or retired: the header offers only "Open in Inventory" (6d). */
@@ -69,6 +76,7 @@ export function AgentView() {
     scorecard: <ScorecardTab agentId={agentId} />,
     actions: <ActionsTab agentId={agentId} />,
     privileges: <PrivilegesTab agentId={agentId} />,
+    changes: <ChangesTab agentId={agentId} />,
     history: <HistoryTab agentId={agentId} />,
   }
 
@@ -77,12 +85,13 @@ export function AgentView() {
       <PageHeader
         breadcrumb={`Operations / ${view.division} / ${view.name}`}
         title={view.name}
-        status={view.levelLine}
-        idLine={view.idLine}
+        status={heldHeader?.status ?? view.levelLine}
+        idLine={heldHeader?.idLine ?? view.idLine}
         chips={
-          view.judgment.status === 'normal' ? null : (
-            <StatusChip status={view.judgment.status} label={view.judgment.label} size="header" />
-          )
+          <>
+            {heldHeader && view.judgment.label !== heldHeader.chip ? <StatusChip status="review" label={heldHeader.chip} size="header" /> : null}
+            {view.judgment.status === 'normal' ? null : <StatusChip status={view.judgment.status} label={view.judgment.label} size="header" />}
+          </>
         }
         actions={
           <>
@@ -106,6 +115,7 @@ export function AgentView() {
               />
             )}
             {tab === 'scorecard' ? <LinkButton to={`/reports/export?agent=${agentId}`}>Export scorecard</LinkButton> : null}
+            {heldHeader ? <LinkButton to={`/operations/agents/${agentId}?tab=changes`}>Compare builds</LinkButton> : null}
             <LinkButton to={`/inventory/agents/${agentId}`}>Open in Inventory</LinkButton>
           </>
         }
@@ -113,9 +123,9 @@ export function AgentView() {
           <Tabs
             ariaLabel="Agent sections"
             current={tab}
-            items={TABS.map((t) => ({
+            items={tabs.map((t) => ({
               id: t,
-              label: LABELS[t],
+              label: t === 'changes' && changes ? changes.tabLabel : LABELS[t],
               to:
                 t === 'overview'
                   ? `/operations/agents/${agentId}`

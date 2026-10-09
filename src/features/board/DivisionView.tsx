@@ -7,6 +7,7 @@ import { formatClock, formatClockSeconds, minutesBetween } from '../../lib/clock
 import { useDemo } from '../../store'
 import { selectInbox } from '../inbox/selectors'
 import { AgentPanel } from './AgentPanel'
+import { DivisionTabs } from './DivisionTabs'
 import { selectAgentPanel, selectAgentRows, selectDivisionSummaries } from './selectors'
 import styles from './division.module.css'
 
@@ -64,6 +65,7 @@ export function DivisionView() {
               </LinkButton>
             </div>
           </div>
+          <DivisionTabs divisionId={division.id} current="board" />
         </div>
         <AgentTable
           ariaLabel={`${division.name} agents`}

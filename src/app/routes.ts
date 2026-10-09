@@ -86,7 +86,8 @@ export const routeTable: RouteDef[] = [
     ],
     ['/inventory/agents/:agentId/risk-tier', 'Risk tier', ['2b'], 5, '/inventory/agents/med-rec/risk-tier'],
     ['/inventory/privileges/:privilegeId/sign', 'Sign the privilege', ['3c'], 5, '/inventory/privileges/prv-0142/sign'],
-    ['/inventory/unregistered/:callerId', 'Unregistered caller', ['9b'], 6, '/inventory/unregistered/gw-caller-01'],
+    ['/inventory/unregistered', 'Seen at the gateway', ['9b'], 6],
+    ['/inventory/unregistered/:callerId', 'Unregistered caller', ['9b'], 6, '/inventory/unregistered/svc-dc-summary-bot'],
     ['/inventory/promotions/:promotionId', 'Promotion', ['14a'], 7, '/inventory/promotions/prm-0007'],
   ]),
   ...app('portfolio', [

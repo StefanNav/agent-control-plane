@@ -22,7 +22,15 @@ export function MyPrivilegesPage() {
   const view = useMemo(() => selectMyPrivileges(state, state.personaId, tab), [state, tab])
   const me = state.people.find((p) => p.id === state.personaId)
   const division = state.divisions.find((d) => state.roles.some((r) => r.personId === state.personaId && r.divisionId === d.id))
-  const lapse = division?.lapsePolicy === 'shadow' ? 'the activity returns to Shadow' : 'the activity is paused'
+  // What the division's lapse policy does after the exception (8a).
+  const lapse =
+    division?.lapsePolicy === 'pause'
+      ? 'the activity is paused'
+      : division?.lapsePolicy === 'nothing'
+        ? 'nothing else happens until someone acts'
+        : division?.lapsePolicy === 'shadowNow'
+          ? 'the activity returns to Shadow at once'
+          : `${division?.graceDays ?? 14} days later the activity returns to Shadow`
   const overdueAgent = view.overdue ? state.privileges.find((p) => p.code.toLowerCase() === view.overdue!.code)?.agentId : undefined
   const evidenceAsked = view.overdue ? state.exceptions.some((e) => e.type === `Evidence for the ${view.overdue!.code.toUpperCase()} review` && e.state !== 'resolved') : false
   return (
@@ -31,7 +39,7 @@ export function MyPrivilegesPage() {
         breadcrumb={`Portfolio / ${view.title}`}
         title={view.title}
         idLine={view.signer ? `${me?.name} · clinical sponsor · ${division?.name ?? ''}` : undefined}
-        sub={view.signer ? `Every delegation you’ve signed. When a review date passes you get an exception; 14 days later ${lapse} (${division?.name} setting).` : 'Every privilege in force here, soonest review first.'}
+        sub={view.signer ? `Every delegation you’ve signed. When a review date passes you get an exception; ${lapse} (${division?.name} setting).` : 'Every privilege in force here, soonest review first.'}
         actions={<LinkButton to="/reports/export">Export</LinkButton>}
         tabs={
           <Tabs

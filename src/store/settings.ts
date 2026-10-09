@@ -1,0 +1,271 @@
+import type { DemoState, Division, Privilege, Role } from '../data/types'
+import { addDays, addMinutes, formatDate } from '../lib/clock'
+import { applyPause, nextVersion } from './mutations'
+import { personName } from './onboardingRules'
+
+/** The rule that acts when a review date passes, as it appears on records (8a, component sheet). */
+export const LAPSE_RULE = 'ORG-LAPSE-01'
+
+const LEVELS: Array<'shadow' | 'draft' | 'supervised' | 'autonomous'> = ['shadow', 'draft', 'supervised', 'autonomous']
+
+/** An agent's level is its highest activity's level. */
+function relevel(s: DemoState, agentId: string) {
+  const agent = s.agents.find((a) => a.id === agentId)
+  if (!agent) return
+  const levels = s.activities.filter((a) => a.agentId === agentId).map((a) => LEVELS.indexOf(a.level))
+  agent.level = LEVELS[Math.max(0, ...levels)]!
+}
+
+/**
+ * One activity back to Shadow (6c): its privilege closes and a new version waits for the sponsor
+ * to sign the way back. `by` is a person, or a rule.
+ */
+export function applyReturnToShadow(s: DemoState, activityId: string, by: string, reason: string): DemoState {
+  const target = s.activities.find((a) => a.id === activityId)
+  if (!target) return s
+  const was = target.level
+  target.level = 'shadow'
+  relevel(s, target.agentId)
+  const current = s.privileges.find((p) => p.activityId === activityId && p.state !== 'closed')
+  if (!current) return s
+  current.state = 'closed'
+  const version = nextVersion(s, current.code)
+  s.privileges.push({
+    ...current,
+    id: `${current.code.toLowerCase()}-v${version}`,
+    version,
+    level: 'shadow',
+    proposedLevel: was,
+    state: 'awaiting',
+    grantedBy: undefined,
+    grantedAt: undefined,
+    movedBy: by,
+    trigger: reason,
+  })
+  return s
+}
+
+const divisionOf = (s: DemoState, agentId: string) =>
+  s.divisions.find((d) => d.id === s.agents.find((a) => a.id === agentId)?.divisionId)
+
+/** When the review overdue item is due: the review date plus the division's grace period, at 17:00 (3d, 8a). */
+export function reviewDeadline(s: DemoState, p: Privilege): string | null {
+  const division = divisionOf(s, p.agentId)
+  return p.reviewDate ? `${addDays(p.reviewDate, division?.graceDays ?? 14).slice(0, 10)}T17:00:00` : null
+}
+
+/**
+ * When the division's lapse policy acts on this privilege, or null if it never does (8a). After a
+ * grace period it acts when the overdue item falls due (review fix I1); "at once" and "pause" act on
+ * the review date.
+ */
+export function lapseDate(s: DemoState, p: Privilege): string | null {
+  const division = divisionOf(s, p.agentId)
+  if (!division || !p.reviewDate || division.lapsePolicy === 'nothing') return null
+  return division.lapsePolicy === 'shadow' ? reviewDeadline(s, p) : p.reviewDate
+}
+
+/**
+ * Apply each division's lapse policy to its overdue privileges (8a, R4). Back to Shadow marks the
+ * privilege lapsed (it is re-signed, not re-proposed); a pause stops the activity like 6b. Idempotent.
+ */
+export function applyLapses(s: DemoState, from: string = s.now): DemoState {
+  for (const p of s.privileges) {
+    // `lapsedAt` marks that the policy already acted, so a resume or a later save doesn't act again (I4).
+    if (p.state !== 'due' || p.level === 'shadow' || p.lapsedAt) continue
+    const agent = s.agents.find((a) => a.id === p.agentId)
+    const activity = s.activities.find((a) => a.id === p.activityId)
+    if (!agent || !activity || agent.lifecycle === 'retired') continue
+    const when = lapseDate(s, p)
+    if (!when || when > s.now) continue
+    // It acted when it fell due, or when the clock or the policy reached it, whichever is later.
+    const at = when > from ? when : from
+    const why = `Review date passed ${formatDate(p.reviewDate!)}`
+    p.lapsedAt = at
+    if (divisionOf(s, p.agentId)!.lapsePolicy === 'pause') {
+      if (activity.paused || agent.lifecycle === 'paused') continue
+      applyPause(s, [agent.id], { scope: 'activity', activityId: activity.id, reason: `${why} · ${LAPSE_RULE}` }, LAPSE_RULE, at)
+      continue
+    }
+    Object.assign(p, { state: 'lapsed', movedBy: LAPSE_RULE, trigger: why })
+    activity.level = 'shadow'
+    relevel(s, agent.id)
+    s.logEvents.push({ id: `log-lapse-${s.logEvents.length + 1}`, at, agentId: agent.id, text: `${activity.name} returned to Shadow`, sub: `${LAPSE_RULE} · ${why.toLowerCase()}` })
+  }
+  return s
+}
+
+export type DivisionPatch = Partial<Pick<Division, 'ownerId' | 'sponsorId' | 'lapsePolicy' | 'graceDays' | 'escalation'>>
+
+/** What a patch changes, in words for the audit and the footer (8a "1 change"). */
+export function diffDivision(d: Division, patch: DivisionPatch): string[] {
+  const changes: string[] = []
+  if (patch.ownerId !== undefined && patch.ownerId !== d.ownerId) changes.push('division owner')
+  if (patch.sponsorId !== undefined && patch.sponsorId !== d.sponsorId) changes.push('clinical sponsor')
+  if (patch.lapsePolicy !== undefined && patch.lapsePolicy !== d.lapsePolicy) changes.push('what happens when a review date passes')
+  if (patch.graceDays !== undefined && patch.graceDays !== d.graceDays) changes.push('grace period')
+  const e = patch.escalation
+  if (e && (e.first !== d.escalation.first || e.then !== d.escalation.then || e.afterHours !== d.escalation.afterHours)) changes.push('who unanswered exceptions reach')
+  return changes
+}
+
+/** Move one division role from one person to another, with everything that follows it (R5). */
+function handOver(s: DemoState, d: Division, role: Extract<Role, 'owner' | 'sponsor'>, from: string, to: string, at: string) {
+  s.roles = s.roles.filter((r) => !(r.personId === from && r.divisionId === d.id && r.role === role))
+  if (!s.roles.some((r) => r.personId === to && r.divisionId === d.id && r.role === role)) s.roles.push({ personId: to, divisionId: d.id, role, since: at })
+  const field = role === 'owner' ? 'ownerId' : 'sponsorId'
+  const agentIds = new Set(s.agents.filter((a) => a.divisionId === d.id).map((a) => a.id))
+  for (const agent of s.agents) if (agentIds.has(agent.id) && agent[field] === from) agent[field] = to
+  for (const e of s.exceptions) {
+    const here = agentIds.has(e.agentId) || e.divisionId === d.id
+    if (!here || e.ownerId !== from || e.state === 'resolved' || e.state === 'dismissed') continue
+    e.ownerId = to
+    e.copied = [...e.copied.filter((p) => p !== to), ...(e.copied.includes(from) ? [] : [from])]
+  }
+  if (d.resumeNeeds) d.resumeNeeds = d.resumeNeeds.map((n) => (n === personName(s, from) ? personName(s, to) : n))
+  if (role === 'sponsor') {
+    if (d.escalation.first === from) d.escalation.first = to
+    if (d.escalation.then === from) d.escalation.then = to
+  }
+  d[field] = to
+}
+
+/**
+ * Dana saves a division's settings (8a): who answers for it, what a lapsed review does, who
+ * unanswered items reach. The sponsor (old and new) is told, and the lapse policy acts at once.
+ */
+export function applyDivisionSettings(s: DemoState, divisionId: string, patch: DivisionPatch, by: string, at: string): DemoState {
+  const d = s.divisions.find((x) => x.id === divisionId)
+  if (!d) return s
+  const changes = diffDivision(d, patch)
+  if (!changes.length) return s
+  const oldSponsor = d.sponsorId
+  if (patch.ownerId && patch.ownerId !== d.ownerId) handOver(s, d, 'owner', d.ownerId, patch.ownerId, at)
+  if (patch.sponsorId && patch.sponsorId !== d.sponsorId) handOver(s, d, 'sponsor', d.sponsorId, patch.sponsorId, at)
+  if (patch.lapsePolicy) d.lapsePolicy = patch.lapsePolicy
+  if (patch.graceDays) {
+    d.graceDays = patch.graceDays
+    // The overdue items are due when the new grace period ends (I1).
+    for (const e of s.exceptions) {
+      if (e.type !== 'Review overdue' || e.state === 'resolved' || e.state === 'dismissed') continue
+      const p = s.privileges.find((x) => x.code === e.ruleTag && x.state === 'due')
+      if (p && s.agents.find((a) => a.id === p.agentId)?.divisionId === d.id) e.deadline = reviewDeadline(s, p) ?? e.deadline
+    }
+  }
+  if (patch.escalation) d.escalation = { ...patch.escalation }
+  s.logEvents.push({
+    id: `log-settings-${s.logEvents.length + 1}`,
+    at,
+    text: `${personName(s, by)} changed ${d.name} settings`,
+    sub: changes.join(' · '),
+    to: [d.sponsorId, ...(oldSponsor !== d.sponsorId ? [oldSponsor] : [])],
+  })
+  return applyLapses(s)
+}
+
+export interface NewDivisionInput {
+  name: string
+  ownerId: string
+  sponsorId: string
+  /** For a split: the agents that move from the parent division. */
+  agentIds: string[]
+}
+
+/** A division's id from its name: "Medications · surgical" → "medications-surgical". */
+export const divisionSlug = (name: string) =>
+  name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
+function grant(s: DemoState, personId: string, divisionId: string, role: Role, at: string) {
+  if (!s.roles.some((r) => r.personId === personId && r.divisionId === divisionId && r.role === role)) s.roles.push({ personId, divisionId, role, since: at })
+}
+
+/**
+ * A new division, or a split of `from` (R6, 8a "New division" / "Split this division"): it takes the
+ * parent's lapse policy, an escalation chain of {sponsor, program lead, 4 h}, and roles for the people
+ * who answer for it. Moved agents change owner, and their open items follow.
+ */
+export function applyCreateDivision(s: DemoState, input: NewDivisionInput, from: string | null, by: string, at: string): DemoState {
+  const parent = s.divisions.find((d) => d.id === from) ?? s.divisions.find((d) => d.id === 'medications')!
+  const id = divisionSlug(input.name)
+  const lead = s.roles.find((r) => r.role === 'programLead')?.personId ?? by
+  s.divisions.push({
+    id,
+    name: input.name.trim(),
+    ownerId: input.ownerId,
+    sponsorId: input.sponsorId,
+    lapsePolicy: parent.lapsePolicy,
+    graceDays: parent.graceDays,
+    escalation: { first: input.sponsorId, then: lead, afterHours: 4 },
+    monitor: { state: 'live', lastAt: addMinutes(at, -1) },
+    exceptionsByDay: [0, 0, 0, 0, 0, 0, 0],
+    resumeNeeds: [personName(s, input.ownerId), personName(s, input.sponsorId)],
+  })
+  grant(s, input.ownerId, id, 'owner', at)
+  grant(s, input.sponsorId, id, 'sponsor', at)
+  const moved = s.agents.filter((a) => input.agentIds.includes(a.id))
+  for (const techOwner of new Set(moved.map((a) => a.techOwnerId))) grant(s, techOwner, id, 'techOwner', at)
+  if (from) for (const r of s.roles.filter((x) => x.divisionId === from && x.role === 'frontline')) grant(s, r.personId, id, 'frontline', at)
+  for (const agent of moved) {
+    const handed: Record<string, string> = { [agent.ownerId]: input.ownerId, [agent.sponsorId]: input.sponsorId }
+    Object.assign(agent, { divisionId: id, ownerId: input.ownerId, sponsorId: input.sponsorId })
+    // The moved agents' open items go to whoever now answers for them: owner's to the owner, sponsor's to the sponsor (I5).
+    for (const e of s.exceptions) {
+      const to = handed[e.ownerId]
+      if (e.agentId !== agent.id || !to || to === e.ownerId || e.state === 'resolved' || e.state === 'dismissed') continue
+      const was = e.ownerId
+      e.ownerId = to
+      e.copied = [...e.copied.filter((p) => p !== to), ...(e.copied.includes(was) ? [] : [was])]
+    }
+  }
+  s.logEvents.push({
+    id: `log-division-${s.logEvents.length + 1}`,
+    at,
+    text: `${personName(s, by)} created ${input.name.trim()}`,
+    sub: from ? `Split from ${parent.name} · ${moved.length} ${moved.length === 1 ? 'agent' : 'agents'}` : 'New division',
+    to: [input.sponsorId, input.ownerId],
+  })
+  return s
+}
+
+/** Roles that span every division: they are always held in 'all' (8b). */
+export const HOSPITAL_WIDE: Role[] = ['programLead', 'committee', 'readOnly']
+
+/** Role names as 8b's ROLE column writes them. */
+export const ROLE_LABEL: Record<Role, string> = {
+  programLead: 'AI program lead',
+  committee: 'AI review board chair',
+  readOnly: 'Risk manager',
+  sponsor: 'Clinical sponsor',
+  owner: 'Agent owner',
+  techOwner: 'Technical owner',
+  frontline: 'Pharmacist',
+}
+
+export interface RoleInput {
+  role: Role
+  divisionId: string
+}
+
+/** Where a role is held: hospital-wide roles are always 'all'. */
+export const roleDivision = ({ role, divisionId }: RoleInput) => (HOSPITAL_WIDE.includes(role) ? 'all' : divisionId)
+
+export function applyAddRole(s: DemoState, personId: string, input: RoleInput, at: string): DemoState {
+  grant(s, personId, roleDivision(input), input.role, at)
+  return s
+}
+
+export function applyRemoveRole(s: DemoState, personId: string, input: RoleInput): DemoState {
+  const divisionId = roleDivision(input)
+  s.roles = s.roles.filter((r) => !(r.personId === personId && r.divisionId === divisionId && r.role === input.role))
+  return s
+}
+
+/** A new person with one role (8b "Invite"); their id comes from their name. */
+export function applyInvite(s: DemoState, input: { name: string; title: string } & RoleInput, at: string): DemoState {
+  const name = input.name.trim()
+  const base = divisionSlug(name)
+  let id = base
+  for (let n = 2; s.people.some((p) => p.id === id); n++) id = `${base}-${n}`
+  s.people.push({ id, name, initial: name.charAt(0).toUpperCase(), title: input.title.trim() })
+  return applyAddRole(s, id, input, at)
+}

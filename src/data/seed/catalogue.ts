@@ -174,6 +174,25 @@ export const JOB_TEMPLATES: Record<string, JobTemplate> = {
     testSample: 640,
     expectedActivities: 1,
     conditions: [],
+  },  // R16 (Phase 6): the intake 9b's bot looks like; approved 06 Nov, never onboarded.
+  'req-0081': {
+    build: { version: 'v0.4.1', platform: 'Microsoft Teams' },
+    actingForOptions: ['The 5 South charge nurse', 'The discharging clinician'],
+    suggestionsLabel: 'Common for discharge summaries:',
+    escalationSuggestions: ['A medication changed at discharge', 'Follow-up not booked', 'Patient goes to another facility'],
+    criteria: [
+      { id: 'agreement', label: 'Agreement with the discharging clinician’s summary', short: 'agreement', brief: 'Agreement', direction: 'atLeast' },
+      { id: 'missed', label: 'Summaries missing a follow-up', short: 'miss', brief: 'Missed follow-ups', direction: 'atMost' },
+    ],
+    systems: [
+      { system: 'Epic', detail: 'Discharge notes, 5 South' },
+      { system: 'Microsoft Teams', detail: '5 South team channel' },
+    ],
+    caseNoun: 'discharges',
+    compareLine: 'each summary compared with the clinician’s',
+    testSample: 210,
+    expectedActivities: 1,
+    conditions: [],
   },
 }
 
@@ -276,3 +295,207 @@ export const UNITS = ['5 South', '6 North', '7 West', '8 East', 'ICU', 'Outpatie
 
 /** AI review board meetings: the second Wednesday of the month at 15:00. */
 export const BOARD_MEETINGS = ['2026-10-14T15:00:00', '2026-11-11T15:00:00', '2026-12-09T15:00:00', '2027-01-13T15:00:00']
+
+/** What a new build brings, before it is deployed (9a). The live side comes from the agent at deploy time. */
+export interface ChangeDef {
+  agentId: string
+  build: string
+  builtAt: string
+  builtBy: string
+  sop: string
+  /** When the live build was built and its SOP signed (not in the seed elsewhere). */
+  liveBuiltAt: string
+  liveSopAt: string
+  sopDiff: { section: string; title: string; removed?: string; kept?: string; added: string }[]
+  hardStop: { code: string; added: string; heldSub: string; blocked: string }
+  systems: { system: string; live: string; liveSub: string; held: string; heldSub: string; check: string; detail: string }
+  replay: { cases: number; estimate: string; lines: string[] }
+  releaseNote: string
+  /** Open flags with this reason are the ones the build fixes. */
+  fixesReason: 'frequency'
+}
+
+/**
+ * Med Rec Agent v1.5.0 (9a, R1, R9, R10): drawn on 24 Mar against v1.4.2; here it is built 14 Dec
+ * against the seed's v1.3.0 · SOP v1.3.1. Med Rec already reads Pyxis (1c), so the systems change
+ * is a wider Epic read. The replay result is invented.
+ */
+export const V150: ChangeDef = {
+  agentId: 'med-rec',
+  build: 'v1.5.0',
+  builtAt: '2026-12-14T00:00:00',
+  builtBy: 'sam',
+  sop: 'v1.5',
+  liveBuiltAt: '2026-10-12T00:00:00',
+  liveSopAt: '2026-11-05T00:00:00',
+  sopDiff: [
+    {
+      section: '§3.2',
+      title: 'Frequency',
+      removed: 'Read the frequency from the sig line as written.',
+      added: 'Read the frequency from the structured frequency field. Since the Epic upgrade on 05 Dec it can be split across two lines; join them before comparing.',
+    },
+    {
+      section: '§5.1',
+      title: 'Sources',
+      kept: 'Use outside pharmacy fills and the Epic home medication list.',
+      added: 'Also use Pyxis dispense history from the last 30 days.',
+    },
+  ],
+  hardStop: {
+    code: 'HS-04',
+    added: 'Applies to every Med Rec Agent activity. If a draft changes a dose or a frequency, the gateway keeps the original and flags the line for the pharmacist.',
+    heldSub: 'adds frequency',
+    blocked: 'would have blocked 0 of the last 2,104 cases',
+  },
+  systems: {
+    system: 'Epic',
+    live: 'Epic read',
+    liveSub: 'encounter, home med list, allergies',
+    held: 'Adds Epic sig read',
+    heldSub: 'structured frequency and timing',
+    check: 'Sign off Epic sig read',
+    detail: 'Encounter, home med list, allergies, structured sig',
+  },
+  replay: {
+    cases: 2104,
+    estimate: 'about 40 min',
+    lines: ['Replayed 2,104 cases on v1.5.0', 'Agreement 92.6 % (v1.3.0: 91.2 %)', 'Frequency mismatches 0 (v1.3.0: 31)'],
+  },
+  releaseNote: 'Fixes the frequency split pharmacists have flagged since the Epic upgrade.',
+  fixesReason: 'frequency',
+}
+
+/** One unit's approvals and the independent check over the last 4 weeks (E11; by unit and shift, never by name). */
+export interface UnitStats {
+  id: string
+  name: string
+  divisionId: string
+  approved: number
+  medianSec: number
+  wasMedianSec: number
+  editRate: number
+  wasEditRate: number
+  misses: { found: number; sampled: number }
+  missRate: number
+  wasMissRate: number
+  /** 12 weekly points, oldest first; the last is this week. */
+  weekly?: { median: number[]; edit: number[]; missRate: number[] }
+  /** Start of the unit's 4-week window (11b's "25 Feb to 24 Mar"). */
+  windowFrom: string
+  shifts: { name: string; hours: string; approved: number; medianSec: number; editRate: number; misses: { found: number; sampled: number } }[]
+  missList: { draft: string; agentId: string; approvedSec: number; shift: 'Day' | 'Evening' | 'Night'; found: string; flagCode?: string }[]
+  note?: { lead: string; text: string }
+}
+
+const shift = (approved: number, medianSec: number, editRate: number, found: number, sampled: number) =>
+  ({ approved, medianSec, editRate, misses: { found, sampled } })
+const SHIFTS = (rows: ReturnType<typeof shift>[]) =>
+  [
+    { name: 'Days', hours: '07:00 to 15:00' },
+    { name: 'Evenings', hours: '15:00 to 23:00' },
+    { name: 'Nights', hours: '23:00 to 07:00' },
+  ].map((s, i) => ({ ...s, ...rows[i]! }))
+
+/**
+ * 11a and 11b (R1: 24 Mar → 08 Dec, −106 days). 6 North is verbatim; the other units' shifts, misses
+ * and "was" values are invented to give 11a's arrows and reads. Medications only (R17).
+ */
+export const REVIEWER_STATS: UnitStats[] = [
+  {
+    id: '6-north',
+    name: '6 North',
+    divisionId: 'medications',
+    approved: 1214,
+    medianSec: 9,
+    wasMedianSec: 38,
+    editRate: 1.3,
+    wasEditRate: 5.9,
+    misses: { found: 3, sampled: 124 },
+    missRate: 2.4,
+    wasMissRate: 0.5,
+    weekly: {
+      median: [42, 41, 40, 39, 38, 37, 30, 21, 15, 12, 10, 9],
+      edit: [6.2, 6.0, 6.1, 5.9, 5.9, 5.6, 4.2, 3.0, 2.2, 1.7, 1.5, 1.3],
+      missRate: [0.5, 0.4, 0.6, 0.5, 0.5, 0.6, 0.9, 1.4, 1.8, 2.1, 2.2, 2.4],
+    },
+    windowFrom: '2026-11-11T00:00:00',
+    shifts: SHIFTS([shift(512, 22, 2.9, 0, 52), shift(418, 11, 1.1, 1, 42), shift(284, 4, 0.4, 2, 30)]),
+    missList: [
+      { draft: 'DR-90121', agentId: 'med-rec', approvedSec: 4, shift: 'Night', found: 'Kept a duplicate apixaban line from two pharmacies' },
+      { draft: 'DR-89960', agentId: 'discharge-meds', approvedSec: 6, shift: 'Night', found: 'Stopped medication still on the discharge list' },
+      { draft: 'DR-89802', agentId: 'med-rec', approvedSec: 9, shift: 'Evening', found: 'Missed eye drops from an outside record', flagCode: 'FB-2286' },
+    ],
+    note: {
+      lead: 'Night coverage changed on 15 Nov.',
+      text: 'One pharmacist now covers 6 North, 6 South and ICU step-down. Approvals per night pharmacist rose from 31 to 74.',
+    },
+  },
+  {
+    id: '7-west',
+    name: '7 West',
+    divisionId: 'medications',
+    approved: 1842,
+    medianSec: 36,
+    wasMedianSec: 35,
+    editRate: 17.9,
+    wasEditRate: 9.4,
+    misses: { found: 1, sampled: 180 },
+    missRate: 0.6,
+    wasMissRate: 0.6,
+    windowFrom: '2026-11-11T00:00:00',
+    shifts: SHIFTS([shift(780, 38, 18.4, 1, 77), shift(620, 35, 17.6, 0, 60), shift(442, 33, 17.4, 0, 43)]),
+    missList: [{ draft: 'DR-90044', agentId: 'renal-dosing', approvedSec: 41, shift: 'Day', found: 'Renal dose kept after the creatinine improved' }],
+  },
+  {
+    id: '8-east',
+    name: '8 East',
+    divisionId: 'medications',
+    approved: 1610,
+    medianSec: 41,
+    wasMedianSec: 40,
+    editRate: 16.2,
+    wasEditRate: 8.8,
+    misses: { found: 1, sampled: 161 },
+    missRate: 0.5,
+    wasMissRate: 0.5,
+    windowFrom: '2026-11-11T00:00:00',
+    shifts: SHIFTS([shift(690, 44, 16.8, 0, 69), shift(540, 40, 15.9, 1, 54), shift(380, 37, 15.6, 0, 38)]),
+    missList: [{ draft: 'DR-89915', agentId: 'med-rec', approvedSec: 39, shift: 'Evening', found: 'Inhaler listed twice under brand and generic names' }],
+  },
+  {
+    id: '5-south',
+    name: '5 South',
+    divisionId: 'medications',
+    approved: 702,
+    medianSec: 33,
+    wasMedianSec: 34,
+    editRate: 3.0,
+    wasEditRate: 6.1,
+    misses: { found: 0, sampled: 70 },
+    missRate: 0.4,
+    wasMissRate: 0.5,
+    windowFrom: '2026-11-11T00:00:00',
+    shifts: SHIFTS([shift(300, 35, 3.2, 0, 30), shift(236, 32, 2.9, 0, 24), shift(166, 30, 2.7, 0, 16)]),
+    missList: [],
+  },
+  {
+    id: 'ed-observation',
+    name: 'ED observation',
+    divisionId: 'medications',
+    approved: 402,
+    medianSec: 52,
+    wasMedianSec: 50,
+    editRate: 7.4,
+    wasEditRate: 7.3,
+    misses: { found: 0, sampled: 40 },
+    missRate: 0.9,
+    wasMissRate: 0.8,
+    windowFrom: '2026-11-11T00:00:00',
+    shifts: SHIFTS([shift(170, 55, 7.6, 0, 17), shift(136, 51, 7.3, 0, 14), shift(96, 48, 7.1, 0, 9)]),
+    missList: [],
+  },
+]
+
+/** The independent check's rate: a second pharmacist re-checks this share of approved lists (11a). */
+export const INDEPENDENT_CHECK_PERCENT = 10

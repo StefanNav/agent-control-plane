@@ -1,0 +1,112 @@
+/* 9b: callers seen at the gateway without a registry record. Monitoring screen, 13–14 px. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  column-gap: 40px;
+  align-items: start;
+  padding: 24px 40px 48px;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.pair {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.strong {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.meta {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.number {
+  display: block;
+  text-align: right;
+}
+
+.foot {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cs-meta);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+  background: var(--cs-raised);
+}
+
+.panelHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--cs-line);
+  font-size: 16px;
+}
+
+.panelBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--cs-line);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.panelFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.sub {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.wide {
+  justify-content: center;
+  width: 100%;
+}
+
+.rules {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+  font-size: 16px;
+  line-height: 24px;
+}

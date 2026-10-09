@@ -1,6 +1,7 @@
 import { createSeed } from '../data/seed'
 import type { PersonaId } from '../data/types'
 import { can, lockReason, type PermAction } from './permissions'
+import { applyAddRole, applyRemoveRole } from './settings'
 
 const s = createSeed()
 const ctx = { divisionId: 'medications' }
@@ -16,7 +17,8 @@ const MATRIX: Array<[PermAction, [boolean, boolean, boolean, boolean, boolean, b
   ['prepareGoLive', [true, false, false, false, false, false]],
   ['signPrivilege', [false, true, false, false, false, false]],
   ['approveGoLive', [false, false, false, false, true, false]],
-  ['pause', [true, true, true, false, false, false]],
+  // 8b: the technical owner "pauses" (Tools · hard stops · pauses); frames beat the PRD matrix (R7).
+  ['pause', [true, true, true, true, false, false]],
   // 6c and the "Enforce the limits" story: the technical owner returns an activity to Shadow.
   ['returnToShadow', [true, true, true, true, false, false]],
   ['revokeTool', [true, true, true, true, false, false]],
@@ -44,7 +46,8 @@ test('own-division roles do not reach other divisions', () => {
 
 test('the technical owner acts on their own agents', () => {
   expect(can(s, 'sam', 'revokeTool', { agentId: 'med-rec' })).toBe(true)
-  expect(can(s, 'sam', 'pause', { agentId: 'med-rec' })).toBe(false)
+  expect(can(s, 'sam', 'pause', { agentId: 'med-rec' })).toBe(true)
+  expect(can(s, 'sam', 'pause', { agentId: 'prior-auth' })).toBe(false)
   expect(can(s, 'sam', 'configureTools', { agentId: 'med-rec' })).toBe(true)
 })
 
@@ -95,4 +98,24 @@ test('Phase 5: the board decides go-live only for Tier 2 and above (R7)', () => 
   expect(can(s, 'drlee', 'approveGoLive', { agentId: 'med-rec' })).toBe(true)
   expect(can(s, 'marcus', 'requestGoLive', { agentId: 'med-rec' })).toBe(true)
   expect(can(s, 'priya', 'requestGoLive', { agentId: 'med-rec' })).toBe(false)
+})
+
+describe('roles decide scope (8b, R7)', () => {
+  test('a technical-owner role in Discharge covers Discharge agents, and only while Sam holds it', () => {
+    const state = createSeed()
+    expect(can(state, 'sam', 'revokeTool', { agentId: 'discharge-summary' })).toBe(false)
+    applyAddRole(state, 'sam', { role: 'techOwner', divisionId: 'discharge' }, '2026-12-08T09:52:00')
+    expect(can(state, 'sam', 'revokeTool', { agentId: 'discharge-summary' })).toBe(true)
+    expect(can(state, 'sam', 'pause', { agentId: 'discharge-summary' })).toBe(true)
+    expect(can(state, 'sam', 'revokeTool', { agentId: 'prior-auth' })).toBe(false)
+    applyRemoveRole(state, 'sam', { role: 'techOwner', divisionId: 'discharge' })
+    expect(can(state, 'sam', 'revokeTool', { agentId: 'discharge-summary' })).toBe(false)
+  })
+
+  test('the named technical owner of an agent may act on it from another division’s role', () => {
+    const state = createSeed()
+    state.agents.find((a) => a.id === 'tpn-draft')!.techOwnerId = 'lena'
+    expect(can(state, 'lena', 'configureTools', { agentId: 'tpn-draft' })).toBe(true)
+    expect(can(state, 'lena', 'configureTools', { agentId: 'med-rec' })).toBe(false)
+  })
 })

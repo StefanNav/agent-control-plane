@@ -10,7 +10,7 @@ const EXPECTED = [
   '/operations/sampling',
   '/inventory', '/inventory/agents/:agentId', '/inventory/agents/:agentId/onboarding/:step',
   '/inventory/agents/:agentId/risk-tier', '/inventory/privileges/:privilegeId/sign',
-  '/inventory/unregistered/:callerId', '/inventory/promotions/:promotionId',
+  '/inventory/unregistered', '/inventory/unregistered/:callerId', '/inventory/promotions/:promotionId',
   '/portfolio/privileges', '/portfolio/reviews/:reviewId', '/portfolio/promotions/:promotionId',
   '/portfolio/activities/:activityId', '/portfolio/activities/:activityId/branches/:branchId',
   '/reports/evidence', '/reports/evidence/:agentId', '/reports/export',

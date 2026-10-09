@@ -1,8 +1,9 @@
 import { useState, type ReactNode } from 'react'
 import { noticeMark, StatusChip } from '../../components'
-import { Button, LinkButton, Menu, Notice } from '../../design-system'
+import { Button, LinkButton, Menu, Notice, Textarea } from '../../design-system'
 import { addMinutes, formatClock, tomorrowAt } from '../../lib/clock'
 import type { ActionResult, DismissInput } from '../../store'
+import type { FlagAnswer } from '../../store/feedback'
 import { DismissDialog } from './DismissDialog'
 import type { ExceptionDetailView } from './selectors'
 import { TrendChart } from './TrendChart'
@@ -24,7 +25,15 @@ export interface ExceptionDetailProps {
   onClaim: () => void
   /** Questions from a person. */
   onAnswer: (answer: 'yes' | 'no') => void
+  /** A pharmacist's flag from Epic (R14). */
+  onAnswerFlag?: (answer: FlagAnswer) => ActionResult
 }
+
+const FLAG_ANSWERS: { kind: FlagAnswer['kind']; button: string; label: string; submit: string }[] = [
+  { kind: 'inProgress', button: 'Working on a fix…', label: 'What you’re doing about it', submit: 'Send' },
+  { kind: 'notDefect', button: 'Not a defect…', label: 'Why it isn’t a defect', submit: 'Close as not a defect' },
+  { kind: 'reply', button: 'Reply', label: 'Reply', submit: 'Send reply' },
+]
 
 const STATUS_COLOR: Record<string, string> = {
   crit: 'var(--cs-crit)',
@@ -44,8 +53,12 @@ export function ExceptionDetail({
   onAssign,
   onClaim,
   onAnswer,
+  onAnswerFlag,
 }: ExceptionDetailProps) {
   const [dismissing, setDismissing] = useState(false)
+  const [answering, setAnswering] = useState<FlagAnswer['kind'] | null>(null)
+  const [answer, setAnswer] = useState('')
+  const [answerError, setAnswerError] = useState<string>()
   const total = detail.breakdown.reduce((sum, row) => sum + row.count, 0)
   const lockProps = { disabled: Boolean(locked), title: locked ?? undefined }
   const agentLink = `/operations/agents/${detail.agentId}`
@@ -126,6 +139,17 @@ export function ExceptionDetail({
         </LinkButton>
       </>
     )
+  } else if (detail.kind === 'flag' && detail.flag) {
+    buttons = (
+      <>
+        {FLAG_ANSWERS.map((a, i) => (
+          <Button key={a.kind} variant={i === 0 ? 'primary' : undefined} onClick={() => setAnswering(a.kind)} {...lockProps}>
+            {a.kind === 'reply' ? `Reply to ${detail.flag!.by}…` : a.button}
+          </Button>
+        ))}
+        {snooze}
+      </>
+    )
   } else if (detail.kind === 'question') {
     buttons = (
       <>
@@ -172,6 +196,24 @@ export function ExceptionDetail({
         <Notice mark="stale" lead="Escalated to you because nobody answered by the deadline.">
           {detail.escalationNotice}
         </Notice>
+      ) : null}
+
+      {detail.flag ? (
+        <div className={styles.block}>
+          <span className={styles.label}>
+            {detail.flag.code} · {detail.flag.reason} · {detail.flag.draft}
+          </span>
+          {detail.flag.edit ? <span>{detail.flag.edit}</span> : null}
+          {detail.flag.note ? <span>“{detail.flag.note}”</span> : null}
+          {detail.flag.reply ? <span className={styles.timelineSub}>{detail.flag.reply}</span> : null}
+          {detail.flag.traceTo ? (
+            <span>
+              <LinkButton to={detail.flag.traceTo} variant="ghost">
+                Open trace
+              </LinkButton>
+            </span>
+          ) : null}
+        </div>
       ) : null}
 
       {detail.trend?.length ? (
@@ -243,6 +285,33 @@ export function ExceptionDetail({
           <span className={styles.escalation}>{detail.escalationLine}</span>
         ) : null}
       </div>
+
+      {answering && onAnswerFlag ? (
+        <div className={styles.block}>
+          <label className={styles.label} htmlFor="flag-answer">
+            {FLAG_ANSWERS.find((a) => a.kind === answering)!.label}
+          </label>
+          <Textarea id="flag-answer" rows={3} value={answer} onChange={(e) => setAnswer(e.target.value)} />
+          <span className={styles.buttons}>
+            <Button
+              variant="primary"
+              onClick={() => {
+                const result = onAnswerFlag({ kind: answering, text: answer })
+                if (!result.ok) return setAnswerError(result.reason)
+                setAnswering(null)
+                setAnswer('')
+                setAnswerError(undefined)
+              }}
+            >
+              {FLAG_ANSWERS.find((a) => a.kind === answering)!.submit}
+            </Button>
+            <Button variant="ghost" onClick={() => setAnswering(null)}>
+              Cancel
+            </Button>
+          </span>
+          {answerError ? <span role="alert">{answerError}</span> : null}
+        </div>
+      ) : null}
 
       {dismissing ? (
         <DismissDialog

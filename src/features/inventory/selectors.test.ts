@@ -6,8 +6,8 @@ import { selectInventory, selectRecord, selectRetirePreview } from './selectors'
 
 const s = createSeed()
 
-test('inventory tabs count from data: 41 agents, 1 draft, 2 intakes, 6 retired', () => {
-  expect(selectInventory(s).counts).toEqual({ agents: 41, drafts: 1, intake: 2, retired: 6 })
+test('inventory tabs count from data: 41 agents, 1 draft, 3 intakes (REQ-0081, R16), 6 retired', () => {
+  expect(selectInventory(s).counts).toEqual({ agents: 41, drafts: 1, intake: 3, retired: 6 })
   expect(selectInventory(s).agents).toHaveLength(41)
   const medRec = selectInventory(s).agents.find((r) => r.id === 'med-rec')!
   expect(medRec).toMatchObject({ name: 'Med Rec Agent', division: 'Medications', level: 'Draft', status: 'review', label: 'Review: 3 drafts', sponsor: 'Priya', tier: 'Tier 3', review: '05 Feb' })

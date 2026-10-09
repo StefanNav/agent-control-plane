@@ -1,4 +1,4 @@
-import type { DemoState, PersonaId, Role } from '../data/types'
+import type { DemoState, Role } from '../data/types'
 
 /** Everything a person might try to do in the console (spec §7). */
 export type PermAction =
@@ -21,6 +21,16 @@ export type PermAction =
   | 'viewAudit'
   | 'openIncident'
   | 'manageDivisions'
+  /** A frontline pharmacist flags a draft from Epic (10a). */
+  | 'flagDraft'
+  /** The owner re-validates a held build: replay, sign-off, accept (9a). */
+  | 'revalidateChange'
+  /** Decide what an unregistered caller is: block it, or say it isn't an agent (9b). */
+  | 'decideCaller'
+  /** The owner proposes a sampling or review-level change for a unit (11b). */
+  | 'proposeReviewChange'
+  /** The sponsor signs or declines it (11b: "Priya signs sampling and review-level changes"). */
+  | 'signReviewChange'
 
 /** How far a role reaches for an action: everywhere, its own divisions, or its own agents. */
 type Scope = 'all' | 'own' | 'ownAgents'
@@ -41,7 +51,8 @@ const MATRIX: Record<PermAction, Partial<Record<Role, Scope>>> = {
   approveGoLive: { committee: 'all' },
   // 3a: the owner asks the sponsor to sign the move out of Shadow.
   requestGoLive: { owner: 'own' },
-  pause: STOPPERS,
+  // 8b: the technical owner "pauses" (Tools · hard stops · pauses); frames beat the PRD matrix (R7).
+  pause: { ...STOPPERS, techOwner: 'ownAgents' },
   // 6c and the "Enforce the limits" story: the technical owner may also return an activity to Shadow.
   returnToShadow: { ...STOPPERS, techOwner: 'ownAgents' },
   revokeTool: BUILDERS,
@@ -53,6 +64,12 @@ const MATRIX: Record<PermAction, Partial<Record<Role, Scope>>> = {
   // 7a: opening an incident is the one thing read-only Jordan can create.
   openIncident: ALL_VIEWERS,
   manageDivisions: { programLead: 'all' },
+  // 10a: only frontline pharmacists flag drafts, from Epic.
+  flagDraft: { frontline: 'own' },
+  revalidateChange: { owner: 'own' },
+  decideCaller: { programLead: 'all' },
+  proposeReviewChange: { owner: 'own', programLead: 'all' },
+  signReviewChange: { sponsor: 'own' },
 }
 
 export interface PermContext {
@@ -61,13 +78,14 @@ export interface PermContext {
 }
 
 /**
- * Can this persona take this action here? Roles are per division ('all' spans every one).
- * With an agent in context, its division applies, and "own agents" means agents the
- * persona is technical owner of. Without context, a role held anywhere counts.
+ * Can this person take this action here? Roles are per division ('all' spans every one).
+ * With an agent in context, its division applies: a role there covers its agents, and a
+ * technical owner may also act on an agent they are named on. Without context, a role held
+ * anywhere counts. Any person with a role may be asked, not only the seven personas (8b).
  */
 export function can(
   state: Pick<DemoState, 'roles' | 'agents'>,
-  personaId: PersonaId,
+  personaId: string,
   action: PermAction,
   ctx: PermContext = {},
 ): boolean {
@@ -82,13 +100,20 @@ export function can(
     const scope = allowed[assignment.role]
     if (!scope) return false
     if (scope === 'all' || assignment.divisionId === 'all' || !divisionId) return true
-    if (assignment.divisionId !== divisionId) return false
-    return scope === 'own' || !agent || agent.techOwnerId === personaId
+    // A role in the agent's division covers every agent in it (8b: Sam gets a second division, R7).
+    if (assignment.divisionId === divisionId) return true
+    // The named technical owner may act on their agent whatever division their role is in.
+    return scope === 'ownAgents' && agent?.techOwnerId === personaId
   })
 }
 
 const REASONS: Partial<Record<PermAction, string>> = {
   manageDivisions: 'Program lead only',
+  flagDraft: 'Pharmacists flag drafts from Epic',
+  revalidateChange: 'Agent owner only',
+  decideCaller: 'Program lead only',
+  proposeReviewChange: 'Agent owner or program lead',
+  signReviewChange: 'Clinical sponsor only',
   prepareGoLive: 'Program lead only',
   retire: 'Program lead or sponsor only',
   disable: 'Program lead or sponsor only',
@@ -101,7 +126,7 @@ const REASONS: Partial<Record<PermAction, string>> = {
 }
 
 /** Why a control is locked, for menus and tooltips. */
-export function lockReason(action: PermAction, personaId?: PersonaId): string {
+export function lockReason(action: PermAction, personaId?: string): string {
   if (personaId === 'jordan') return 'Read-only access'
   if (personaId === 'ana') return 'Works in Epic, not the console'
   return REASONS[action] ?? 'Not part of your role here'

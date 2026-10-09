@@ -1,3 +1,4 @@
+import * as catalogue from './catalogue'
 import { DEMO_NOW } from '../../lib/clock'
 import { createSeed, SEED_VERSION } from './index'
 
@@ -64,7 +65,9 @@ test('every reference resolves', () => {
     expect(agents.has(p.agentId), p.id).toBe(true)
   }
   for (const e of seed.exceptions) {
-    expect(agents.has(e.agentId), e.id).toBe(true)
+    // 9b: an unregistered caller has no agent yet; its item points at the caller instead.
+    if (e.type === 'Unregistered caller') expect(seed.callers.some((c) => e.link?.to === `/inventory/unregistered/${c.id}`), e.id).toBe(true)
+    else expect(agents.has(e.agentId), e.id).toBe(true)
     expect(people.has(e.ownerId), e.id).toBe(true)
   }
   for (const r of seed.roles) {
@@ -141,8 +144,8 @@ test('agent owners, sponsors and tech owners hold those roles in the agent’s d
 describe('E4 and E5 refinements', () => {
   const open = (e: (typeof seed.exceptions)[number]) => e.state !== 'resolved' && e.state !== 'dismissed'
 
-  test('seed version 6 (Phase 5: onboarding records)', () => {
-    expect(SEED_VERSION).toBe(6)
+  test('seed version 6 or later (Phase 5: onboarding records)', () => {
+    expect(SEED_VERSION).toBeGreaterThanOrEqual(6)
   })
 
   test('Medications has exactly four agents needing a human', () => {
@@ -172,7 +175,7 @@ describe('E4 and E5 refinements', () => {
     ])
   })
 
-  test('Med Rec has its five recent actions (4c) plus ACT-88171 (7a) and the shadow case ACT-61840 (3b); ACT-88213 keeps its trace', () => {
+  test('Med Rec has its five recent actions (4c) plus ACT-88171 (7a), Ana’s draft ACT-88209 (10a) and the shadow case ACT-61840 (3b); ACT-88213 keeps its trace', () => {
     expect(seed.actions.filter((a) => a.agentId === 'med-rec').map((a) => a.code)).toEqual([
       'ACT-88240',
       'ACT-88213',
@@ -180,6 +183,7 @@ describe('E4 and E5 refinements', () => {
       'ACT-88199',
       'ACT-88188',
       'ACT-88171',
+      'ACT-88209',
       'ACT-61840',
     ])
     expect(seed.actions.find((a) => a.code === 'ACT-88213')!.steps).toHaveLength(8)
@@ -236,8 +240,8 @@ describe('Phase 4: controls and audit data', () => {
     expect(byId('med-rec').queue).toEqual({ inProgress: 12, awaitingReview: 4, perHour: 6 })
   })
 
-  test('inventory records: 2 approved intakes not started, 3 past exports', () => {
-    expect(s.intakeRequests.filter((r) => !r.startedAt).map((r) => r.code)).toEqual(['REQ-0106', 'REQ-0108'])
+  test('inventory records: 3 approved intakes not started (REQ-0081 from 9b, R16), 3 past exports', () => {
+    expect(s.intakeRequests.filter((r) => !r.startedAt).map((r) => r.code)).toEqual(['REQ-0106', 'REQ-0108', 'REQ-0081'])
     expect(s.exports).toHaveLength(3)
   })
 })
@@ -245,8 +249,8 @@ describe('Phase 4: controls and audit data', () => {
 describe('Phase 5: onboarding data (seed v6)', () => {
   const s = createSeed()
 
-  test('seed version 6', () => {
-    expect(SEED_VERSION).toBe(6)
+  test('seed version 7 (Phase 6: division settings and role dates)', () => {
+    expect(SEED_VERSION).toBe(7)
   })
 
   test('every intake reserves a unique agent id and code; only a started intake’s agent uses them', () => {
@@ -298,8 +302,8 @@ describe('Phase 5: onboarding data (seed v6)', () => {
 
   test('technical owners: Lena owns Discharge; Omar is clinical informatics', () => {
     expect(s.agents.filter((a) => a.divisionId === 'discharge').every((a) => a.techOwnerId === 'lena')).toBe(true)
-    expect(s.roles).toContainEqual({ personId: 'lena', divisionId: 'discharge', role: 'techOwner' })
-    expect(s.roles).not.toContainEqual({ personId: 'omar', divisionId: 'discharge', role: 'techOwner' })
+    expect(s.roles).toContainEqual(expect.objectContaining({ personId: 'lena', divisionId: 'discharge', role: 'techOwner' }))
+    expect(s.roles).not.toContainEqual(expect.objectContaining({ personId: 'omar', divisionId: 'discharge', role: 'techOwner' }))
     expect(s.people.find((p) => p.id === 'omar')!.title).toBe('Clinical informatics analyst')
   })
 
@@ -337,5 +341,28 @@ describe('Phase 5: shadow scorecards and sample cases (3a, 3b)', () => {
     const card = s.scorecards.find((c) => c.activityId === 'med-rec-allergy')!
     expect(card.to).toBe('2026-12-07T00:00:00')
     expect(Object.values(card.results).map((r) => r.value)).toEqual([94.6, 1.2, 1.1])
+  })
+})
+
+describe('Phase 6: v2 frames re-dated to December (R1, R2)', () => {
+  const strings = (value: unknown, out: string[] = []): string[] => {
+    if (typeof value === 'string') out.push(value)
+    else if (Array.isArray(value)) value.forEach((v) => strings(v, out))
+    else if (value && typeof value === 'object') Object.values(value).forEach((v) => strings(v, out))
+    return out
+  }
+
+  test('no seed or catalogue string shows a March date, and Med Rec never reads v1.4.2 (Review focus 5)', () => {
+    const seedNow = createSeed()
+    const all = [...strings(seedNow), ...strings(Object.values(catalogue))]
+    expect(all.filter((t) => /\b\d{2} Mar\b/.test(t))).toEqual([])
+    // Claim Scrubber Agent really is v1.4.2; nothing else may be (9a, 10a's March build).
+    expect([...strings({ ...seedNow, agents: [] }), ...strings(Object.values(catalogue))].filter((t) => t.includes('v1.4.2'))).toEqual([])
+  })
+
+  test('flag codes are unique and stop at FB-2290, so Ana’s flag is FB-2291', () => {
+    const codes = createSeed().flags.map((f) => f.code)
+    expect(new Set(codes).size).toBe(codes.length)
+    expect([...codes].sort().at(-1)).toBe('FB-2290')
   })
 })

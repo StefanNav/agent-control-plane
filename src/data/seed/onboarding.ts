@@ -69,6 +69,23 @@ export const intakeRequests: IntakeRequest[] = [
     domain: { units: ['Outpatient imaging'], patients: 'All ages', hours: 'Weekdays' },
     patientImpact: 'A delayed authorization delays a scan, not a treatment',
     volume: 'About 60 imaging orders a day',
+  },  // 9b (R16): the unregistered bot looks like this intake, approved 20 Feb in the frame (−106 days: 06 Nov),
+  // never onboarded. Discharge Summary Agent (AGT-0161) is live, so the bot's agent has its own name.
+  {
+    id: 'req-0081',
+    code: 'REQ-0081',
+    title: 'Discharge huddle summary',
+    divisionId: 'discharge',
+    requestedBy: 'elena',
+    approvedAt: '2026-11-06T15:00:00',
+    agentId: 'discharge-huddle',
+    agentCode: 'AGT-0180',
+    agentName: 'Discharge Huddle Summary Agent',
+    sponsorId: 'priya',
+    purpose: 'Summarise each discharge note on 5 South and post it to the team channel before the afternoon huddle.',
+    domain: { units: ['5 South'], patients: 'Adults 18+', hours: 'Day shift' },
+    patientImpact: 'Discharge details shared with the care team; no orders',
+    volume: 'About 30 discharges a day on 1 unit',
   },
 ]
 

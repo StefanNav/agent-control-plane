@@ -1,3 +1,4 @@
+import { buildScenario } from './index'
 import { createSeed } from '../seed'
 import { rewindTo } from './rewind'
 
@@ -48,4 +49,12 @@ describe('rewindTo: the hospital as it stood at an earlier moment (Review focus 
     expect(s.privileges.find((p) => p.code === 'PRV-0098')!.state).toBe('active')
     expect(s.stats24h.lastHour).toEqual({ hardStops: 0, pauses: 0, pages: 0 })
   })
+})
+
+test('review fix M9: an October rewind drops this phase’s later callers, flags and Epic drafts', () => {
+  const s = buildScenario('onboarding-intake')
+  expect(s.callers.filter((c) => c.group === 'unregistered')).toEqual([])
+  expect(s.callers.every((c) => c.firstSeen <= s.now && (!c.decision || c.decision.at <= s.now))).toBe(true)
+  expect(s.flags.every((f) => f.at <= s.now)).toBe(true)
+  expect(s.epicDrafts).toEqual([])
 })

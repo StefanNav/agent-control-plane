@@ -1,5 +1,6 @@
 import type { AgentException, DemoState, LogEvent, PersonaId, Status } from '../../data/types'
 import {
+  addMinutes,
   formatAgo,
   formatClock,
   formatDate,
@@ -7,6 +8,7 @@ import {
   formatDue,
   minutesBetween,
 } from '../../lib/clock'
+import { FLAG_REASONS } from '../../store/feedback'
 import { onBoard, personName } from '../board/selectors'
 
 export const isOpen = (e: AgentException) => e.state !== 'resolved' && e.state !== 'dismissed'
@@ -33,9 +35,24 @@ export interface InboxItemView {
   escalated: boolean
 }
 
-function sponsorOf(s: DemoState, e: AgentException): string | undefined {
+/** Who an item is from: a person by name, or a caller named as itself (9b, review fix I3). */
+const fromName = (s: DemoState, e: AgentException) => (e.from ? (s.people.find((p) => p.id === e.from)?.name ?? e.from) : undefined)
+
+/** The division's escalation chain for an item (8a). */
+function chainOf(s: DemoState, e: AgentException) {
   const agent = s.agents.find((a) => a.id === e.agentId)
-  return s.divisions.find((d) => d.id === agent?.divisionId)?.sponsorId
+  return s.divisions.find((d) => d.id === agent?.divisionId)?.escalation
+}
+
+/**
+ * Who an unanswered item has reached (8a): the chain's first person once it is past its deadline,
+ * and the second as well once `afterHours` more have passed. Empty while it isn't escalated.
+ */
+export function escalationOf(s: DemoState, e: AgentException): string[] {
+  const chain = chainOf(s, e)
+  if (!chain || !isEscalated(e, s.now)) return []
+  const second = addMinutes(e.deadline, chain.afterHours * 60)
+  return s.now >= second && chain.then !== chain.first ? [chain.first, chain.then] : [chain.first]
 }
 
 function itemView(s: DemoState, e: AgentException, viewer: PersonaId): InboxItemView {
@@ -52,7 +69,7 @@ function itemView(s: DemoState, e: AgentException, viewer: PersonaId): InboxItem
     source: escalated
       ? `${agent?.name} · escalated`
       : e.from
-        ? `${personName(s, e.from)} · ${agent?.name}`
+        ? [fromName(s, e), agent?.name].filter(Boolean).join(' · ')
         : `${agent?.name}${e.ruleTag ? ` · ${e.ruleTag}` : ''}`,
     due: formatDue(e.deadline, s.now),
     dueSoon: minutesBetween(s.now, e.deadline) <= 120,
@@ -70,7 +87,7 @@ export function selectInbox(
 ): { needsMe: InboxItemView[]; waiting: InboxItemView[]; log: LogEvent[]; logTotal: number } {
   const open = s.exceptions.filter((e) => isOpen(e) && !isSnoozed(e, s.now))
   const mine = open.filter(
-    (e) => e.ownerId === personaId || (isEscalated(e, s.now) && sponsorOf(s, e) === personaId),
+    (e) => e.ownerId === personaId || escalationOf(s, e).includes(personaId),
   )
   const waiting = open.filter(
     (e) => !mine.includes(e) && e.copied.includes(personaId) && e.ownerId !== personaId,
@@ -81,6 +98,23 @@ export function selectInbox(
     waiting: [...waiting].sort(byDeadline).map((e) => itemView(s, e, personaId)),
     log: s.logEvents,
     logTotal: s.logEvents.length,
+  }
+}
+
+/** The flag behind a `flag` item, as the owner reads it in the inbox. */
+function flagView(s: DemoState, exceptionId: string) {
+  const f = s.flags.find((x) => x.exceptionId === exceptionId)
+  if (!f) return null
+  const draft = s.epicDrafts.find((d) => d.id === f.draftId)
+  return {
+    code: f.code,
+    by: f.byName,
+    reason: FLAG_REASONS[f.reason],
+    edit: f.edit ? `${f.edit.med} · ${f.edit.field}: ${f.edit.from} → ${f.edit.to}` : null,
+    note: f.note ?? null,
+    draft: `${f.draftId}${draft ? ` · ${draft.patient.unit}` : ''}`,
+    traceTo: draft ? `/operations/actions/${draft.actionId}` : null,
+    reply: f.reply ? `${personName(s, f.reply.by)}: “${f.reply.text}”` : null,
   }
 }
 
@@ -98,11 +132,15 @@ export function selectExceptionDetail(s: DemoState, id: string, viewer: PersonaI
   const e = s.exceptions.find((x) => x.id === id)
   if (!e) return null
   const agent = s.agents.find((a) => a.id === e.agentId)
-  const sponsor = personName(s, sponsorOf(s, e))
+  const chain = chainOf(s, e)
+  const sponsor = personName(s, chain?.first)
   const owner = personName(s, e.ownerId)
   const escalated = isEscalated(e, s.now)
-  const sponsorId = sponsorOf(s, e)
-  const escalatedToViewer = escalated && sponsorId === viewer
+  const reached = escalationOf(s, e)
+  const escalatedToViewer = reached.includes(viewer)
+  const reachedLine = reached
+    .map((id, i) => `${personName(s, id)} at ${formatClock(i === 0 ? e.deadline : addMinutes(e.deadline, (chain?.afterHours ?? 0) * 60))}`)
+    .join(', then ')
   const closedState = e.state === 'resolved' || e.state === 'dismissed'
   const closer = personName(s, e.closedBy ?? e.ownerId)
   const closed = closedState
@@ -121,12 +159,14 @@ export function selectExceptionDetail(s: DemoState, id: string, viewer: PersonaI
       : escalated
         ? escalatedToViewer
           ? null
-          : `Escalated to ${sponsor} at ${formatClock(e.deadline)}`
+          : `Escalated to ${reachedLine}`
         : e.claimedAt
           ? `Claimed by ${owner} at ${formatClock(e.claimedAt)}`
           : e.assignedAt
             ? `Assigned to ${owner} at ${formatClock(e.assignedAt)}`
-            : `Not handled by ${clockWithDay(e.deadline, s.now)} → goes to ${sponsor}`
+            : e.link
+              ? null
+              : `Not handled by ${clockWithDay(e.deadline, s.now)} → goes to ${sponsor}`
   const lastSeen = agent?.monitor.lastSeen
   const silentFor =
     e.status === 'stale' && lastSeen ? formatAgo(lastSeen, s.now).replace(' ago', '') : null
@@ -196,6 +236,8 @@ export function selectExceptionDetail(s: DemoState, id: string, viewer: PersonaI
     tune: e.detail?.tune,
     /** The rule without its version, e.g. 'MR-12'. */
     ruleName: e.ruleTag?.split(' ')[0],
+    /** A pharmacist's flag from Epic (10a, R14): what they edited, why, and the agent's trace. */
+    flag: flagView(s, e.id),
     action: e.action,
     copied: e.copied.map((p) => personName(s, p)),
   }
@@ -211,8 +253,10 @@ export function selectInboxHeader(
   const roles = s.roles.filter((r) => r.personId === personaId)
   const divisionId = roles.some((r) => r.divisionId === 'all') ? undefined : roles[0]?.divisionId
   const division = s.divisions.find((d) => d.id === divisionId)
+  // Review fix M6: someone left with no role (after an owner change, 8a) isn't hospital-wide.
+  const scope = !roles.length ? 'No division' : (division?.name ?? 'All divisions')
   return {
-    status: `${personName(s, personaId)} · ${division?.name ?? 'All divisions'}`,
+    status: `${personName(s, personaId)} · ${scope}`,
     divisionId,
   }
 }
@@ -247,7 +291,7 @@ export function selectDigest(s: DemoState, personaId: PersonaId) {
         id: e.id,
         status: e.status,
         label: question && e.from ? `Question from ${personName(s, e.from)}` : e.type,
-        text: question ? (e.short ?? e.reason) : `${agent?.name} · ${e.short ?? e.reason}`,
+        text: question ? (e.short ?? e.reason) : `${agent?.name ?? fromName(s, e) ?? ''} · ${e.short ?? e.reason}`,
         due: dueWithDay(e.deadline, s.now),
         link: question ? 'Answer' : 'Open',
       }

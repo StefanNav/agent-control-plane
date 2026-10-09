@@ -26,6 +26,8 @@ export interface RoleAssignment {
   personId: string
   divisionId: string | 'all'
   role: Role
+  /** When it was given (8b "since Mar 2026"). */
+  since: string
 }
 
 /** Status-chip states: colour + shape + word. */
@@ -72,13 +74,29 @@ export interface MonitorState {
   expectedIntervalMin: number
 }
 
+/**
+ * What happens when a privilege's review date passes (8a): the exception only; back to Shadow
+ * after the grace period; back to Shadow at once; or pause the activity.
+ */
+export type LapsePolicy = 'nothing' | 'shadow' | 'shadowNow' | 'pause'
+
+/** Who an unanswered exception reaches: `first` past its deadline, `then` too after `afterHours` more (8a). */
+export interface EscalationChain {
+  first: string
+  then: string
+  afterHours: number
+}
+
 /** A group of agents in one workflow, led by named humans. */
 export interface Division {
   id: string
   name: string
   ownerId: string
   sponsorId: string
-  lapsePolicy: 'nothing' | 'shadow' | 'pause'
+  lapsePolicy: LapsePolicy
+  /** Days after the review date before `shadow` acts (8a "Grace period"). */
+  graceDays: number
+  escalation: EscalationChain
   monitor: { state: 'live' | 'delayed' | 'stale'; lastAt: string }
   /** Open exceptions per day over the last 7 days, oldest first (the board's "7 days" column). */
   exceptionsByDay: number[]
@@ -185,6 +203,8 @@ export interface Privilege {
   trigger?: string
   /** The sponsor's written reason when signing below target (3c). */
   signReason?: string
+  /** When the division's lapse policy acted on it (8a): back to Shadow, or the activity paused. */
+  lapsedAt?: string
 }
 
 /** A rule enforced at the gateway, outside the model. */
@@ -252,7 +272,7 @@ export interface AgentException {
   code: string
   status: Status
   /** PRD exception types. */
-  kind: 'review' | 'question' | 'notify' | 'incident'
+  kind: 'review' | 'question' | 'notify' | 'incident' | 'flag'
   type: string
   reason: string
   /** Board phrasing, e.g. "3 drafts held by HS-04 v2". */
@@ -289,6 +309,8 @@ export interface AgentException {
   closedBy?: string
   dismissReason?: string
   escalatedTo?: string
+  /** For items about a unit rather than an agent (11b): the division whose roles they follow. */
+  divisionId?: string
 }
 
 /** Kinds of step on an action trace. */
@@ -326,6 +348,101 @@ export interface AgentAction {
   steps: TraceStep[]
 }
 
+/** A draft as the pharmacist sees it in Epic (E10, the neutral stand-in). */
+export interface EpicDraft {
+  /** 'DR-88412' */
+  id: string
+  agentId: string
+  build: string
+  draftedAt: string
+  patient: { name: string; age: number; sex: 'F' | 'M'; mrn: string; unit: string; bed: string; allergy: string; admittedAt: string }
+  lines: {
+    /** 'Metoprolol tartrate 25 mg'; `form` is shown after it ('tab'). */
+    med: string
+    form: string
+    dose: string
+    route: string
+    frequency: string
+    lastTaken: string
+    /** 'Outside fill' with `sourceAt`, or 'Admission interview'. */
+    source: string
+    sourceAt?: string
+    edit?: { field: 'frequency' | 'dose'; from: string; to: string; by: string }
+  }[]
+  sources: string
+  did: string
+  /** The agent's trace for this draft. */
+  actionId: string
+}
+
+export type FlagReason = 'frequency' | 'dose' | 'missed' | 'duplicate' | 'other'
+
+/** A pharmacist's flag on a draft, sent from Epic to the agent's owner (E10). */
+export interface Flag {
+  id: string
+  /** 'FB-2291' */
+  code: string
+  draftId: string
+  agentId: string
+  /** A persona who flagged it; other pharmacists are named only. */
+  byId?: string
+  byName: string
+  unit: string
+  at: string
+  reason: FlagReason
+  title: string
+  note?: string
+  edit?: { med: string; field: string; from: string; to: string }
+  status: 'sent' | 'inProgress' | 'fixed' | 'notDefect'
+  progress?: string
+  notDefect?: string
+  fixedIn?: string
+  fixedAt?: string
+  reply?: { by: string; text: string; at: string }
+  /** When the pharmacist dismissed "Your flag led to a fix" (10b). */
+  seenFixAt?: string
+  exceptionId?: string
+}
+
+/** A caller seen at the gateway using hospital credentials with no registry record (E9.2, 9b). */
+export interface GatewayCaller {
+  id: string
+  name: string
+  /** "Entra app · client 7f3a…c21", "API key · issued to Emergency". */
+  credential: string
+  firstSeen: string
+  lastCall: string
+  calls7d: number
+  reaches: string[]
+  likelyOwner: { name: string; sub: string } | null
+  /** What it does, read from its traffic. */
+  does?: string
+  patientData?: { flag: string; note: string }
+  registeredBy?: string
+  /** An approved intake it looks like. */
+  intakeId?: string
+  /** Who may rely on it, for the caution next to "Block at the gateway". */
+  reliance?: string
+  group: 'unregistered' | 'lowVolume' | 'dismissed'
+  decision?: { kind: 'blocked' | 'notAgent' | 'onboarding'; reason?: string; by: string; at: string; agentId?: string }
+  messages: { by: string; text: string; at: string }[]
+}
+
+/** A sampling or review-level change for a unit, proposed by the owner and signed by the sponsor (11b). */
+export interface ReviewChange {
+  id: string
+  unitId: string
+  option: 'sampling' | 'tighten' | 'minTime'
+  by: string
+  at: string
+  state: 'waiting' | 'signed' | 'declined'
+  decidedBy?: string
+  decidedAt?: string
+  reason?: string
+  /** Signed changes run 14 days. */
+  until?: string
+}
+
 /** An informational event: kept in the log, never sent to anyone. */
 export interface LogEvent {
   id: string
@@ -333,6 +450,8 @@ export interface LogEvent {
   agentId?: string
   text: string
   sub?: string
+  /** People this was sent to, for FYIs ("Priya told"). */
+  to?: string[]
 }
 
 /** A change from yesterday, summarised in the daily digest. */
@@ -548,6 +667,39 @@ export interface Scorecard {
   hardStopNote?: string
   sampleCaseIds: string[]
   extendedDays?: number
+  /** A new build restarted this shadow scorecard (9a, R10). */
+  restartedOn?: { build: string; at: string }
+}
+
+/** What a change needs before it serves: a replay, the sponsor's hard-stop approval, the owner's systems sign-off. */
+export type ChangeCheck = 'replay' | 'hardStop' | 'systems'
+
+/** A new build held at the gateway until its owner re-validates it (E9.1, 9a). */
+export interface Change {
+  id: string
+  agentId: string
+  from: { build: string; builtAt: string; sop: string; sopAt: string }
+  to: { build: string; builtAt: string; builtBy: string; sop: string }
+  deployedAt: string
+  deployedBy: string
+  /** Withdrawn if not accepted by then (deploy + 7 days). */
+  deadline: string
+  items: { item: 'Agent build' | 'SOP' | 'Hard stop' | 'Systems'; live: string; liveSub: string; held: string; heldSub: string; needs: ChangeCheck }[]
+  sopDiff: { section: string; title: string; removed?: string; kept?: string; added: string }[]
+  hardStop?: { code: string; title: string; from: number; to: number; removed: string; added: string; blocked: string }
+  systems?: { system: string; detail: string; check: string }
+  /** The result lines are the build's; the demo clock doesn't run, so the replay finishes at once (R10). */
+  replay: { cases: number; estimate: string; lines: string[]; result?: { at: string; by: string; lines: string[] } }
+  checks: Partial<Record<ChangeCheck, { at: string; by: string }>>
+  releaseNote: { by: string; text: string }
+  /** Flag ids this build fixes. */
+  fixes: string[]
+  timeline: { at: string; title: string; sub: string }[]
+  /** Shadow activities whose scorecards restarted on the held build. */
+  restarted: string[]
+  status: 'held' | 'accepted' | 'withdrawn'
+  closedAt?: string
+  closedBy?: string
 }
 
 /** One shadow case compared line by line with the pharmacist's final list (3b). */
@@ -616,6 +768,16 @@ export interface DemoState {
   scorecards: Scorecard[]
   sampleCases: SampleCase[]
   exports: ExportRecord[]
+  /** Drafts in the Epic stand-in (E10). */
+  epicDrafts: EpicDraft[]
+  /** Pharmacists' flags from Epic (E10). */
+  flags: Flag[]
+  /** New builds held at the gateway, and their outcome (E9.1). */
+  changes: Change[]
+  /** Callers seen at the gateway without a registry record (E9.2). */
+  callers: GatewayCaller[]
+  /** Sampling and review-level changes proposed for units (11b). */
+  reviewChanges: ReviewChange[]
   /** Hospital-wide counts before today's activity (4f "Last 24 hours"); `actionsToday` for 7a. */
   stats24h: {
     closedEarlier: number
