@@ -18,7 +18,11 @@ const CONTROL = [
   'select',
   'button',
   'a[href]',
+  'summary',
   '[contenteditable]:not([contenteditable="false"])',
+  // Any other widget the visitor can focus: table rows, charts (tabindex -1, as `main` and the page
+  // heading have, is only for focus moved there by the app).
+  '[tabindex]:not([tabindex="-1"])',
   ...[
     'button',
     'link',
@@ -110,7 +114,13 @@ function useTourUrl(runtime: TourRuntime) {
       )
     if (open) {
       const id = chapters[now.pos.chapter]?.id
-      if (id !== undefined && current !== id) write(id)
+      if (id === undefined || current === id) return
+      // A navigation the tour didn't make that names another chapter: go there (Ruling 16). The
+      // chapter's own navigation then lands, and the next sync names it.
+      const asked = current === null ? -1 : chapters.findIndex((c) => c.id === current)
+      if (asked >= 0) player.getState().jump(asked)
+      // Dropped by a product link, or unknown: name the current chapter again.
+      else write(id)
     } else if (closed) {
       if (current !== null) write(null)
     } else {
@@ -267,9 +277,9 @@ export function TourLayer() {
  * mounts a fresh screen (R6); it reports each mount and route to the step's settle (Ruling 10).
  */
 export function TourScreen({ stepKey, children }: { stepKey: number; children: ReactNode }) {
-  const { pathname } = useLocation()
+  const { pathname, search } = useLocation()
   useEffect(() => {
-    markScreen(stepKey, pathname)
-  }, [stepKey, pathname])
+    markScreen(stepKey, pathname + search)
+  }, [stepKey, pathname, search])
   return children
 }

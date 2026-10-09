@@ -6,7 +6,7 @@ import { CARDS, type CardContent } from './cards'
 import { buildTimeline, stepAt } from './engine'
 import { clipUrl, MANIFEST } from './manifest'
 import { createTourPlayer, type TourControls, type TourState } from './player'
-import { prefersReducedMotion, revealClear, routePathname, settleScreen } from './screen'
+import { prefersReducedMotion, revealClear, settleScreen } from './screen'
 import { CHAPTERS } from './script'
 import type { Chapter, Manifest, Timeline } from './types'
 import { createAudioVoice, createSilentVoice, type Voice } from './voice'
@@ -77,7 +77,7 @@ export function createTourRuntime(
       revealClear(el, document.querySelector('[data-tour="bar"]'), prefersReducedMotion()),
     reducedMotion: prefersReducedMotion,
     settle: (stepKey, signal) =>
-      settleScreen(stepKey, routePathname(stepAt(chapters, player.getState().pos).route), signal),
+      settleScreen(stepKey, stepAt(chapters, player.getState().pos).route, signal),
   })
   return {
     chapters,

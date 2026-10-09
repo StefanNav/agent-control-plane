@@ -38,6 +38,9 @@ function Page() {
       <h1>Page {pathname}</h1>
       <div data-story-target="agent-summary">Summary</div>
       <button type="button">Product button</button>
+      <div role="row" tabIndex={0} aria-label="Med Rec Agent">
+        Med Rec Agent
+      </div>
       <label>
         Reason <input />
       </label>
@@ -96,6 +99,22 @@ describe('URL sync', () => {
     await waitFor(() => expect(t.where()).toBe('/tour/why?tour=why'))
     await act(() => t.router.navigate('/inventory'))
     await waitFor(() => expect(t.where()).toBe('/inventory?tour=why'))
+  })
+
+  test('while open, a link to another chapter’s ?tour jumps there (Ruling 16)', async () => {
+    const t = setup('/?tour=why')
+    await waitFor(() => expect(t.where()).toBe('/tour/why?tour=why'))
+    await act(() => t.router.navigate('/?tour=decision-1'))
+    await waitFor(() => expect(t.where()).toBe('/operations?tour=decision-1'))
+    expect(t.state()).toMatchObject({ status: 'paused', pos: { chapter: 1, step: 0, beat: 0 } })
+  })
+
+  test('while open, an unknown ?tour is stripped and the current chapter named again', async () => {
+    const t = setup('/?tour=why')
+    await waitFor(() => expect(t.where()).toBe('/tour/why?tour=why'))
+    await act(() => t.router.navigate('/inventory?tour=nope'))
+    await waitFor(() => expect(t.where()).toBe('/inventory?tour=why'))
+    expect(t.state().pos.chapter).toBe(0)
   })
 
   test('Exit tour drops ?tour and stays on a product route (R5)', async () => {
@@ -233,6 +252,18 @@ describe('taking over (spec §4.5)', () => {
     fireEvent.keyDown(screen.getByRole('button', { name: 'Product button' }), { key: 'Tab' })
     expect(t.state().status).toBe('playing')
     fireEvent.keyDown(screen.getByRole('textbox', { name: 'Reason' }), { key: 'a' })
+    expect(t.state().status).toBe('driving')
+  })
+
+  test('Enter on a focusable table row (role="row", tabIndex 0) hands it over', async () => {
+    const t = await playing()
+    fireEvent.keyDown(screen.getByRole('row', { name: 'Med Rec Agent' }), { key: 'Enter' })
+    expect(t.state().status).toBe('driving')
+  })
+
+  test('Space on a focusable row is the row’s, not play/pause: it hands over instead', async () => {
+    const t = await playing()
+    fireEvent.keyDown(screen.getByRole('row', { name: 'Med Rec Agent' }), { key: ' ' })
     expect(t.state().status).toBe('driving')
   })
 

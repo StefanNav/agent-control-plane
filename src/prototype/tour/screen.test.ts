@@ -1,10 +1,4 @@
-import {
-  markScreen,
-  prefersReducedMotion,
-  revealClear,
-  routePathname,
-  settleScreen,
-} from './screen'
+import { atRoute, markScreen, prefersReducedMotion, revealClear, settleScreen } from './screen'
 
 /** Track a promise so a test can tell whether it has settled yet. */
 function track(promise: Promise<void>) {
@@ -100,6 +94,30 @@ describe('settleScreen (Ruling 10)', () => {
     expect(settled.done).toBe(true)
   })
 
+  test('with the pathname right but the route’s ?tab= not yet, it waits; once the query lands it settles (Ruling 15)', async () => {
+    markScreen(2, '/operations/agents/med-rec?tab=overview')
+    const settled = track(
+      settleScreen(2, '/operations/agents/med-rec?tab=scorecard', new AbortController().signal),
+    )
+    await vi.advanceTimersByTimeAsync(100)
+    expect(settled.done).toBe(false)
+    // `?tour=` (or any other extra param) alongside is fine.
+    markScreen(2, '/operations/agents/med-rec?tab=scorecard&tour=decision-1')
+    await vi.advanceTimersByTimeAsync(16)
+    expect(settled.done).toBe(true)
+  })
+
+  test('a query that never lands still gives way at 1500 ms', async () => {
+    markScreen(2, '/operations/agents/med-rec?tab=overview')
+    const settled = track(
+      settleScreen(2, '/operations/agents/med-rec?tab=scorecard', new AbortController().signal),
+    )
+    await vi.advanceTimersByTimeAsync(1499)
+    expect(settled.done).toBe(false)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(settled.done).toBe(true)
+  })
+
   test('a settle that has finished stops listening', async () => {
     const settled = track(settleScreen(2, '/a', new AbortController().signal))
     await vi.advanceTimersByTimeAsync(1500)
@@ -108,11 +126,23 @@ describe('settleScreen (Ruling 10)', () => {
   })
 })
 
-test('routePathname drops the query and hash', () => {
-  expect(routePathname('/operations/agents/med-rec?tab=scorecard#top')).toBe(
-    '/operations/agents/med-rec',
-  )
-  expect(routePathname('/tour/why')).toBe('/tour/why')
+describe('atRoute (Ruling 15)', () => {
+  test('the pathname must match', () => {
+    expect(atRoute('/operations', '/operations')).toBe(true)
+    expect(atRoute('/operations/inbox', '/operations')).toBe(false)
+  })
+
+  test('every query param the route sets must be there with its value; extra ones are fine', () => {
+    const route = '/operations/agents/med-rec?tab=scorecard'
+    expect(atRoute('/operations/agents/med-rec', route)).toBe(false)
+    expect(atRoute('/operations/agents/med-rec?tab=overview', route)).toBe(false)
+    expect(atRoute('/operations/agents/med-rec?tab=scorecard', route)).toBe(true)
+    expect(atRoute('/operations/agents/med-rec?tour=decision-1&tab=scorecard', route)).toBe(true)
+  })
+
+  test('a hash on the route does not count', () => {
+    expect(atRoute('/operations', '/operations#top')).toBe(true)
+  })
 })
 
 describe('prefersReducedMotion', () => {
