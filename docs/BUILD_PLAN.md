@@ -18,10 +18,10 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 7: Earned autonomy (☐ not started) |
-| **Branch** | `phase-7-autonomy` (create from `main`) |
-| **Last completed** | Phase 6 approved and squash-merged (PR #16) (2026-10-08) |
-| **Next task** | Phase 7 Task 7.0: write `docs/plans/phase-7-autonomy.md` (read Phase 6's handoff notes first) |
+| **Current phase** | Phase 7: Earned autonomy (◐ in progress) |
+| **Branch** | `phase-7-autonomy` |
+| **Last completed** | Task 7.0: Phase 7 plan written (2026-10-08) |
+| **Next task** | Task 7.1 in `docs/plans/phase-7-autonomy.md` (RUAIH coverage and export packet, seed v8) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -95,7 +95,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 4 | Controls and audit | ☑ Merged | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | [#14](https://github.com/StefanNav/agent-control-plane/pull/14) | [phase-4-controls-audit.md](plans/phase-4-controls-audit.md) |
 | 5 | Onboarding and go-live | ☑ Merged | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | [#15](https://github.com/StefanNav/agent-control-plane/pull/15) | [phase-5-onboarding.md](plans/phase-5-onboarding.md) |
 | 6 | Governance and fast follows | ☑ Merged | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | [#16](https://github.com/StefanNav/agent-control-plane/pull/16) | [phase-6-governance.md](plans/phase-6-governance.md) |
-| 7 | Earned autonomy | ☐ Not started | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | – | to write (Task 7.0) |
+| 7 | Earned autonomy | ◐ In progress | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | – | [phase-7-autonomy.md](plans/phase-7-autonomy.md) |
 | 8 | Stories and portfolio layer | ☐ Not started | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | – | to write (Task 8.0) |
 | 9 | Polish and launch | ☐ Not started | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | – | to write (Task 9.0) |
 
@@ -469,12 +469,15 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 
 **Goal:** RUAIH evidence, review levels, promotion, step-down (E12–E15). After this phase all 55 frames exist.
 
-- [ ] 7.0 Write `docs/plans/phase-7-autonomy.md`; commit
-- [ ] 7.1 RUAIH coverage 12a (14 agents × 7 elements; gaps with owners and due dates) and export packet 12b (gaps listed, not hidden)
-- [ ] 7.2 Review level and rules 13a (rules move the level; people can tighten, never loosen) and sampling queue 13b
-- [ ] 7.3 Sponsor signs a one-branch promotion 14a; above Tier 2 the board decides 14b
-- [ ] 7.4 Step down on threshold breach 15a (Draft → Shadow) and on version change 15b (Supervised → Draft; moving up always needs a signature)
-- [ ] 7.5 Frame audit: every row in the frame tracker is built; checkpoint
+- [x] 7.0 Write `docs/plans/phase-7-autonomy.md`; commit
+- [ ] 7.1 RUAIH coverage 12a (every agent × 7 elements; gaps with owners and due dates) and export packet 12b (gaps listed, not hidden; seed v8)
+- [ ] 7.2 Autonomy ladder: held state, wide size and legend (14a's ladder)
+- [ ] 7.3 Activity page and review level 13a (rules move the level; people can tighten, never loosen)
+- [ ] 7.4 Sampling queue 13b (a recorded defect moves the level back; division tab "Sampling")
+- [ ] 7.5 Sponsor signs a one-branch promotion 14a; above Tier 2 the board decides 14b (`promotion-at-board`)
+- [ ] 7.6 Step down on threshold breach 15a (Draft → Shadow; `step-down-threshold`)
+- [ ] 7.7 Step down on version change 15b (Supervised → Draft; moving up always needs a signature; `step-down-version`)
+- [ ] 7.8 E2E journeys; frame audit: every row in the frame tracker is built; checkpoint
 
 **Done when:** frames 12a–15b built and visually checked; frame tracker has no unbuilt rows.
 **Handoff notes:** _written at the end of the phase._
