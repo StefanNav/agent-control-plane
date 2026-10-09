@@ -503,8 +503,8 @@ Also pinned:
     - `curl -sI <preview>/og.png` returns 200 `image/png`;
     - `curl -s <preview>/` shows the meta tags;
     - if the preview isn't behind Vercel's login, run `BASE_URL=<preview> pnpm e2e tests/e2e/routes.spec.ts`. If it is, say so.
-- [ ] **Step 5: STOP.** Ask Stefan to review the preview URL. Merge only after approval. Name the open questions: a license, the "By" line, and the social preview upload.
-- [ ] **Step 6: Launch (after approval).**
+- [x] **Step 5: STOP.** Ask Stefan to review the preview URL. Merge only after approval. Name the open questions: a license, the "By" line, and the social preview upload.
+- [x] **Step 6: Launch (after approval).**
   - Squash-merge and wait for the production deploy.
   - Run `BASE_URL=https://agent-control-plane-mocha.vercel.app pnpm e2e tests/e2e/routes.spec.ts tests/e2e/stories.spec.ts`. Expected: PASS.
   - Run `gh repo edit StefanNav/agent-control-plane` with:

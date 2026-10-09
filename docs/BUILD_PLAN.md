@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 9: Polish and launch (⏸ at checkpoint, awaiting Stefan's review) |
-| **Branch** | `phase-9-polish` |
-| **Last completed** | Phase 9 Tasks 9.0–9.5 and the fresh review (2026-10-09) |
-| **Next task** | Stefan reviews PR #19 and its preview. On approval: Task 9.6 Step 6 in [`docs/plans/phase-9-polish.md`](plans/phase-9-polish.md) (merge, production e2e, repo description and topics, close out) |
+| **Current phase** | All phases merged: the prototype is launched (Phase 9 ☑) |
+| **Branch** | `main` |
+| **Last completed** | Phase 9 approved and squash-merged (PR #19); production verified: routes, stories and axe pass against the live URL (2026-10-09) |
+| **Next task** | None planned. Open items: Stefan uploads `public/og.png` as the GitHub social preview (Settings → Social preview); deferred minors are listed in each phase's handoff notes |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | [PR #19](https://github.com/StefanNav/agent-control-plane/pull/19) · https://agent-control-plane-git-phase-9-polish-stefannavs-projects.vercel.app (behind Vercel login) |
+| **Latest preview** | none open |
 
 ### How to resume in a new session
 
@@ -97,7 +97,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 6 | Governance and fast follows | ☑ Merged | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | [#16](https://github.com/StefanNav/agent-control-plane/pull/16) | [phase-6-governance.md](plans/phase-6-governance.md) |
 | 7 | Earned autonomy | ☑ Merged | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | [#17](https://github.com/StefanNav/agent-control-plane/pull/17) | [phase-7-autonomy.md](plans/phase-7-autonomy.md) |
 | 8 | Stories and portfolio layer | ☑ Merged | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | [#18](https://github.com/StefanNav/agent-control-plane/pull/18) | [phase-8-stories.md](plans/phase-8-stories.md) |
-| 9 | Polish and launch | ⏸ At checkpoint | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | [#19](https://github.com/StefanNav/agent-control-plane/pull/19) | [phase-9-polish.md](plans/phase-9-polish.md) |
+| 9 | Polish and launch | ☑ Merged | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | [#19](https://github.com/StefanNav/agent-control-plane/pull/19) | [phase-9-polish.md](plans/phase-9-polish.md) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
@@ -563,7 +563,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 - [x] 9.3 Visual QA of every frame against its design; fix drift; tick "QA'd" in the tracker
 - [x] 9.4 Wall display legibility check for the ring-overload issue (spec O1)
 - [x] 9.5 Portfolio `README.md` (what it is, personas, stories, screenshots, stack, how to run), social preview image, page meta
-- [ ] 9.6 Final production deploy, repo description and topics; checkpoint
+- [x] 9.6 Final production deploy, repo description and topics; checkpoint
 
 **Done when:** every frame QA'd; production URL shared; README presents the project.
 **Handoff notes (Phase 9 → after launch)**
@@ -771,6 +771,7 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-09 | Stale is a dashed square everywhere (spec O1: in greyscale at wall distance the dashed and solid rings were indistinguishable) | Phase 9 R10 |
 | 2026-10-09 | Visual sweep of all 54 frames (`pnpm capture`, `QA=1`); drift fixed and pinned in `fidelity.spec.ts`; frame-faithful pickers on 2b and 7d are `Segmented` (gained `disabled`); the record's wording of a judgment comes from `recordLabel()`, not the seed (SEED_VERSION stays 8) | Phase 9 R11 |
 | 2026-10-09 | Launch: README with screenshots, Open Graph/Twitter meta with an absolute 1200 × 630 `og.png`, SVG favicon; `BASE_URL` runs e2e against a deployment; the wall's corner control is its "Exit wall display" link | Phase 9 R12, R13, R15 |
+| 2026-10-09 | Launch: README keeps its credits ("Built phase by phase … with Claude Code", "By StefanNav"); no license file; repo homepage, description and topics set; production checked with `BASE_URL` (routes, stories, axe) | Stefan's approval of PR #19 |
 
 ## Session log
 
@@ -799,3 +800,4 @@ One row per working session. Newest last.
 | 2026-10-09 | 8 | Stefan approved; PR #18 squash-merged; #9 closed | Phase 9 Task 9.0 (new session) |
 | 2026-10-09 | 9 | Wrote the Phase 9 plan (rulings R1–R15) after recon: axe on all 36 routes + 14 variants (10 rules, all small; contrast clean), tab-stop and click-target scan, O1 greyscale check (stale and review rings indistinguishable by shape → dashed square) | Task 9.1 |
 | 2026-10-09 | 9 | Built Phase 9 (axe gate on every route, keyboard paths and focus, page titles, scroll on navigation, story panel with dialogs, O1 stale square, 54-frame visual sweep with 9 drift fixes, README, social image, meta). Fresh review: 3 Important + 1 re-graded fixed test-first; 4 minors deferred. PR #19 open | Stefan reviews Phase 9 → merge → launch steps |
+| 2026-10-09 | 9 | Stefan approved; PR #19 squash-merged; #10 closed. Production deploy verified (og.png, favicon, meta, deep links; 57 route and story e2e and 58 axe e2e pass against the live URL). Repo homepage, description and topics set | Project launched |
