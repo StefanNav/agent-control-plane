@@ -14,7 +14,7 @@ function subscribe(onChange: () => void) {
 }
 
 /** True at 1024 px and wider, or when the browser can't tell (spec §4.7, R11). */
-export function useWideEnough(): boolean {
+function useWideEnough(): boolean {
   return useSyncExternalStore(
     subscribe,
     () => (typeof window.matchMedia === 'function' ? window.matchMedia(WIDE).matches : true),
