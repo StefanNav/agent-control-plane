@@ -164,14 +164,30 @@ export interface PauseDetail {
   changes?: { title: string; sub: string; meta: string }[]
 }
 
+/** How much of an activity's signed output a second pharmacist checks (E13). */
+export type ReviewLevel = 'tightened' | 'normal' | 'reduced'
+
+/** One branch of an activity: promotion is per branch (E14). */
+export interface Branch {
+  id: string
+  name: string
+  favourable: boolean
+  /** 14a's line under the name, e.g. "Only adds caution; nothing is removed". */
+  sub?: string
+  /** Absent: the activity's own level. */
+  level?: Level
+  /** A hard stop that forbids the branch at every level, e.g. 'HS-07 v1'. */
+  lockedBy?: string
+}
+
 /** One distinct job an agent does; autonomy is granted per activity. */
 export interface Activity {
   id: string
   agentId: string
   name: string
   level: Level
-  reviewLevel: 'tightened' | 'normal' | 'reduced'
-  branches: { id: string; name: string; favourable: boolean }[]
+  reviewLevel: ReviewLevel
+  branches: Branch[]
   /** Today's volume line, e.g. "96 drafts" or "41 in shadow". */
   today?: string
   /** Paused on its own while the rest of the agent keeps working (6b "This activity"). */
@@ -205,6 +221,8 @@ export interface Privilege {
   signReason?: string
   /** When the division's lapse policy acted on it (8a): back to Shadow, or the activity paused. */
   lapsedAt?: string
+  /** Branches granted above the activity's level, e.g. { 'outside-records': 'supervised' } (14a, 14b). */
+  branchLevels?: Record<string, Level>
 }
 
 /** A rule enforced at the gateway, outside the model. */
@@ -441,6 +459,134 @@ export interface ReviewChange {
   reason?: string
   /** Signed changes run 14 days. */
   until?: string
+}
+
+/** The numbers in the four rules that move a review level (13a); the sponsor writes them. */
+export interface ReviewRules {
+  /** Normal → Reduced: `days` in a row with no defects, at least `checks` checks, an edit rate under `editRate` %. */
+  reduce: { days: number; checks: number; editRate: number }
+  /** Reduced → Normal: any defect, an edit rate above `editRate` % for `days` days, or a new version. */
+  restore: { editRate: number; days: number }
+  /** Normal → Tightened: `defects` defects in any `batches` batches of checks in a row. */
+  tighten: { defects: number; batches: number }
+  /** Tightened → Normal: `batches` clean batches in a row. */
+  relax: { batches: number }
+}
+
+/** A review level moved: by a rule, or by a person tightening with a reason (13a "Level changes"). */
+export interface LevelChange {
+  at: string
+  from: ReviewLevel
+  to: ReviewLevel
+  by: 'rule' | string
+  why: string
+}
+
+/** An activity's review level: its rules, how it moved, and the checks since it last moved (E13). */
+export interface ReviewLevelRecord {
+  activityId: string
+  rules: ReviewRules
+  writtenBy: string
+  writtenAt: string
+  /** When the first level (Normal) began. */
+  since: string
+  /** Oldest first. */
+  changes: LevelChange[]
+  /** Checks and defects since the last change. */
+  checks: number
+  defects: number
+  /** Days a defect was recorded on, for the "defects in any N batches" rule (a batch is a day's draw). */
+  defectDays: string[]
+  /** What the last rule firing counted (13a "312 checks · 0 defects"). */
+  fired?: { checks: number; defects: number }
+  /** A board condition (14b's C4): no move to Reduced before this date. */
+  noReducedBefore?: string
+}
+
+/** One signed output drawn at random for an independent check (13b's sampling queue). */
+export interface SamplingDraw {
+  id: string
+  /** 'ACT-90412' */
+  actionCode: string
+  activityId: string
+  encounter: string
+  unit: string
+  /** What was signed: "allergy list". */
+  list: string
+  /** "Lee T., PharmD": pharmacists are named only, not console users. */
+  signedBy: string
+  signedAt: string
+  drawnAt: string
+  build: string
+  lines: { output: string; outputSub: string; source: string; chart: string }[]
+  result?: 'right' | 'defect' | 'cantTell'
+  note?: string
+  checkedBy?: string
+  checkedAt?: string
+}
+
+/** One criterion for moving a branch up (14a's evidence table, 14b's stats). */
+export interface PromotionCriterion {
+  label: string
+  /** 14a: "≥ 98.0 %"; 14b: "target ≥ 98 %". */
+  target: string
+  short: string
+  /** 14a: "0.49 % · 2 of 412"; 14b: "2 of 412". */
+  result: string
+  value: string
+  met: boolean
+}
+
+/** A request to move one branch of an activity up a level (E14): the sponsor signs; above Tier 2 the board decides. */
+export interface Promotion {
+  id: string
+  activityId: string
+  branchId: string
+  privilegeCode: string
+  from: Level
+  to: Level
+  requestedBy: string
+  requestedAt: string
+  /** sponsor: waiting for the sponsor; board: with the AI review board; returned: back to the owner. */
+  state: 'sponsor' | 'board' | 'returned' | 'approved' | 'denied'
+  /** Frozen when the sponsor signs, so the board sees what was signed. */
+  evidence?: { days: number; outputs: string; criteria: PromotionCriterion[] }
+  sponsor?: { by: string; at: string; reason: string }
+  board?: { meeting: string; item: number; of: number }
+  /** The sponsor's "Request changes", or the board's re-review question. */
+  returned?: { by: string; at: string; note: string }
+  decision?: ReviewDecision
+}
+
+/**
+ * An activity or branch dropped one level by rule, at the gateway (E15): a threshold breach (15a),
+ * a new version (15b) or an incident. Nothing steps back up without a signature.
+ */
+export interface StepDown {
+  id: string
+  agentId: string
+  activityId: string
+  branchId?: string
+  cause: 'threshold' | 'version' | 'defect' | 'incident'
+  from: Level
+  to: Level
+  at: string
+  /** The privilege version whose trigger fired, and the one the step-down wrote: 'PRV-0142 v3', 'PRV-0142 v4'. */
+  fired: string
+  written: string
+  trigger: string
+  /** What set it off, when the trigger alone doesn't say: "1 defect in a check · ACT-90412". */
+  detail?: string
+  /** Drafts in progress sent back to pharmacists. */
+  routed: number
+  told: string[]
+  exceptionId?: string
+  /** 15b: the build that was deployed. */
+  build?: { from: string; to: string; by: string }
+  /** 15b: the re-validation replay of the last 30 days on the new build. */
+  revalidation?: { cases: number; replayed: number; left: string; same: number; better: number; worse: number; worseCount: number; doneAt: string; meets: boolean }
+  restoredAt?: string
+  restoredBy?: string
 }
 
 /** An informational event: kept in the log, never sent to anyone. */
@@ -731,6 +877,23 @@ export interface ExportRecord {
   masked: boolean
   by: string
   at: string
+  /** What it was for: "Mock survey", "RUAIH evidence packet" (12a, 12b). */
+  note?: string
+}
+
+/** The seven elements of the Joint Commission and CHAI RUAIH guidance, by number (E12). */
+export type RuaihElement = 1 | 2 | 3 | 4 | 5 | 6 | 7
+
+/** An element an agent's records don't cover yet, with an owner and a due date (12a). */
+export interface RuaihGap {
+  agentId: string
+  element: RuaihElement
+  /** 12a's line, e.g. "No patient-facing notice that an agent drafts the medication list". */
+  text: string
+  /** 12b's shorter line, e.g. "No patient-facing notice yet"; defaults to `text`. */
+  short?: string
+  ownerId: string
+  due: string
 }
 
 /** One logged change: who, what, when, and why. */
@@ -778,6 +941,14 @@ export interface DemoState {
   callers: GatewayCaller[]
   /** Sampling and review-level changes proposed for units (11b). */
   reviewChanges: ReviewChange[]
+  /** Activities' review levels and the rules that move them (E13). */
+  reviewLevels: ReviewLevelRecord[]
+  /** Today's random sample of signed outputs, checked independently (13b). */
+  samplingDraws: SamplingDraw[]
+  /** One branch at a time, up a level (E14). */
+  promotions: Promotion[]
+  /** Levels dropped by rule (E15). */
+  stepDowns: StepDown[]
   /** Hospital-wide counts before today's activity (4f "Last 24 hours"); `actionsToday` for 7a. */
   stats24h: {
     closedEarlier: number

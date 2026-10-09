@@ -3,6 +3,9 @@ import { applyPause } from '../../store/mutations'
 import { DEMO_NOW } from '../../lib/clock'
 import { applyAccept, applyDeploy, applyHardStopApproval, applyReplay, applySystemsSignOff, changeId } from '../../store/changes'
 import { applyAddEpicDraft, applyFlag, applyFlagAnswer } from '../../store/feedback'
+import { applyDecidePromotion, applySignPromotion, c4 } from '../../store/promotions'
+import { applyThresholdStepDown, applyVersionDeploy } from '../../store/stepdowns'
+import { ALLERGY_V130, STEP_DOWN_MED_REC } from '../seed/autonomy'
 import { ACT_89012, DR_90455 } from '../seed/feedback'
 import { V150 } from '../seed/catalogue'
 import { advanceClock, settleBefore } from './clock'
@@ -30,6 +33,8 @@ export type ScenarioId =
   | 'shadow-day-21'
   | 'change-detected-v150'
   | 'epic-fixed-later'
+  | 'promotion-at-board'
+  | 'step-down-version'
 
 /** Every scenario id, for validating a `?scenario=` param. */
 export const SCENARIO_IDS: readonly ScenarioId[] = [
@@ -52,10 +57,11 @@ export const SCENARIO_IDS: readonly ScenarioId[] = [
   'shadow-day-21',
   'change-detected-v150',
   'epic-fixed-later',
+  'promotion-at-board',
+  'step-down-version',
 ]
 
 const medRec = (s: DemoState) => s.agents.find((a) => a.id === 'med-rec')!
-const admissionPrivilege = (s: DemoState) => s.privileges.find((p) => p.activityId === 'med-rec-admission')!
 
 const PAUSED_AT = '2026-12-08T09:47:00'
 
@@ -99,6 +105,49 @@ export function epicFixedLater(s: DemoState): DemoState {
   settleBefore(s, '2026-12-17T00:00:00')
   applyAddEpicDraft(s, DR_90455, ACT_89012)
   return advanceClock(s, '2026-12-17T09:52:00')
+}
+
+/** 14a's reason, verbatim. */
+export const PRIYA_PROMOTION_REASON = 'Adding an outside allergy only makes prescribing more cautious. 90 days of evidence, every criterion met, and step-down on any defect.'
+
+/**
+ * 14b (R1, R17): Priya signs PRM-0007 at 10:20 on 08 Dec; it is Tier 3, so it goes to the board,
+ * which meets at 15:00 the next day. Dr. Lee opens it at 15:10.
+ */
+export function promotionAtBoard(s: DemoState): DemoState {
+  applySignPromotion(s, 'prm-0007', PRIYA_PROMOTION_REASON, 'priya', '2026-12-08T10:20:00')
+  advanceClock(s, '2026-12-09T15:10:00')
+  return settleBefore(s, '2026-12-09T00:00:00')
+}
+
+/**
+ * 15a (R1, R12, R17): the edit rate on admission med rec was above 15 % on 07, 08 and 09 Dec, so at
+ * 06:00 on 09 Dec the trigger on PRV-0142 fires at the gateway. Marcus opens it at 09:52.
+ */
+export function stepDownThreshold(s: DemoState): DemoState {
+  advanceClock(s, STEP_DOWN_MED_REC.at)
+  settleBefore(s, '2026-12-09T00:00:00')
+  applyThresholdStepDown(s, STEP_DOWN_MED_REC.activityId, { trigger: STEP_DOWN_MED_REC.trigger, routed: STEP_DOWN_MED_REC.routed }, STEP_DOWN_MED_REC.at)
+  return advanceClock(s, '2026-12-09T09:52:00')
+}
+
+/** 14b's decision reason, verbatim. */
+export const BOARD_PROMOTION_REASON = 'Good evidence on a branch that only adds caution. A longer Normal period before sampling drops.'
+
+/**
+ * 15b (R1, R12, R17): Dr. Lee approves the promotion with C4 at 15:20 on 09 Dec; on 14 Dec at 14:20
+ * Sam deploys Allergy Recon v1.3.0 straight to the gateway, so the promoted branch drops back to
+ * Draft and re-validates. Priya opens it at 14:52, with the replay still running.
+ */
+export function stepDownVersion(s: DemoState): DemoState {
+  promotionAtBoard(s)
+  const decided = '2026-12-09T15:20:00'
+  applyDecidePromotion(s, 'prm-0007', { kind: 'approveWithConditions', conditions: [c4(decided)], reason: BOARD_PROMOTION_REASON }, 'drlee', decided)
+  const deploy = '2026-12-14T14:20:00'
+  advanceClock(s, deploy)
+  settleBefore(s, '2026-12-14T00:00:00')
+  applyVersionDeploy(s, ALLERGY_V130.agentId, { build: ALLERGY_V130.build, by: ALLERGY_V130.by }, deploy)
+  return advanceClock(s, '2026-12-14T14:52:00')
 }
 
 /** E7 7c's incident, as it stands at 11:58 (before Priya approves at 13:10). */
@@ -168,17 +217,8 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
   // E3 3c / Countersign Screens 1b: 06 Nov 09:52, PRV-0142 v3 waits for Priya, Shadow → Draft (R17).
   'awaiting-signature': medRecAt('awaiting-signature'),
 
-  // E15 15a: a threshold breach drops admission med rec from Draft to Shadow.
-  'step-down-threshold': (s) => {
-    s.activities.find((a) => a.id === 'med-rec-admission')!.level = 'shadow'
-    Object.assign(admissionPrivilege(s), {
-      state: 'steppedDown',
-      level: 'shadow',
-      movedBy: 'MR-12 v1',
-      trigger: 'Edit rate above 15% for 3 days',
-    })
-    return s
-  },
+  // E15 15a (R1, R17): the next morning, a threshold breach drops admission med rec from Draft to Shadow.
+  'step-down-threshold': stepDownThreshold,
 
   // E5 5d: 12:00. Nobody answered the stale-monitor item by 10:46, so it escalated to Priya;
   // Marcus claimed the Med Rec review at 09:55, so that one did not.
@@ -222,6 +262,8 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
   'shadow-day-21': medRecAt('shadow-day-21'),
   'change-detected-v150': changeDetected,
   'epic-fixed-later': epicFixedLater,
+  'promotion-at-board': promotionAtBoard,
+  'step-down-version': stepDownVersion,
 }
 
 /** A fresh state for the scenario. */

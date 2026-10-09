@@ -95,7 +95,14 @@ export function ReviewersPage() {
                 </section>
               ) : null}
               <section className={styles.section} aria-label="By unit">
-                <h2 className={styles.caps}>By unit · last 4 weeks</h2>
+                <span className={styles.sectionHead}>
+                  <h2 className={styles.caps}>By unit · last 4 weeks</h2>
+                  {view.stepDown ? (
+                    <Link className={styles.meta} to={view.stepDown.to}>
+                      {view.stepDown.text}
+                    </Link>
+                  ) : null}
+                </span>
                 <Table
                   ariaLabel="By unit"
                   rows={view.rows}

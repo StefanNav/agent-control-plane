@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 7: Earned autonomy (☐ not started) |
-| **Branch** | `phase-7-autonomy` (create from `main`) |
-| **Last completed** | Phase 6 approved and squash-merged (PR #16) (2026-10-08) |
-| **Next task** | Phase 7 Task 7.0: write `docs/plans/phase-7-autonomy.md` (read Phase 6's handoff notes first) |
+| **Current phase** | Phase 7: Earned autonomy (⏸ at checkpoint, awaiting Stefan's review) |
+| **Branch** | `phase-7-autonomy` |
+| **Last completed** | Phase 7 built, fresh-reviewed and fixed; PR #17 open (2026-10-08) |
+| **Next task** | Stefan reviews PR #17 on the preview → squash-merge → Phase 8 Task 8.0 (write `docs/plans/phase-8-stories.md`; read Phase 7's handoff notes first) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none open |
+| **Latest preview** | https://agent-control-plane-git-phase-7-autonomy-stefannavs-projects.vercel.app (PR [#17](https://github.com/StefanNav/agent-control-plane/pull/17); behind Vercel login) |
 
 ### How to resume in a new session
 
@@ -95,7 +95,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 4 | Controls and audit | ☑ Merged | `phase-4-controls-audit` | [#5](https://github.com/StefanNav/agent-control-plane/issues/5) | [#14](https://github.com/StefanNav/agent-control-plane/pull/14) | [phase-4-controls-audit.md](plans/phase-4-controls-audit.md) |
 | 5 | Onboarding and go-live | ☑ Merged | `phase-5-onboarding` | [#6](https://github.com/StefanNav/agent-control-plane/issues/6) | [#15](https://github.com/StefanNav/agent-control-plane/pull/15) | [phase-5-onboarding.md](plans/phase-5-onboarding.md) |
 | 6 | Governance and fast follows | ☑ Merged | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | [#16](https://github.com/StefanNav/agent-control-plane/pull/16) | [phase-6-governance.md](plans/phase-6-governance.md) |
-| 7 | Earned autonomy | ☐ Not started | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | – | to write (Task 7.0) |
+| 7 | Earned autonomy | ⏸ At checkpoint | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | [#17](https://github.com/StefanNav/agent-control-plane/pull/17) | [phase-7-autonomy.md](plans/phase-7-autonomy.md) |
 | 8 | Stories and portfolio layer | ☐ Not started | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | – | to write (Task 8.0) |
 | 9 | Polish and launch | ☐ Not started | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | – | to write (Task 9.0) |
 
@@ -469,15 +469,49 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 
 **Goal:** RUAIH evidence, review levels, promotion, step-down (E12–E15). After this phase all 55 frames exist.
 
-- [ ] 7.0 Write `docs/plans/phase-7-autonomy.md`; commit
-- [ ] 7.1 RUAIH coverage 12a (14 agents × 7 elements; gaps with owners and due dates) and export packet 12b (gaps listed, not hidden)
-- [ ] 7.2 Review level and rules 13a (rules move the level; people can tighten, never loosen) and sampling queue 13b
-- [ ] 7.3 Sponsor signs a one-branch promotion 14a; above Tier 2 the board decides 14b
-- [ ] 7.4 Step down on threshold breach 15a (Draft → Shadow) and on version change 15b (Supervised → Draft; moving up always needs a signature)
-- [ ] 7.5 Frame audit: every row in the frame tracker is built; checkpoint
+- [x] 7.0 Write `docs/plans/phase-7-autonomy.md`; commit
+- [x] 7.1 RUAIH coverage 12a (every agent × 7 elements; gaps with owners and due dates) and export packet 12b (gaps listed, not hidden; seed v8)
+- [x] 7.2 Autonomy ladder: held state, wide size and legend (14a's ladder)
+- [x] 7.3 Activity page and review level 13a (rules move the level; people can tighten, never loosen)
+- [x] 7.4 Sampling queue 13b (a recorded defect moves the level back; division tab "Sampling")
+- [x] 7.5 Sponsor signs a one-branch promotion 14a; above Tier 2 the board decides 14b (`promotion-at-board`)
+- [x] 7.6 Step down on threshold breach 15a (Draft → Shadow; `step-down-threshold`)
+- [x] 7.7 Step down on version change 15b (Supervised → Draft; moving up always needs a signature; `step-down-version`)
+- [x] 7.8 E2E journeys; frame audit: every row in the frame tracker is built; checkpoint
 
 **Done when:** frames 12a–15b built and visually checked; frame tracker has no unbuilt rows.
-**Handoff notes:** _written at the end of the phase._
+**Handoff notes (Phase 7 → Phase 8)**
+
+- **What exists**
+  - Evidence (E12): `/reports/evidence` (12a, `?tab=gaps|exports`) and `/reports/evidence/:agentId` (12b, `?tab=exports`, `?export=1` opens the export modal). Catalogue `src/data/seed/evidence.ts`; selectors `ruaihCell`, `selectCoverage`, `selectAgentEvidence`, `packetEstimate`. Exports carry an optional `note`.
+  - Activity page (E13–E15): `/portfolio/activities/:activityId` (13a; tabs Privilege, Review level, Evidence, History; `?tab=`) and `/:activityId/branches/:branchId` (15b; History by default).
+  - Review levels (E13.1): `state.reviewLevels`, `src/store/levels.ts` (`levelOf`, `ruleRows`, `applyLevelChange`, `applyTighten`, `applyRules`, `applyNewVersionLevels`, `applyCheck`, `recordFor`). `applyAccept` (9a) now sends Reduced back to Normal.
+  - Sampling queue (E13.2): `/operations/sampling` (13b; `?tab=week|rules`, `?draw=`); `state.samplingDraws`; the division tab strip has "Sampling".
+  - Promotions (E14): `/inventory/promotions/:id` (14a) and `/portfolio/promotions/:id` (14b); `state.promotions` (PRM-0007); `src/store/promotions.ts`.
+  - Step-downs (E15): `state.stepDowns`; `src/store/stepdowns.ts` (`applyThresholdStepDown`, `applyVersionDeploy`, `applyRestore`, `closeStepDowns`, `openStepDown`, `LOWER`). 15a replaces the agent view's Overview while a threshold step-down is open; 11a points to it.
+  - Store actions (all on `runAction`): `tightenReviewLevel`, `updateReviewRules`, `recordCheck`, `signPromotion`, `returnPromotion`, `resendPromotion`, `decidePromotion`, `restoreLevel`; `buildExport` takes `note`.
+  - New `PermAction`s: `tightenReview` (owner, sponsor, program lead), `editReviewRules` (sponsor), `recordCheck` (owner). Promotion signing and restoring use `signPrivilege`; the board uses `approveGoLive`; "send again" uses `requestGoLive`.
+  - Components and primitives: `AutonomyLadder` gains `held`, `size="wide"` with `labels`, and `LadderLegend`; `Table` gains `headHeight`; `TrendChart` gains `highlight`, `targetLabel`, `width`; `lib/clock` gains `dayGap`.
+  - Scenarios: `step-down-threshold` (rebuilt: 09 Dec 09:52), `promotion-at-board` (09 Dec 15:10), `step-down-version` (14 Dec 14:52).
+- **Time model (R1).** E12 −106 (24 Mar → 08 Dec), E13/E14a −98 (16 Mar → 08 Dec), E15a −99 (18 Mar → 09 Dec). 14b and 15b take their dates from what the scenarios did (Priya signs 08 Dec 10:20, the board meets 09 Dec 15:00, v1.3.0 deploys 14 Dec 14:20).
+- **Seed v8:** Allergy Recon is PRV-0087 (v1 closed 09 Sep, v5 16 Oct, C1 and C3) with 14a's three branches; three activities on Reduced review; today's six draws; PRM-0007 waiting for Priya; EXP-0003 is the "Mock survey".
+- **Review fixes (fresh reviewer; all test-first; 4 minors re-graded up):**
+  - I1: the board can't approve on evidence that no longer holds since the sponsor signed (14b says what changed and offers re-review or deny); approval resets Reduced to Normal as the decision and never loosens Tightened.
+  - I2: a branch never keeps a level its activity lost: return to Shadow, lapses and threshold step-downs lower its branches too (`src/store/branches.ts`).
+  - I3: a paused agent shows 6d and its resume panel instead of 15a.
+  - I4: the defect and linked-incident triggers step a branch above Draft down one level (`StepDown.cause` gains `defect`); 15b says so, and a new promotion re-earns it (no restore).
+  - Re-graded: the activity history shows a step-down as the rule that made it; 11a points only to a threshold step-down; My privileges' "Open" goes to the activity page (13a, 14a, 15b); a promotion's reset no longer reads as the restore rule firing.
+- **Deferred minors** (see the session's final message for the full list): rewinds keep review-level counters; version deploys step down branches only; the sampling queue ignores the date in later scenarios; small hard-codes (14b's Download PDF agent, "20 %", restore result unused); no log event for a threshold step-down; "Waiting for Priya" while returned; `validRules` bounds; the export modal offers scopes the viewer can't export; Dr. Lee's board item 10 minutes late in `promotion-at-board`.
+- **Gotchas**
+  - `onboarding.ts` and `stepdowns.ts` (and `levels.ts` and `stepdowns.ts`) import each other; both only call across at run time, so keep it that way (no top-level use).
+  - Branch levels live on `Activity.branches[].level` (absent = the activity's level) and on `Privilege.branchLevels`; the board row still shows the activity's level.
+  - A promotion's evidence is frozen when the sponsor signs; before that `criteria()` reads today's checks and the review-level history.
+  - `levelOf()` returns a template for activities without a record; mutations go through `recordFor()`, which stores one.
+  - RUAIH counts are the frame's numbers plus records made since `RUAIH_MAPPED_AT` (08 Dec 09:52).
+- **What Phase 8 needs to know**
+  - Stories: Priya's "promote one branch → automatic step-down" can run 14a at baseline, then load `step-down-threshold` or `step-down-version`; Dr. Lee's "Tier 3 promotion comes to the board" is `promotion-at-board`; Dana's RUAIH coverage and export packet and Marcus's reviewer behaviour → sampling queue run at baseline.
+  - `ScenarioId` now also lists `promotion-at-board` and `step-down-version`.
+
 
 ## Phase 8: Stories and portfolio layer
 
@@ -564,14 +598,14 @@ Tick **Built** when the screen exists at its route; tick **QA'd** after the side
 | 10b | Fixed in v1.5.0 | `/epic?day=later` | 6 | ☑ | ☑ |
 | 11a | Reviewer behaviour | `/operations/reviewers` | 6 | ☑ | ☑ |
 | 11b | Drill into 6 North | `/operations/reviewers/6-north` | 6 | ☑ | ☑ |
-| 12a | RUAIH coverage | `/reports/evidence` | 7 | ☐ | ☐ |
-| 12b | Export packet | `/reports/evidence/med-rec` | 7 | ☐ | ☐ |
-| 13a | Review level and rules | `/portfolio/activities/:id` | 7 | ☐ | ☐ |
-| 13b | Sampling queue | `/operations/sampling` | 7 | ☐ | ☐ |
-| 14a | Sponsor signs promotion | `/inventory/promotions/:id` | 7 | ☐ | ☐ |
-| 14b | Board decides | `/portfolio/promotions/:id` | 7 | ☐ | ☐ |
-| 15a | Threshold breach | agent view | 7 | ☐ | ☐ |
-| 15b | Version change | `/portfolio/activities/:a/branches/:b` | 7 | ☐ | ☐ |
+| 12a | RUAIH coverage | `/reports/evidence` | 7 | ☑ | ☑ |
+| 12b | Export packet | `/reports/evidence/med-rec` | 7 | ☑ | ☑ |
+| 13a | Review level and rules | `/portfolio/activities/:id` | 7 | ☑ | ☑ |
+| 13b | Sampling queue | `/operations/sampling` | 7 | ☑ | ☑ |
+| 14a | Sponsor signs promotion | `/inventory/promotions/:id` | 7 | ☑ | ☑ |
+| 14b | Board decides | `/portfolio/promotions/:id` | 7 | ☑ | ☑ |
+| 15a | Threshold breach | agent view | 7 | ☑ | ☑ |
+| 15b | Version change | `/portfolio/activities/:a/branches/:b` | 7 | ☑ | ☑ |
 | C | Component sheet (light + dark) | `/about/components` | 2 | ☑ | ☑ (Phase 2 visual pass) |
 
 ---
@@ -643,7 +677,14 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-08 | Epic stand-in uses its own `--cs-ehr-*` tokens; the stand-in's buttons only explain they belong to Epic; Ana's draft trace is ACT-88209 | R13 |
 | 2026-10-08 | 9b's intake is REQ-0081 "Discharge Huddle Summary Agent" (AGT-0180), so 8c reads "Intake · 3"; caller and sampling items have no agent and stay off the agent boards | R3, R16 |
 | 2026-10-08 | Reviewer behaviour sits behind a division tab strip (Board · Reviewer behaviour) on 4b, 11a and 11b; 4 or 8 weeks; Priya signs sampling changes on 11b | R17 |
-
+| 2026-10-08 | v2 frames E12–E15 re-dated: 12a/12b 24 Mar → 08 Dec, 13a/13b/14a 16 Mar → 08 Dec, 15a 18 Mar → 09 Dec; 14b and 15b take their dates from the scenarios (board 09 Dec, v1.3.0 on 14 Dec) | R1 |
+| 2026-10-08 | Allergy Recon is PRV-0087 (v1 closed, v5 live) with 14a's three branches; branch levels on the activity, `branchLevels` on the privilege | R2, R10 |
+| 2026-10-08 | RUAIH: the frame's counts are the mapping as of 08 Dec 09:52, and flags, re-validations and step-downs made since add to them; 8 featured rows, the rest folded; 3 invented gaps keep "5 owners" | R3–R5 |
+| 2026-10-08 | Review levels: rules are numbers the sponsor edits; a defect at Reduced → Normal, defects within the batches → Tightened, a new version → Normal; people tighten by hand, nobody loosens | R8 |
+| 2026-10-08 | Sampling queue: today's six draws are state; only the owner records checks | R9 |
+| 2026-10-08 | Promotions: evidence from state, frozen at the sponsor's signature; a missed criterion locks signing; Tier 3 goes to the next board meeting, Tier 2 and below take effect at once; C4 holds Reduced off for 60 days | R11 |
+| 2026-10-08 | Step-downs: one level at a time, by rule, with a new privilege version; a version change steps down only above Draft and only builds that weren't held; restoring needs the sponsor once the replay meets every criterion (BR-07) | R12 |
+| 2026-10-08 | 15a replaces the agent view's Overview while stepped down and keeps Controls; design-doc references ("Set in E2", "in E15") are rewritten | R13, R16 |
 
 ## Session log
 
@@ -666,3 +707,4 @@ One row per working session. Newest last.
 | 2026-10-08 | 5 | Stefan approved; PR #15 squash-merged; #6 closed | Phase 6 Task 6.0 |
 | 2026-10-08 | 6 | Built Phase 6 (seed v7, division settings and split, people and roles, Epic flag and fix, v1.5.0 held at the gateway, unregistered callers, reviewer behaviour, 2 journeys) with side-by-side visual checks. Fresh review: 5 Important + 2 re-graded fixed test-first; 11 minors deferred (see handoff notes). PR #16 open | Stefan reviews Phase 6 → merge → Phase 7 Task 7.0 |
 | 2026-10-08 | 6 | Stefan approved; PR #16 squash-merged; #7 closed | Phase 7 Task 7.0 |
+| 2026-10-08 | 7 | Built Phase 7 (seed v8, RUAIH evidence 12a/12b, wide ladder, review levels 13a, sampling queue 13b, promotion 14a/14b, step-downs 15a/15b, 2 journeys, frame audit) with side-by-side visual checks. Fresh review: 4 Important + 4 re-graded fixed test-first; 9 minors deferred (see handoff notes). PR #17 open | Stefan reviews Phase 7 → merge → Phase 8 Task 8.0 |

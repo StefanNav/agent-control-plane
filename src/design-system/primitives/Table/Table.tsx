@@ -38,6 +38,8 @@ export interface TableProps<Row> {
   columnGap?: number
   /** Minimum row height in px, overriding the density (e.g. 56 for the hospital board). */
   minRowHeight?: number
+  /** Header row height, for two-line headers (12a); default 32. */
+  headHeight?: number
   ariaLabel: string
 }
 
@@ -55,6 +57,7 @@ export function Table<Row>({
   isMuted,
   columnGap = 16,
   minRowHeight,
+  headHeight,
   ariaLabel,
 }: TableProps<Row>) {
   const template = columns.map((column) => column.width).join(' ')
@@ -119,7 +122,7 @@ export function Table<Row>({
   return (
     <div role="table" aria-label={ariaLabel} className={styles.table}>
       {hideHeader ? null : (
-        <div role="row" className={styles.head} style={grid}>
+        <div role="row" className={styles.head} style={headHeight ? { ...grid, height: headHeight } : grid}>
           {columns.map((column) => (
             <span
               key={column.id}

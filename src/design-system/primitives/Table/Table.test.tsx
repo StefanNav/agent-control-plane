@@ -120,3 +120,9 @@ test('arrow keys inside a cell input stay in the input', async () => {
   await userEvent.keyboard('{ArrowDown}')
   expect(input).toHaveFocus()
 })
+
+test('headHeight sets a taller header row for two-line headers (12a)', () => {
+  setup({ headHeight: 74 })
+  const head = screen.getAllByRole('row').find((row) => !row.hasAttribute('data-row-id'))!
+  expect(head.style.height).toBe('74px')
+})

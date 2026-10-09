@@ -2,6 +2,7 @@ import { DEMO_NOW } from '../../lib/clock'
 import type { DemoState } from '../types'
 import { actions } from './actions'
 import { activities } from './activities'
+import { promotions, reviewLevels, samplingDraws } from './autonomy'
 import { agents } from './agents'
 import { divisions } from './divisions'
 import { changeEvents, logEvents } from './events'
@@ -20,7 +21,7 @@ import { sampleCases, scorecards } from './scorecards'
  * Bump whenever seed data or the DemoState shape changes: saved state from an older
  * version is discarded and replaced by a fresh seed (Review focus 1).
  */
-export const SEED_VERSION = 7
+export const SEED_VERSION = 8
 
 const SEED: DemoState = {
   version: SEED_VERSION,
@@ -51,6 +52,10 @@ const SEED: DemoState = {
   changes: [],
   callers,
   reviewChanges: [],
+  reviewLevels,
+  samplingDraws,
+  promotions,
+  stepDowns: [],
   stats24h: { closedEarlier: 5, medianCloseMin: 41, lastHour: { hardStops: 3, pauses: 1, pages: 0 }, actionsToday: 1912 },
   audit: [],
 }

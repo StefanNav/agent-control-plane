@@ -88,3 +88,11 @@ test('addDays counts calendar days, across a daylight-saving change', async () =
   expect(addDays('2026-11-06T09:52:00', 91)).toBe('2027-02-05T09:52:00')
   expect(addDays('2026-12-08T09:52:00', -1)).toBe('2026-12-07T09:52:00')
 })
+
+test('dayGap counts calendar days between two dates, ignoring the time (Phase 7)', async () => {
+  const { dayGap } = await import('./clock')
+  expect(dayGap('2026-12-08T09:52:00', '2026-12-29T00:00:00')).toBe(21)
+  expect(dayGap('2026-11-24T00:00:00', '2026-12-08T09:52:00')).toBe(14)
+  expect(dayGap('2026-09-09T10:00:00', '2026-12-08T09:52:00')).toBe(90)
+  expect(dayGap('2026-12-08T09:52:00', '2026-12-08T23:00:00')).toBe(0)
+})

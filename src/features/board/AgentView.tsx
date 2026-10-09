@@ -14,6 +14,8 @@ import type { PauseScope } from '../controls/selectors'
 import { ChangesTab } from '../changes/ChangesTab'
 import { selectChanges } from '../changes/selectors'
 import { ScorecardTab } from '../golive/ScorecardTab'
+import { selectStepDown } from '../stepdown/selectors'
+import { StepDownOverview } from '../stepdown/StepDownOverview'
 import { ActionsTab, ActivitiesTab, HistoryTab, PrivilegesTab } from './agent-tabs/Tabs'
 import { Overview } from './agent-tabs/Overview'
 import { DraftAgentView } from './DraftAgentView'
@@ -53,6 +55,8 @@ export function AgentView() {
   const tabs = TABS.filter((t) => t !== 'changes' || changes)
   const tab = (tabs.find((t) => t === params.get('tab')) ?? 'overview') as Tab
   const heldHeader = changes?.header ?? null
+  // 15a: while an activity is stepped down on a threshold breach, the Overview says so (R13).
+  const stepDown = selectStepDown(state, agentId, state.personaId)
   const control = parseControl(params.get('control'))
   const agent = state.agents.find((a) => a.id === agentId)
   /** Paused or retired: the header offers only "Open in Inventory" (6d). */
@@ -71,7 +75,7 @@ export function AgentView() {
     )
 
   const content: Record<Tab, ReactNode> = {
-    overview: <Overview view={view} resume={<ResumePanel agentId={agentId} />} />,
+    overview: stepDown ? <StepDownOverview agentId={agentId} view={stepDown} /> : <Overview view={view} resume={<ResumePanel agentId={agentId} />} />,
     activities: <ActivitiesTab agentId={agentId} />,
     scorecard: <ScorecardTab agentId={agentId} />,
     actions: <ActionsTab agentId={agentId} />,
@@ -85,7 +89,7 @@ export function AgentView() {
       <PageHeader
         breadcrumb={`Operations / ${view.division} / ${view.name}`}
         title={view.name}
-        status={heldHeader?.status ?? view.levelLine}
+        status={heldHeader?.status ?? stepDown?.levelLine ?? view.levelLine}
         idLine={heldHeader?.idLine ?? view.idLine}
         chips={
           <>

@@ -78,3 +78,11 @@ describe('review fix I1: the 3d notice says what the division’s policy does', 
     expect(text({ graceDays: 7 })).toBe('Duplicate Rx Agent passed its review date on 01 Dec. If you don’t review it by 08 Dec 17:00, flag duplicate therapy returns to Shadow and its flags stop reaching pharmacists. Marcus and Dana are copied.')
   })
 })
+
+test('review fix I7: My privileges opens a privilege’s activity page; an overdue one still goes to signing', async () => {
+  const { selectMyPrivileges } = await import('./selectors')
+  const view = selectMyPrivileges(createSeed(), 'priya', 'all')
+  const row = (agent: string) => view.rows.find((r) => r.agent === agent)!
+  expect(row('Allergy Recon Agent').to).toBe('/portfolio/activities/allergy-recon')
+  expect(row('Duplicate Rx Agent').to).toBe('/inventory/privileges/prv-0098/sign')
+})

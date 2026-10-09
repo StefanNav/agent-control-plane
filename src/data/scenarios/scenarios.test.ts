@@ -49,12 +49,16 @@ test('awaiting-signature (3c, R17): 06 Nov 09:52, PRV-0142 v3 waits for Priya, S
   expect(s.exceptions.find((e) => e.type === 'Review: your signature')).toMatchObject({ ownerId: 'priya', state: 'new' })
 })
 
-test('step-down-threshold: admission med rec dropped to Shadow by rule', () => {
+test('step-down-threshold (15a, R17): 09 Dec 09:52, admission med rec dropped Draft → Shadow at 06:00 by rule', () => {
   const s = buildScenario('step-down-threshold')
+  expect(s.now).toBe('2026-12-09T09:52:00')
   expect(s.activities.find((a) => a.id === 'med-rec-admission')!.level).toBe('shadow')
-  const prv = s.privileges.find((p) => p.activityId === 'med-rec-admission')!
-  expect(prv.state).toBe('steppedDown')
-  expect(prv.trigger).toBeTruthy()
+  const prv = s.privileges.filter((p) => p.code === 'PRV-0142').sort((a, b) => b.version - a.version)[0]!
+  expect(prv).toMatchObject({ version: 4, state: 'steppedDown', level: 'shadow', movedBy: 'PRV-0142 v3', trigger: 'Edit rate above 15% for 3 days' })
+  expect(s.agents.find((a) => a.id === 'med-rec')!.judgment).toEqual({ status: 'warn', label: 'Stepped down automatically' })
+  expect(s.stepDowns).toHaveLength(1)
+  // Nothing from 08 Dec sits overdue the next morning.
+  expect(s.exceptions.filter((e) => e.raisedAt < '2026-12-09T00:00:00' && e.state !== 'resolved' && e.state !== 'dismissed' && !e.link && e.kind !== 'incident' && e.type !== 'Review overdue')).toEqual([])
 })
 
 test('scenarios do not share state', () => {
@@ -204,4 +208,20 @@ test('I4 (review): in every scenario, nothing is signed after now and privilege 
     expect(new Set(ids).size, id).toBe(ids.length)
     expect(s.privileges.filter((p) => p.grantedAt && p.grantedAt > s.now).map((p) => p.code), id).toEqual([])
   }
+})
+
+test('promotion-at-board (14b, R17): Priya signed on 08 Dec; the board meets 09 Dec 15:00; Dr. Lee’s item is open', () => {
+  const s = buildScenario('promotion-at-board')
+  expect(s.now).toBe('2026-12-09T15:10:00')
+  expect(s.promotions.find((p) => p.id === 'prm-0007')).toMatchObject({ state: 'board', sponsor: { by: 'priya', at: '2026-12-08T10:20:00' } })
+  expect(s.exceptions.find((e) => e.type === 'Review: promotion · Allergy Recon Agent')!.state).toBe('new')
+})
+
+test('step-down-version (15b, R17): 14 Dec 14:52, the promoted branch is back at Draft; Med Rec is untouched', () => {
+  const s = buildScenario('step-down-version')
+  expect(s.now).toBe('2026-12-14T14:52:00')
+  expect(s.activities.find((a) => a.id === 'allergy-recon')!.branches[0]!.level).toBe('draft')
+  expect(s.agents.find((a) => a.id === 'allergy-recon')!.version).toBe('v1.3.0')
+  expect(s.agents.find((a) => a.id === 'med-rec')!.version).toBe('v1.3.0')
+  expect(s.promotions[0]!.state).toBe('approved')
 })

@@ -1,5 +1,6 @@
 import type { Activity } from '../types'
 import { agents } from './agents'
+import { ALLERGY_BRANCHES, reviewLevels } from './autonomy'
 
 /** Job names for single-activity agents (from privilege titles in the frames where they exist). */
 const JOBS: Record<string, string> = {
@@ -66,11 +67,9 @@ export const activities: Activity[] = [
         agentId: a.id,
         name: JOBS[a.id] ?? a.name.replace(/ Agent$/, ''),
         level: a.level,
-        reviewLevel: 'normal' as const,
-        branches:
-        a.id === 'allergy-recon'
-          ? [{ id: 'outside-records', name: 'Add an allergy from outside records', favourable: true }]
-          : [],
+        // E13: three activities are on Reduced review at baseline (13b), each by its rule (R8).
+        reviewLevel: reviewLevels.find((r) => r.activityId === a.id)?.changes.at(-1)?.to ?? ('normal' as const),
+        branches: a.id === 'allergy-recon' ? ALLERGY_BRANCHES : [],
       },
       ...(a.id === 'discharge-meds' ? [dischargeInteractions] : []),
     ]),

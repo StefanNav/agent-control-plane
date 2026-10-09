@@ -48,6 +48,12 @@ export function addMinutes(iso: string, minutes: number): string {
   return toIso(new Date(at(iso).getTime() + minutes * 60000))
 }
 
+/** Calendar days from one date to another, ignoring the time of day ('08 Dec 09:52' to '29 Dec' is 21). */
+export function dayGap(from: string, to: string): number {
+  const day = (iso: string) => Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10))
+  return Math.round((day(to) - day(from)) / 86400000)
+}
+
 /** iso + n calendar days, same wall-clock time (daylight-saving safe). */
 export function addDays(iso: string, days: number): string {
   const d = at(iso)

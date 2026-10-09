@@ -246,3 +246,30 @@ describe('review fixes', () => {
     expect(split.exceptions.find((e) => e.id === 'exc-5497')).toMatchObject({ ownerId: 'nina' })
   })
 })
+
+describe('review fix I2: a branch never keeps a level its activity has lost', () => {
+  /** Allergy Recon with its outside-records branch at Supervised (as after 14b). */
+  const promotedSeed = () => {
+    const s = createSeed()
+    s.activities.find((a) => a.id === 'allergy-recon')!.branches[0]!.level = 'supervised'
+    Object.assign(s.privileges.find((p) => p.code === 'PRV-0087' && p.version === 5)!, { branchLevels: { 'outside-records': 'supervised' } })
+    return s
+  }
+
+  test('returning the activity to Shadow drops the Supervised branch to Draft, in the new version too', async () => {
+    const { applyReturnToShadow } = await import('./settings')
+    const s = applyReturnToShadow(promotedSeed(), 'allergy-recon', 'marcus', 'Checking a pattern')
+    expect(s.activities.find((a) => a.id === 'allergy-recon')!.branches[0]!.level).toBe('draft')
+    const next = s.privileges.filter((p) => p.code === 'PRV-0087').sort((a, b) => b.version - a.version)[0]!
+    expect(next.branchLevels).toEqual({ 'outside-records': 'draft' })
+  })
+
+  test('a lapse to Shadow does the same', () => {
+    const s = promotedSeed()
+    Object.assign(s.privileges.find((p) => p.code === 'PRV-0087' && p.version === 5)!, { state: 'due', reviewDate: '2026-12-01T00:00:00' })
+    applyDivisionSettings(s, 'medications', { lapsePolicy: 'shadowNow' }, 'dana', AT)
+    expect(s.activities.find((a) => a.id === 'allergy-recon')!.level).toBe('shadow')
+    expect(s.activities.find((a) => a.id === 'allergy-recon')!.branches[0]!.level).toBe('draft')
+    expect(s.privileges.find((p) => p.code === 'PRV-0087' && p.version === 5)!.branchLevels).toEqual({ 'outside-records': 'draft' })
+  })
+})

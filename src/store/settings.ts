@@ -1,5 +1,6 @@
 import type { DemoState, Division, Privilege, Role } from '../data/types'
 import { addDays, addMinutes, formatDate } from '../lib/clock'
+import { lowerBranches } from './branches'
 import { applyPause, nextVersion } from './mutations'
 import { personName } from './onboardingRules'
 
@@ -25,12 +26,14 @@ export function applyReturnToShadow(s: DemoState, activityId: string, by: string
   if (!target) return s
   const was = target.level
   target.level = 'shadow'
+  // Review fix I2: a branch never keeps a level its activity has lost.
+  const branchLevels = lowerBranches(target)
   relevel(s, target.agentId)
   const current = s.privileges.find((p) => p.activityId === activityId && p.state !== 'closed')
   if (!current) return s
   current.state = 'closed'
   const version = nextVersion(s, current.code)
-  s.privileges.push({
+  const next: Privilege = {
     ...current,
     id: `${current.code.toLowerCase()}-v${version}`,
     version,
@@ -41,7 +44,10 @@ export function applyReturnToShadow(s: DemoState, activityId: string, by: string
     grantedAt: undefined,
     movedBy: by,
     trigger: reason,
-  })
+    ...(branchLevels ? { branchLevels } : {}),
+  }
+  if (!branchLevels) delete next.branchLevels
+  s.privileges.push(next)
   return s
 }
 
@@ -89,6 +95,9 @@ export function applyLapses(s: DemoState, from: string = s.now): DemoState {
     }
     Object.assign(p, { state: 'lapsed', movedBy: LAPSE_RULE, trigger: why })
     activity.level = 'shadow'
+    const branchLevels = lowerBranches(activity)
+    if (branchLevels) p.branchLevels = branchLevels
+    else delete p.branchLevels
     relevel(s, agent.id)
     s.logEvents.push({ id: `log-lapse-${s.logEvents.length + 1}`, at, agentId: agent.id, text: `${activity.name} returned to Shadow`, sub: `${LAPSE_RULE} · ${why.toLowerCase()}` })
   }

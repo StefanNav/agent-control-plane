@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
-import { PERSONA_IDS, type Condition, type DemoState, type FlagReason, type ReviewChange, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
+import { PERSONA_IDS, type Condition, type DemoState, type FlagReason, type ReviewChange, type ReviewRules, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
 import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, signMode, testResult, type SystemsChange } from './onboarding'
@@ -11,6 +11,9 @@ import { applyAccept, applyHardStopApproval, applyReplay, applySystemsSignOff, p
 import { applyFlag, applyFlagAnswer, applySeenFix, type FlagAnswer } from './feedback'
 import { applyBlockCaller, applyDismissCaller, applyMessageOwner } from './gateway'
 import { applyDeclineReviewChange, applyProposeReviewChange, applyShareFinding, applySignReviewChange, unitById } from './reviewers'
+import { applyCheck, applyRules, applyTighten, validRules } from './levels'
+import { applyDecidePromotion, applyResendPromotion, applyReturnPromotion, applySignPromotion, criteria, lapsedCriteria, promotionContext, promotionOf } from './promotions'
+import { applyIncidentStepDown, applyRestore, replayDone } from './stepdowns'
 import { can, lockReason } from './permissions'
 import { applyAddRole, applyCreateDivision, applyDivisionSettings, applyInvite, applyRemoveRole, applyReturnToShadow, diffDivision, divisionSlug, ROLE_LABEL, roleDivision, type DivisionPatch, type NewDivisionInput, type RoleInput } from './settings'
 import { runAction, type ActionResult } from './runAction'
@@ -76,7 +79,7 @@ export interface DemoActions {
   /** Close once every correction is done: the commander or the program lead (7c). */
   closeIncident: (incidentId: string, reason: string) => ActionResult
   /** Build a records export for a survey or audit; it is logged (7d). */
-  buildExport: (input: { agentIds: string[]; from: string; to: string; format: 'packet' | 'csv'; masked: boolean }) => ActionResult
+  buildExport: (input: { agentIds: string[]; from: string; to: string; format: 'packet' | 'csv'; masked: boolean; note?: string }) => ActionResult
   /** Who answers for a division, what a lapsed review does, who unanswered items reach (8a). Program lead only. */
   updateDivisionSettings: (divisionId: string, patch: DivisionPatch) => ActionResult
   /** A new division, or a split of `from` with the agents that move (8a, composed). Program lead only. */
@@ -115,6 +118,22 @@ export interface DemoActions {
   declineReviewChange: (id: string, reason: string) => ActionResult
   /** "Share with Priya" (11a): an FYI in the log. */
   shareReviewerFinding: (unitId: string) => ActionResult
+  /** "Tighten now…" (13a): tighten an activity's review level by hand, with a reason; never loosen. */
+  tightenReviewLevel: (activityId: string, reason: string) => ActionResult
+  /** "Edit rules" (13a): the sponsor rewrites the numbers in the four rules, with a reason. */
+  updateReviewRules: (activityId: string, rules: ReviewRules, reason: string) => ActionResult
+  /** Record an independent check of a drawn output (13b); a defect can move the level by rule. Owner. */
+  recordCheck: (drawId: string, input: { result: 'right' | 'defect' | 'cantTell'; note?: string }) => ActionResult
+  /** The sponsor signs a one-branch promotion (14a): above Tier 2 it goes to the board. Every criterion must be met. */
+  signPromotion: (id: string, input: { reason: string; accepted: boolean }) => ActionResult
+  /** The sponsor sends a promotion back to the owner with a note (14a "Request changes"). */
+  returnPromotion: (id: string, note: string) => ActionResult
+  /** The owner sends a returned promotion to the sponsor again (composed). */
+  resendPromotion: (id: string) => ActionResult
+  /** The AI review board decides a Tier 3 promotion (14b), with a reason. */
+  decidePromotion: (id: string, input: { kind: ReviewDecision['kind']; conditions: Condition[]; reason: string }) => ActionResult
+  /** "Sign to restore Supervised" (15b): the sponsor, once the re-validation replay meets every criterion (BR-07). */
+  restoreLevel: (stepDownId: string) => ActionResult
   /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
   startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
   /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
@@ -568,6 +587,8 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                   corrections: [],
                   timeline,
                 })
+                // Review fix I4: a linked incident is a step-down trigger for branches above Draft (14a, 15b).
+                applyIncidentStepDown(draft, agentId, code, draft.now)
               },
             })
           },
@@ -857,6 +878,140 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                 applyShareFinding(draft, unitId, draft.personaId, draft.now)
               },
             })
+          },
+          tightenReviewLevel: (activityId, reason) => {
+            const s = get()
+            const activity = s.activities.find((a) => a.id === activityId)
+            if (!activity) return { ok: false, reason: 'Not found' }
+            if (!reason.trim()) return { ok: false, reason: 'Write a reason' }
+            if (activity.reviewLevel === 'tightened') return { ok: false, reason: 'Already at Tightened' }
+            return act({
+              action: 'tightenReview',
+              ctx: { agentId: activity.agentId },
+              audit: { action: 'Tightened review level', target: activity.name, reason: reason.trim() },
+              mutate: (draft) => {
+                applyTighten(draft, activityId, reason.trim(), draft.personaId, draft.now)
+              },
+            })
+          },
+          updateReviewRules: (activityId, rules, reason) => {
+            const s = get()
+            const activity = s.activities.find((a) => a.id === activityId)
+            if (!activity) return { ok: false, reason: 'Not found' }
+            if (!reason.trim()) return { ok: false, reason: 'Write a reason' }
+            if (!validRules(rules)) return { ok: false, reason: 'Every number must be at least 1' }
+            return act({
+              action: 'editReviewRules',
+              ctx: { agentId: activity.agentId },
+              audit: { action: 'Edited review-level rules', target: activity.name, reason: reason.trim() },
+              mutate: (draft) => {
+                applyRules(draft, activityId, { rules, reason: reason.trim() }, draft.personaId, draft.now)
+              },
+            })
+          },
+          recordCheck: (drawId, input) => {
+            const s = get()
+            const draw = s.samplingDraws.find((d) => d.id === drawId)
+            const activity = s.activities.find((a) => a.id === draw?.activityId)
+            if (!draw || !activity) return { ok: false, reason: 'Not found' }
+            if (draw.result) return { ok: false, reason: 'Already checked' }
+            return act({
+              action: 'recordCheck',
+              ctx: { agentId: activity.agentId },
+              audit: { action: 'Recorded check', target: draw.actionCode, reason: input.result },
+              mutate: (draft) => {
+                applyCheck(draft, drawId, input, draft.personaId, draft.now)
+              },
+            })
+          },
+          signPromotion: (id, { reason, accepted }) => {
+            const s = get()
+            const p = promotionOf(s, id)
+            const ctx = p && promotionContext(s, p)
+            if (!p || !ctx) return { ok: false, reason: 'Not found' }
+            const spec = {
+              action: 'signPrivilege' as const,
+              ctx: { agentId: ctx.agent.id },
+              audit: { action: 'Signed promotion', target: `${p.privilegeCode} · ${ctx.branch.name}`, reason: reason.trim() },
+              mutate: (draft: DemoState) => {
+                applySignPromotion(draft, id, reason.trim(), draft.personaId, draft.now)
+              },
+            }
+            if (!can(s, s.personaId, spec.action, spec.ctx)) return { ok: false, reason: lockReason(spec.action, s.personaId) }
+            if (p.state !== 'sponsor') return { ok: false, reason: 'Not waiting for a signature' }
+            if (criteria(s, id).some((c) => !c.met)) return { ok: false, reason: 'Every criterion must be met' }
+            if (!reason.trim()) return { ok: false, reason: 'Write a reason' }
+            if (!accepted) return { ok: false, reason: 'Accept accountability to sign' }
+            return act(spec)
+          },
+          returnPromotion: (id, note) => {
+            const s = get()
+            const p = promotionOf(s, id)
+            const ctx = p && promotionContext(s, p)
+            if (!p || !ctx) return { ok: false, reason: 'Not found' }
+            if (p.state !== 'sponsor') return { ok: false, reason: 'Not waiting for a signature' }
+            if (!note.trim()) return { ok: false, reason: 'Write a note' }
+            return act({
+              action: 'signPrivilege',
+              ctx: { agentId: ctx.agent.id },
+              audit: { action: 'Returned promotion', target: p.privilegeCode, reason: note.trim() },
+              mutate: (draft) => {
+                applyReturnPromotion(draft, id, note.trim(), draft.personaId, draft.now)
+              },
+            })
+          },
+          resendPromotion: (id) => {
+            const s = get()
+            const p = promotionOf(s, id)
+            const ctx = p && promotionContext(s, p)
+            if (!p || !ctx) return { ok: false, reason: 'Not found' }
+            if (p.state !== 'returned') return { ok: false, reason: 'Nothing to send' }
+            return act({
+              action: 'requestGoLive',
+              ctx: { agentId: ctx.agent.id },
+              audit: { action: 'Sent promotion again', target: p.privilegeCode },
+              mutate: (draft) => {
+                applyResendPromotion(draft, id, draft.personaId, draft.now)
+              },
+            })
+          },
+          decidePromotion: (id, input) => {
+            const s = get()
+            const p = promotionOf(s, id)
+            const ctx = p && promotionContext(s, p)
+            if (!p || !ctx) return { ok: false, reason: 'Not found' }
+            if (p.state === 'sponsor' || p.state === 'returned') return { ok: false, reason: `Waiting for ${s.people.find((x) => x.id === ctx.agent.sponsorId)?.name ?? 'the sponsor'}’s signature` }
+            if (p.state !== 'board') return { ok: false, reason: 'Already decided' }
+            if (!input.reason.trim()) return { ok: false, reason: 'Write a reason' }
+            const lapsed = lapsedCriteria(s, id)
+            if ((input.kind === 'approve' || input.kind === 'approveWithConditions') && lapsed.length)
+              return { ok: false, reason: `The evidence changed since ${s.people.find((x) => x.id === p.sponsor?.by)?.name ?? 'the sponsor'} signed: ${lapsed[0]!.label.charAt(0).toLowerCase()}${lapsed[0]!.label.slice(1)} no longer meet the target` }
+            return act({
+              action: 'approveGoLive',
+              ctx: { agentId: ctx.agent.id },
+              audit: { action: 'Decided promotion', target: p.privilegeCode, reason: `${DECISION_WORDS[input.kind]} · ${input.reason.trim()}` },
+              mutate: (draft) => {
+                applyDecidePromotion(draft, id, { ...input, reason: input.reason.trim() }, draft.personaId, draft.now)
+              },
+            })
+          },
+          restoreLevel: (stepDownId) => {
+            const s = get()
+            const d = s.stepDowns.find((x) => x.id === stepDownId)
+            if (!d || !d.branchId) return { ok: false, reason: 'Not found' }
+            const spec = {
+              action: 'signPrivilege' as const,
+              ctx: { agentId: d.agentId },
+              audit: { action: 'Restored level', target: d.written.split(' ')[0]!, reason: `Re-validated ${d.build?.to ?? ''}`.trim() },
+              mutate: (draft: DemoState) => {
+                applyRestore(draft, stepDownId, draft.personaId, draft.now)
+              },
+            }
+            if (!can(s, s.personaId, spec.action, spec.ctx)) return { ok: false, reason: lockReason(spec.action, s.personaId) }
+            if (d.restoredAt) return { ok: false, reason: 'Already restored' }
+            if (!replayDone(s, d)) return { ok: false, reason: 'Opens when the replay finishes' }
+            if (!d.revalidation?.meets) return { ok: false, reason: 'The replay doesn’t meet every criterion' }
+            return act(spec)
           },
           startOnboarding: (intakeId, { ownerId, techOwnerId }) => {
             const s = get()

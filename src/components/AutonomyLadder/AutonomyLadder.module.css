@@ -46,6 +46,11 @@
   background: var(--cs-lad-lock);
 }
 
+.held {
+  border: 1.5px dashed var(--cs-ink);
+  background: var(--cs-raised);
+}
+
 /* Full: a 4-column card. */
 .full {
   display: grid;
@@ -123,4 +128,84 @@
 
 .cell_locked .evidence {
   font-family: var(--cs-font-sans);
+}
+
+/* Wide (14a, 14b, 15a, 15b): fills its container; level names under the segments. 14a's legend
+   draws granted-before in the icon grey, a proposal as an indigo fill and a lock as a hatch. */
+.wide {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: 4px;
+  row-gap: 4px;
+}
+
+.bar,
+.swatch {
+  box-sizing: border-box;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.bar_passed {
+  background: var(--cs-icon);
+}
+
+.bar_current {
+  background: var(--cs-ink);
+}
+
+.bar_proposed {
+  background: var(--cs-acc-fill);
+}
+
+.bar_available {
+  background: var(--cs-raised);
+  box-shadow: inset 0 0 0 1px var(--cs-icon);
+}
+
+.bar_held {
+  background: var(--cs-raised);
+  border: 1.5px dashed var(--cs-ink);
+}
+
+/* A pattern, not a decorative gradient: 14a's "Locked by policy" hatch. */
+.bar_locked {
+  background: repeating-linear-gradient(135deg, var(--cs-line-strong) 0 1.5px, var(--cs-fill) 1.5px 4px);
+}
+
+.barLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.barLabelStrong {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-text2);
+}
+
+.swatch {
+  flex: none;
+  width: 28px;
 }
