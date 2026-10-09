@@ -76,7 +76,7 @@ export interface DemoActions {
   /** Close once every correction is done: the commander or the program lead (7c). */
   closeIncident: (incidentId: string, reason: string) => ActionResult
   /** Build a records export for a survey or audit; it is logged (7d). */
-  buildExport: (input: { agentIds: string[]; from: string; to: string; format: 'packet' | 'csv'; masked: boolean }) => ActionResult
+  buildExport: (input: { agentIds: string[]; from: string; to: string; format: 'packet' | 'csv'; masked: boolean; note?: string }) => ActionResult
   /** Who answers for a division, what a lapsed review does, who unanswered items reach (8a). Program lead only. */
   updateDivisionSettings: (divisionId: string, patch: DivisionPatch) => ActionResult
   /** A new division, or a split of `from` with the agents that move (8a, composed). Program lead only. */

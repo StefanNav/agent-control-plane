@@ -1,0 +1,314 @@
+/* E12: RUAIH evidence. Monitoring screens, 13–14 px; the export modal is a form (16 px). */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  column-gap: 40px;
+  align-items: start;
+  padding: 32px 40px 48px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 32px 40px 48px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.caps {
+  margin: 0;
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cs-meta);
+}
+
+.foot {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.pair {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.agent {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--cs-ink);
+  text-decoration: none;
+}
+
+a.agent:hover {
+  text-decoration: underline;
+}
+
+.meta {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+/* 12a's element headers are sentence case in Plex Sans, unlike the table's caps. */
+.element {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 48px;
+  font-family: var(--cs-font-sans);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: normal;
+  color: var(--cs-meta);
+}
+
+.element strong {
+  font-weight: 600;
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--cs-text2);
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  gap: 66px;
+  white-space: nowrap;
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--cs-meta);
+}
+
+.moreButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.moreButton:hover {
+  color: var(--cs-ink);
+  text-decoration: underline;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--cs-line);
+  border-radius: 6px;
+  background: var(--cs-raised);
+}
+
+.sideHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 20px 15px;
+  border-bottom: 1px solid var(--cs-line);
+}
+
+.sideTitle {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.sub {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-meta);
+}
+
+.gap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 13px 20px 12px;
+  border-bottom: 1px solid var(--cs-line);
+}
+
+.gapTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+.due {
+  font-family: var(--cs-font-mono);
+}
+
+.gapAgent {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.gapText {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.owner {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-meta);
+}
+
+.sideFoot {
+  padding: 13px 20px 16px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border: 1px solid var(--cs-line);
+  border-radius: 2px;
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  color: var(--cs-text2);
+  white-space: nowrap;
+}
+
+.gapLine {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-text2);
+}
+
+.records {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.number {
+  font-size: 12px;
+  color: var(--cs-meta);
+}
+
+.name {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.covered {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.mono {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  color: var(--cs-meta);
+}
+
+/* The export modal (12b). */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.note {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.note strong {
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.estimate {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  color: var(--cs-meta);
+}
+
+.rules {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rules li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+}
+
+.rules strong {
+  font-weight: 600;
+  color: var(--cs-ink);
+}

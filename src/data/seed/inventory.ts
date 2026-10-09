@@ -47,5 +47,5 @@ export const retiredAgents: Agent[] = [
 export const exportRecords: ExportRecord[] = [
   { id: 'exp-0001', code: 'EXP-0001', agentIds: ['med-rec'], from: '2026-11-06T00:00:00', to: '2026-11-13T00:00:00', format: 'packet', masked: true, by: 'dana', at: '2026-11-13T15:00:00' },
   { id: 'exp-0002', code: 'EXP-0002', agentIds: ['prior-auth'], from: '2026-10-01T00:00:00', to: '2026-11-01T00:00:00', format: 'csv', masked: true, by: 'jordan', at: '2026-11-20T09:40:00' },
-  { id: 'exp-0003', code: 'EXP-0003', agentIds: ['med-rec', 'discharge-meds'], from: '2026-11-06T00:00:00', to: '2026-12-01T00:00:00', format: 'packet', masked: true, by: 'dana', at: '2026-12-01T17:10:00' },
+  { id: 'exp-0003', code: 'EXP-0003', agentIds: ['med-rec', 'discharge-meds'], from: '2026-11-06T00:00:00', to: '2026-12-01T00:00:00', format: 'packet', masked: true, by: 'dana', at: '2026-12-01T17:10:00', note: 'Mock survey' },
 ]

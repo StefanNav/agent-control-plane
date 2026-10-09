@@ -1,4 +1,5 @@
 import * as catalogue from './catalogue'
+import * as evidence from './evidence'
 import { DEMO_NOW } from '../../lib/clock'
 import { createSeed, SEED_VERSION } from './index'
 
@@ -243,14 +244,16 @@ describe('Phase 4: controls and audit data', () => {
   test('inventory records: 3 approved intakes not started (REQ-0081 from 9b, R16), 3 past exports', () => {
     expect(s.intakeRequests.filter((r) => !r.startedAt).map((r) => r.code)).toEqual(['REQ-0106', 'REQ-0108', 'REQ-0081'])
     expect(s.exports).toHaveLength(3)
+    // 12a's "Last export · Mock survey" (Phase 7 R3).
+    expect(s.exports.find((e) => e.code === 'EXP-0003')!.note).toBe('Mock survey')
   })
 })
 
 describe('Phase 5: onboarding data (seed v6)', () => {
   const s = createSeed()
 
-  test('seed version 7 (Phase 6: division settings and role dates)', () => {
-    expect(SEED_VERSION).toBe(7)
+  test('seed version 8 (Phase 7: evidence, review levels, promotions and step-downs)', () => {
+    expect(SEED_VERSION).toBe(8)
   })
 
   test('every intake reserves a unique agent id and code; only a started intake’s agent uses them', () => {
@@ -354,10 +357,12 @@ describe('Phase 6: v2 frames re-dated to December (R1, R2)', () => {
 
   test('no seed or catalogue string shows a March date, and Med Rec never reads v1.4.2 (Review focus 5)', () => {
     const seedNow = createSeed()
-    const all = [...strings(seedNow), ...strings(Object.values(catalogue))]
-    expect(all.filter((t) => /\b\d{2} Mar\b/.test(t))).toEqual([])
-    // Claim Scrubber Agent really is v1.4.2; nothing else may be (9a, 10a's March build).
-    expect([...strings({ ...seedNow, agents: [] }), ...strings(Object.values(catalogue))].filter((t) => t.includes('v1.4.2'))).toEqual([])
+    const modules = [...Object.values(catalogue), ...Object.values(evidence)]
+    const all = [...strings(seedNow), ...strings(modules)]
+    // Phase 7: the E12–E15 frames run March to July 2027; none of their dates may leak (R1).
+    expect(all.filter((t) => /\b\d{2} (Mar|Apr|May|Jun|Jul)\b/.test(t))).toEqual([])
+    // Claim Scrubber Agent really is v1.4.2; nothing else may be (9a, 10a's March build), nor 13b's v1.2.4.
+    expect([...strings({ ...seedNow, agents: [] }), ...strings(modules)].filter((t) => t.includes('v1.4.2') || t.includes('v1.2.4'))).toEqual([])
   })
 
   test('flag codes are unique and stop at FB-2290, so Ana’s flag is FB-2291', () => {

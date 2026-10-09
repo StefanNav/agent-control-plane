@@ -20,7 +20,7 @@ import { sampleCases, scorecards } from './scorecards'
  * Bump whenever seed data or the DemoState shape changes: saved state from an older
  * version is discarded and replaced by a fresh seed (Review focus 1).
  */
-export const SEED_VERSION = 7
+export const SEED_VERSION = 8
 
 const SEED: DemoState = {
   version: SEED_VERSION,

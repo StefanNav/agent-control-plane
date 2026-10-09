@@ -11,3 +11,9 @@ export const fromMarch = (iso: string, days: number) => addDays(iso, days)
 export const E10_SHIFT = -99
 /** 9b, 11a and 11b (24 Mar → 08 Dec). */
 export const E11_SHIFT = -106
+/** 12a and 12b (24 Mar → 08 Dec). */
+export const E12_SHIFT = -106
+/** 13a, 13b and 14a (16 Mar → 08 Dec). */
+export const E13_SHIFT = -98
+/** 15a (18 Mar → 09 Dec, `step-down-threshold`): the day after 10a, so the same shift as E10. */
+export const E15_SHIFT = E10_SHIFT

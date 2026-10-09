@@ -731,6 +731,23 @@ export interface ExportRecord {
   masked: boolean
   by: string
   at: string
+  /** What it was for: "Mock survey", "RUAIH evidence packet" (12a, 12b). */
+  note?: string
+}
+
+/** The seven elements of the Joint Commission and CHAI RUAIH guidance, by number (E12). */
+export type RuaihElement = 1 | 2 | 3 | 4 | 5 | 6 | 7
+
+/** An element an agent's records don't cover yet, with an owner and a due date (12a). */
+export interface RuaihGap {
+  agentId: string
+  element: RuaihElement
+  /** 12a's line, e.g. "No patient-facing notice that an agent drafts the medication list". */
+  text: string
+  /** 12b's shorter line, e.g. "No patient-facing notice yet"; defaults to `text`. */
+  short?: string
+  ownerId: string
+  due: string
 }
 
 /** One logged change: who, what, when, and why. */

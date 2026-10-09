@@ -502,6 +502,14 @@ test('buildExport logs an export record (7d); it needs an agent; Jordan may buil
   expect(store.getState().buildExport(input)).toEqual({ ok: true })
 })
 
+test('an evidence packet keeps its note (12b, Phase 7 R7)', () => {
+  const store = fresh()
+  store.getState().setPersona('dana')
+  const input = { agentIds: ['med-rec'], from: '2025-12-08T00:00:00', to: DEMO_NOW, format: 'packet' as const, masked: true, note: 'RUAIH evidence packet' }
+  expect(store.getState().buildExport(input)).toEqual({ ok: true })
+  expect(store.getState().exports.at(-1)).toMatchObject({ code: 'EXP-0004', note: 'RUAIH evidence packet' })
+})
+
 describe('review fix: disable, pause and resume compose (Important #1)', () => {
   const disabledMedRec = () => {
     const store = fresh()
