@@ -4,13 +4,31 @@
     {
       "name": "dev",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev", "--port", "5173", "--strictPort"],
+      "runtimeArgs": [
+        "dev",
+        "--port",
+        "5173",
+        "--strictPort"
+      ],
       "port": 5173
+    },
+    {
+      "name": "dev-alt",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "dev",
+        "--port",
+        "5174",
+        "--strictPort"
+      ],
+      "port": 5174
     },
     {
       "name": "designs",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["designs"],
+      "runtimeArgs": [
+        "designs"
+      ],
       "port": 4599
     }
   ]
