@@ -20,6 +20,7 @@ import { RecordPage } from '../features/review/RecordPage'
 import { RiskTierPage } from '../features/review/RiskTierPage'
 import { DivisionSettingsPage } from '../features/settings/DivisionSettingsPage'
 import { EpicPage } from '../features/epic/EpicPage'
+import { ActivityPage } from '../features/activity/ActivityPage'
 import { AgentEvidencePage } from '../features/evidence/AgentEvidencePage'
 import { EvidencePage } from '../features/evidence/EvidencePage'
 import { GatewayPage } from '../features/gateway/GatewayPage'
@@ -65,6 +66,8 @@ const PAGES: Record<string, ReactNode> = {
   '/operations/reviewers/:unitId': <UnitPage />,
   '/reports/evidence': <EvidencePage />,
   '/reports/evidence/:agentId': <AgentEvidencePage />,
+  '/portfolio/activities/:activityId': <ActivityPage />,
+  '/portfolio/activities/:activityId/branches/:branchId': <ActivityPage />,
 }
 
 function childrenFor(shell: ShellKind): RouteObject[] {

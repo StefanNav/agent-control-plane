@@ -1,6 +1,7 @@
 import type { ChangeDef } from '../data/seed/catalogue'
 import type { Change, ChangeCheck, DemoState } from '../data/types'
 import { addDays, addMinutes, formatDate } from '../lib/clock'
+import { applyNewVersionLevels } from './levels'
 import { raiseItem, resolveItems } from './onboarding'
 import { personName } from './onboardingRules'
 
@@ -165,6 +166,8 @@ export function applyAccept(s: DemoState, id: string, by: string, at: string): D
   resolveItems(s, agent.id, REVALIDATE, by, at, `Accepted ${c.to.build}`)
   resolveItems(s, agent.id, hardStopItem(c), by, at, `Accepted ${c.to.build}`)
   clearRevalidation(s, agent.id)
+  // A new agent or SOP version sends Reduced review back to Normal (13a's rule).
+  applyNewVersionLevels(s, agent.id, at)
   return s
 }
 

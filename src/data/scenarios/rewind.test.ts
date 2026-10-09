@@ -58,3 +58,11 @@ test('review fix M9: an October rewind drops this phase’s later callers, flags
   expect(s.flags.every((f) => f.at <= s.now)).toBe(true)
   expect(s.epicDrafts).toEqual([])
 })
+
+test('Phase 7: an October rewind rolls review levels back to that day (R17)', async () => {
+  const { levelOf } = await import('../../store/levels')
+  const s = rewindTo(createSeed(), '2026-10-07T09:05:00')
+  expect(s.activities.find((a) => a.id === 'allergy-recon')!.reviewLevel).toBe('tightened')
+  expect(levelOf(s, 'allergy-recon').changes.map((c) => c.at)).toEqual(['2026-10-06T06:00:00'])
+  expect(s.activities.find((a) => a.id === 'duplicate-rx')!.reviewLevel).toBe('normal')
+})

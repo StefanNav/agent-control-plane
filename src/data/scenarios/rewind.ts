@@ -52,6 +52,12 @@ export function rewindTo(s: DemoState, at: string): DemoState {
   s.epicDrafts = s.epicDrafts.filter((d) => !after(d.draftedAt))
   s.changes = s.changes.filter((c) => !after(c.deployedAt))
   s.reviewChanges = s.reviewChanges.filter((c) => !after(c.at))
+  // Phase 7 (R17): review levels as they stood that day.
+  for (const record of s.reviewLevels) {
+    record.changes = record.changes.filter((c) => !after(c.at))
+    const activity = s.activities.find((a) => a.id === record.activityId)
+    if (activity) activity.reviewLevel = record.changes.at(-1)?.to ?? 'normal'
+  }
   dropAgents(s, new Set(s.onboardings.filter((r) => after(r.startedAt)).map((r) => r.agentId)))
   for (const intake of s.intakeRequests) if (after(intake.startedAt)) delete intake.startedAt
 

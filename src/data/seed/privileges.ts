@@ -1,6 +1,7 @@
 import type { Privilege } from '../types'
 import { activities } from './activities'
 import { agents } from './agents'
+import { PRV_0087 } from './autonomy'
 
 /**
  * Baseline privileges as of 08 Dec, one per Medications activity, taken from the division
@@ -60,7 +61,8 @@ const KNOWN: Record<string, Partial<Privilege>> = {
   // Sign dates from 3d.
   'med-shortage': { grantedAt: '2026-09-23T10:00:00' },
   'controlled-drug': { grantedAt: '2026-10-10T10:00:00' },
-  'allergy-recon': { grantedAt: '2026-10-16T10:00:00' },
+  // 13a, 14a, 15b: Allergy Recon is PRV-0087, at v5 since 16 Oct (3d), with C1 and C3 from its approval (14b, R2).
+  'allergy-recon': { code: PRV_0087.code, version: PRV_0087.version, conditions: PRV_0087.conditions, grantedAt: '2026-10-16T10:00:00' },
 }
 
 /** Codes the frames name; the rest count down from PRV-0141 so Med Rec's PRV-0142 comes next (ruling R11). */
@@ -78,7 +80,7 @@ const signedBefore = (review: string) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T10:00:00`
 }
 
-export const privileges: Privilege[] = activities
+const signed: Privilege[] = activities
   .filter((act) => agents.find((a) => a.id === act.agentId)?.divisionId === 'medications')
   .map((act) => {
     const agent = agents.find((a) => a.id === act.agentId)!
@@ -103,3 +105,17 @@ export const privileges: Privilege[] = activities
       ...(known.signReason ? { signReason: known.signReason } : {}),
     }
   })
+
+/** PRV-0087 v1, closed: Allergy Recon's first signature at Draft (15b's history, R2). v2–v4 were renewals at the same level. */
+const prv0087v1: Privilege = {
+  ...signed.find((p) => p.code === PRV_0087.code)!,
+  id: 'prv-0087-v1',
+  version: 1,
+  state: 'closed',
+  grantedBy: 'priya',
+  grantedAt: PRV_0087.firstSignedAt,
+  reviewDate: '2026-12-09T00:00:00',
+  conditions: PRV_0087.conditions,
+}
+
+export const privileges: Privilege[] = [...signed, prv0087v1]

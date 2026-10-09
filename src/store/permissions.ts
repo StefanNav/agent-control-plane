@@ -31,6 +31,10 @@ export type PermAction =
   | 'proposeReviewChange'
   /** The sponsor signs or declines it (11b: "Priya signs sampling and review-level changes"). */
   | 'signReviewChange'
+  /** Tighten an activity's review level by hand, with a reason (13a); nobody loosens by hand. */
+  | 'tightenReview'
+  /** Rewrite the rules that move a review level (13a "Edit rules"). */
+  | 'editReviewRules'
 
 /** How far a role reaches for an action: everywhere, its own divisions, or its own agents. */
 type Scope = 'all' | 'own' | 'ownAgents'
@@ -70,6 +74,9 @@ const MATRIX: Record<PermAction, Partial<Record<Role, Scope>>> = {
   decideCaller: { programLead: 'all' },
   proposeReviewChange: { owner: 'own', programLead: 'all' },
   signReviewChange: { sponsor: 'own' },
+  // 13a: tightening is a safety step, like a pause; the sponsor writes the rules.
+  tightenReview: STOPPERS,
+  editReviewRules: { sponsor: 'own' },
 }
 
 export interface PermContext {
@@ -114,6 +121,8 @@ const REASONS: Partial<Record<PermAction, string>> = {
   decideCaller: 'Program lead only',
   proposeReviewChange: 'Agent owner or program lead',
   signReviewChange: 'Clinical sponsor only',
+  tightenReview: 'Owner, sponsor or program lead',
+  editReviewRules: 'Clinical sponsor only',
   prepareGoLive: 'Program lead only',
   retire: 'Program lead or sponsor only',
   disable: 'Program lead or sponsor only',

@@ -164,14 +164,30 @@ export interface PauseDetail {
   changes?: { title: string; sub: string; meta: string }[]
 }
 
+/** How much of an activity's signed output a second pharmacist checks (E13). */
+export type ReviewLevel = 'tightened' | 'normal' | 'reduced'
+
+/** One branch of an activity: promotion is per branch (E14). */
+export interface Branch {
+  id: string
+  name: string
+  favourable: boolean
+  /** 14a's line under the name, e.g. "Only adds caution; nothing is removed". */
+  sub?: string
+  /** Absent: the activity's own level. */
+  level?: Level
+  /** A hard stop that forbids the branch at every level, e.g. 'HS-07 v1'. */
+  lockedBy?: string
+}
+
 /** One distinct job an agent does; autonomy is granted per activity. */
 export interface Activity {
   id: string
   agentId: string
   name: string
   level: Level
-  reviewLevel: 'tightened' | 'normal' | 'reduced'
-  branches: { id: string; name: string; favourable: boolean }[]
+  reviewLevel: ReviewLevel
+  branches: Branch[]
   /** Today's volume line, e.g. "96 drafts" or "41 in shadow". */
   today?: string
   /** Paused on its own while the rest of the agent keeps working (6b "This activity"). */
@@ -441,6 +457,48 @@ export interface ReviewChange {
   reason?: string
   /** Signed changes run 14 days. */
   until?: string
+}
+
+/** The numbers in the four rules that move a review level (13a); the sponsor writes them. */
+export interface ReviewRules {
+  /** Normal → Reduced: `days` in a row with no defects, at least `checks` checks, an edit rate under `editRate` %. */
+  reduce: { days: number; checks: number; editRate: number }
+  /** Reduced → Normal: any defect, an edit rate above `editRate` % for `days` days, or a new version. */
+  restore: { editRate: number; days: number }
+  /** Normal → Tightened: `defects` defects in any `batches` batches of checks in a row. */
+  tighten: { defects: number; batches: number }
+  /** Tightened → Normal: `batches` clean batches in a row. */
+  relax: { batches: number }
+}
+
+/** A review level moved: by a rule, or by a person tightening with a reason (13a "Level changes"). */
+export interface LevelChange {
+  at: string
+  from: ReviewLevel
+  to: ReviewLevel
+  by: 'rule' | string
+  why: string
+}
+
+/** An activity's review level: its rules, how it moved, and the checks since it last moved (E13). */
+export interface ReviewLevelRecord {
+  activityId: string
+  rules: ReviewRules
+  writtenBy: string
+  writtenAt: string
+  /** When the first level (Normal) began. */
+  since: string
+  /** Oldest first. */
+  changes: LevelChange[]
+  /** Checks and defects since the last change. */
+  checks: number
+  defects: number
+  /** Days a defect was recorded on, for the "defects in any N batches" rule (a batch is a day's draw). */
+  defectDays: string[]
+  /** What the last rule firing counted (13a "312 checks · 0 defects"). */
+  fired?: { checks: number; defects: number }
+  /** A board condition (14b's C4): no move to Reduced before this date. */
+  noReducedBefore?: string
 }
 
 /** An informational event: kept in the log, never sent to anyone. */
@@ -795,6 +853,8 @@ export interface DemoState {
   callers: GatewayCaller[]
   /** Sampling and review-level changes proposed for units (11b). */
   reviewChanges: ReviewChange[]
+  /** Activities' review levels and the rules that move them (E13). */
+  reviewLevels: ReviewLevelRecord[]
   /** Hospital-wide counts before today's activity (4f "Last 24 hours"); `actionsToday` for 7a. */
   stats24h: {
     closedEarlier: number

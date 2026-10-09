@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { createSeed, SEED_VERSION } from '../data/seed'
-import { PERSONA_IDS, type Condition, type DemoState, type FlagReason, type ReviewChange, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
+import { PERSONA_IDS, type Condition, type DemoState, type FlagReason, type ReviewChange, type ReviewRules, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
 import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, signMode, testResult, type SystemsChange } from './onboarding'
@@ -11,6 +11,7 @@ import { applyAccept, applyHardStopApproval, applyReplay, applySystemsSignOff, p
 import { applyFlag, applyFlagAnswer, applySeenFix, type FlagAnswer } from './feedback'
 import { applyBlockCaller, applyDismissCaller, applyMessageOwner } from './gateway'
 import { applyDeclineReviewChange, applyProposeReviewChange, applyShareFinding, applySignReviewChange, unitById } from './reviewers'
+import { applyRules, applyTighten, validRules } from './levels'
 import { can, lockReason } from './permissions'
 import { applyAddRole, applyCreateDivision, applyDivisionSettings, applyInvite, applyRemoveRole, applyReturnToShadow, diffDivision, divisionSlug, ROLE_LABEL, roleDivision, type DivisionPatch, type NewDivisionInput, type RoleInput } from './settings'
 import { runAction, type ActionResult } from './runAction'
@@ -115,6 +116,10 @@ export interface DemoActions {
   declineReviewChange: (id: string, reason: string) => ActionResult
   /** "Share with Priya" (11a): an FYI in the log. */
   shareReviewerFinding: (unitId: string) => ActionResult
+  /** "Tighten now…" (13a): tighten an activity's review level by hand, with a reason; never loosen. */
+  tightenReviewLevel: (activityId: string, reason: string) => ActionResult
+  /** "Edit rules" (13a): the sponsor rewrites the numbers in the four rules, with a reason. */
+  updateReviewRules: (activityId: string, rules: ReviewRules, reason: string) => ActionResult
   /** Start onboarding from an approved intake with all four humans named (1a, 2a). */
   startOnboarding: (intakeId: string, people: { ownerId: string; techOwnerId: string }) => ActionResult
   /** Save part of the job description (1b); refused once the record is frozen at v1.0. */
@@ -855,6 +860,36 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Shared finding', target: unit.name },
               mutate: (draft) => {
                 applyShareFinding(draft, unitId, draft.personaId, draft.now)
+              },
+            })
+          },
+          tightenReviewLevel: (activityId, reason) => {
+            const s = get()
+            const activity = s.activities.find((a) => a.id === activityId)
+            if (!activity) return { ok: false, reason: 'Not found' }
+            if (!reason.trim()) return { ok: false, reason: 'Write a reason' }
+            if (activity.reviewLevel === 'tightened') return { ok: false, reason: 'Already at Tightened' }
+            return act({
+              action: 'tightenReview',
+              ctx: { agentId: activity.agentId },
+              audit: { action: 'Tightened review level', target: activity.name, reason: reason.trim() },
+              mutate: (draft) => {
+                applyTighten(draft, activityId, reason.trim(), draft.personaId, draft.now)
+              },
+            })
+          },
+          updateReviewRules: (activityId, rules, reason) => {
+            const s = get()
+            const activity = s.activities.find((a) => a.id === activityId)
+            if (!activity) return { ok: false, reason: 'Not found' }
+            if (!reason.trim()) return { ok: false, reason: 'Write a reason' }
+            if (!validRules(rules)) return { ok: false, reason: 'Every number must be at least 1' }
+            return act({
+              action: 'editReviewRules',
+              ctx: { agentId: activity.agentId },
+              audit: { action: 'Edited review-level rules', target: activity.name, reason: reason.trim() },
+              mutate: (draft) => {
+                applyRules(draft, activityId, { rules, reason: reason.trim() }, draft.personaId, draft.now)
               },
             })
           },
