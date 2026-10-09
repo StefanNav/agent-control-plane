@@ -495,7 +495,7 @@ Also pinned:
   - decision log rows R1–R14 as landed;
   - Start here: ⏸ at checkpoint, PR link, preview URL;
   - a session log row.
-- [ ] **Step 4: Checkpoint.**
+- [x] **Step 4: Checkpoint.**
   - `pnpm check` and `pnpm e2e` green; the forbidden-terms check prints nothing (including the README and image alt text).
   - Push `phase-9-polish` and open the PR "Phase 9: Polish and launch". Body: task checklist, preview URL, screenshots, the O1 before/after, the QA drift list, `Closes #10`.
   - Tick the issue's checklist.

@@ -21,11 +21,11 @@ Update this block every time a session stops, even mid-phase.
 | **Current phase** | Phase 9: Polish and launch (⏸ at checkpoint, awaiting Stefan's review) |
 | **Branch** | `phase-9-polish` |
 | **Last completed** | Phase 9 Tasks 9.0–9.5 and the fresh review (2026-10-09) |
-| **Next task** | Stefan reviews the Phase 9 PR preview. On approval: Task 9.6 Step 6 in [`docs/plans/phase-9-polish.md`](plans/phase-9-polish.md) (merge, production e2e, repo description and topics, close out) |
+| **Next task** | Stefan reviews PR #19 and its preview. On approval: Task 9.6 Step 6 in [`docs/plans/phase-9-polish.md`](plans/phase-9-polish.md) (merge, production e2e, repo description and topics, close out) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none open |
+| **Latest preview** | [PR #19](https://github.com/StefanNav/agent-control-plane/pull/19) · https://agent-control-plane-git-phase-9-polish-stefannavs-projects.vercel.app (behind Vercel login) |
 
 ### How to resume in a new session
 
@@ -97,7 +97,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 6 | Governance and fast follows | ☑ Merged | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | [#16](https://github.com/StefanNav/agent-control-plane/pull/16) | [phase-6-governance.md](plans/phase-6-governance.md) |
 | 7 | Earned autonomy | ☑ Merged | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | [#17](https://github.com/StefanNav/agent-control-plane/pull/17) | [phase-7-autonomy.md](plans/phase-7-autonomy.md) |
 | 8 | Stories and portfolio layer | ☑ Merged | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | [#18](https://github.com/StefanNav/agent-control-plane/pull/18) | [phase-8-stories.md](plans/phase-8-stories.md) |
-| 9 | Polish and launch | ⏸ At checkpoint | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | – | [phase-9-polish.md](plans/phase-9-polish.md) |
+| 9 | Polish and launch | ⏸ At checkpoint | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | [#19](https://github.com/StefanNav/agent-control-plane/pull/19) | [phase-9-polish.md](plans/phase-9-polish.md) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
@@ -798,4 +798,4 @@ One row per working session. Newest last.
 | 2026-10-09 | 8 | Built Phase 8 (story engine, seven stories with targets, narration panel, Stories menu, landing, About, desktop gate, rewind fix, story e2e incl. a shared link to every step). Fresh review: 3 Important fixed test-first; 5 minors deferred (see handoff notes). PR #18 open | Stefan reviews Phase 8 → merge → Phase 9 Task 9.0 |
 | 2026-10-09 | 8 | Stefan approved; PR #18 squash-merged; #9 closed | Phase 9 Task 9.0 (new session) |
 | 2026-10-09 | 9 | Wrote the Phase 9 plan (rulings R1–R15) after recon: axe on all 36 routes + 14 variants (10 rules, all small; contrast clean), tab-stop and click-target scan, O1 greyscale check (stale and review rings indistinguishable by shape → dashed square) | Task 9.1 |
-| 2026-10-09 | 9 | Built Phase 9 (axe gate on every route, keyboard paths and focus, page titles, scroll on navigation, story panel with dialogs, O1 stale square, 54-frame visual sweep with 9 drift fixes, README, social image, meta). Fresh review: 3 Important + 1 re-graded fixed test-first; 4 minors deferred. PR open | Stefan reviews Phase 9 → merge → launch steps |
+| 2026-10-09 | 9 | Built Phase 9 (axe gate on every route, keyboard paths and focus, page titles, scroll on navigation, story panel with dialogs, O1 stale square, 54-frame visual sweep with 9 drift fixes, README, social image, meta). Fresh review: 3 Important + 1 re-graded fixed test-first; 4 minors deferred. PR #19 open | Stefan reviews Phase 9 → merge → launch steps |
