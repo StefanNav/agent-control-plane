@@ -6,9 +6,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadTour } from './tour-load.mjs'
 
-// Makes a placeholder clip (macOS `say` + `ffmpeg`) for every beat without a recording, measures every
-// clip with `ffprobe` and rewrites the manifest. `--check` writes nothing and exits 1 unless every beat
-// has a current recorded clip.
+// Makes a placeholder clip (macOS `say` + `ffmpeg`) for every beat without a recording (or whose
+// placeholder is missing or was made from different text), measures every clip with `ffprobe` and
+// rewrites the manifest. `--check` writes nothing and exits 1 unless every beat has a current
+// recorded clip.
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const audioDir = path.join(root, 'public/tour/audio')
@@ -153,6 +154,12 @@ async function main() {
           counts.missing++
           console.log(`missing      ${beat.id}`)
         }
+      } else if (entry?.source === 'placeholder' && present && entry.textHash === hash) {
+        // An up-to-date placeholder stays as it is; only its length is measured again.
+        const ms = await clipMs(file)
+        next[beat.id] = { ms, source: 'placeholder', textHash: hash }
+        totalMs += ms
+        counts.placeholder++
       } else {
         await makePlaceholder(beat.text, file, tmpDir)
         const ms = await clipMs(file)
