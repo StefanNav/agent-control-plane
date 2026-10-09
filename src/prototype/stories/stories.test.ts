@@ -87,3 +87,40 @@ test('Dana: 7 steps from the approved intake', () => {
     'baseline',
   ])
 })
+
+test('all seven stories, in persona order', () => {
+  expect(STORIES.map((s) => s.id)).toEqual(PERSONAS.map((p) => p.id))
+})
+
+test('Sam: 5 steps from the tested hard stops to the held build', () => {
+  expect(scenarios('sam')).toEqual([
+    'onboarding-tools-tested',
+    'onboarding-tools-tested',
+    'onboarding-returned-hs11',
+    'baseline',
+    'change-detected-v150',
+  ])
+})
+
+test('Dr. Lee: 4 steps; the decision step keeps the visitor’s own approval', () => {
+  const drlee = story('drlee')
+  expect(drlee.steps).toHaveLength(4)
+  const logged = drlee.steps[2]!
+  expect(logged.scenarioPatch).toBe('review-decided')
+  expect(logged.keep!(buildScenario('review-decided'))).toBe(true)
+  expect(logged.keep!(buildScenario('review-committee'))).toBe(false)
+  expect(scenarios('drlee')[3]).toBe('promotion-at-board')
+})
+
+test('Ana: 4 steps, the last nine days later', () => {
+  expect(scenarios('ana')).toEqual(['baseline', 'baseline', 'baseline', 'epic-fixed-later'])
+})
+
+test('Jordan: 4 steps; the incident is read at 11:58', () => {
+  expect(scenarios('jordan')).toEqual([
+    'baseline',
+    'baseline',
+    'resume-requested',
+    'resume-requested',
+  ])
+})

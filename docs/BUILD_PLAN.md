@@ -520,8 +520,8 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 - [x] 8.0 Write `docs/plans/phase-8-stories.md`; commit
 - [x] 8.1 Story engine: `Story`/`Step` types, `?story=&step=` URL sync, scenario load on start, narration panel, `data-story-target` outline; **Review focus 4 test** (unknown story ignored, out-of-range step clamped)
 - [ ] 8.2 Landing page `/`
-- [ ] 8.3 Stories: Marcus, Priya, Dana (add `data-story-target` attributes to screens as needed)
-- [ ] 8.4 Stories: Sam, Dr. Lee, Ana, Jordan
+- [x] 8.3 Stories: Marcus, Priya, Dana (add `data-story-target` attributes to screens as needed)
+- [x] 8.4 Stories: Sam, Dr. Lee, Ana, Jordan
 - [ ] 8.5 About page `/about`
 - [ ] 8.6 Desktop gate below 1024 px
 - [ ] 8.7 E2E: every story runs from step 1 to the end; checkpoint

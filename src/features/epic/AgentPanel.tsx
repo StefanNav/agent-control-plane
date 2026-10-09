@@ -16,7 +16,7 @@ export function AgentPanel({ view }: { view: EpicView }) {
   const [flagging, setFlagging] = useState(false)
   const [tracing, setTracing] = useState(false)
   return (
-    <aside className={styles.panel} aria-label="Med Rec Agent panel">
+    <aside className={styles.panel} aria-label="Med Rec Agent panel" data-story-target="epic-agent-panel">
       {view.readOnlyNote ? (
         <div className={styles.panelBlock}>
           <Notice mark="lock">{view.readOnlyNote}</Notice>
@@ -42,11 +42,15 @@ export function AgentPanel({ view }: { view: EpicView }) {
         )}
         <span className={styles.actions}>
           {!view.canFlag ? (
-            <Button locked={lockReason('flagDraft', personaId)}>Flag a problem</Button>
+            <Button locked={lockReason('flagDraft', personaId)} data-story-target="epic-flag">
+              Flag a problem
+            </Button>
           ) : view.flagged ? (
-            <Button locked="You flagged this draft">Flagged · {view.flagged.code}</Button>
+            <Button locked="You flagged this draft" data-story-target="epic-flag">
+              Flagged · {view.flagged.code}
+            </Button>
           ) : (
-            <Button onClick={() => setFlagging(true)} aria-expanded={flagging}>
+            <Button onClick={() => setFlagging(true)} aria-expanded={flagging} data-story-target="epic-flag">
               Flag a problem
             </Button>
           )}
@@ -165,7 +169,7 @@ function FixCard({ fix, canDismiss }: { fix: NonNullable<EpicView['fix']>; canDi
   const [open, setOpen] = useState(false)
   return (
     <div className={styles.panelBlock}>
-      <section className={styles.fix} aria-label="Your flag led to a fix">
+      <section className={styles.fix} aria-label="Your flag led to a fix" data-story-target="epic-fix">
         <h2 className={styles.fixTitle}>
           <Icon name="check" color="var(--cs-ink)" />
           Your flag led to a fix

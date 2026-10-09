@@ -114,7 +114,7 @@ function Revalidate({ view }: { view: ChangesView }) {
   }
   return (
     <>
-      <section className={styles.side} aria-label={view.revalidate.title}>
+      <section className={styles.side} aria-label={view.revalidate.title} data-story-target="changes-revalidate">
         <div className={styles.sideHead}>
           <h2 className={styles.sideTitle}>{view.revalidate.title}</h2>
           <span className={styles.sub}>{view.revalidate.sub}</span>

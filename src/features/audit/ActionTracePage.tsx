@@ -60,7 +60,9 @@ export function ActionTracePage() {
       <div className={styles.split}>
         <div className={styles.traceCard}>
           {trace.view.steps.length ? (
-            <ActionTrace view={trace.view} layout="rows" />
+            <div data-story-target="trace-steps">
+              <ActionTrace view={trace.view} layout="rows" />
+            </div>
           ) : (
             <p className={styles.empty}>
               No step-level trace was kept for this action. Its outcome and policy result are in the

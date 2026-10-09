@@ -16,7 +16,7 @@ export function DecisionLogged({ agentId }: { agentId: string }) {
     <Split
       main={
         <StepCard number="04" title="Committee decision" sub={`Recorded by ${view.by}. The conditions now sit on every privilege for this agent, and the gateway enforces the ones it can.`} meta={view.meta}>
-          <div className={styles.decisionCard}>
+          <div className={styles.decisionCard} data-story-target="record-decision">
             <strong>{view.label}</strong>
             <span className={styles.quote}>“{view.reason}”</span>
           </div>

@@ -14,9 +14,9 @@ export interface CheckRow {
 }
 
 /** The step's side panel (1b–1g): progress across the record, a checklist, what else is needed, and Send. */
-export function StepSide({ title, sub, progress, rows, also, alsoLabel, foot }: { title: string; sub: string; progress: number; rows: CheckRow[]; also?: string[]; alsoLabel?: string; foot: ReactNode }) {
+export function StepSide({ title, sub, progress, rows, also, alsoLabel, foot, storyTarget }: { title: string; sub: string; progress: number; rows: CheckRow[]; also?: string[]; alsoLabel?: string; foot: ReactNode; storyTarget?: string }) {
   return (
-    <section className={styles.side} aria-label={title}>
+    <section className={styles.side} aria-label={title} data-story-target={storyTarget}>
       <div className={styles.sideHead}>
         <h2 className={styles.sideTitle}>{title}</h2>
         <span className={styles.sideSub}>{sub}</span>

@@ -24,9 +24,9 @@ export function StepCard({ number, title, sub, meta, children }: { number: strin
 }
 
 /** A 340 px side card with a title, a subline, body rows and an optional ruled foot. */
-export function SideCard({ title, sub, children, foot, label }: { title: ReactNode; sub?: ReactNode; children?: ReactNode; foot?: ReactNode; label?: string }) {
+export function SideCard({ title, sub, children, foot, label, storyTarget }: { title: ReactNode; sub?: ReactNode; children?: ReactNode; foot?: ReactNode; label?: string; storyTarget?: string }) {
   return (
-    <section className={styles.side} aria-label={label}>
+    <section className={styles.side} aria-label={label} data-story-target={storyTarget}>
       <div className={styles.sideHead}>
         <h2 className={styles.sideTitle}>{title}</h2>
         {sub ? <span className={styles.sideSub}>{sub}</span> : null}

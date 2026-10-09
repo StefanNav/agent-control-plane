@@ -191,14 +191,16 @@ export function ActionsPage() {
           />
           <span className={styles.summary}>{list.summary}</span>
         </div>
-        <Table
-          ariaLabel="Actions"
-          columns={COLUMNS}
-          rows={list.rows}
-          getRowId={(r) => r.id}
-          onSelect={(id) => navigate(`/operations/actions/${id}`)}
-          minRowHeight={64}
-        />
+        <div data-story-target="actions-table">
+          <Table
+            ariaLabel="Actions"
+            columns={COLUMNS}
+            rows={list.rows}
+            getRowId={(r) => r.id}
+            onSelect={(id) => navigate(`/operations/actions/${id}`)}
+            minRowHeight={64}
+          />
+        </div>
         <p className={styles.note}>
           {isReadOnly
             ? `Read only: ${viewer} can open anything on any board and replay any action, but has no controls. Opening an incident is the one thing ${viewer} can create. Every view is logged.`
