@@ -1,4 +1,4 @@
-import { createAudioVoice, createSilentVoice } from './voice'
+import { createAudioVoice, createSilentVoice, type Voice } from './voice'
 
 const CLIPS: Record<string, number> = { a: 4000, b: 2000 }
 const msFor = (id: string) => CLIPS[id] ?? 1000
@@ -162,10 +162,10 @@ describe('createAudioVoice', () => {
     expect(main().playbackRate).toBe(1.5)
   })
 
-  test('resolves on the ended event, however long the manifest says it is', async () => {
+  test('resolves on the ended event', async () => {
     const voice = createAudioVoice(msFor, url)
     const result = track(voice.play('a'))
-    await vi.advanceTimersByTimeAsync(60_000)
+    await vi.advanceTimersByTimeAsync(5999)
     expect(result.done).toBe(false)
     main().dispatchEvent(new Event('ended'))
     await vi.advanceTimersByTimeAsync(0)
@@ -226,7 +226,7 @@ describe('createAudioVoice', () => {
     playResult = () => Promise.resolve()
     voice.resume()
     expect(played).toHaveLength(2)
-    await vi.advanceTimersByTimeAsync(10_000)
+    await vi.advanceTimersByTimeAsync(3999)
     expect(result.done).toBe(false)
     main().dispatchEvent(new Event('ended'))
     await vi.advanceTimersByTimeAsync(0)
@@ -244,7 +244,7 @@ describe('createAudioVoice', () => {
     voice.pause()
     voice.resume()
     rejects[0]!(new DOMException('interrupted', 'AbortError'))
-    await vi.advanceTimersByTimeAsync(10_000)
+    await vi.advanceTimersByTimeAsync(3999)
     expect(result.done).toBe(false)
   })
 
@@ -294,6 +294,132 @@ describe('createAudioVoice', () => {
     expect(voice.currentMs()).toBe(2500)
     voice.stop()
     expect(voice.currentMs()).toBe(0)
+  })
+
+  describe('watchdog', () => {
+    test('a clip that never ends is cut off at msFor ÷ rate + 2000 ms, and not before', async () => {
+      const voice = createAudioVoice(msFor, url)
+      const result = track(voice.play('b'))
+      await vi.advanceTimersByTimeAsync(3999)
+      expect(result.done).toBe(false)
+      expect(HTMLMediaElement.prototype.pause).not.toHaveBeenCalled()
+      await vi.advanceTimersByTimeAsync(1)
+      expect(result.done).toBe(true)
+      // It must not play on under the next beat.
+      expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled()
+    })
+
+    test('the deadline follows the playback rate', async () => {
+      const voice = createAudioVoice(msFor, url)
+      voice.setRate(2)
+      const result = track(voice.play('a'))
+      await vi.advanceTimersByTimeAsync(3999)
+      expect(result.done).toBe(false)
+      await vi.advanceTimersByTimeAsync(1)
+      expect(result.done).toBe(true)
+    })
+
+    test('pause holds the deadline off, and resume re-arms it from the time left', async () => {
+      const voice = createAudioVoice(msFor, url)
+      const result = track(voice.play('a'))
+      await vi.advanceTimersByTimeAsync(1000)
+      main().currentTime = 1
+      voice.pause()
+      await vi.advanceTimersByTimeAsync(60_000)
+      expect(result.done).toBe(false)
+      voice.resume()
+      // 4000 − 1000 ms of clip left at rate 1, plus the 2000 ms of grace.
+      await vi.advanceTimersByTimeAsync(4999)
+      expect(result.done).toBe(false)
+      await vi.advanceTimersByTimeAsync(1)
+      expect(result.done).toBe(true)
+    })
+
+    test('a rate change part-way through recomputes the deadline', async () => {
+      const voice = createAudioVoice(msFor, url)
+      const result = track(voice.play('a'))
+      await vi.advanceTimersByTimeAsync(1000)
+      main().currentTime = 1
+      voice.setRate(1.5)
+      // (4000 − 1000) ÷ 1.5 + 2000 = 4000 ms from now, not the 5000 ms the old deadline had left.
+      await vi.advanceTimersByTimeAsync(3999)
+      expect(result.done).toBe(false)
+      await vi.advanceTimersByTimeAsync(1)
+      expect(result.done).toBe(true)
+    })
+
+    test('a rate change while paused leaves the deadline off until resume', async () => {
+      const voice = createAudioVoice(msFor, url)
+      const result = track(voice.play('a'))
+      main().currentTime = 1
+      voice.pause()
+      voice.setRate(2)
+      await vi.advanceTimersByTimeAsync(60_000)
+      expect(result.done).toBe(false)
+      voice.resume()
+      // (4000 − 1000) ÷ 2 + 2000
+      await vi.advanceTimersByTimeAsync(3499)
+      expect(result.done).toBe(false)
+      await vi.advanceTimersByTimeAsync(1)
+      expect(result.done).toBe(true)
+    })
+
+    test('ended before the deadline resolves the clip, and the old deadline does nothing', async () => {
+      const voice = createAudioVoice(msFor, url)
+      const first = track(voice.play('a'))
+      await vi.advanceTimersByTimeAsync(1000)
+      main().dispatchEvent(new Event('ended'))
+      await vi.advanceTimersByTimeAsync(0)
+      expect(first.done).toBe(true)
+
+      // The first clip's deadline (t = 6000) passes while the second one is still playing.
+      vi.mocked(HTMLMediaElement.prototype.pause).mockClear()
+      const second = track(voice.play('a'))
+      await vi.advanceTimersByTimeAsync(5500)
+      expect(second.done).toBe(false)
+      expect(HTMLMediaElement.prototype.pause).not.toHaveBeenCalled()
+      await vi.advanceTimersByTimeAsync(500)
+      expect(second.done).toBe(true)
+    })
+
+    /** After the first clip (4000 ms deadline) has ended at t = 2000, its deadline must not touch the next clip. */
+    async function expectNextClipUntouched(voice: Voice) {
+      playResult = () => Promise.resolve()
+      vi.mocked(HTMLMediaElement.prototype.pause).mockClear()
+      const next = track(voice.play('a'))
+      await vi.advanceTimersByTimeAsync(3000)
+      expect(next.done).toBe(false)
+      // A stale deadline would pause the audio that is now playing the next clip.
+      expect(HTMLMediaElement.prototype.pause).not.toHaveBeenCalled()
+    }
+
+    test('an error ends the clip through the timer and leaves no deadline behind', async () => {
+      const voice = createAudioVoice(msFor, url)
+      const first = track(voice.play('b'))
+      main().dispatchEvent(new Event('error'))
+      await vi.advanceTimersByTimeAsync(2000)
+      expect(first.done).toBe(true)
+      await expectNextClipUntouched(voice)
+    })
+
+    test('a refused play() ends the clip through the timer and leaves no deadline behind', async () => {
+      playResult = () => Promise.reject(new DOMException('blocked', 'NotAllowedError'))
+      const voice = createAudioVoice(msFor, url)
+      const first = track(voice.play('b'))
+      await vi.advanceTimersByTimeAsync(2000)
+      expect(first.done).toBe(true)
+      await expectNextClipUntouched(voice)
+    })
+
+    test('stop() ends the clip and leaves no deadline behind', async () => {
+      const voice = createAudioVoice(msFor, url)
+      const first = track(voice.play('b'))
+      await vi.advanceTimersByTimeAsync(2000)
+      voice.stop()
+      await vi.advanceTimersByTimeAsync(0)
+      expect(first.done).toBe(true)
+      await expectNextClipUntouched(voice)
+    })
   })
 
   test('preload warms the second element and leaves the playing one alone', () => {

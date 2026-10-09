@@ -98,20 +98,27 @@ export function createSilentVoice(msFor: (beatId: string) => number, factor = 10
   }
 }
 
-/** One clip being played: its promise, and the timer that takes over when the audio cannot play. */
+/** How long past its manifest length a clip may run before the voice gives up waiting for `ended`. */
+const WATCHDOG_GRACE_MS = 2000
+
+/** One clip being played: its promise, the timer that takes over when the audio cannot play, and its watchdog. */
 interface Playing {
   totalMs: number
   paused: boolean
   /** Counts `play()` calls on the element, so the outcome of a superseded one is ignored. */
   attempt: number
   timer: TimerRun | null
+  /** Ends a clip that neither ended nor errored (a stalled request, say); see `arm`. */
+  watchdog: ReturnType<typeof setTimeout> | undefined
   resolve: () => void
   detach: () => void
 }
 
 /**
  * A voice backed by real clips. A clip that errors, or that the browser will not play, still ends
- * after its manifest length ÷ rate, so the tour never stalls on a missing file or blocked audio.
+ * after its manifest length ÷ rate, so the tour never stalls on a missing file or blocked audio. A
+ * clip that does neither (a hung request, a stall mid-clip) is cut off by a watchdog 2 s past the
+ * time it should have ended.
  */
 export function createAudioVoice(
   msFor: (beatId: string) => number,
@@ -128,16 +135,33 @@ export function createAudioVoice(
   const end = (run: Playing) => {
     if (current !== run) return
     current = null
+    clearTimeout(run.watchdog)
     run.timer?.cancel()
     run.detach()
     run.resolve()
   }
 
-  /** Stand in for the audio with a timer from where it got to. */
+  /** Stand in for the audio with a timer from where it got to; the timer ends the clip, so the watchdog stands down. */
   const fallBack = (run: Playing) => {
     if (current !== run || run.timer) return
+    clearTimeout(run.watchdog)
     run.timer = startTimer(run.totalMs, audio.currentTime * 1000, rate, () => end(run))
     if (run.paused) run.timer.pause()
+  }
+
+  /**
+   * (Re)start the watchdog from the clip's position (the audio's by default): it ends the clip
+   * `(length − position) ÷ rate + 2000` ms from now unless `ended` comes first. A paused clip has none.
+   */
+  const arm = (run: Playing, fromMs = audio.currentTime * 1000) => {
+    clearTimeout(run.watchdog)
+    if (current !== run || run.paused || run.timer) return
+    const wait = Math.max(0, run.totalMs - fromMs) / rate + WATCHDOG_GRACE_MS
+    run.watchdog = setTimeout(() => {
+      if (current !== run) return
+      audio.pause()
+      end(run)
+    }, wait)
   }
 
   const start = (run: Playing) => {
@@ -162,6 +186,7 @@ export function createAudioVoice(
           paused: false,
           attempt: 0,
           timer: null,
+          watchdog: undefined,
           resolve,
           detach: () => {
             audio.removeEventListener('ended', onEnded)
@@ -178,19 +203,25 @@ export function createAudioVoice(
         audio.defaultPlaybackRate = rate
         audio.playbackRate = rate
         start(run)
+        arm(run, 0)
       })
     },
     pause() {
       if (!current) return
       current.paused = true
+      clearTimeout(current.watchdog)
       audio.pause()
       current.timer?.pause()
     },
     resume() {
       if (!current?.paused) return
       current.paused = false
-      if (current.timer) current.timer.resume()
-      else start(current)
+      if (current.timer) {
+        current.timer.resume()
+      } else {
+        start(current)
+        arm(current)
+      }
     },
     stop() {
       audio.pause()
@@ -200,7 +231,10 @@ export function createAudioVoice(
       rate = next
       audio.defaultPlaybackRate = next
       audio.playbackRate = next
-      current?.timer?.setSpeed(next)
+      if (current) {
+        current.timer?.setSpeed(next)
+        arm(current)
+      }
     },
     currentMs() {
       if (!current) return 0
