@@ -1,4 +1,4 @@
-/** Icon geometry, verbatim from docs/design-handoff.md → "Icons" and reference/cs-build.js. */
+/** Icon geometry, verbatim from docs/design-handoff.md → "Icons" and reference/cs-build.js (stale: spec O1). */
 export type IconName =
   | 'ring'
   | 'diamond'
@@ -20,7 +20,9 @@ export const ICONS: Record<IconName, { viewBox: number; shapes: IconShape[] }> =
   ring: { viewBox: 12, shapes: [{ kind: 'path', d: RING, strokeWidth: 1.5 }] },
   diamond: { viewBox: 12, shapes: [{ kind: 'path', d: 'M6 0.9L11.1 6L6 11.1L0.9 6Z', fill: true }] },
   triangle: { viewBox: 12, shapes: [{ kind: 'path', d: 'M6 1.2L11.4 10.6H0.6Z', fill: true }] },
-  stale: { viewBox: 12, shapes: [{ kind: 'path', d: RING, strokeWidth: 1.5, dash: '2.2 1.75' }] },
+  // Spec O1: a dashed ring read as the review ring at wall distance, so stale is a dashed square.
+  // Starting mid-side with 2/2 dashes puts a dash on all four corners, so it reads as a square.
+  stale: { viewBox: 12, shapes: [{ kind: 'path', d: 'M5 2H10V10H2V2Z', strokeWidth: 1.5, dash: '2 2' }] },
   shadow: {
     viewBox: 12,
     shapes: [

@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react'
 import { Icon, type IconName } from './Icon'
+import { ICONS } from './paths'
 
 const RING = 'M6 1.75a4.25 4.25 0 1 1 0 8.5a4.25 4.25 0 1 1 0-8.5Z'
 
@@ -7,7 +8,7 @@ const FIRST_PATH: Array<[IconName, string]> = [
   ['ring', RING],
   ['diamond', 'M6 0.9L11.1 6L6 11.1L0.9 6Z'],
   ['triangle', 'M6 1.2L11.4 10.6H0.6Z'],
-  ['stale', RING],
+  ['stale', 'M5 2H10V10H2V2Z'],
   ['shadow', RING],
   ['paused', 'M2.6 2h2.4v8H2.6ZM7 2h2.4v8H7Z'],
   ['check', 'M2.5 6.2l2.3 2.3 4.7-5'],
@@ -20,9 +21,11 @@ test.each(FIRST_PATH)('%s draws its handoff path', (name, d) => {
   expect(container.querySelector('svg path')?.getAttribute('d')).toBe(d)
 })
 
-test('stale is a dashed ring', () => {
+test('stale is a dashed square, so it never reads as the review ring (spec O1, Phase 9 R10)', () => {
+  expect(ICONS.stale.shapes).toEqual([{ kind: 'path', d: 'M5 2H10V10H2V2Z', strokeWidth: 1.5, dash: '2 2' }])
+  expect(ICONS.ring.shapes).toEqual([{ kind: 'path', d: RING, strokeWidth: 1.5 }])
   const { container } = render(<Icon name="stale" />)
-  expect(container.querySelector('path')?.getAttribute('stroke-dasharray')).toBe('2.2 1.75')
+  expect(container.querySelector('path')?.getAttribute('stroke-dasharray')).toBe('2 2')
 })
 
 test('shadow is a ring plus a filled left half', () => {
