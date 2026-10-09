@@ -50,3 +50,11 @@ test('the persona menu is legible on top of the dark bar', async ({ page }) => {
   expect(color).toBe(ink)
   expect(focus).toBe(ink)
 })
+
+test('Reset demo also ends a story', async ({ page }) => {
+  await page.goto('/operations/inbox?story=marcus&step=4')
+  await expect(page.getByRole('complementary', { name: 'Story' })).toBeVisible()
+  await page.getByRole('button', { name: 'Reset demo' }).click()
+  await expect(page.getByRole('complementary', { name: 'Story' })).toHaveCount(0)
+  await expect(page).toHaveURL(/\/operations\/divisions\/medications$/)
+})

@@ -30,3 +30,99 @@ for (const story of STORIES) {
     expect(errors).toEqual([])
   })
 }
+
+for (const story of STORIES) {
+  const name = personaById(story.personaId).name
+
+  test(`a shared link opens any step of ${name}’s story`, async ({ page }) => {
+    test.setTimeout(90_000)
+    const errors = collectErrors(page)
+    for (const [i, step] of story.steps.entries()) {
+      // A fresh visitor every time: no saved hospital, no saved story.
+      await page.goto('/about')
+      await page.evaluate(() => localStorage.clear())
+      await page.goto(stepHref(story, i + 1))
+      await expect(panel(page).getByRole('heading', { name: step.title })).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: new RegExp(`^Viewing as ${name}`) }),
+      ).toBeVisible()
+      if (step.target)
+        await expect(page.locator(`[data-story-target="${step.target}"]`), step.title).toBeVisible()
+    }
+    expect(errors).toEqual([])
+  })
+}
+
+test('Review focus 4: an unknown story is ignored, an out-of-range step is clamped', async ({
+  page,
+}) => {
+  await page.goto('/operations?story=nope&step=2')
+  await expect(page.getByRole('heading', { level: 1, name: 'Lakeshore Health' })).toBeVisible()
+  await expect(page).not.toHaveURL(/story=/)
+  await expect(panel(page)).toHaveCount(0)
+
+  await page.goto('/operations?story=marcus&step=99')
+  await expect(panel(page)).toContainText('Step 9 of 9')
+  await expect(page).toHaveURL(/story=marcus&step=9$/)
+})
+
+test('the visitor’s own pause is kept, and a refresh keeps the step and the changes', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  const marcus = STORIES.find((s) => s.id === 'marcus')!
+  await page.goto(stepHref(marcus, 5))
+  await page.getByRole('button', { name: 'Dismiss…' }).click()
+  const dismiss = page.getByRole('dialog')
+  await dismiss
+    .getByRole('textbox', { name: 'Reason' })
+    .fill('Formulary update F-112 explains the edits.')
+  await dismiss.getByRole('button', { name: 'Dismiss with reason' }).click()
+  await panel(page).getByRole('button', { name: 'Next' }).click()
+
+  const pause = page.getByRole('dialog', { name: 'Pause Med Rec Agent?' })
+  await pause
+    .getByRole('textbox', { name: /Reason/ })
+    .fill('HS-04 blocked 3 dose changes since 09:00.')
+  await pause.getByRole('button', { name: 'Pause agent' }).click()
+  await panel(page).getByRole('button', { name: 'Next' }).click()
+
+  await expect(panel(page)).toContainText('Step 7 of 9')
+  await expect(page.getByText(/^Paused by Marcus at 09:52\./)).toBeVisible()
+  await page.reload()
+  await expect(panel(page)).toContainText('Step 7 of 9')
+  await expect(page.getByText(/^Paused by Marcus at 09:52\./)).toBeVisible()
+  // The dismissal from step 5 survived too.
+  await page.goto('/operations/inbox/exc-5512')
+  await expect(page.getByText('Dismissed by Marcus at 09:52.')).toBeVisible()
+  await expect(panel(page)).toContainText('Step 7 of 9')
+  expect(errors).toEqual([])
+})
+
+test('wandering off keeps the story; Next brings the visitor back as its person; Exit stays put', async ({
+  page,
+}) => {
+  const marcus = STORIES.find((s) => s.id === 'marcus')!
+  await page.goto(stepHref(marcus, 3))
+  await page
+    .getByRole('navigation', { name: 'Main' })
+    .getByRole('link', { name: 'Inventory' })
+    .click()
+  await expect(page).toHaveURL(/\/inventory\?story=marcus&step=3$/)
+  await expect(panel(page)).toContainText('You’ve left this step.')
+
+  await page.getByRole('button', { name: /^Viewing as/ }).click()
+  await page.getByRole('menuitem', { name: /^Jordan/ }).click()
+  await expect(page).toHaveURL(/\/operations\/actions\?story=marcus&step=3$/)
+  await expect(panel(page)).toContainText('Step 3 of 9')
+
+  await panel(page).getByRole('button', { name: 'Next' }).click()
+  await expect(page).toHaveURL(/\/operations\/inbox\?story=marcus&step=4$/)
+  await expect(page.getByRole('button', { name: /^Viewing as Marcus/ })).toBeVisible()
+
+  await panel(page).getByRole('button', { name: 'Exit' }).click()
+  await expect(panel(page)).toHaveCount(0)
+  await expect(page).toHaveURL(/\/operations\/inbox$/)
+  await page.reload()
+  await expect(panel(page)).toHaveCount(0)
+})

@@ -7,8 +7,8 @@ for (const route of routeTable) {
     const errors = collectErrors(page)
     await page.goto(route.samplePath)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-    // Phase 7 frame audit: every route due by now is a real screen, not its placeholder.
-    if (route.phase <= 7) await expect(page.getByText(/^Built in Phase \d+\.$/)).toHaveCount(0)
+    // Every route is a real screen by Phase 8, not its placeholder.
+    if (route.phase <= 8) await expect(page.getByText(/^Built in Phase \d+\.$/)).toHaveCount(0)
     expect(errors).toEqual([])
   })
 }
