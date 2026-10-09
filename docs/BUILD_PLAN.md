@@ -21,7 +21,7 @@ Update this block every time a session stops, even mid-phase.
 | **Current phase** | Phase 8: Stories and portfolio layer (◐ in progress) |
 | **Branch** | `phase-8-stories` |
 | **Last completed** | Phase 7 approved and squash-merged (PR #17) (2026-10-09) |
-| **Next task** | Phase 8 Task 8.1: story engine (plan written; execution order 8.1, 8.3, 8.4, 8.2, 8.5, 8.6, 8.7) |
+| **Next task** | Phase 8 Task 8.7 Step 4: fresh review of the branch, fix findings test-first, then handoff notes and checkpoint (8.0–8.6 done) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |

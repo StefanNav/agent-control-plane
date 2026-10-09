@@ -266,7 +266,7 @@ Summary: "Risk manager, read only. Reconstructs any action: what the agent saw, 
     - `useActiveStory(stories?): { story: Story; progress: StoryProgress } | null`.
   - `StoryPanel({ stories = STORIES })`; `StoryLayer` (no props): `useStoryUrlSync()`, `<StoryPanel />`, and the spacer while a story is active and shown.
 
-- [ ] **Step 1: Write the failing engine tests** (`engine.test.ts`), on a fixture story (`id: 'marcus'`, scenario `baseline`, three steps; step 2 route `/operations/agents/med-rec?tab=scorecard`; step 3 `scenarioPatch: 'med-rec-paused'`, `keep: (s) => s.agents.find((a) => a.id === 'med-rec')!.pause !== undefined`):
+- [x] **Step 1: Write the failing engine tests** (`engine.test.ts`), on a fixture story (`id: 'marcus'`, scenario `baseline`, three steps; step 2 route `/operations/agents/med-rec?tab=scorecard`; step 3 `scenarioPatch: 'med-rec-paused'`, `keep: (s) => s.agents.find((a) => a.id === 'med-rec')!.pause !== undefined`):
   - `clampStep`: `0 → 1`, `-4 → 1`, `NaN → 1`, `2.7 → 2`, `99 → 3`.
   - `scenarioAt`: steps 1 and 2 → `baseline`; 3 → `med-rec-paused`.
   - `stepHref`: step 1 → `/operations?story=marcus&step=1`; step 2 → `/operations/agents/med-rec?tab=scorecard&story=marcus&step=2`.
@@ -276,28 +276,28 @@ Summary: "Risk manager, read only. Reconstructs any action: what the agent saw, 
   - Progress for another story → treated as fresh (`load` = that step's scenario).
   - `urlAction`: no params, no progress → none; no params with progress at step 2 → `append` step 2; `?story=nope` → strip; `?story=marcus&step=99`, no progress → `open` step 3, `rewrite: true`; `?story=marcus&step=abc` → `open` step 1, `rewrite: true`; `?story=marcus&step=2` with progress at 2 → none; `?story=marcus&step=02` with progress at 2 → `rewrite`.
   - `validProgress`: a good value round-trips; unknown story, step 0 or past the end, unknown scenario, `null`, a string → `null`.
-- [ ] **Step 2: Run** `pnpm vitest run src/prototype/stories/engine.test.ts`. Expected: FAIL (module not found).
-- [ ] **Step 3: Implement** `types.ts`, `engine.ts`, and `index.ts` with `STORIES = []` (the engine takes the list as a parameter, so tests don't depend on it).
-- [ ] **Step 4: Run** the engine tests. Expected: PASS.
-- [ ] **Step 5: Write the failing progress and apply tests.**
+- [x] **Step 2: Run** `pnpm vitest run src/prototype/stories/engine.test.ts`. Expected: FAIL (module not found).
+- [x] **Step 3: Implement** `types.ts`, `engine.ts`, and `index.ts` with `STORIES = []` (the engine takes the list as a parameter, so tests don't depend on it).
+- [x] **Step 4: Run** the engine tests. Expected: PASS.
+- [x] **Step 5: Write the failing progress and apply tests.**
   - `progress.test.ts`, on `createMemoryStorage()` and the fixture passed to a `createStoryStore(storage, stories)` test seam: a saved valid progress rehydrates; saved `{ storyId: 'nope' }`, a step past the end, a removed scenario and a non-JSON value each rehydrate as `null` (Review Focus 4); `setProgress(null)` persists `null`.
   - `apply.test.ts`, on `createDemoStore(createMemoryStorage())` and a test story store: `applyStep(…, step 1, fresh)` loads the story's scenario (the clock reads that scenario's `now`), sets the persona to the story's and saves progress; a second `applyStep` to a step in the same segment changes no data (`dataOf` before = after).
-- [ ] **Step 6: Run** them. Expected: FAIL.
-- [ ] **Step 7: Implement** `progress.ts` (`createStoryStore(storage = safeStorage, stories = STORIES)`) and `apply.ts`.
-- [ ] **Step 8: Run** them. Expected: PASS.
-- [ ] **Step 9: Write the failing panel test** (`StoryPanel.test.tsx`, `MemoryRouter` at the step's route, a fixture story injected through `useStory.setState` and a `stories` prop on `StoryPanel` defaulting to `STORIES`):
+- [x] **Step 6: Run** them. Expected: FAIL.
+- [x] **Step 7: Implement** `progress.ts` (`createStoryStore(storage = safeStorage, stories = STORIES)`) and `apply.ts`.
+- [x] **Step 8: Run** them. Expected: PASS.
+- [x] **Step 9: Write the failing panel test** (`StoryPanel.test.tsx`, `MemoryRouter` at the step's route, a fixture story injected through `useStory.setState` and a `stories` prop on `StoryPanel` defaulting to `STORIES`):
   - region `complementary` named "Story"; story title; "Step 2 of 3"; the step's title (heading) and body.
   - step 1 has no "Back"; the last step shows "Finish" and "End of Marcus’s story. Keep exploring as Marcus, or pick another from Stories."
   - at another path: "You’ve left this step." with a "Return to it" button.
   - "Hide" leaves "Step 2 of 3" and a "Show" button; the body is gone.
   - a `<style>` rule containing `[data-story-target="agent-summary"]` and `outline: 2px solid var(--cs-ink)` when the step has that target; none when it has no target.
   - "Exit" clears progress.
-- [ ] **Step 10: Run** it. Expected: FAIL.
-- [ ] **Step 11: Implement** `useStory.ts`, `StoryPanel` (R5, R6: scroll into view on step change, retrying each animation frame for up to 1 s until the target exists; `behavior: 'smooth'` unless `prefers-reduced-motion`), `StoryLayer`, the AppShell wiring and the spacer. Target values are checked against `/^[a-z0-9-]+$/` before going into the style rule.
-- [ ] **Step 12: Run** it. Expected: PASS.
-- [ ] **Step 13: Stories menu and Reset.** In `PrototypeBar`, replace the muted "Stories" with a `Menu` (trigger "Stories ▾", same look as the bar's other controls; width 300; align right): one group "Follow a story" with an item per story (label = title, sub = "{name} · {role} · {n} steps", selected = active) → `start(id)`; while a story is active, a second group with "Exit story" → `exit()`. "Reset demo" clears the story progress, resets, and goes to Marcus's landing. Extend the existing persona e2e to assert Reset leaves no story panel (in 8.7).
-- [ ] **Step 14: Run** `pnpm check`. Expected: PASS.
-- [ ] **Step 15: Commit** `feat: story engine, progress, narration panel and Stories menu`, and log R1–R6 in the decision log.
+- [x] **Step 10: Run** it. Expected: FAIL.
+- [x] **Step 11: Implement** `useStory.ts`, `StoryPanel` (R5, R6: scroll into view on step change, retrying each animation frame for up to 1 s until the target exists; `behavior: 'smooth'` unless `prefers-reduced-motion`), `StoryLayer`, the AppShell wiring and the spacer. Target values are checked against `/^[a-z0-9-]+$/` before going into the style rule.
+- [x] **Step 12: Run** it. Expected: PASS.
+- [x] **Step 13: Stories menu and Reset.** In `PrototypeBar`, replace the muted "Stories" with a `Menu` (trigger "Stories ▾", same look as the bar's other controls; width 300; align right): one group "Follow a story" with an item per story (label = title, sub = "{name} · {role} · {n} steps", selected = active) → `start(id)`; while a story is active, a second group with "Exit story" → `exit()`. "Reset demo" clears the story progress, resets, and goes to Marcus's landing. Extend the existing persona e2e to assert Reset leaves no story panel (in 8.7).
+- [x] **Step 14: Run** `pnpm check`. Expected: PASS.
+- [x] **Step 15: Commit** `feat: story engine, progress, narration panel and Stories menu`, and log R1–R6 in the decision log.
 
 ## Task 8.3: Stories for Marcus, Priya and Dana (and the rewind fix)
 
@@ -311,23 +311,23 @@ Summary: "Risk manager, read only. Reconstructs any action: what the agent saw, 
 - Consumes: `Story`, `Step` (8.1); `buildScenario` and the scenario ids above.
 - Produces: `marcus`, `priya`, `dana: Story`; `STORIES` with three entries; `stories.test.ts`, which later tasks extend by adding stories (it iterates `STORIES`).
 
-- [ ] **Step 1: Write the failing rewind test** in `rewind.test.ts`: in `buildScenario('awaiting-signature')` (06 Nov 09:52), every privilege with a review date has the same `dayGap(grantedAt, reviewDate)` as in the seed, and no live privilege has a review date before 06 Nov except those the seed already has overdue at that date; TPN Draft Agent's privilege reads granted 12 Aug, review 11 Nov.
-- [ ] **Step 2: Run** `pnpm vitest run src/data/scenarios/rewind.test.ts`. Expected: FAIL (the review date is 10 Feb 2026).
-- [ ] **Step 3: Implement** R8 in `rewindTo`: the cycle is `dayGap(grantedAt, reviewDate)` when both exist, else the tier's `reviewDays + 1`.
-- [ ] **Step 4: Run** all unit tests (`pnpm test`). Expected: PASS (fix any test that pinned the old roll-back only if it pinned the bug; say so in the commit).
-- [ ] **Step 5: Commit** `fix: rewind rolls a privilege back by its own review interval`, and log R8.
-- [ ] **Step 6: Write the failing story structure tests** (`stories.test.ts`, over `STORIES`):
+- [x] **Step 1: Write the failing rewind test** in `rewind.test.ts`: in `buildScenario('awaiting-signature')` (06 Nov 09:52), every privilege with a review date has the same `dayGap(grantedAt, reviewDate)` as in the seed, and no live privilege has a review date before 06 Nov except those the seed already has overdue at that date; TPN Draft Agent's privilege reads granted 12 Aug, review 11 Nov.
+- [x] **Step 2: Run** `pnpm vitest run src/data/scenarios/rewind.test.ts`. Expected: FAIL (the review date is 10 Feb 2026).
+- [x] **Step 3: Implement** R8 in `rewindTo`: the cycle is `dayGap(grantedAt, reviewDate)` when both exist, else the tier's `reviewDays + 1`.
+- [x] **Step 4: Run** all unit tests (`pnpm test`). Expected: PASS (fix any test that pinned the old roll-back only if it pinned the bug; say so in the commit).
+- [x] **Step 5: Commit** `fix: rewind rolls a privilege back by its own review interval`, and log R8.
+- [x] **Step 6: Write the failing story structure tests** (`stories.test.ts`, over `STORIES`):
   - ids are unique, each `id === personaId`, and the order follows `PERSONAS`.
   - every step's route pathname matches a `routeTable` path (`matchPath`).
   - every `target` matches `/^[a-z0-9-]+$/`.
   - every body has 2 or 3 sentences (split on `[.!?]` followed by a space or the end, after removing "Dr."), and no title, body or summary contains `\b(he|she|him|her|his|hers|himself|herself)\b` (case-insensitive).
   - each story has 3 to 10 steps.
   - Marcus: 9 steps; step 7 keeps the visitor's pause (`keep(buildScenario('med-rec-paused'))` true, on the seed false). Priya: 8 steps; `scenarioAt` for steps 1–8 is `shadow-day-21, awaiting-signature, baseline, resume-requested, resume-requested, resume-requested, step-down-threshold, step-down-version`. Dana: 7 steps, starting at `onboarding-intake`.
-- [ ] **Step 7: Run** them. Expected: FAIL.
-- [ ] **Step 8: Implement** the three stories from "Story scripts", and add their targets to the feature files.
-- [ ] **Step 9: Run** `pnpm check`. Expected: PASS.
-- [ ] **Step 10: Check by hand** in the dev server: start each story from `?story=<id>&step=1`, step through with Next, and confirm each target is outlined and each body matches its screen. Fix copy that doesn't.
-- [ ] **Step 11: Commit** `feat: Marcus, Priya and Dana stories`, and log R7.
+- [x] **Step 7: Run** them. Expected: FAIL.
+- [x] **Step 8: Implement** the three stories from "Story scripts", and add their targets to the feature files.
+- [x] **Step 9: Run** `pnpm check`. Expected: PASS.
+- [x] **Step 10: Check by hand** in the dev server: start each story from `?story=<id>&step=1`, step through with Next, and confirm each target is outlined and each body matches its screen. Fix copy that doesn't.
+- [x] **Step 11: Commit** `feat: Marcus, Priya and Dana stories`, and log R7.
 
 ## Task 8.4: Stories for Sam, Dr. Lee, Ana and Jordan
 
@@ -339,12 +339,12 @@ Summary: "Risk manager, read only. Reconstructs any action: what the agent saw, 
 - Consumes: as 8.3.
 - Produces: `STORIES` with all seven, in persona order.
 
-- [ ] **Step 1: Extend the failing structure tests:** seven stories; Sam 5 steps (`scenarioAt`: `onboarding-tools-tested` ×2, `onboarding-returned-hs11`, `baseline`, `change-detected-v150`); Dr. Lee 4 steps, step 3 keeps an approval (`keep(buildScenario('review-decided'))` true, `keep(buildScenario('review-committee'))` false); Ana 4 steps, step 4 patch `epic-fixed-later`; Jordan 4 steps, step 3 patch `resume-requested`.
-- [ ] **Step 2: Run** them. Expected: FAIL.
-- [ ] **Step 3: Implement** the four stories and their targets.
-- [ ] **Step 4: Run** `pnpm check`. Expected: PASS.
-- [ ] **Step 5: Check by hand** as in 8.3 Step 10.
-- [ ] **Step 6: Commit** `feat: Sam, Dr. Lee, Ana and Jordan stories`.
+- [x] **Step 1: Extend the failing structure tests:** seven stories; Sam 5 steps (`scenarioAt`: `onboarding-tools-tested` ×2, `onboarding-returned-hs11`, `baseline`, `change-detected-v150`); Dr. Lee 4 steps, step 3 keeps an approval (`keep(buildScenario('review-decided'))` true, `keep(buildScenario('review-committee'))` false); Ana 4 steps, step 4 patch `epic-fixed-later`; Jordan 4 steps, step 3 patch `resume-requested`.
+- [x] **Step 2: Run** them. Expected: FAIL.
+- [x] **Step 3: Implement** the four stories and their targets.
+- [x] **Step 4: Run** `pnpm check`. Expected: PASS.
+- [x] **Step 5: Check by hand** as in 8.3 Step 10.
+- [x] **Step 6: Commit** `feat: Sam, Dr. Lee, Ana and Jordan stories`.
 
 ## Task 8.2: Landing page `/`
 
@@ -365,11 +365,11 @@ Layout (prototype shell, no TopNav): one column, max-width 1120, centred, paddin
 - Section label "Follow one person’s story", sub "Each story walks through the real screens in a few steps. Click around on the way; Next brings you back."
 - Grid of seven `Card`s, 4 columns (gap 16): name (16/24 600), role (meta), story title (14/20 600), summary (13/18 `--cs-text2`), "{n} steps" (mono), and a ghost `Button` "Follow {name}’s story →" → `start(id)`.
 
-- [ ] **Step 1: Write the failing test** (`Landing.test.tsx`, `MemoryRouter` with routes `/` and `*`): an `h1` "Agent Control Plane"; seven "Follow … story →" buttons in persona order, including "Follow Dr. Lee’s story →"; clicking "Follow Priya’s story →" sets progress `{ storyId: 'priya', step: 1, loaded: 'shadow-day-21' }`, persona `priya`, and the location becomes `stepHref(priya, 1)`; "Explore freely" clears progress, sets persona `marcus` and goes to `/operations/divisions/medications`.
-- [ ] **Step 2: Run** it. Expected: FAIL.
-- [ ] **Step 3: Implement** `Landing` and the route.
-- [ ] **Step 4: Run** it, then `pnpm check`. Expected: PASS.
-- [ ] **Step 5: Commit** `feat: landing page`, and log R9, R10.
+- [x] **Step 1: Write the failing test** (`Landing.test.tsx`, `MemoryRouter` with routes `/` and `*`): an `h1` "Agent Control Plane"; seven "Follow … story →" buttons in persona order, including "Follow Dr. Lee’s story →"; clicking "Follow Priya’s story →" sets progress `{ storyId: 'priya', step: 1, loaded: 'shadow-day-21' }`, persona `priya`, and the location becomes `stepHref(priya, 1)`; "Explore freely" clears progress, sets persona `marcus` and goes to `/operations/divisions/medications`.
+- [x] **Step 2: Run** it. Expected: FAIL.
+- [x] **Step 3: Implement** `Landing` and the route.
+- [x] **Step 4: Run** it, then `pnpm check`. Expected: PASS.
+- [x] **Step 5: Commit** `feat: landing page`, and log R9, R10.
 
 ## Task 8.5: About page `/about`
 
@@ -401,11 +401,11 @@ Layout: one column, max-width 760, padding 48 px 24 px 64 px; `h1` page title; e
   - It is built for desktop screens, 1280 px and wider.
 - **How it’s built:** "Vite, React 19, TypeScript, React Router, Zustand and CSS Modules, with no UI library. 55 designed frames across 15 epics, built in reviewed phases." Link "Source on GitHub" → `https://github.com/StefanNav/agent-control-plane`.
 
-- [ ] **Step 1: Write the failing test:** `h1` "About this prototype"; `h2`s "What it is", "The problem", "Principles", "Countersign, the design system", "How to use it", "How it’s built"; a link to `/about/components`; the GitHub link; the page text has no gendered pronouns.
-- [ ] **Step 2: Run** it. Expected: FAIL.
-- [ ] **Step 3: Implement** `About` and the route.
-- [ ] **Step 4: Run** it, then `pnpm check`. Expected: PASS.
-- [ ] **Step 5: Commit** `feat: About page`.
+- [x] **Step 1: Write the failing test:** `h1` "About this prototype"; `h2`s "What it is", "The problem", "Principles", "Countersign, the design system", "How to use it", "How it’s built"; a link to `/about/components`; the GitHub link; the page text has no gendered pronouns.
+- [x] **Step 2: Run** it. Expected: FAIL.
+- [x] **Step 3: Implement** `About` and the route.
+- [x] **Step 4: Run** it, then `pnpm check`. Expected: PASS.
+- [x] **Step 5: Commit** `feat: About page`.
 
 ## Task 8.6: Desktop gate below 1024 px
 
@@ -418,11 +418,11 @@ Layout: one column, max-width 760, padding 48 px 24 px 64 px; `h1` page title; e
 
 The gate (tokens only; `--cs-bg` page, one column max 560, padding 32 px 16 px): mono label "Signal · Agent Control Plane · Prototype"; `h1` "Best viewed on a desktop"; "This prototype is designed for screens 1024 px and wider. Open it on a laptop or desktop to click through it."; the landing's lead sentence; "Seven people use it:" and a list of "{name} · {role}" with each story's summary under it; a link "Source on GitHub" → the repo.
 
-- [ ] **Step 1: Write the failing test:** with `window.matchMedia` stubbed to `matches: false`, `<DesktopGate><p>app</p></DesktopGate>` shows the `h1` "Best viewed on a desktop", seven people and the GitHub link, and not "app"; stubbed `matches: true` shows "app" only; with no `matchMedia`, shows "app"; a `change` event from the stub flips it.
-- [ ] **Step 2: Run** it. Expected: FAIL.
-- [ ] **Step 3: Implement** `DesktopGate` and wire it in `main.tsx`.
-- [ ] **Step 4: Run** it, then `pnpm check`. Expected: PASS.
-- [ ] **Step 5: Commit** `feat: desktop gate below 1024 px`, and log R11.
+- [x] **Step 1: Write the failing test:** with `window.matchMedia` stubbed to `matches: false`, `<DesktopGate><p>app</p></DesktopGate>` shows the `h1` "Best viewed on a desktop", seven people and the GitHub link, and not "app"; stubbed `matches: true` shows "app" only; with no `matchMedia`, shows "app"; a `change` event from the stub flips it.
+- [x] **Step 2: Run** it. Expected: FAIL.
+- [x] **Step 3: Implement** `DesktopGate` and wire it in `main.tsx`.
+- [x] **Step 4: Run** it, then `pnpm check`. Expected: PASS.
+- [x] **Step 5: Commit** `feat: desktop gate below 1024 px`, and log R11.
 
 ## Task 8.7: E2E, checkpoint
 
@@ -431,7 +431,7 @@ The gate (tokens only; `--cs-bg` page, one column max 560, padding 32 px 16 px):
 - Modify: `tests/e2e/routes.spec.ts` (no placeholder for `phase <= 8`), `tests/e2e/persona.spec.ts` (Reset leaves no story)
 - Modify: `docs/BUILD_PLAN.md`
 
-- [ ] **Step 1: Write the e2e specs.**
+- [x] **Step 1: Write the e2e specs.**
   - `stories.spec.ts`, imports `STORIES`, `stepHref` from `src/prototype/stories`:
     - **For each story, "runs from step 1 to the end":** from `/`, click "Follow {name}’s story →"; for each step `i`: the Story panel shows "Step i of N" and the step's title; if the step has a target, `[data-story-target="…"]` is visible; click Next (Finish on the last). After Finish the panel is gone and the URL has no `story` param. No console errors.
     - **For each story, "a shared link opens any step":** in a fresh context, for each step `goto(stepHref(story, i))` (cleared storage first): the panel shows the step's title, the "Viewing as" button names the story's persona, and the target (if any) is visible.
@@ -440,8 +440,8 @@ The gate (tokens only; `--cs-bg` page, one column max 560, padding 32 px 16 px):
     - **Wandering off:** in Marcus's story at step 3, click the TopNav "Inventory" link → the panel stays and the URL keeps `story=marcus&step=3`, with "You’ve left this step."; switch persona to Jordan; Next → step 4's route as Marcus. Exit → panel gone, Med Rec still as left.
   - `landing.spec.ts`: `/` shows the `h1` and seven cards; "Explore freely" lands on Marcus's division view; `/about` has its sections and the components link works; at a 800 × 900 viewport `/operations/agents/med-rec?control=pause-agent` shows "Best viewed on a desktop" and no dialog or Main navigation.
   - `persona.spec.ts`: after starting a story, Reset demo leaves no Story panel.
-- [ ] **Step 2: Run** `pnpm e2e`. Expected: PASS. Fix what fails (product or test), test-first where it's logic.
-- [ ] **Step 3: Visual check** at 1440 px: screenshot the landing, About, the gate at 800 px, and the panel over three screens (a table page, a page with a right panel, a dialog step). Compare with the Countersign look (tokens, type scale, spacing of existing screens) and fix drift.
+- [x] **Step 2: Run** `pnpm e2e`. Expected: PASS. Fix what fails (product or test), test-first where it's logic.
+- [x] **Step 3: Visual check** at 1440 px: screenshot the landing, About, the gate at 800 px, and the panel over three screens (a table page, a page with a right panel, a dialog step). Compare with the Countersign look (tokens, type scale, spacing of existing screens) and fix drift.
 - [ ] **Step 4: Fresh review.** Dispatch a reviewer on the whole branch (superpowers:requesting-code-review). Fix Critical and Important findings test-first; re-grade minors that would bite a visitor; list the rest as deferred.
 - [ ] **Step 5: Update `docs/BUILD_PLAN.md`:** tick 8.0–8.7; handoff notes (what exists, review fixes, deferred minors, gotchas, what Phase 9 needs); decision log rows R1–R12 as landed; Start here (⏸ at checkpoint, PR link, preview URL); session log row.
 - [ ] **Step 6: Checkpoint.** `pnpm check` and `pnpm e2e` green; forbidden-terms check prints nothing; push `phase-8-stories`; open the PR ("Phase 8: Stories and portfolio layer", body: task checklist, preview URL, screenshots, `Closes #9`); tick the issue's checklist.
