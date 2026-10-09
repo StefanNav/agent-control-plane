@@ -252,8 +252,8 @@ Also pinned:
   - `StoryStore.focusPanel: boolean`, `StoryStore.requestPanelFocus(): void`, `StoryStore.panelFocused(): void`.
 - Consumes: `routeTable` (`src/app/routes.ts`), `stepHref`, `STORIES`.
 
-- [ ] **Step 1: Install** `pnpm add -D @axe-core/playwright`.
-- [ ] **Step 2: Write the failing axe spec** (`a11y.spec.ts`). For each case, go to the URL, wait for the `h1` (the gate's case waits for its own `h1`), then run `new AxeBuilder({ page }).withTags([...R1 tags]).analyze()`. Expect `violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)` to equal `[]`. The cases:
+- [x] **Step 1: Install** `pnpm add -D @axe-core/playwright`.
+- [x] **Step 2: Write the failing axe spec** (`a11y.spec.ts`). For each case, go to the URL, wait for the `h1` (the gate's case waits for its own `h1`), then run `new AxeBuilder({ page }).withTags([...R1 tags]).analyze()`. Expect `violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)` to equal `[]`. The cases:
   - every `routeTable` sample path;
   - variants:
     - `/operations?view=tiles`, `/operations?view=exceptions`, `/operations/inbox?view=digest`;
@@ -265,10 +265,10 @@ Also pinned:
   - the agent view with its control menu open;
   - as Jordan (via the persona menu, as `persona.spec.ts` does): `/settings/divisions/medications`, `/settings/people`, `/inventory/privileges/prv-0142/sign`, `/operations/agents/med-rec`, `/operations/incidents/inc-0029`;
   - the desktop gate at 800×900.
-- [ ] **Step 3: Run** `pnpm e2e tests/e2e/a11y.spec.ts`. Expected: FAIL with the rules in the Recon table (and only those).
-- [ ] **Step 4: Fix each violation** as the Recon table says. Add `VisuallyHidden` and `Column.hiddenHeader` first: the header renders `<span role="columnheader"><VisuallyHidden>{hiddenHeader}</VisuallyHidden></span>` when `header` is empty. Name each column for what it holds ("Status", "Done", "Open").
-- [ ] **Step 5: Run** the axe spec, then `pnpm check`. Expected: PASS. Commit `fix: every route passes axe`; log R1.
-- [ ] **Step 6: Write the failing unit tests:**
+- [x] **Step 3: Run** `pnpm e2e tests/e2e/a11y.spec.ts`. Expected: FAIL with the rules in the Recon table (and only those).
+- [x] **Step 4: Fix each violation** as the Recon table says. Add `VisuallyHidden` and `Column.hiddenHeader` first: the header renders `<span role="columnheader"><VisuallyHidden>{hiddenHeader}</VisuallyHidden></span>` when `header` is empty. Name each column for what it holds ("Status", "Done", "Open").
+- [x] **Step 5: Run** the axe spec, then `pnpm check`. Expected: PASS. Commit `fix: every route passes axe`; log R1.
+- [x] **Step 6: Write the failing unit tests:**
   - `pageTitle.test.ts`:
     - `pageTitle('Division view')` → `'Division view · Signal Agent Control Plane'`;
     - `pageTitle('Signal · Agent Control Plane')` → `'Signal · Agent Control Plane'`;
@@ -294,16 +294,16 @@ Also pinned:
     - with `focusPanel: true` set before render, the step title (`h2`) has focus and `focusPanel` is false;
     - the panel's `aside` has `data-modal-companion`.
   - `ChangesTab` test (create if none): each check's accessible text says whether it is done ("Done" / "Not yet"), using the copy already beside it where there is some.
-- [ ] **Step 7: Run** `pnpm test`. Expected: FAIL on exactly these tests.
-- [ ] **Step 8: Implement** them:
+- [x] **Step 7: Run** `pnpm test`. Expected: FAIL on exactly these tests.
+- [x] **Step 8: Implement** them:
   - `pageTitle`;
   - Modal R5: companions are `document.querySelectorAll('[data-modal-companion]')` read at key time, so a panel that mounts later counts;
   - Table `selectOnFocus` (`onFocus` on the row, ignoring focus that lands in a cell's control), and Tabs `aria-pressed`;
   - the story store flag; `start()` calls `requestPanelFocus()`;
   - StoryPanel R6: Hide/Show focus through refs and an effect keyed on `hidden`; the status line; the title focus effect; the companion attribute;
   - ChangesTab text.
-- [ ] **Step 9: Run** `pnpm test`. Expected: PASS.
-- [ ] **Step 10: Write the failing keyboard e2e** (`keyboard.spec.ts`):
+- [x] **Step 9: Run** `pnpm test`. Expected: PASS.
+- [x] **Step 10: Write the failing keyboard e2e** (`keyboard.spec.ts`):
   - **Skip link.** On `/operations`:
     - the first Tab focuses a visible link "Skip to content", and Enter focuses `main`;
     - the next Tab lands inside `main`, not in the prototype bar.
@@ -329,16 +329,16 @@ Also pinned:
     - focus the persona menu trigger and press "e": the URL is unchanged;
     - open the persona menu and press "e": unchanged;
     - focus a board row and press "e": the URL is `/operations/inbox`.
-- [ ] **Step 11: Run** `pnpm e2e tests/e2e/keyboard.spec.ts`. Expected: FAIL (no skip link, static title, focus on `body`, rows not selected, "e" fires from the bar).
-- [ ] **Step 12: Implement:**
+- [x] **Step 11: Run** `pnpm e2e tests/e2e/keyboard.spec.ts`. Expected: FAIL (no skip link, static title, focus on `body`, rows not selected, "e" fires from the bar).
+- [x] **Step 12: Implement:**
   - `SkipLink`;
   - `main` id and tabIndex;
   - `usePageChrome` (R3 title from the deepest match's handle, else `null`; R4 focus);
   - the router's handle titles;
   - `DivisionView` R9 (scope attribute on the board's layout element; the listener checks `document.activeElement` against R9) and R7 (`selectOnFocus` on the board table).
   - In `focus.spec.ts`, the bar's link is reached with two Tabs.
-- [ ] **Step 13: Run** `pnpm e2e`. Expected: PASS (all specs, including stories and focus).
-- [ ] **Step 14: Run** `pnpm check`. Expected: PASS. Commit `feat: keyboard paths, page titles and focus after navigation`; log R2–R7 and R9.
+- [x] **Step 13: Run** `pnpm e2e`. Expected: PASS (all specs, including stories and focus).
+- [x] **Step 14: Run** `pnpm check`. Expected: PASS. Commit `feat: keyboard paths, page titles and focus after navigation`; log R2–R7 and R9.
 
 ## Task 9.2: Reduced motion and interaction polish
 
@@ -346,23 +346,23 @@ Also pinned:
 - Modify: `src/app/AppShell.tsx` (R8), `src/prototype/DesktopGate/DesktopGate.tsx` and its test, `src/prototype/stories/engine.ts` (comment on `openStep`'s `loaded` for a kept step).
 - Create: `tests/e2e/motion.spec.ts`.
 
-- [ ] **Step 1: Write the failing scroll e2e** (`motion.spec.ts`, Review focus 3):
+- [x] **Step 1: Write the failing scroll e2e** (`motion.spec.ts`, Review focus 3):
   - **New page opens at the top.** On `/inventory`, scroll to the bottom, then click the last agent's link to its record: `scrollY` is 0 on `/inventory/agents/…`.
   - **Same-page changes don't jump.** On `/operations/divisions/medications`:
     - scroll 300 px and click a lower row: `scrollY` is unchanged, and the URL has `?agent=`;
     - on `/operations/agents/med-rec`, scroll 200 px and switch to the Scorecard tab: `scrollY` is unchanged.
   - **Back restores.** On `/inventory`, scroll to 600 and open an agent; Back: `scrollY` is 600 ± 2.
   - **Story steps.** From Marcus step 5 (a scrolled inbox detail), Next: step 6 opens with the dialog and `scrollY` 0.
-- [ ] **Step 2: Write the reduced-motion pins** (same file, `test.use({ reducedMotion: 'reduce' })`). Both pass on their first run; they pin the current behaviour (ledger that):
+- [x] **Step 2: Write the reduced-motion pins** (same file, `test.use({ reducedMotion: 'reduce' })`). Both pass on their first run; they pin the current behaviour (ledger that):
   - a board row's computed `transition-duration` is `0s`;
   - starting a story step whose target is below the fold lands at its final `scrollY` within two animation frames.
-- [ ] **Step 3: Run** `pnpm e2e tests/e2e/motion.spec.ts`. Expected: the scroll tests FAIL (pages open part-way down); the pins PASS.
-- [ ] **Step 4: Implement** R8 in `AppShell` (`ScrollRestoration` keyed by pathname, inside the router, in all three shells).
-- [ ] **Step 5: Run** it. Expected: PASS. If `ScrollRestoration` can't meet the same-page cases, replace it with the hook (R8) and ledger.
-- [ ] **Step 6: Write the failing gate test:** with a `matchMedia` stub that has `addListener`/`removeListener` but no `addEventListener`, a `change` flips the gate.
-- [ ] **Step 7: Run** `pnpm vitest run src/prototype/DesktopGate`. Expected: FAIL (throws, or doesn't flip).
-- [ ] **Step 8: Implement** the fallback. Add the one-line comment on `openStep`: a kept step records the scenario as loaded because the visitor's own state stands in for it.
-- [ ] **Step 9: Run** `pnpm check` and `pnpm e2e`. Expected: PASS. Commit `feat: pages open at the top, Back restores; gate fallback`; log R8.
+- [x] **Step 3: Run** `pnpm e2e tests/e2e/motion.spec.ts`. Expected: the scroll tests FAIL (pages open part-way down); the pins PASS.
+- [x] **Step 4: Implement** R8 in `AppShell` (`ScrollRestoration` keyed by pathname, inside the router, in all three shells).
+- [x] **Step 5: Run** it. Expected: PASS. If `ScrollRestoration` can't meet the same-page cases, replace it with the hook (R8) and ledger.
+- [x] **Step 6: Write the failing gate test:** with a `matchMedia` stub that has `addListener`/`removeListener` but no `addEventListener`, a `change` flips the gate.
+- [x] **Step 7: Run** `pnpm vitest run src/prototype/DesktopGate`. Expected: FAIL (throws, or doesn't flip).
+- [x] **Step 8: Implement** the fallback. Add the one-line comment on `openStep`: a kept step records the scenario as loaded because the visitor's own state stands in for it.
+- [x] **Step 9: Run** `pnpm check` and `pnpm e2e`. Expected: PASS. Commit `feat: pages open at the top, Back restores; gate fallback`; log R8.
 
 ## Task 9.4: Wall legibility: stale becomes a dashed square
 
@@ -370,17 +370,17 @@ Also pinned:
 - Modify: `src/design-system/icons/paths.ts`, `src/design-system/icons/Icon.test.tsx`.
 - Modify, as found: any copy that says "dashed ring" (`grep -rni "dashed ring" src docs/design-handoff.md`). The design handoff gets a dated note under "Known open issues" item 1, not a rewrite.
 
-- [ ] **Step 1: Write the failing test:** `ICONS.stale.shapes` equals `[{ kind: 'path', d: 'M5 2H10V10H2V2Z', strokeWidth: 1.5, dash: '2 2' }]`; `ICONS.ring` is unchanged.
-- [ ] **Step 2: Run** `pnpm vitest run src/design-system/icons`. Expected: FAIL.
-- [ ] **Step 3: Implement** R10.
-- [ ] **Step 4: Run** `pnpm check`. Expected: PASS. Fix any test that pinned the old ring geometry; say so in the commit.
-- [ ] **Step 5: Check by eye.**
+- [x] **Step 1: Write the failing test:** `ICONS.stale.shapes` equals `[{ kind: 'path', d: 'M5 2H10V10H2V2Z', strokeWidth: 1.5, dash: '2 2' }]`; `ICONS.ring` is unchanged.
+- [x] **Step 2: Run** `pnpm vitest run src/design-system/icons`. Expected: FAIL.
+- [x] **Step 3: Implement** R10.
+- [x] **Step 4: Run** `pnpm check`. Expected: PASS. Fix any test that pinned the old ring geometry; say so in the commit.
+- [x] **Step 5: Check by eye.**
   - Screenshot `/wall` and `/operations/divisions/medications` at 1×.
   - Repeat the recon's greyscale, ⅓-scale check on the wall's three marks.
   - Zoom into a board chip at 12 px.
   - Stale must read as square and review as round in greyscale.
   - Keep the before and after images in `.superpowers/qa/o1/` for the checkpoint.
-- [ ] **Step 6: Commit** `feat: stale reads as a dashed square (O1)`; log R10.
+- [x] **Step 6: Commit** `feat: stale reads as a dashed square (O1)`; log R10.
 
 ## Task 9.3: Visual QA of every frame
 
@@ -398,15 +398,15 @@ Also pinned:
   - `act` opens what the frame shows open (menus, dialogs, typed reasons).
 - 9.5 reuses the config and the persona helper.
 
-- [ ] **Step 1: Write the capture.** For each `FRAMES` entry:
+- [x] **Step 1: Write the capture.** For each `FRAMES` entry:
   - **App side:** set the persona with the persona menu, go to `url`, run `act`, then take a full-page screenshot.
   - **Design side:** open `http://localhost:4599/<file>`, wait for fonts, then screenshot the 1440-wide artboard inside `#<frame>`. Inspect one file first to find the artboard element.
   - **Pair:** compose design (left) and app (right), each scaled to 720 px wide, in a `page.setContent` page.
   - **Output:** write `.superpowers/qa/<frame>.png`.
-- [ ] **Step 2: Run** `QA=1 pnpm capture tests/capture/qa.spec.ts`. Expected: 55 pairs, no errors. A frame whose state can't be reached is a finding: fix the table or ledger it.
-- [ ] **Step 3: Review every pair** for layout, copy, values, colour, type, spacing and icons. List each difference in the ledger as `QA <frame>: <difference> — drift | departure (<decision-log ref or R10>)`.
-- [ ] **Step 4: Fix each drift** in the owning feature or component. A drift caused by logic (a wrong count, date or state) gets a failing unit test first. Re-capture the affected frames and look again.
-- [ ] **Step 5: Run** `pnpm check` and `pnpm e2e`. Expected: PASS. Commit:
+- [x] **Step 2: Run** `QA=1 pnpm capture tests/capture/qa.spec.ts`. Expected: 55 pairs, no errors. A frame whose state can't be reached is a finding: fix the table or ledger it.
+- [x] **Step 3: Review every pair** for layout, copy, values, colour, type, spacing and icons. List each difference in the ledger as `QA <frame>: <difference> — drift | departure (<decision-log ref or R10>)`.
+- [x] **Step 4: Fix each drift** in the owning feature or component. A drift caused by logic (a wrong count, date or state) gets a failing unit test first. Re-capture the affected frames and look again.
+- [x] **Step 5: Run** `pnpm check` and `pnpm e2e`. Expected: PASS. Commit:
   - `test: frame capture for visual QA` (config, table, spec);
   - `fix: visual drift from the frames` (if any; the body lists the frames);
   - note the sweep date in the frame tracker's intro.
@@ -421,7 +421,7 @@ Also pinned:
   - `src/app/meta.test.ts`, which reads `index.html`, `public/og.png` and `README.md` from disk.
 - Modify: `index.html`, `README.md`.
 
-- [ ] **Step 1: Write the failing meta test** (`meta.test.ts`):
+- [x] **Step 1: Write the failing meta test** (`meta.test.ts`):
   - **`index.html`:**
     - `<title>` "Signal · Agent Control Plane";
     - `meta[name=description]` and `og:description` equal `PITCH`;
@@ -438,8 +438,8 @@ Also pinned:
     - it contains `PITCH` and the live URL;
     - it has no gendered pronouns (the stories test's regex);
     - "Status: in progress" is gone.
-- [ ] **Step 2: Run** `pnpm vitest run src/app/meta.test.ts`. Expected: FAIL.
-- [ ] **Step 3: Capture** (`readme.spec.ts`, run with `pnpm capture tests/capture/readme.spec.ts`), at 1440×900, 1×, with no story panel unless named:
+- [x] **Step 2: Run** `pnpm vitest run src/app/meta.test.ts`. Expected: FAIL.
+- [x] **Step 3: Capture** (`readme.spec.ts`, run with `pnpm capture tests/capture/readme.spec.ts`), at 1440×900, 1×, with no story panel unless named:
 
   | File | Screen |
   |---|---|
@@ -452,8 +452,8 @@ Also pinned:
   | `docs/screenshots/wall.png` | `/wall` |
   | `public/og.png` | R12 |
 
-- [ ] **Step 4: Write** `public/favicon.svg` (R12) and the meta in `index.html`.
-- [ ] **Step 5: Write the README:**
+- [x] **Step 4: Write** `public/favicon.svg` (R12) and the meta in `index.html`.
+- [x] **Step 5: Write the README:**
   1. The title.
   2. One paragraph: the current one, tightened, plus `PITCH`.
   3. **Try it:**
@@ -479,7 +479,7 @@ Also pinned:
   9. **Docs:** the existing list.
   10. **About the names:** Signal, Lakeshore Health and every person are fictional; the data is mock; the Epic screens are neutral stand-ins.
   11. "By [StefanNav](https://github.com/StefanNav)".
-- [ ] **Step 6: Run** `pnpm check`. Expected: PASS. Check the README renders on GitHub's preview (`gh api` markdown render, or after push). Commit `docs: portfolio README, screenshots, social image and page meta`; log R12.
+- [x] **Step 6: Run** `pnpm check`. Expected: PASS. Check the README renders on GitHub's preview (`gh api` markdown render, or after push). Commit `docs: portfolio README, screenshots, social image and page meta`; log R12.
 
 ## Task 9.6: E2E, fresh review, checkpoint, launch
 
@@ -487,9 +487,9 @@ Also pinned:
 - Modify: `playwright.config.ts`: `baseURL: process.env.BASE_URL ?? 'http://localhost:4173'`, and no `webServer` when `BASE_URL` is set.
 - Modify: `docs/BUILD_PLAN.md`.
 
-- [ ] **Step 1: Run** `pnpm check` and `pnpm e2e`. Expected: PASS. Fix what fails, test-first where it's logic.
-- [ ] **Step 2: Fresh review.** Dispatch a reviewer on the whole branch (superpowers:requesting-code-review) with this plan's Review Focus and the ledger's rulings. Fix Critical and Important findings test-first, re-grade minors by what a visitor gets, and list the rest as deferred.
-- [ ] **Step 3: Update `docs/BUILD_PLAN.md`:**
+- [x] **Step 1: Run** `pnpm check` and `pnpm e2e`. Expected: PASS. Fix what fails, test-first where it's logic.
+- [x] **Step 2: Fresh review.** Dispatch a reviewer on the whole branch (superpowers:requesting-code-review) with this plan's Review Focus and the ledger's rulings. Fix Critical and Important findings test-first, re-grade minors by what a visitor gets, and list the rest as deferred.
+- [x] **Step 3: Update `docs/BUILD_PLAN.md`:**
   - tick 9.0–9.5;
   - handoff notes: what exists, review fixes, deferred minors, gotchas, and "what's left" (the deferred list across phases);
   - decision log rows R1–R14 as landed;

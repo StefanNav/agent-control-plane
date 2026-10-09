@@ -18,10 +18,10 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 9: Polish and launch (◐ in progress) |
+| **Current phase** | Phase 9: Polish and launch (⏸ at checkpoint, awaiting Stefan's review) |
 | **Branch** | `phase-9-polish` |
-| **Last completed** | Phase 8 approved and squash-merged (PR #18) (2026-10-09) |
-| **Next task** | Task 9.1 in [`docs/plans/phase-9-polish.md`](plans/phase-9-polish.md) (order: 9.1, 9.2, 9.4, 9.3, 9.5, 9.6) |
+| **Last completed** | Phase 9 Tasks 9.0–9.5 and the fresh review (2026-10-09) |
+| **Next task** | Stefan reviews the Phase 9 PR preview. On approval: Task 9.6 Step 6 in [`docs/plans/phase-9-polish.md`](plans/phase-9-polish.md) (merge, production e2e, repo description and topics, close out) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -97,7 +97,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 6 | Governance and fast follows | ☑ Merged | `phase-6-governance` | [#7](https://github.com/StefanNav/agent-control-plane/issues/7) | [#16](https://github.com/StefanNav/agent-control-plane/pull/16) | [phase-6-governance.md](plans/phase-6-governance.md) |
 | 7 | Earned autonomy | ☑ Merged | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | [#17](https://github.com/StefanNav/agent-control-plane/pull/17) | [phase-7-autonomy.md](plans/phase-7-autonomy.md) |
 | 8 | Stories and portfolio layer | ☑ Merged | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | [#18](https://github.com/StefanNav/agent-control-plane/pull/18) | [phase-8-stories.md](plans/phase-8-stories.md) |
-| 9 | Polish and launch | ◐ In progress | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | – | [phase-9-polish.md](plans/phase-9-polish.md) |
+| 9 | Polish and launch | ⏸ At checkpoint | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | – | [phase-9-polish.md](plans/phase-9-polish.md) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
@@ -558,15 +558,63 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 **Goal:** Portfolio-ready public release.
 
 - [x] 9.0 Write `docs/plans/phase-9-polish.md`; commit
-- [ ] 9.1 Keyboard and accessibility pass (axe on key routes; modal focus; row keyboard paths)
-- [ ] 9.2 Reduced motion and final interaction polish
-- [ ] 9.3 Visual QA of every frame against its design; fix drift; tick "QA'd" in the tracker
-- [ ] 9.4 Wall display legibility check for the ring-overload issue (spec O1)
-- [ ] 9.5 Portfolio `README.md` (what it is, personas, stories, screenshots, stack, how to run), social preview image, page meta
+- [x] 9.1 Keyboard and accessibility pass (axe on key routes; modal focus; row keyboard paths)
+- [x] 9.2 Reduced motion and final interaction polish
+- [x] 9.3 Visual QA of every frame against its design; fix drift; tick "QA'd" in the tracker
+- [x] 9.4 Wall display legibility check for the ring-overload issue (spec O1)
+- [x] 9.5 Portfolio `README.md` (what it is, personas, stories, screenshots, stack, how to run), social preview image, page meta
 - [ ] 9.6 Final production deploy, repo description and topics; checkpoint
 
 **Done when:** every frame QA'd; production URL shared; README presents the project.
-**Handoff notes:** _written at the end of the phase._
+**Handoff notes (Phase 9 → after launch)**
+
+- **What exists**
+  - Accessibility:
+    - `tests/e2e/a11y.spec.ts` runs axe (WCAG 2.1 A/AA + best practice) on every route, 14 variants, five read-only screens as Jordan, the open control menu and the desktop gate.
+    - `tests/e2e/keyboard.spec.ts` covers the skip link, titles, focus after navigation, story + dialog, the board's keyboard selection and the E shortcut.
+    - `VisuallyHidden` primitive; `Column.hiddenHeader`; `Table selectOnFocus`; `Segmented disabled`; button-mode `Tabs` are `aria-pressed`.
+  - Shell (`src/app/usePageChrome.ts`), all with `pageTitle()`:
+    - `document.title`;
+    - a new pathname reached by a link opens at the top (POP is left to the browser);
+    - focus moves to the page's `h1` when the old page took focus with it.
+  - `SkipLink` (`src/layout/SkipLink`) and `main#main` in the app and prototype shells; `/wall` is its own `<main>` (its corner "Exit wall display" is the spec's corner control, R15).
+  - Story panel:
+    - it is a `data-modal-companion`, so Tab runs dialog → panel → dialog;
+    - Hide/Show keep focus;
+    - a `role="status"` line reads "Step n of N: title";
+    - starting a story from the page focuses the step title (memory-only `focusPanel` in `acp-story`).
+  - Stale is a dashed square everywhere (spec O1, R10).
+  - `pnpm capture` (`playwright.capture.config.ts`, `tests/capture/`):
+    - `QA=1` writes 54 frame/app pairs to `.superpowers/qa/`;
+    - `readme.spec.ts` rewrites `docs/screenshots/*.png` and `public/og.png`.
+  - Fidelity fixes pinned in `tests/e2e/fidelity.spec.ts` (6d, 2d, 3b, 3c, 7b, 7d/2b, 8c/4c, 14a, 11a). `recordLabel()` in `src/features/board/selectors.ts` gives the record's wording of a judgment.
+  - Launch:
+    - README with screenshots;
+    - `index.html` meta (description, Open Graph, Twitter card, absolute `og:image`), `public/og.png` (1200 × 630), `public/favicon.svg`;
+    - `BASE_URL=… pnpm e2e` runs against a deployment.
+- **Review fixes (fresh reviewer; 0 Critical, 3 Important + 1 re-graded, all test-first):**
+  - **Focus in dev:** `usePageChrome` moved focus to the h1 on a fresh load under StrictMode, so `pnpm dev` skipped the skip link. It now tracks the last pathname it ran for.
+  - **Focus without scrolling:** heading focus uses `preventScroll`, so Back can't jump to the top in browsers that restore early. Re-graded from Minor because of Review focus 3.
+  - **Whole chips in the side panel:** 4b's side panel cut the default agent's chip ("Review: 3 dr…") in `og.png` and the README hero. The judgment row now wraps, and level, grantor and review date stay whole.
+  - **Open QA lines:** each was ruled on (4c, 6a, 7b, 2d, 12b).
+- **Deferred minors:**
+  - Back focuses the page h1, not the row the visitor left.
+  - `Table` renders `hiddenHeader` beside a non-empty header (no caller does today).
+  - Five call sites put `header: '', hiddenHeader: …` on one line.
+  - Redirect routes have no handle, so the tab title flashes "Page not found" before the redirect.
+- **Kept differences from the frames (flagged at the checkpoint):**
+  - 4e shortens every wall name;
+  - 6e shows the pause notice and activity levels around the sponsor's panel;
+  - 1c draws a lock in each Sign/Order cell;
+  - 2c reuses the systems grid component;
+  - no Previous/Next item on 2c/14b (no other agenda items);
+  - small notice marks absent on 6d, 13b and 15b;
+  - stale's dashed square (O1).
+- **Gotchas**
+  - Playwright's `fullPage` screenshot resizes the page under the app, so the desktop gate remounts it and open menus close. `tests/capture` grows the viewport to the page height instead.
+  - `usePageChrome`'s first-render flag is module-level (page lifetime), because `AppShell` remounts when crossing shells.
+  - `meta.test.ts` reads files through Vite (`?raw`, `?inline`, `import.meta.glob`); the app tsconfig has no Node types.
+  - The Modal focuses after paint, so e2e focus checks on a just-opened dialog poll.
 
 ---
 
@@ -717,6 +765,12 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-09 | Landing, About and desktop-gate copy is ours (no frames), written from the Vision and PRD with Signal as the brand and a "fictional" disclaimer; cards follow persona order. "Explore freely" exits any story, switches to Marcus and goes to Marcus's landing, keeping the data | Phase 8 R9, R10 |
 | 2026-10-09 | Desktop gate wraps the router (`matchMedia('(min-width: 1024px)')` via `useSyncExternalStore`), so below 1024 px nothing of the app renders: no scenario loads, no dialog opens. Without `matchMedia` the app renders | Phase 8 R11 (spec D6, §4.7) |
 | 2026-10-09 | Phase 8 ran in the order 8.1, 8.3, 8.4, 8.2, 8.5, 8.6, 8.7 (the landing cards read the stories). Leaving a story (Exit, Finish, Explore freely, Reset) sets an in-memory flag so Back to a story link doesn't restart it; the panel scrolls a target clear of itself | Phase 8 R12 and review fixes I1, I2 |
+| 2026-10-09 | Accessibility: axe (WCAG 2.1 A/AA + best practice) is an e2e gate on every route, variant, read-only screen and the gate; rows stay Tab stops (handoff) behind a "Skip to content" link; every page names itself (`<title> · Signal Agent Control Plane`) | Phase 9 R1–R3 |
+| 2026-10-09 | Focus: when a link takes focus away with its page, focus lands on the new page's h1 (tracked by last pathname, so a fresh load and StrictMode leave it alone); dialogs admit `data-modal-companion` regions, so the story panel stays reachable; the panel keeps focus on Hide/Show, announces each step and takes focus when a story starts from the page | Phase 9 R4–R6, review fix |
+| 2026-10-09 | The division board's selection follows keyboard focus; the "E" shortcut works only on the page or the board (WCAG 2.1.4); a new page reached by a link opens at its top, query-only changes stay put and Back is the browser's (a hook, not `ScrollRestoration`) | Phase 9 R7–R9 |
+| 2026-10-09 | Stale is a dashed square everywhere (spec O1: in greyscale at wall distance the dashed and solid rings were indistinguishable) | Phase 9 R10 |
+| 2026-10-09 | Visual sweep of all 54 frames (`pnpm capture`, `QA=1`); drift fixed and pinned in `fidelity.spec.ts`; frame-faithful pickers on 2b and 7d are `Segmented` (gained `disabled`); the record's wording of a judgment comes from `recordLabel()`, not the seed (SEED_VERSION stays 8) | Phase 9 R11 |
+| 2026-10-09 | Launch: README with screenshots, Open Graph/Twitter meta with an absolute 1200 × 630 `og.png`, SVG favicon; `BASE_URL` runs e2e against a deployment; the wall's corner control is its "Exit wall display" link | Phase 9 R12, R13, R15 |
 
 ## Session log
 
@@ -744,3 +798,4 @@ One row per working session. Newest last.
 | 2026-10-09 | 8 | Built Phase 8 (story engine, seven stories with targets, narration panel, Stories menu, landing, About, desktop gate, rewind fix, story e2e incl. a shared link to every step). Fresh review: 3 Important fixed test-first; 5 minors deferred (see handoff notes). PR #18 open | Stefan reviews Phase 8 → merge → Phase 9 Task 9.0 |
 | 2026-10-09 | 8 | Stefan approved; PR #18 squash-merged; #9 closed | Phase 9 Task 9.0 (new session) |
 | 2026-10-09 | 9 | Wrote the Phase 9 plan (rulings R1–R15) after recon: axe on all 36 routes + 14 variants (10 rules, all small; contrast clean), tab-stop and click-target scan, O1 greyscale check (stale and review rings indistinguishable by shape → dashed square) | Task 9.1 |
+| 2026-10-09 | 9 | Built Phase 9 (axe gate on every route, keyboard paths and focus, page titles, scroll on navigation, story panel with dialogs, O1 stale square, 54-frame visual sweep with 9 drift fixes, README, social image, meta). Fresh review: 3 Important + 1 re-graded fixed test-first; 4 minors deferred. PR open | Stefan reviews Phase 9 → merge → launch steps |
