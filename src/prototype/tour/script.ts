@@ -188,4 +188,128 @@ export const CHAPTERS: Chapter[] = [
       },
     ],
   },
+  {
+    id: 'supervising',
+    title: 'Supervise',
+    steps: [
+      {
+        id: 'supervising-epic',
+        route: '/epic',
+        scenario: 'baseline',
+        persona: 'ana',
+        beats: [
+          {
+            id: 'supervising-1',
+            text: 'Which brings us back to this morning, and the dose changes the hard stop held.',
+          },
+          {
+            id: 'supervising-2',
+            text: "Ana reviews the agent's drafts right in the medical record, and when something looks off, flags it in one click.",
+            actions: [{ kind: 'outline', target: 'epic-agent-panel' }],
+            // Flag opens the form with the reason picked from Ana's edit; Send flag confirms it.
+            after: [
+              { kind: 'click', target: 'epic-flag' },
+              { kind: 'click', target: 'epic-flag-submit' },
+              { kind: 'wait', ms: 1500 },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'supervising-pause',
+        route: '/operations/agents/med-rec',
+        scenario: 'baseline',
+        persona: 'marcus',
+        beats: [
+          {
+            id: 'supervising-3',
+            text: 'Marcus pauses it in one action.',
+            actions: [
+              { kind: 'click', target: 'controls-trigger' },
+              { kind: 'click', target: 'controls-pause' },
+            ],
+          },
+          {
+            id: 'supervising-4',
+            text: 'Before confirming, the screen shows exactly what happens: drafts go back to pharmacists, and nothing is lost.',
+            actions: [{ kind: 'outline', target: 'pause-impact' }],
+            after: [
+              { kind: 'click', target: 'pause-confirm' },
+              { kind: 'wait', ms: 1500 },
+            ],
+          },
+        ],
+      },
+      {
+        // 11:58: Marcus has asked to resume; Priya decides.
+        id: 'supervising-resume',
+        route: '/operations/agents/med-rec',
+        scenario: 'resume-requested',
+        persona: 'priya',
+        beats: [
+          {
+            id: 'supervising-5',
+            text: "By noon there's a fix, and Marcus asks to resume, but it stays paused until Priya agrees too.",
+            actions: [
+              {
+                kind: 'type',
+                target: 'resume-reason',
+                text: "Sam's dose mapping fix is in, and the replay of 23 cases came back clean. Agreed to resume.",
+              },
+            ],
+            after: [
+              { kind: 'click', target: 'resume-approve' },
+              { kind: 'wait', ms: 1500 },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'supervising-reviewers',
+        route: '/operations/reviewers',
+        scenario: 'baseline',
+        persona: 'marcus',
+        beats: [
+          {
+            id: 'supervising-6',
+            text: "There's also a quieter risk: people trusting the agent too much.",
+            actions: [{ kind: 'outline', target: 'reviewers-finding' }],
+          },
+          {
+            id: 'supervising-7',
+            text: "On this unit, approvals got faster and edits dropped, but a random second check found more misses, so it's reviewers checking less, not the agent getting better.",
+            actions: [{ kind: 'outline', target: 'reviewers-check' }],
+          },
+          {
+            id: 'supervising-8',
+            text: "It's shown by unit and shift, never by name.",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'step-down',
+    title: 'Trust drops',
+    steps: [
+      {
+        // The next morning: admission med rec dropped from Draft to Shadow at 06:00.
+        id: 'step-down-notice',
+        route: '/operations/agents/med-rec',
+        scenario: 'step-down-threshold',
+        persona: 'priya',
+        beats: [
+          {
+            id: 'step-down-1',
+            text: 'And trust can go down on its own: when pharmacists kept editing more than fifteen percent of its drafts for three days, the agent dropped back to shadow by rule.',
+            actions: [{ kind: 'outline', target: 'stepdown-notice' }],
+          },
+          {
+            id: 'step-down-2',
+            text: 'Nothing climbs back up without someone signing for it.',
+          },
+        ],
+      },
+    ],
+  },
 ]

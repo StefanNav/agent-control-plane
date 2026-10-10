@@ -12,6 +12,9 @@ const PACKET = '/portfolio/reviews/med-rec'
 const RECORD = '/inventory/agents/med-rec'
 const SCORECARD = '/operations/agents/med-rec?tab=scorecard'
 const SIGN = '/inventory/privileges/prv-0142/sign'
+const EPIC = '/epic'
+const MED_REC = '/operations/agents/med-rec'
+const REVIEWERS = '/operations/reviewers'
 
 const bar = (page: Page) => page.getByRole('complementary', { name: 'Tour' })
 const summary = (page: Page) => page.locator('[data-story-target="agent-summary"]')
@@ -136,6 +139,118 @@ async function watchFor(page: Page, moment: Moment) {
       return Number(await html.getAttribute(heldMark))
     },
   }
+}
+
+/** One read of the page and the saved demo, taken at a single moment. */
+interface Sample {
+  /** The chapter the URL names while the bar is open; null once the tour has closed. */
+  chapter: string | null
+  caption: string
+  pathname: string
+  skipped: string | null
+  /** The targets the tour has outlined. */
+  outlined: string[]
+  /** Each asked-for target's text, or null when it isn't on the page. */
+  text: Record<string, string | null>
+  /** Med Rec Agent in the saved demo, and its history as `action · who · reason`. */
+  medRec: { lifecycle: string; pausedBy: string | null; pausedAt: string | null; history: string[] }
+}
+
+async function sample(page: Page, targets: string[] = []): Promise<Sample> {
+  return page.evaluate((names) => {
+    interface Saved {
+      state: {
+        agents: {
+          id: string
+          code: string
+          lifecycle: string
+          pausedBy?: string
+          pausedAt?: string
+        }[]
+        audit: { action: string; who: string; target: string; reason?: string }[]
+      }
+    }
+    const bar = document.querySelector('[data-tour="bar"]')
+    const { state } = JSON.parse(localStorage.getItem('acp-demo') ?? 'null') as Saved
+    const agent = state.agents.find((a) => a.id === 'med-rec')!
+    const targets = [...document.querySelectorAll<HTMLElement>('[data-story-target]')]
+    return {
+      chapter: bar ? new URLSearchParams(location.search).get('tour') : null,
+      caption: bar?.querySelector('p')?.textContent ?? '',
+      pathname: location.pathname,
+      skipped: bar?.getAttribute('data-skipped') ?? null,
+      outlined: targets
+        .filter((el) => getComputedStyle(el).outlineStyle === 'solid')
+        .map((el) => el.dataset.storyTarget!),
+      text: Object.fromEntries(
+        names.map((name) => [
+          name,
+          document.querySelector(`[data-story-target="${name}"]`)?.textContent ?? null,
+        ]),
+      ),
+      medRec: {
+        lifecycle: agent.lifecycle,
+        pausedBy: agent.pausedBy ?? null,
+        pausedAt: agent.pausedAt ?? null,
+        history: state.audit
+          .filter((a) => a.target === agent.code)
+          .map((a) => `${a.action} · ${a.who} · ${a.reason ?? ''}`),
+      },
+    }
+  }, targets)
+}
+
+/**
+ * Check a moment while a line plays: `read` turns each sample taken under that line's caption (the
+ * bar open, the URL naming the chapter) into words, until they are `want`. Samples taken anywhere
+ * else read as where the tour was, so a later step, or the seed the tour resets to, can't pass it.
+ */
+async function expectUnder(
+  page: Page,
+  at: { chapter: string; line: string; targets?: string[] },
+  read: (s: Sample) => string,
+  want: string,
+) {
+  await expect
+    .poll(
+      async () => {
+        const s = await sample(page, at.targets)
+        if (s.chapter !== at.chapter || !s.caption.startsWith(at.line))
+          return `not under "${at.line}": ${s.chapter} · ${s.caption}`
+        return read(s)
+      },
+      { message: at.line, timeout: CHAPTER_MS, intervals: [25] },
+    )
+    .toBe(want)
+}
+
+/**
+ * Note where a target is at the moment the tour clicks it: `clear` when all of it shows above the bar,
+ * otherwise how far under the bar it reaches. The returned check waits for that click.
+ */
+async function watchClickOn(page: Page, target: string) {
+  const mark = `data-tour-click-${target}`
+  await page.evaluate(
+    ([name, attribute]) => {
+      document.addEventListener(
+        'click',
+        (event) => {
+          const el = (event.target as Element | null)?.closest(`[data-story-target="${name}"]`)
+          const bar = document.querySelector('[data-tour="bar"]')
+          if (!el || !bar) return
+          const under = el.getBoundingClientRect().bottom - bar.getBoundingClientRect().top
+          const where = under <= 0 ? 'clear' : `${Math.ceil(under)} px under the bar`
+          document.documentElement.setAttribute(attribute, where)
+        },
+        true,
+      )
+    },
+    [target, mark] as const,
+  )
+  return () =>
+    expect(page.locator('html'), `${target} when clicked`).toHaveAttribute(mark, 'clear', {
+      timeout: 2 * CHAPTER_MS,
+    })
 }
 
 /** The opening has clicked its way to the Med Rec Agent and outlined its summary, skipping nothing. */
@@ -310,9 +425,108 @@ test('earning trust reads the scorecard, then Priya signs admission med rec to D
       { timeout: CHAPTER_MS, intervals: [25] },
     )
     .toBe('signed by Priya · with the reason · current level CurrentDraft · skipped 0')
+  // Then on into supervising, in the medical record.
+  await expect(page).toHaveURL(/\/epic\?tour=supervising$/, { timeout: CHAPTER_MS })
+  await expect(bar(page)).toBeVisible()
+  expect(errors).toEqual([])
+})
+
+test('supervising: Ana flags a draft, Marcus pauses Med Rec, Priya co-signs its resume, then reviewer behaviour', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  const reason = typedInto('resume-reason')
+  await openChapter(page, 'supervising', /\/epic\?tour=supervising$/)
+  // Deferred from 10.6: a tall dialog, or a panel low on the page, must not put its button under the bar.
+  const confirmClear = await watchClickOn(page, 'pause-confirm')
+  const approveClear = await watchClickOn(page, 'resume-approve')
+  await play(page)
+  await expectLineOver(page, 'Which brings us back', EPIC)
+  // Line 2 ends on Send flag, and holds there before Marcus's step loads its own hospital.
+  await expectUnder(
+    page,
+    { chapter: 'supervising', line: 'Ana reviews', targets: ['epic-flag', 'epic-agent-panel'] },
+    (s) =>
+      [
+        s.pathname,
+        s.text['epic-flag']?.startsWith('Flagged · ') ? 'flagged' : 'not flagged',
+        s.text['epic-agent-panel']?.includes('sent to Marcus') ? 'sent to Marcus' : 'not sent',
+      ].join(' · '),
+    `${EPIC} · flagged · sent to Marcus`,
+  )
+  await expectLineOver(page, 'Marcus pauses it', MED_REC)
+  // Paused by the tour's click at 09:52 (the resume step's own hospital was paused at 09:47).
+  await expectUnder(
+    page,
+    { chapter: 'supervising', line: 'Before confirming' },
+    (s) =>
+      [s.pathname, s.medRec.lifecycle, s.medRec.pausedBy, s.medRec.pausedAt?.slice(11, 16)].join(
+        ' · ',
+      ),
+    `${MED_REC} · paused · marcus · 09:52`,
+  )
+  await confirmClear()
+  // Line 5 ends on Approve: live again, with Priya's approval and reason in its history.
+  await expectUnder(
+    page,
+    { chapter: 'supervising', line: 'By noon' },
+    (s) =>
+      [
+        s.pathname,
+        s.medRec.lifecycle,
+        s.medRec.history.includes(`Resumed · priya · ${reason}`)
+          ? 'resumed by Priya with the reason'
+          : 'not resumed by Priya',
+      ].join(' · '),
+    `${MED_REC} · live · resumed by Priya with the reason`,
+  )
+  await approveClear()
+  await expectLineOver(page, "There's also a quieter risk", REVIEWERS)
+  await expectUnder(
+    page,
+    { chapter: 'supervising', line: 'On this unit' },
+    (s) => `${s.pathname} · outlined ${s.outlined.join(', ')}`,
+    `${REVIEWERS} · outlined reviewers-check`,
+  )
+  await expectUnder(
+    page,
+    { chapter: 'supervising', line: "It's shown by unit" },
+    (s) => `${s.pathname} · skipped ${s.skipped}`,
+    `${REVIEWERS} · skipped 0`,
+  )
+  // Then on into the step-down.
+  await expect(page).toHaveURL(/\/operations\/agents\/med-rec\?tour=step-down$/, {
+    timeout: CHAPTER_MS,
+  })
+  expect(errors).toEqual([])
+})
+
+test('trust drops: Med Rec shows its step-down notice, then the tour ends', async ({ page }) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'step-down', /\/operations\/agents\/med-rec\?tour=step-down$/)
+  await play(page)
+  await expectUnder(
+    page,
+    { chapter: 'step-down', line: 'And trust can go down', targets: ['stepdown-notice'] },
+    (s) =>
+      [
+        s.pathname,
+        s.text['stepdown-notice']?.includes('stepped down from Draft to Shadow')
+          ? 'stepped down'
+          : 'no notice',
+        `outlined ${s.outlined.join(', ')}`,
+      ].join(' · '),
+    `${MED_REC} · stepped down · outlined stepdown-notice`,
+  )
+  await expectUnder(
+    page,
+    { chapter: 'step-down', line: 'Nothing climbs back up' },
+    (s) => `${s.pathname} · skipped ${s.skipped}`,
+    `${MED_REC} · skipped 0`,
+  )
   // The last chapter so far: the tour ends there and resets the demo.
   await expect(bar(page)).toHaveCount(0, { timeout: CHAPTER_MS })
-  await expect(page).toHaveURL(/\/inventory\/privileges\/prv-0142\/sign$/)
+  await expect(page).toHaveURL(/\/operations\/agents\/med-rec$/)
   expect(errors).toEqual([])
 })
 

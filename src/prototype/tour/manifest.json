@@ -83,5 +83,55 @@
     "ms": 5993,
     "source": "recorded",
     "textHash": "39183fa8"
+  },
+  "supervising-1": {
+    "ms": 5368,
+    "source": "recorded",
+    "textHash": "fedc0006"
+  },
+  "supervising-2": {
+    "ms": 6843,
+    "source": "recorded",
+    "textHash": "0ca8ee17"
+  },
+  "supervising-3": {
+    "ms": 2621,
+    "source": "recorded",
+    "textHash": "19150bf3"
+  },
+  "supervising-4": {
+    "ms": 7774,
+    "source": "recorded",
+    "textHash": "10a57677"
+  },
+  "supervising-5": {
+    "ms": 6897,
+    "source": "recorded",
+    "textHash": "b3637dde"
+  },
+  "supervising-6": {
+    "ms": 3952,
+    "source": "recorded",
+    "textHash": "c2e6c8fb"
+  },
+  "supervising-7": {
+    "ms": 9175,
+    "source": "recorded",
+    "textHash": "9f5fee04"
+  },
+  "supervising-8": {
+    "ms": 3706,
+    "source": "recorded",
+    "textHash": "b162187b"
+  },
+  "step-down-1": {
+    "ms": 11485,
+    "source": "recorded",
+    "textHash": "058ffd10"
+  },
+  "step-down-2": {
+    "ms": 3127,
+    "source": "recorded",
+    "textHash": "88f92931"
   }
 }

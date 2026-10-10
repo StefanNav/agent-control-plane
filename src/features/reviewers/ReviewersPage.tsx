@@ -80,7 +80,7 @@ export function ReviewersPage() {
                   <h2 className={styles.caps}>{view.weekly.head}</h2>
                   <div className={styles.cards}>
                     {view.weekly.cards.map((c) => (
-                      <div key={c.label} className={styles.card}>
+                      <div key={c.label} className={styles.card} data-story-target={c.label.startsWith('Independent check') ? 'reviewers-check' : undefined}>
                         <span className={styles.meta}>{c.label}</span>
                         <span className={styles.value}>
                           {c.value} <span className={styles.meta}>{c.was}</span>
