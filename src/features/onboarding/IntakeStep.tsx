@@ -156,6 +156,7 @@ export function IntakeStep({ agentId }: { agentId: string }) {
             <Field label="Technical owner" htmlFor={techField} hint="Tools and hard stops" help={tech?.sub}>
               <Select
                 id={techField}
+                data-story-target="intake-tech-owner"
                 value={techOwnerId}
                 onChange={setTechOwnerId}
                 locked={!allowed}

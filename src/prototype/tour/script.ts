@@ -61,4 +61,127 @@ export const CHAPTERS: Chapter[] = [
       },
     ],
   },
+  {
+    id: 'onboarding',
+    title: 'Bring it on',
+    steps: [
+      {
+        id: 'onboarding-intake',
+        route: '/inventory/agents/med-rec/onboarding/intake',
+        scenario: 'onboarding-intake',
+        persona: 'dana',
+        beats: [
+          {
+            id: 'onboarding-1',
+            text: "So let's go back to how the agent you saw earlier got here.",
+          },
+          {
+            id: 'onboarding-2',
+            text: "It starts on October first, when the hospital's AI committee approves the request for it, and Dana starts onboarding from that approval.",
+            actions: [{ kind: 'outline', target: 'intake-carried' }],
+          },
+          {
+            id: 'onboarding-3',
+            text: 'No agent goes live without four named people who answer for it.',
+            // The technical owner is a native select: one press, and Sam is chosen.
+            actions: [
+              { kind: 'outline', target: 'intake-owners' },
+              { kind: 'choose', target: 'intake-tech-owner', value: 'sam' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'onboarding-tools',
+        route: '/inventory/agents/med-rec/onboarding/tools',
+        scenario: 'onboarding-tools-tested',
+        persona: 'sam',
+        beats: [
+          {
+            id: 'onboarding-4',
+            text: 'Marcus writes down what it must never do, starting with never changing a dose.',
+            actions: [{ kind: 'outline', target: 'tools-hardstops' }],
+          },
+          {
+            id: 'onboarding-5',
+            text: "Sam turns each of those into a hard stop that sits outside the AI, so the agent can't argue its way past it.",
+            actions: [{ kind: 'card', card: 'hard-stops-outside' }],
+          },
+          {
+            id: 'onboarding-6',
+            text: 'And each one is tested against the last thirty days, so the board can see what it would actually have caught.',
+            actions: [{ kind: 'clearCard' }, { kind: 'outline', target: 'tools-hardstop-test' }],
+          },
+        ],
+      },
+      {
+        id: 'onboarding-packet',
+        route: '/portfolio/reviews/med-rec',
+        scenario: 'review-committee',
+        persona: 'drlee',
+        beats: [
+          {
+            id: 'onboarding-7',
+            text: "Dr. Lee's board approves it with conditions, like a pharmacist signing every draft.",
+            actions: [
+              { kind: 'outline', target: 'packet-decision' },
+              { kind: 'click', target: 'packet-approve-conditions' },
+              {
+                kind: 'type',
+                target: 'packet-reason',
+                text: 'Hard stops tested well. Conditions: a pharmacist signs every draft, weekly edit-rate reports to Priya, no dialysis patients yet.',
+              },
+            ],
+            after: [{ kind: 'click', target: 'packet-record' }],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'earning-trust',
+    title: 'Earn trust',
+    steps: [
+      {
+        id: 'earning-trust-scorecard',
+        route: '/operations/agents/med-rec?tab=scorecard',
+        scenario: 'shadow-day-21',
+        persona: 'priya',
+        beats: [
+          {
+            id: 'earning-trust-1',
+            text: 'For three weeks it works in shadow, doing the job without anything reaching a patient.',
+            actions: [{ kind: 'outline', target: 'scorecard-criteria' }],
+          },
+        ],
+      },
+      {
+        // Signing takes the reason and the accountability box; the signature then names Priya.
+        id: 'earning-trust-sign',
+        route: '/inventory/privileges/prv-0142/sign',
+        scenario: 'awaiting-signature',
+        persona: 'priya',
+        beats: [
+          {
+            id: 'earning-trust-2',
+            text: 'It meets two targets and just misses the third, so Priya can still move it up, but only with a written reason.',
+            actions: [
+              { kind: 'outline', target: 'sign-signature' },
+              {
+                kind: 'type',
+                target: 'sign-reason',
+                text: 'Inaccurate lines are mostly brand and generic name mismatches. SOP v1.3.1 adds 186 brand names, and a pharmacist still signs every draft.',
+              },
+              { kind: 'click', target: 'sign-accept' },
+            ],
+            after: [{ kind: 'click', target: 'sign-submit' }],
+          },
+          {
+            id: 'earning-trust-3',
+            text: "Now the agent drafts, a pharmacist signs, and Priya's name is on that privilege.",
+          },
+        ],
+      },
+    ],
+  },
 ]

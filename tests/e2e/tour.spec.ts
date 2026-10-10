@@ -1,36 +1,124 @@
 import { expect, test, type Page } from '@playwright/test'
+import { CHAPTERS } from '../../src/prototype/tour/script'
 import { collectErrors } from './console'
 
 // The silent voice makes each beat a tenth of its clip; reduced motion makes the cursor jump.
-const OPEN = '/?tour=open&tourVoice=silent'
 const AT_MED_REC = /\/operations\/agents\/med-rec\?tour=open$/
 const CHAPTER_MS = 10_000
+
+const INTAKE = '/inventory/agents/med-rec/onboarding/intake'
+const TOOLS = '/inventory/agents/med-rec/onboarding/tools'
+const PACKET = '/portfolio/reviews/med-rec'
+const RECORD = '/inventory/agents/med-rec'
+const SCORECARD = '/operations/agents/med-rec?tab=scorecard'
+const SIGN = '/inventory/privileges/prv-0142/sign'
 
 const bar = (page: Page) => page.getByRole('complementary', { name: 'Tour' })
 const summary = (page: Page) => page.locator('[data-story-target="agent-summary"]')
 
-/** Open the chapter from a link and press Play. */
-async function playOpening(page: Page) {
-  await page.goto(OPEN)
-  await expect(page).toHaveURL(/\/operations\?tour=open$/)
+/** What the tour types into a field, from the script. */
+function typedInto(target: string): string {
+  for (const chapter of CHAPTERS)
+    for (const step of chapter.steps)
+      for (const beat of step.beats)
+        for (const action of [...(beat.actions ?? []), ...(beat.after ?? [])])
+          if (action.kind === 'type' && action.target === target) return action.text
+  throw new Error(`The tour types nothing into ${target}`)
+}
+
+/** Open a chapter from a link and wait for its first screen, paused. */
+async function openChapter(page: Page, chapter: string, first: RegExp) {
+  await page.goto(`/?tour=${chapter}&tourVoice=silent`)
+  await expect(page).toHaveURL(first)
+}
+
+async function play(page: Page) {
   await bar(page).getByRole('button', { name: 'Play tour' }).click()
 }
 
+/** Open the chapter from a link and press Play. */
+async function playOpening(page: Page) {
+  await openChapter(page, 'open', /\/operations\?tour=open$/)
+  await play(page)
+}
+
 /**
- * Which screen a line plays over (Ruling 17): the pathname, sampled while the bar's caption is that
- * line. Its clicks come at the end of the line, so the screen holds while the line is spoken.
+ * Which screen a line plays over (Ruling 17): the pathname, and any query the route sets, sampled
+ * while the bar's caption is that line. Its clicks come at the end of the line, so the screen holds
+ * while the line is spoken.
  */
-async function expectLineOver(page: Page, line: string, pathname: string) {
+async function expectLineOver(page: Page, line: string, route: string) {
   await expect
     .poll(
       () =>
-        page.evaluate((start) => {
-          const caption = document.querySelector('[data-tour="bar"] p')?.textContent ?? ''
-          return caption.startsWith(start) ? location.pathname : `caption: ${caption}`
-        }, line),
+        page.evaluate(
+          ([start, want]) => {
+            const caption = document.querySelector('[data-tour="bar"] p')?.textContent ?? ''
+            if (!caption.startsWith(start)) return `caption: ${caption}`
+            const wanted = new URL(want, location.origin)
+            const params = new URLSearchParams(location.search)
+            const there =
+              location.pathname === wanted.pathname &&
+              [...wanted.searchParams].every(([name, value]) => params.get(name) === value)
+            return there ? want : location.pathname + location.search
+          },
+          [line, route] as const,
+        ),
       { message: line, timeout: CHAPTER_MS, intervals: [25] },
     )
-    .toBe(pathname)
+    .toBe(route)
+}
+
+/**
+ * A moment on screen: an element by its target, on a pathname, with a value or some text, while the
+ * bar shows this many skipped actions.
+ */
+interface Moment {
+  target: string
+  pathname?: string
+  value?: string
+  text?: string[]
+  skipped?: number
+}
+
+/**
+ * Watch for a moment that may last only until the next step loads: from now on, every change to the
+ * page is checked (a MutationObserver sees each render, however brief), and the first match is kept.
+ * Returns a check that it was seen.
+ */
+async function watchFor(page: Page, moment: Moment) {
+  const mark = `data-tour-seen-${moment.target}`
+  await page.evaluate(
+    ([attribute, m]) => {
+      const look = () => {
+        if (m.pathname !== undefined && location.pathname !== m.pathname) return false
+        const skipped = document.querySelector('[data-tour="bar"]')?.getAttribute('data-skipped')
+        if (m.skipped !== undefined && skipped !== String(m.skipped)) return false
+        const el = document.querySelector<HTMLElement>(`[data-story-target="${m.target}"]`)
+        if (!el) return false
+        if (m.value !== undefined && (el as HTMLSelectElement).value !== m.value) return false
+        return (m.text ?? []).every((t) => (el.textContent ?? '').includes(t))
+      }
+      const seen = () => document.documentElement.setAttribute(attribute, '')
+      if (look()) return seen()
+      const observer = new MutationObserver(() => {
+        if (!look()) return
+        seen()
+        observer.disconnect()
+      })
+      observer.observe(document, {
+        subtree: true,
+        childList: true,
+        characterData: true,
+        attributes: true,
+      })
+    },
+    [mark, moment] as const,
+  )
+  return () =>
+    expect(page.locator('html'), `${moment.target} was never seen`).toHaveAttribute(mark, '', {
+      timeout: 2 * CHAPTER_MS,
+    })
 }
 
 /** The opening has clicked its way to the Med Rec Agent and outlined its summary, skipping nothing. */
@@ -46,15 +134,22 @@ test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
 })
 
-test('the opening clicks from the board to the Med Rec Agent and ends there', async ({ page }) => {
+test('the opening clicks from the board to the Med Rec Agent, then runs on into onboarding', async ({
+  page,
+}) => {
   const errors = collectErrors(page)
   await playOpening(page)
   await expectLineOver(page, "You can't watch them all", '/operations')
   await expectLineOver(page, 'In Medications', '/operations/divisions/medications')
   await expectLineOver(page, 'This one drafts', '/operations/agents/med-rec')
   await expectAtMedRec(page)
-  await expect(bar(page)).toHaveCount(0, { timeout: CHAPTER_MS })
-  await expect(page).toHaveURL(/\/operations\/agents\/med-rec$/)
+  await expect(page).toHaveURL(
+    /\/inventory\/agents\/med-rec\/onboarding\/intake\?tour=onboarding$/,
+    {
+      timeout: CHAPTER_MS,
+    },
+  )
+  await expect(bar(page)).toBeVisible()
   expect(errors).toEqual([])
 })
 
@@ -119,6 +214,84 @@ test('a saved state with Med Rec retired still tours Med Rec live (Review focus 
     )
     .toBe('Controls')
   await expectAtMedRec(page)
+  expect(errors).toEqual([])
+})
+
+test('onboarding names Sam, then records the board’s decision on Med Rec’s record', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  const reason = typedInto('packet-reason')
+  await openChapter(
+    page,
+    'onboarding',
+    /\/inventory\/agents\/med-rec\/onboarding\/intake\?tour=onboarding$/,
+  )
+  // Sam is chosen in place, and the step moves on soon after.
+  const samChosen = await watchFor(page, { target: 'intake-tech-owner', value: 'sam' })
+  // The record shows the decision only until the next chapter loads its own hospital. It is the
+  // chapter's last screen, so by then every action has run or been skipped.
+  const decided = await watchFor(page, {
+    target: 'record-decision',
+    pathname: RECORD,
+    text: ['Approved with conditions', reason],
+    skipped: 0,
+  })
+  await play(page)
+  await expectLineOver(page, 'It starts on October first', INTAKE)
+  await expectLineOver(page, 'No agent goes live', INTAKE)
+  await samChosen()
+  await expectLineOver(page, 'Marcus writes down', TOOLS)
+  await expectLineOver(page, 'And each one is tested', TOOLS)
+  await expectLineOver(page, "Dr. Lee's board", PACKET)
+  await decided()
+  expect(errors).toEqual([])
+})
+
+test('earning trust reads the scorecard, then Priya signs admission med rec to Draft with a reason', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  const reason = typedInto('sign-reason')
+  await openChapter(
+    page,
+    'earning-trust',
+    /\/operations\/agents\/med-rec\?tab=scorecard&tour=earning-trust$/,
+  )
+  await play(page)
+  await expectLineOver(page, 'For three weeks', SCORECARD)
+  await expectLineOver(page, 'It meets two targets', SIGN)
+  await expectLineOver(page, 'Now the agent drafts', SIGN)
+  // Sampled while the last line plays: once the tour ends it resets the demo, whose seed has this
+  // privilege signed too.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          ([start, typed]) => {
+            const caption = document.querySelector('[data-tour="bar"] p')?.textContent ?? ''
+            if (!caption.startsWith(start)) return `caption: ${caption}`
+            const signature =
+              document.querySelector('[data-story-target="sign-signature"]')?.textContent ?? ''
+            const level = document.querySelector('main [data-state="current"]')?.textContent ?? ''
+            const skipped = document
+              .querySelector('[data-tour="bar"]')
+              ?.getAttribute('data-skipped')
+            return [
+              signature.includes('Signed by Priya') ? 'signed by Priya' : 'not signed',
+              signature.includes(typed) ? 'with the reason' : 'without the reason',
+              `current level ${level}`,
+              `skipped ${skipped}`,
+            ].join(' · ')
+          },
+          ['Now the agent drafts', reason] as const,
+        ),
+      { timeout: CHAPTER_MS, intervals: [25] },
+    )
+    .toBe('signed by Priya · with the reason · current level CurrentDraft · skipped 0')
+  // The last chapter so far: the tour ends there and resets the demo.
+  await expect(bar(page)).toHaveCount(0, { timeout: CHAPTER_MS })
+  await expect(page).toHaveURL(/\/inventory\/privileges\/prv-0142\/sign$/)
   expect(errors).toEqual([])
 })
 

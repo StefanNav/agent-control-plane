@@ -33,5 +33,55 @@
     "ms": 5709,
     "source": "recorded",
     "textHash": "99e8ff33"
+  },
+  "onboarding-1": {
+    "ms": 5824,
+    "source": "recorded",
+    "textHash": "e084e5be"
+  },
+  "onboarding-2": {
+    "ms": 8606,
+    "source": "recorded",
+    "textHash": "e568a81d"
+  },
+  "onboarding-3": {
+    "ms": 5816,
+    "source": "recorded",
+    "textHash": "1a5de971"
+  },
+  "onboarding-4": {
+    "ms": 5132,
+    "source": "recorded",
+    "textHash": "4a2d6824"
+  },
+  "onboarding-5": {
+    "ms": 3696,
+    "source": "recorded",
+    "textHash": "d84223d8"
+  },
+  "onboarding-6": {
+    "ms": 6872,
+    "source": "recorded",
+    "textHash": "ff45f044"
+  },
+  "onboarding-7": {
+    "ms": 6172,
+    "source": "recorded",
+    "textHash": "03ec3467"
+  },
+  "earning-trust-1": {
+    "ms": 6041,
+    "source": "recorded",
+    "textHash": "03b6259d"
+  },
+  "earning-trust-2": {
+    "ms": 8746,
+    "source": "recorded",
+    "textHash": "5a8355a6"
+  },
+  "earning-trust-3": {
+    "ms": 5993,
+    "source": "recorded",
+    "textHash": "39183fa8"
   }
 }

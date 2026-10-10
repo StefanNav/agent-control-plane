@@ -194,7 +194,18 @@ export function PacketPage() {
           ) : (
             <SideCard storyTarget="packet-decision" label="Your decision" title="Your decision" sub="Logged with your reason. Conditions carry onto every privilege for this agent.">
               <div className={onboarding.form}>
-                <RadioCardGroup name="decision" aria-label="Decision" value={kind} onChange={setKind} options={KINDS.map((k) => ({ ...k, description: k.value === 'reReview' ? `Back to ${view.lead} with questions, next meeting` : k.description }))} />
+                <RadioCardGroup
+                  name="decision"
+                  aria-label="Decision"
+                  value={kind}
+                  onChange={setKind}
+                  options={KINDS.map((k) => ({
+                    ...k,
+                    // The tour clicks this option; a click on its title reaches the card.
+                    title: k.value === 'approveWithConditions' ? <span data-story-target="packet-approve-conditions">{k.title}</span> : k.title,
+                    description: k.value === 'reReview' ? `Back to ${view.lead} with questions, next meeting` : k.description,
+                  }))}
+                />
                 {kind === 'approveWithConditions' ? (
                   <section className={onboarding.setGroup}>
                     <h3 className={onboarding.caps}>Conditions</h3>
@@ -216,11 +227,11 @@ export function PacketPage() {
                 <label className={onboarding.caps} htmlFor="decision-reason">
                   Reason
                 </label>
-                <Textarea id="decision-reason" rows={5} value={reason} onChange={(e) => setReason(e.target.value)} />
+                <Textarea id="decision-reason" data-story-target="packet-reason" rows={5} value={reason} onChange={(e) => setReason(e.target.value)} />
                 {error ? <span role="alert">{error}</span> : null}
                 <span className={onboarding.runRow}>
                   {reason.trim() ? (
-                    <Button variant="primary" onClick={record}>
+                    <Button variant="primary" onClick={record} data-story-target="packet-record">
                       Record decision
                     </Button>
                   ) : (

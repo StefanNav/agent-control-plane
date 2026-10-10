@@ -15,4 +15,12 @@ export type CardContent =
   | { kind: 'image'; src: string; alt: string; caption: string }
 
 /** The tour's cards by id; each chapter adds its own. */
-export const CARDS: Record<string, CardContent> = {}
+export const CARDS: Record<string, CardContent> = {
+  // onboarding
+  'hard-stops-outside': {
+    kind: 'excerpt',
+    quote:
+      'Hard stops run outside the model. They sit between the agent and the hospital’s systems, so the agent can’t argue past them.',
+    source: 'Vision · Product principles',
+  },
+}
