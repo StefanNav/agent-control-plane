@@ -99,8 +99,26 @@ test('a saved state with Med Rec retired still tours Med Rec live (Review focus 
   await expect(page.getByRole('button', { name: 'Controls' })).toHaveCount(0)
 
   await playOpening(page)
+  // Checked in one sample while the opening is still on: once the tour closes it resets the demo,
+  // which would bring Controls back for the wrong reason.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const touring =
+            document.querySelector('[data-tour="bar"]') !== null &&
+            new URLSearchParams(location.search).get('tour') === 'open'
+          if (!touring) return 'not in the opening'
+          if (location.pathname !== '/operations/agents/med-rec') return location.pathname
+          const controls = [...document.querySelectorAll('button')].some(
+            (b) => b.textContent?.trim() === 'Controls',
+          )
+          return controls ? 'Controls' : 'no Controls'
+        }),
+      { timeout: CHAPTER_MS, intervals: [25] },
+    )
+    .toBe('Controls')
   await expectAtMedRec(page)
-  await expect(page.getByRole('button', { name: 'Controls' })).toBeVisible()
   expect(errors).toEqual([])
 })
 
