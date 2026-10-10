@@ -20,8 +20,8 @@ Update this block every time a session stops, even mid-phase.
 |---|---|
 | **Current phase** | Phase 10: Guided tour (◐ in progress) |
 | **Branch** | `phase-10-guided-tour` |
-| **Last completed** | 10.13 import recordings (moved ahead): Stefan's 11 chapter recordings received; the opening plays in Stefan's voice (2026-10-10) |
-| **Next task** | **CHECKPOINT B:** Stefan's feedback on the opening (preview now in Stefan's voice). Then 10.8, importing each chapter's recording as it's encoded |
+| **Last completed** | 10.8–10.11: all 11 chapters built and reviewed; all 65 lines in Stefan's voice; running time 7:15 (2026-10-10) |
+| **Next task** | **CHECKPOINT C:** Stefan plays the whole tour on PR #21's preview (`/?tour=open`): length, wording, cards, images, the listen list. Then 10.12 landing + Attune rename |
 | **Blockers** | None. Waiting on Stefan (not blocking): Checkpoint B notes, photo. `onboarding-1.m4a` received; it lands with 10.10's import |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -634,8 +634,8 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 - [ ] 10.7 Opening chapter (vertical slice) → **CHECKPOINT B** (first chapter on a preview)
 - [x] 10.8 Walkthrough I (onboarding, earning trust)
 - [x] 10.9 Walkthrough II (supervising, step-down)
-- [ ] 10.10 Interludes (problem, process, validate) and the landing chapters (who it's for, close)
-- [ ] 10.11 The decisions page and the explorations → **CHECKPOINT C** (whole tour, placeholder voice)
+- [x] 10.10 Interludes (problem, process, validate) and the landing chapters (who it's for, close)
+- [x] 10.11 The decisions page and the explorations → **CHECKPOINT C** (whole tour, in Stefan's voice)
 - [ ] 10.12 Landing, credit and the Attune rename
 - [x] 10.13 Import recordings (`pnpm tour:import`; replaces the recording page)
 - [ ] 10.14 Recording → **CHECKPOINT D** (real voice; Stefan recorded all 11 chapters on 2026-10-10)
@@ -810,6 +810,7 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-10 | Recordings: Stefan records one Voice Memos file per chapter (one-second pause between lines) instead of using a recording page; `pnpm tour:import` splits them into per-line clips by pause detection plus each line's expected length; a `<beatId>.m4a` file replaces one line. 10.13 becomes the import and runs before 10.8 so the opening plays in Stefan's voice at Checkpoint B | Stefan prefers Voice Memos; simpler to build; per-line sync kept |
 | 2026-10-10 | Tour rulings from 10.8: a new `choose` action sets native selects; `after` actions wait for Play when the tour is paused; the 7:30 test counts 650 ms per click plus waits; a 1.5 s wait lets a confirmed result show before the next step; `tour:import` won't import a chapter whose split is doubtful (it stays on the placeholder voice unless `--force`), and fits around lines recorded on their own; excerpt cards quote their source verbatim | Stefan's onboarding recording lacks its first line, so the split would have put the wrong words under five captions |
 | 2026-10-10 | Tour rulings from 10.9: while the tour is open the shell sets `--docked-bottom: 88px` and `Modal` shortens by it, so dialog buttons stay clear of the bar; the bar's clock holds at a line's end during its after-actions; after Priya approves the resume, the header status is outlined and scrolled into view; `choose` skips a locked select; the pronoun check covers typed text | The pause dialog's confirm sat 49 px under the bar; the clock jumped back; the resumed status happened off screen |
+| 2026-10-10 | Tour rulings from 10.10–10.11: lines recorded on their own are trimmed of silence; the process page says "10 build phases, each one a reviewed pull request" (Phase 0 had none); interlude items carry `aria-current="step"`; the running-time check models each line as max(clip, actions) + after-actions; decision thumbnails are captured from the live product without the prototype bar; the decisions recording was imported with `--force` (one short line with a natural pause); the tour's Space/←/→ do nothing while a dialog is open | Reviews of 10.10 and 10.11; a public page must only state what the repo shows |
 
 ## Session log
 
@@ -844,3 +845,4 @@ One row per working session. Newest last.
 | 2026-10-09 | 10 | Checkpoint A: Stefan chose the hybrid script (8 edits applied); chapters re-cut. Built 10.7 (opening chapter, ids renamed, click-settle fix, after-actions, idle cursor), reviewed clean. 1010 unit and 251 e2e tests green | CHECKPOINT B: preview review |
 | 2026-10-10 | 10 | Stefan recorded all 11 chapters in Voice Memos; swapped the recording page for `pnpm tour:import` (pause detection plus syllable-proportional split), built and reviewed it ahead of 10.8; the opening's seven lines are now Stefan's voice. 1026 unit and 251 e2e tests green | CHECKPOINT B feedback, then 10.8 |
 | 2026-10-10 | 10 | Built and reviewed 10.8 (onboarding, earning trust; import holds back doubtful chapters) and 10.9 (supervising, step-down; dialogs clear of the bar). Stefan added `onboarding-1.m4a`; dry run fits. 1056 unit and 255 e2e tests green | 10.10 interludes and landing chapters |
+| 2026-10-10 | 10 | Built and reviewed 10.10 (problem, people, process, validate, close; override trim) and 10.11 (decisions page, explorations, thumbnails, time model). All 65 lines in Stefan's voice; 7:15 modelled. 1090 unit and 276 e2e tests green | CHECKPOINT C on the preview |

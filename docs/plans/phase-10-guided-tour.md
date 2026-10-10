@@ -282,10 +282,10 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
 - Produces: `useReveal(stepId: string): Set<string> | 'all'`: the `reveal` ids of beats already reached in that step while the tour is on it; `'all'` when the page is visited outside the tour.
 - Pages: page title type, a single column. Problem: three lines (agents that act; a person approving everything; how hospitals trust someone new). Process: nine tiles in a row (Research, Vision, PRD, Roadmap, Epics and stories, Design system brief, Explorations, 55 frames, 10 build phases), each with one line under it. Validate: three short lists from spec §7.4. Reached items `--cs-text2`, the current one `--cs-ink` with the 2 px ink outline, unreached ones `visibility: hidden`.
 - `people` runs on `/` (`baseline`, `marcus`): beat 4 outlines Dana, Sam and Dr. Lee in turn (outline, `wait`, outline, `wait`, outline). `close` runs on `/` (`baseline`, `marcus`); ending stays there (R5).
-- [ ] **Step 1: Write the failing tests:** `interludes.test.tsx`: outside the tour every item is visible; on a step with two beats reached, exactly those items show and the second is current. E2E: each of the five chapters runs with no skips; axe passes on the three routes.
-- [ ] **Step 2:** Run — FAIL.
-- [ ] **Step 3:** Implement; encode the five chapters; `pnpm tour:audio`.
-- [ ] **Step 4:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour interludes and landing chapters`.
+- [x] **Step 1: Write the failing tests:** `interludes.test.tsx`: outside the tour every item is visible; on a step with two beats reached, exactly those items show and the second is current. E2E: each of the five chapters runs with no skips; axe passes on the three routes.
+- [x] **Step 2:** Run — FAIL.
+- [x] **Step 3:** Implement; encode the five chapters; `pnpm tour:audio`.
+- [x] **Step 4:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour interludes and landing chapters`.
 
 ### Task 10.11: The decisions page (`decisions`) and the explorations — **CHECKPOINT C**
 
@@ -294,11 +294,11 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
 - Create: `src/prototype/tour/interludes/DecisionsPage.tsx`
 - Modify: `routes.ts` / `router.tsx` (`/tour/decisions`, "Three key decisions"), `script.ts` (`decisions`), `cards.ts` (decision cards 1–3 per spec §7.2, each with its screen thumbnail; image cards for the explorations), `tests/e2e/tour.spec.ts`, `tests/e2e/a11y.spec.ts`
 
-- [ ] **Step 1: Review every image** before converting: open each PNG and check for any company name, URL or real person's name (the handoff says names were swapped to Attune; confirm it). Reject or crop any that fail. Only the images the script uses are converted: the five overviews (`ds-01`…`ds-05`), the Ledger conflict (`ds-09`), the stress test (`ds-07`, `ds-12`), the final division view (`ds-22`).
-- [ ] **Step 2:** Convert each used image: `ffmpeg -y -i <in>.png -vf "scale='min(1600,iw)':-2" -q:v 3 -map_metadata -1 public/tour/artifacts/<name>.jpg` (R7). View one converted file to confirm legibility.
-- [ ] **Step 3: Write the e2e test:** chapter `decisions` runs with no skips and shows all three decision cards; axe passes on `/tour/decisions`.
-- [ ] **Step 4:** Run — FAIL. Implement the page (same reveal model as 10.10: the three decision cards in order, with Decision 2's explorations in a row with captions, direction name and one line from the handoff), encode the chapter, add cards. `pnpm tour:audio`.
-- [ ] **Step 5:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour decisions and explorations`.
+- [x] **Step 1: Review every image** before converting: open each PNG and check for any company name, URL or real person's name (the handoff says names were swapped to Attune; confirm it). Reject or crop any that fail. Only the images the script uses are converted: the five overviews (`ds-01`…`ds-05`), the Ledger conflict (`ds-09`), the stress test (`ds-07`, `ds-12`), the final division view (`ds-22`).
+- [x] **Step 2:** Convert each used image: `ffmpeg -y -i <in>.png -vf "scale='min(1600,iw)':-2" -q:v 3 -map_metadata -1 public/tour/artifacts/<name>.jpg` (R7). View one converted file to confirm legibility.
+- [x] **Step 3: Write the e2e test:** chapter `decisions` runs with no skips and shows all three decision cards; axe passes on `/tour/decisions`.
+- [x] **Step 4:** Run — FAIL. Implement the page (same reveal model as 10.10: the three decision cards in order, with Decision 2's explorations in a row with captions, direction name and one line from the handoff), encode the chapter, add cards. `pnpm tour:audio`.
+- [x] **Step 5:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour decisions and explorations`.
 - [ ] **Step 6: CHECKPOINT C.** Forbidden-terms check; push; Stefan plays the whole tour on the preview (placeholder voice) and reviews every chapter, card and image. Apply feedback, including any script edits (re-run `pnpm tour:audio`).
 
 ### Task 10.12: Landing, credit and the Attune rename
