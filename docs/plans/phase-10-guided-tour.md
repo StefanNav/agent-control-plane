@@ -36,7 +36,7 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
 - **R5 Exit and end** call `reset()` (seed, clock, Marcus) and drop `?tour`; if the current step's route is an interlude (`/tour/…`) they go to `/`, otherwise the visitor stays on the route. The last chapter runs on `/`, so ending stays there.
 - **R6 Every step entry** loads its scenario (even if already loaded), switches persona, navigates, and increments `stepKey`; `AppShell` keys the outlet by `stepKey`, so local UI (an open dialog) never survives a step entry.
 - **R7 Images** are JPEG (ffmpeg `-q:v 3`), max 1600 px wide, metadata stripped, in `public/tour/artifacts/`. The spec said WebP; the local ffmpeg has no WebP encoder.
-- **R8 The recording page** is a vanilla HTML page at `/__tour/recorder`, served by a Vite plugin with `apply: 'serve'`, with JSON endpoints under `/__tour/`. "Hear it inside its step" = a link that opens its chapter in the tour (`/?tour=<chapter>`).
+- **R8 Recordings** are Voice Memos files, one per chapter (`NN-<chapter-id>.m4a`), split into per-line clips by `pnpm tour:import` (10.13); a `<beatId>.m4a` file replaces one line. No recording page (Stefan, 2026-10-10).
 - **R9 The manifest is imported statically** into the bundle (`import manifest from '…/manifest.json'`), so the timeline is known at load.
 
 ## Review Focus
@@ -60,7 +60,7 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
 | **A · Script** | 10.1 | `docs/tour/script.md`: wording, order, length | Encoding beats (10.7 onward). 10.2–10.6 go ahead in parallel |
 | **B · First chapter plays** | 10.7 | The cold open on a preview URL, placeholder voice: pacing, cursor, bar, captions | 10.8 onward |
 | **C · Whole tour, placeholder voice** | 10.11 | Every chapter, every card and exploration image, on the preview | Landing, rename and recording |
-| **D · Real voice** | 10.14 | The tour in Stefan's voice; lines to re-record | Case study and launch |
+| **D · Real voice** | after 10.11 | The whole tour in Stefan's voice (imported with `pnpm tour:import` as each chapter is encoded); lines to re-record | Case study and launch |
 | **E · Phase checkpoint** | 10.16 | The PR and preview (BUILD_PLAN protocol) | **Merge** |
 
 ---
@@ -315,27 +315,32 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
 
 **Blocked on:** Stefan's photo in `reference/tour-inbox/`. If it isn't there, ship the credit without a photo and add it later.
 
-### Task 10.13: Recording page (dev only)
+### Task 10.13: Import recordings (replaces the recording page)
+
+Stefan records one Voice Memos file per chapter (Stefan, 2026-10-10), named `NN-<chapter-id>.m4a` (e.g. `01-open.m4a`), with a one-second pause between lines, dropped in `reference/tour-inbox/recordings/` (git-ignored). A line re-recorded on its own is a file named by its beat id (e.g. `open-4.m4a`) in the same folder and replaces that line's clip. This task builds the import; it runs before 10.8 so the opening plays in Stefan's voice at Checkpoint B.
 
 **Files:**
-- Create: `tooling/tourRecorder.ts` (Vite plugin, `apply: 'serve'`), `tooling/recorder.html` (vanilla page + script)
-- Modify: `vite.config.ts` (add the plugin), `tsconfig.node.json` if it must include `tooling/`
+- Create: `src/prototype/tour/split.ts` (pure, no Node or DOM), `src/prototype/tour/split.test.ts`, `scripts/tour-import.mjs`
+- Modify: `package.json` (`"tour:import": "node scripts/tour-import.mjs"`), `scripts/tour-load.mjs` if it needs to load `split.ts`
 
 **Interfaces:**
-- Consumes: `scripts/tour-load.mjs` logic (use `server.ssrLoadModule` inside the plugin), `textHash`.
-- Endpoints: `GET /__tour/recorder` (the page); `GET /__tour/lines` → `[{ chapter, step, id, text, status: 'placeholder' | 'recorded' | 'out-of-date', ms }]`; `POST /__tour/record?beat=<id>` (body: the MediaRecorder blob, `audio/webm`) → writes `<tmp>.webm`, converts with the 10.3 `ffmpeg` command to `public/tour/audio/<id>.m4a`, updates that manifest entry (`source: 'recorded'`, `textHash`, `ms` from `ffprobe`), returns the entry; unknown beat → 404.
-- Page: lines grouped by chapter with status; select a line (↑/↓), **R** starts/stops recording, **P** plays the take, **K** keeps it (uploads), **N** goes to the next line; a "Play the original" control for the current clip; a link "Hear it in the tour" → `/?tour=<chapter>` (R8). Shows only the line's text.
-- [ ] **Step 1:** Implement the plugin and page.
-- [ ] **Step 2: Verify by hand** in `pnpm dev`: record one line, keep it, confirm the file, the manifest entry and `pnpm tour:audio` reporting it as recorded; edit that line's text and confirm it shows as out of date.
-- [ ] **Step 3: Verify it never ships:** `pnpm build && ! grep -rq "__tour/" dist` (exit 0); add an e2e test that `GET /__tour/lines` on the preview server doesn't return JSON.
-- [ ] **Step 4:** `pnpm check`, `pnpm e2e`. Commit: `feat: tour recording page (dev only)`.
+- `split.ts`:
+  - `interface Silence { start: number; end: number }` (seconds)
+  - `syllables(text: string): number` (vowel groups per word, at least 1 per word)
+  - `splitLines(silences: Silence[], total: number, lines: string[]): { segments: { start: number; end: number }[]; ratios: number[]; confident: boolean }`: trims a leading silence that starts at 0 and a trailing one that ends at `total`; candidate breaks are the remaining silences; chooses `lines.length − 1` breaks in order by dynamic programming, minimising Σ ln(segment ÷ expected)² − 0.8 · Σ ln(break length), where a line's expected length is the speech span × its share of syllables; `ratios` are each segment ÷ expected, divided by their geometric mean; `confident` is false if any ratio is outside [0.6, 1.6] or there are fewer candidate breaks than needed (then segments are empty).
+- `tour-import.mjs`, for each chapter file whose chapter exists in `CHAPTERS` (others are listed as "not encoded yet" and skipped):
+  1. `ffmpeg … -af silencedetect=noise=-35dB:d=0.2 -f null -` → silences; `ffprobe` → total.
+  2. `splitLines` with the chapter's beat texts in order.
+  3. Normalise the whole chapter once (`loudnorm=I=-16:TP=-1.5:LRA=11`, mono, `-ar 44100`), then cut each segment with 0.15 s before and 0.25 s after (clamped to neighbouring breaks) to `public/tour/audio/<beatId>.m4a` (AAC 64k, `-map_metadata -1`).
+  4. A `<beatId>.m4a` override file wins over the split for that beat (same normalise and encode).
+  5. Manifest entries become `{ ms (ffprobe), source: 'recorded', textHash: textHash(beat.text) }`.
+  - Prints, per chapter, each line's duration and ratio, `OK` or `CHECK`, and writes the same as `reference/tour-inbox/recordings/import-report.md`. `--dry-run` writes nothing. A chapter that isn't `confident` is still imported but flagged `CHECK` (Stefan listens at Checkpoint D).
 
-### Task 10.14: Recording — **CHECKPOINT D**
-
-- [ ] **Step 1:** Stefan records every line on the recording page (`pnpm dev`, `/__tour/recorder`). Suggested: a quiet room, the same mic and distance throughout, one chapter per sitting.
-- [ ] **Step 2:** `pnpm tour:audio` (durations refresh), then `pnpm tour:audio --check` — exit 0 (no placeholder, missing or out-of-date clips). `pnpm vitest run src/prototype/tour/script.test.ts` — total ≤ 7:30.
-- [ ] **Step 3:** Spot-check five clips by ear for anything said that isn't in its line (the forbidden-terms check can't hear audio). Commit: `feat: tour narration recorded`.
-- [ ] **Step 4: CHECKPOINT D.** Push; Stefan plays the tour on the preview in their own voice and lists lines to re-record; repeat Steps 1–3 for those.
+- [ ] **Step 1: Write the failing tests** (`split.test.ts`): `syllables` counts; three lines with two clear long breaks splits at those breaks; a long pause *inside* a long line loses to a shorter pause at the right proportional place; fewer candidate breaks than needed → `confident: false`, empty segments; ratios are normalised (geometric mean 1).
+- [ ] **Step 2:** Run — FAIL. Implement `split.ts`. Run — PASS.
+- [ ] **Step 3:** Implement `tour-import.mjs`; `--dry-run` on `reference/tour-inbox/recordings/` prints `01-open` as imported-to-be and every other chapter as not encoded yet.
+- [ ] **Step 4:** Run `pnpm tour:import` for real: `open-1`…`open-7` become recorded; `pnpm tour:audio --check` passes for `open`; `pnpm check` and `pnpm e2e` green (the e2e uses the silent voice).
+- [ ] **Step 5:** Commit the split code, the script and the seven clips plus manifest: `feat: import chapter recordings`.
 
 ### Task 10.15: Case study (About)
 

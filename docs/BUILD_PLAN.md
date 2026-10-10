@@ -21,7 +21,7 @@ Update this block every time a session stops, even mid-phase.
 | **Current phase** | Phase 10: Guided tour (◐ in progress) |
 | **Branch** | `phase-10-guided-tour` |
 | **Last completed** | Script approved (Checkpoint A); 10.7 opening chapter plays end to end in the browser, reviewed (2026-10-09) |
-| **Next task** | **CHECKPOINT B:** Stefan watches the opening on the draft PR's preview (`/?tour=open`, placeholder voice). Then 10.8 |
+| **Next task** | 10.13 import recordings (moved ahead), so the opening plays in Stefan's voice; **CHECKPOINT B** feedback from Stefan on the preview; then 10.8 |
 | **Blockers** | None now. Stefan's photo comes later (10.12 ships the credit without it if needed) |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -637,8 +637,8 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 - [ ] 10.10 Interludes (problem, process, validate) and the landing chapters (who it's for, close)
 - [ ] 10.11 The decisions page and the explorations → **CHECKPOINT C** (whole tour, placeholder voice)
 - [ ] 10.12 Landing, credit and the Attune rename
-- [ ] 10.13 Recording page (dev only)
-- [ ] 10.14 Recording → **CHECKPOINT D** (real voice)
+- [ ] 10.13 Import recordings (`pnpm tour:import`; replaces the recording page)
+- [ ] 10.14 Recording → **CHECKPOINT D** (real voice; Stefan recorded all 11 chapters on 2026-10-10)
 - [ ] 10.15 Case study (About)
 - [ ] 10.16 Phase checkpoint → **CHECKPOINT E** (PR review; merge only on approval)
 
@@ -807,6 +807,7 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-09 | Tour behaviour rulings: pause pauses the voice only (in-flight actions finish); next/prev/jump keep playing if playing, else land paused; each step's first beat waits for its screen to settle (outlet keyed by step, pathname and the step's query match, one frame, 1.5 s cap); `Voice.unlock()` primes audio inside the Play click (Safari); take-over comes only from visitor input (pointer, or keys on any control or focusable row), also while paused; a finished typing action blurs its field; starting a story exits the tour; a `?tour=<chapter>` link mid-tour jumps there | Reviews of 10.4–10.6: never stall, never act on the wrong screen, wandering off can't break the tour |
 | 2026-10-09 | Script approved: Stefan's hybrid flow (one of three rewrites made with Claude) with eight edits; chapters become `open`, `problem`, `people`, `onboarding`, `earning-trust`, `supervising`, `step-down`, `decisions`, `process`, `validate`, `close`. The three decisions get their own chapter after the walkthrough (spec T3 revised); reviewer behaviour replaces Jordan's trace; "Who it's for" runs on the landing page; plan tasks 10.7–10.11 re-cut | Checkpoint A: the first draft read robotic; the hybrid hooks early, signposts, and maps to the application's three asks |
 | 2026-10-09 | Tour execution rulings from 10.7: a tour click waits for the page to answer (URL change committed, or one frame; 1.5 s cap) before the next action; beats gain `after` actions that run once the line ends (end-of-line clicks that change screen or confirm a dialog); the cursor fades 1.5 s after its last move; `LinkButton` takes an optional `data-story-target`, `AgentTable` a `targetPrefix` | Found playing the opening in a real browser: the second board click hit a stale panel; clicks at line start played narration over the next screen; the cursor sat on a button for half a minute |
+| 2026-10-10 | Recordings: Stefan records one Voice Memos file per chapter (one-second pause between lines) instead of using a recording page; `pnpm tour:import` splits them into per-line clips by pause detection plus each line's expected length; a `<beatId>.m4a` file replaces one line. 10.13 becomes the import and runs before 10.8 so the opening plays in Stefan's voice at Checkpoint B | Stefan prefers Voice Memos; simpler to build; per-line sync kept |
 
 ## Session log
 

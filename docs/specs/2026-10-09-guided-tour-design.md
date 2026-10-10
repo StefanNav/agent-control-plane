@@ -47,7 +47,7 @@ and to show the work. The tour answers all three in about seven minutes without 
 | T5 | **Actions drive the real interface** (the cursor clicks real controls) | The real dialogs, store actions and audit log run; no second implementation of any flow |
 | T6 | **Navigation is per step**; every step loads its own scenario on entry | Deterministic; nothing to fast-forward; a visitor's own changes can't break the tour |
 | T7 | **Sync by beats**: one clip per sentence, actions fire when it starts | No timestamps to tune; re-recording a line can't break sync |
-| T8 | **Local recording page** (dev only) for Stefan's voice | One line at a time, hear it in context, re-record in seconds, saved straight into the project |
+| T8 | **Chapter recordings split by script** (revised 2026-10-10; was a local recording page) | Stefan records in Voice Memos, one file per chapter; `pnpm tour:import` cuts per-line clips; a single line can be replaced by its own file |
 | T9 | **About becomes the case study**, generated from the tour's data | One reading version for reviewers who won't press Play; one source of truth |
 | T10 | Brand **Attune** replaces "Signal" everywhere it shows | Stefan's call; a name clearly distinct from the real company |
 | T11 | AI chat is **v2**; the bar leaves room for it | Needs a server function, an API key, a spend cap and grounding; out of scope here |
@@ -202,7 +202,7 @@ A small Zustand store (not persisted; the URL is the persistence) holding `statu
 - **Clips:** `public/tour/audio/<beat-id>.m4a`, AAC, mono, loudness-normalised (≈ −16 LUFS) and metadata stripped by `ffmpeg`.
 - **Manifest:** `public/tour/audio/manifest.json`: per beat `{ ms, source: 'placeholder' | 'recorded', textHash }`. `textHash` is the hash of the line the clip was made from, so a line edited after recording shows up as out of date.
 - **Placeholders:** `pnpm tour:audio` makes a clip for every beat without a recorded one (macOS `say` → `afconvert` → `ffmpeg`), measures durations with `ffprobe` and rewrites the manifest. Placeholders let the whole tour run, and be timed, before Stefan records anything.
-- **Recording page** (dev only, never built for production): a Vite plugin (`apply: 'serve'`) adds a page and a `POST` endpoint. The page lists every line by chapter with its status (placeholder, recorded, out of date); select a line, press R to record (MediaRecorder), stop, play it back alone or inside its step, keep or redo. Keeping uploads the take; the endpoint converts and normalises it with `ffmpeg`, writes the clip and updates the manifest.
+- **Recordings** (revised 2026-10-10, replacing the dev-only recording page): Stefan records one Voice Memos file per chapter with a one-second pause between lines; `pnpm tour:import` splits each file into per-line clips (pause detection plus each line's expected length from its syllables), normalises and encodes them, and marks them `recorded`. A file named after one beat replaces that line. A chapter whose split looks off is flagged for Stefan to check by ear.
 
 ### 5.6 What doesn't change
 
