@@ -387,6 +387,16 @@ describe('the shell while the tour is open', () => {
     expect(main.nextElementSibling).toHaveStyle({ height: '88px' })
   })
 
+  test('room for the bar under dialogs too, only while the tour is open (R4)', async () => {
+    const t = setup('/operations')
+    const docked = () => document.documentElement.style.getPropertyValue('--docked-bottom')
+    expect(docked()).toBe('')
+    act(() => t.state().open(1, false))
+    expect(docked()).toBe('88px')
+    act(() => t.state().exit())
+    expect(docked()).toBe('')
+  })
+
   test('normal navigation keeps the page; every step entry gives a fresh one (R6)', async () => {
     const t = setup('/operations')
     expect(mounts).toBe(1)

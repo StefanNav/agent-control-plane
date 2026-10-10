@@ -41,12 +41,26 @@ function useScenarioParam() {
   }, [requested, loadScenario, setParams])
 }
 
+/**
+ * Room for the tour bar under dialogs too (R4): they are fixed and portalled, so the spacer under
+ * the page can't lift them. `Modal` keeps clear of `--docked-bottom`.
+ */
+function useDockedBottom(tourOpen: boolean) {
+  useEffect(() => {
+    if (!tourOpen) return
+    const root = document.documentElement
+    root.style.setProperty('--docked-bottom', `${TOUR_BAR_HEIGHT}px`)
+    return () => void root.style.removeProperty('--docked-bottom')
+  }, [tourOpen])
+}
+
 export function AppShell({ shell }: { shell: ShellKind }) {
   useScenarioParam()
   usePageChrome()
   const current = useCurrentSection()
   const initial = personaById(useDemo((s) => s.personaId)).initial
   const tourOpen = useTourOpen()
+  useDockedBottom(tourOpen)
   const stepKey = useTour((s) => s.stepKey)
   // While the tour is open every step entry gets a fresh page (R6); otherwise navigation keeps it.
   const screenKey = tourOpen ? stepKey : 0
