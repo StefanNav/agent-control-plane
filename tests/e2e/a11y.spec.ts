@@ -63,7 +63,13 @@ for (const chapter of ['problem', 'process', 'validate']) {
     await page.goto(`/?tour=${chapter}&tourVoice=silent`)
     await expect(page).toHaveURL(new RegExp(`/tour/${chapter}\\?tour=${chapter}$`))
     await expect(page.getByRole('complementary', { name: 'Tour' })).toBeVisible()
-    await expect(page.locator('main [data-item][data-state="hidden"]').first()).toBeHidden()
+    // Part revealed: the first line's item is current, and later ones are there but unseen.
+    const main = page.locator('main')
+    await expect(main.locator('[data-item][data-state="current"]')).not.toHaveCount(0)
+    await expect(main.locator('[aria-current="step"]')).not.toHaveCount(0)
+    const hidden = main.locator('[data-item][data-state="hidden"]')
+    await expect(hidden).not.toHaveCount(0)
+    await expect(hidden.first()).toBeHidden()
     expect(await violations(page)).toEqual([])
   })
 }
