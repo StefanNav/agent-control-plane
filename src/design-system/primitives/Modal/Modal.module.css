@@ -17,7 +17,7 @@
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  /* Clear of a bar docked at the window's foot: the shell sets --docked-bottom while the tour shows. */
+  /* Clear of a bar docked at the window's foot: --docked-bottom is set by a host that docks one. */
   max-height: calc(100vh - 120px - var(--docked-bottom, 0px));
   background: var(--cs-raised);
   border: 1px solid var(--cs-line-strong);
