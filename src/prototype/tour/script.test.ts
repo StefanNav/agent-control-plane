@@ -159,8 +159,8 @@ test('a beat runs for its clip or its actions, whichever is longer, then its aft
 })
 
 test('the whole tour runs 7:30 at most, by its clips and what its actions add (Ruling 27)', () => {
-  // With every chapter in, the model gives 6:59 (decisions on placeholders; about 7:15 with its
-  // recording), so the ceiling stays at 7:30 (Ruling 28 would raise it to 8:30 only past that).
+  // With every chapter in Stefan's voice, the model gives 7:15, so the ceiling stays at 7:30
+  // (Ruling 28 would raise it to 8:30 only past that).
   const { beatMs } = buildTimeline(CHAPTERS, MANIFEST)
   const total = beats.reduce((sum, beat) => sum + runningMs(beat, beatMs[beat.id]!), 0)
   expect(total).toBeLessThanOrEqual(450_000)
