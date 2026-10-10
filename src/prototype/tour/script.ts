@@ -285,6 +285,7 @@ export const CHAPTERS: Chapter[] = [
           {
             id: 'supervising-8',
             text: "It's shown by unit and shift, never by name.",
+            actions: [{ kind: 'outline', target: 'reviewers-by-unit' }],
           },
         ],
       },

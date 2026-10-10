@@ -150,7 +150,7 @@ export function ReviewersPage() {
                     {r}
                   </span>
                 ))}
-                <span className={styles.sub}>
+                <span className={styles.sub} data-story-target="reviewers-by-unit">
                   <strong className={styles.strong}>By unit and shift, never by name.</strong> This is about workload and habits, not blame.
                 </span>
                 <span className={styles.inline}>

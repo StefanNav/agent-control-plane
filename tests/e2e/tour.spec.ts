@@ -515,8 +515,8 @@ test('supervising: Ana flags a draft, Marcus pauses Med Rec, Priya co-signs its 
   await expectUnder(
     page,
     { chapter: 'supervising', line: "It's shown by unit" },
-    (s) => `${s.pathname} · skipped ${s.skipped}`,
-    `${REVIEWERS} · skipped 0`,
+    (s) => `${s.pathname} · outlined ${s.outlined.join(', ')} · skipped ${s.skipped}`,
+    `${REVIEWERS} · outlined reviewers-by-unit · skipped 0`,
   )
   // Then on into the step-down.
   await expect(page).toHaveURL(/\/operations\/agents\/med-rec\?tour=step-down$/, {
