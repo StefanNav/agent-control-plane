@@ -1,37 +1,37 @@
 {
   "open-1": {
-    "ms": 6200,
-    "source": "placeholder",
+    "ms": 7137,
+    "source": "recorded",
     "textHash": "431567a0"
   },
   "open-2": {
-    "ms": 5800,
-    "source": "placeholder",
+    "ms": 6374,
+    "source": "recorded",
     "textHash": "5055fbac"
   },
   "open-3": {
-    "ms": 6400,
-    "source": "placeholder",
+    "ms": 9203,
+    "source": "recorded",
     "textHash": "e885ee5a"
   },
   "open-4": {
-    "ms": 7500,
-    "source": "placeholder",
+    "ms": 8819,
+    "source": "recorded",
     "textHash": "05f8a948"
   },
   "open-5": {
-    "ms": 6300,
-    "source": "placeholder",
+    "ms": 8247,
+    "source": "recorded",
     "textHash": "fa04ec57"
   },
   "open-6": {
-    "ms": 9900,
-    "source": "placeholder",
+    "ms": 11703,
+    "source": "recorded",
     "textHash": "c1dbbc8c"
   },
   "open-7": {
-    "ms": 4400,
-    "source": "placeholder",
+    "ms": 5709,
+    "source": "recorded",
     "textHash": "99e8ff33"
   }
 }

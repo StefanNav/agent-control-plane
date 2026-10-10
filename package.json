@@ -17,6 +17,7 @@
     "format": "prettier --write .",
     "capture": "playwright test -c playwright.capture.config.ts",
     "tour:audio": "node scripts/tour-audio.mjs",
+    "tour:import": "node scripts/tour-import.mjs",
     "tour:script": "node scripts/tour-print.mjs"
   },
   "dependencies": {

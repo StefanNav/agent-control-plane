@@ -1,9 +1,19 @@
-import { spawn } from 'node:child_process'
-import { accessSync, constants } from 'node:fs'
-import { mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdtemp, readdir, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import {
+  ENCODE_ARGS,
+  LOUDNORM,
+  audioDir,
+  beatIdSet,
+  clipMs,
+  exists,
+  fail,
+  readManifest,
+  requireTools,
+  run,
+  writeManifest,
+} from './tour-tools.mjs'
 import { loadTour } from './tour-load.mjs'
 
 // Makes a placeholder clip (macOS `say` + `ffmpeg`) for every beat without a recording (or whose
@@ -11,92 +21,14 @@ import { loadTour } from './tour-load.mjs'
 // rewrites the manifest. `--check` writes nothing and exits 1 unless every beat has a current
 // recorded clip.
 
-const root = fileURLToPath(new URL('..', import.meta.url))
-const audioDir = path.join(root, 'public/tour/audio')
-const manifestPath = path.join(root, 'src/prototype/tour/manifest.json')
 const check = process.argv.includes('--check')
-
-/** Exits with a one-line message. */
-function fail(message) {
-  console.error(message)
-  process.exit(1)
-}
-
-/** True when `name` is an executable on the PATH. */
-function onPath(name) {
-  return (process.env.PATH ?? '').split(path.delimiter).some((dir) => {
-    try {
-      accessSync(path.join(dir, name), constants.X_OK)
-      return true
-    } catch {
-      return false
-    }
-  })
-}
-
-/** Runs a command with its arguments as an array (no shell) and resolves with its stdout. */
-function run(command, args) {
-  return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { stdio: ['ignore', 'pipe', 'pipe'] })
-    let stdout = ''
-    let stderr = ''
-    child.stdout.on('data', (chunk) => (stdout += chunk))
-    child.stderr.on('data', (chunk) => (stderr += chunk))
-    child.on('error', reject)
-    child.on('close', (code) => {
-      if (code === 0) resolve(stdout)
-      else reject(new Error(`${command} exited with ${code}: ${stderr.trim().split('\n').pop()}`))
-    })
-  })
-}
-
-async function exists(file) {
-  return stat(file).then(
-    () => true,
-    () => false,
-  )
-}
-
-/** A clip's length in whole milliseconds. */
-async function clipMs(file) {
-  const out = await run('ffprobe', [
-    '-v',
-    'error',
-    '-show_entries',
-    'format=duration',
-    '-of',
-    'csv=p=0',
-    file,
-  ])
-  const seconds = Number.parseFloat(out)
-  if (Number.isNaN(seconds)) throw new Error(`ffprobe gave no duration for ${file}`)
-  return Math.round(seconds * 1000)
-}
 
 /** Speaks `text` into `file` as a normalised mono AAC clip. */
 async function makePlaceholder(text, file, tmpDir) {
   const aiff = path.join(tmpDir, 'line.aiff')
   // `--` so a line starting with a hyphen is read as text, not an option.
   await run('say', ['-o', aiff, '--', text])
-  await run('ffmpeg', [
-    '-y',
-    '-i',
-    aiff,
-    '-af',
-    'loudnorm=I=-16:TP=-1.5:LRA=11',
-    '-ac',
-    '1',
-    // loudnorm resamples to 192 kHz, which would leave 96 kHz AAC; clips should play anywhere.
-    '-ar',
-    '44100',
-    '-c:a',
-    'aac',
-    '-b:a',
-    '64k',
-    '-map_metadata',
-    '-1',
-    file,
-  ])
+  await run('ffmpeg', ['-y', '-i', aiff, '-af', LOUDNORM, ...ENCODE_ARGS, file])
 }
 
 /** Milliseconds as m:ss. */
@@ -106,23 +38,13 @@ function clock(ms) {
 }
 
 async function main() {
-  const tools = check ? ['ffprobe'] : ['say', 'ffmpeg', 'ffprobe']
-  for (const tool of tools) {
-    if (!onPath(tool)) fail(`tour:audio needs \`${tool}\` and it isn't on the PATH`)
-  }
+  requireTools('tour:audio', check ? ['ffprobe'] : ['say', 'ffmpeg', 'ffprobe'])
 
   const { CHAPTERS, textHash } = await loadTour()
   const beats = CHAPTERS.flatMap((chapter) => chapter.steps.flatMap((step) => step.beats))
-  const ids = new Set()
-  for (const beat of beats) {
-    if (!/^[\w-]+$/.test(beat.id)) {
-      fail(`Beat id "${beat.id}" can't name a file (use letters, digits, - and _)`)
-    }
-    if (ids.has(beat.id)) fail(`Beat id "${beat.id}" is used twice`)
-    ids.add(beat.id)
-  }
+  const ids = beatIdSet(beats)
 
-  const previous = JSON.parse(await readFile(manifestPath, 'utf8').catch(() => '{}'))
+  const previous = await readManifest()
   const next = {}
   const counts = { recorded: 0, placeholder: 0, outOfDate: 0, missing: 0 }
   let totalMs = 0
@@ -180,10 +102,7 @@ async function main() {
         console.log(`removed      ${name}`)
       }
     }
-    const json = `${JSON.stringify(next, null, 2)}\n`
-    if (json !== (await readFile(manifestPath, 'utf8').catch(() => ''))) {
-      await writeFile(manifestPath, json)
-    }
+    await writeManifest(next)
   }
 
   const parts = [
