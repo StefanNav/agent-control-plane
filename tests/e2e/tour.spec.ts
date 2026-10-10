@@ -152,6 +152,10 @@ interface Sample {
   outlined: string[]
   /** Each asked-for target's text, or null when it isn't on the page. */
   text: Record<string, string | null>
+  /** Each asked-for target's top and bottom on screen, or null when it isn't on the page. */
+  box: Record<string, { top: number; bottom: number } | null>
+  /** The band a target shows in: from under the app's top bar (or the window's top) to the tour bar. */
+  band: { top: number; bottom: number }
   /** Med Rec Agent in the saved demo, and its history as `action · who · reason`. */
   medRec: { lifecycle: string; pausedBy: string | null; pausedAt: string | null; history: string[] }
 }
@@ -188,6 +192,18 @@ async function sample(page: Page, targets: string[] = []): Promise<Sample> {
           document.querySelector(`[data-story-target="${name}"]`)?.textContent ?? null,
         ]),
       ),
+      box: Object.fromEntries(
+        names.map((name) => {
+          const rect = document
+            .querySelector(`[data-story-target="${name}"]`)
+            ?.getBoundingClientRect()
+          return [name, rect ? { top: rect.top, bottom: rect.bottom } : null]
+        }),
+      ),
+      band: {
+        top: Math.max(0, document.querySelector('header')?.getBoundingClientRect().bottom ?? 0),
+        bottom: bar?.getBoundingClientRect().top ?? innerHeight,
+      },
       medRec: {
         lifecycle: agent.lifecycle,
         pausedBy: agent.pausedBy ?? null,
@@ -466,19 +482,27 @@ test('supervising: Ana flags a draft, Marcus pauses Med Rec, Priya co-signs its 
     `${MED_REC} · paused · marcus · 09:52`,
   )
   await confirmClear()
-  // Line 5 ends on Approve: live again, with Priya's approval and reason in its history.
+  // Line 5 ends on Approve: live again, with Priya's approval and reason in its history. The hold
+  // outlines the header's status and brings it into view, between the top bar and the tour bar
+  // (Ruling 25).
   await expectUnder(
     page,
-    { chapter: 'supervising', line: 'By noon' },
-    (s) =>
-      [
+    { chapter: 'supervising', line: 'By noon', targets: ['agent-status'] },
+    (s) => {
+      const status = s.box['agent-status']
+      const inView = status && status.top >= s.band.top && status.bottom <= s.band.bottom
+      return [
         s.pathname,
         s.medRec.lifecycle,
         s.medRec.history.includes(`Resumed · priya · ${reason}`)
           ? 'resumed by Priya with the reason'
           : 'not resumed by Priya',
-      ].join(' · '),
-    `${MED_REC} · live · resumed by Priya with the reason`,
+        `status ${s.text['agent-status']}`,
+        `outlined ${s.outlined.join(', ')}`,
+        inView ? 'in view' : `out of view ${JSON.stringify(status)} ${JSON.stringify(s.band)}`,
+      ].join(' · ')
+    },
+    `${MED_REC} · live · resumed by Priya with the reason · status Draft · since 06 Nov · outlined agent-status · in view`,
   )
   await approveClear()
   await expectLineOver(page, "There's also a quieter risk", REVIEWERS)

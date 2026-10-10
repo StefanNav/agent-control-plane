@@ -89,7 +89,7 @@ export function AgentView() {
       <PageHeader
         breadcrumb={`Operations / ${view.division} / ${view.name}`}
         title={view.name}
-        status={heldHeader?.status ?? stepDown?.levelLine ?? view.levelLine}
+        status={<span data-story-target="agent-status">{heldHeader?.status ?? stepDown?.levelLine ?? view.levelLine}</span>}
         idLine={heldHeader?.idLine ?? view.idLine}
         chips={
           <>

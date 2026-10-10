@@ -257,8 +257,10 @@ export const CHAPTERS: Chapter[] = [
                 text: "Sam's dose mapping fix is in, and the replay of 23 cases came back clean. Agreed to resume.",
               },
             ],
+            // The header's status shows the change (Paused → Draft); its outline brings it into view.
             after: [
               { kind: 'click', target: 'resume-approve' },
+              { kind: 'outline', target: 'agent-status' },
               { kind: 'wait', ms: 1500 },
             ],
           },
