@@ -16,11 +16,11 @@ export type CardContent =
 
 /** The tour's cards by id; each chapter adds its own. */
 export const CARDS: Record<string, CardContent> = {
-  // onboarding
+  // onboarding: verbatim from the About page's principles (Ruling 23)
   'hard-stops-outside': {
     kind: 'excerpt',
     quote:
-      'Hard stops run outside the model. They sit between the agent and the hospital’s systems, so the agent can’t argue past them.',
-    source: 'Vision · Product principles',
+      'Hard stops live outside the model. Enforced rules and advisory instructions look different, and an agent can’t argue past a rule.',
+    source: 'Product principles',
   },
 }
