@@ -113,8 +113,9 @@ export function AgentView() {
                   label: group.label,
                   items: group.items.map((item) => ({
                     ...item,
-                    // A click on the label reaches the menu item, so the tour can press it.
-                    label: item.id === 'pause-agent' ? <span data-story-target="controls-pause">{item.label}</span> : item.label,
+                    // A click on the label reaches the menu item, so the tour can press it. A locked
+                    // item has no target, so the tour skips it rather than pressing nothing.
+                    label: item.id === 'pause-agent' && !item.locked ? <span data-story-target="controls-pause">{item.label}</span> : item.label,
                     onSelect: () => setControl(item.control),
                   })),
                 }))}
