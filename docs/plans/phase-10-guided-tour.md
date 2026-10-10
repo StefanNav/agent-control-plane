@@ -265,10 +265,10 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
 
 **Encoding:** `supervising`: step Epic (`/epic`, `baseline`, `ana`) beats 1–2 (outline `epic-agent-panel`, click `epic-flag`); step pause (`/operations/agents/med-rec`, `baseline`, `marcus`) beats 3–4; step resume (`/operations/agents/med-rec`, `resume-requested`, `priya`) beat 5; step reviewers (`/operations/reviewers`, `baseline`, `marcus`) beats 6–8 (outline `reviewers-finding`, then `reviewers-check`). `step-down`: step (`/operations/agents/med-rec`, `step-down-threshold`, `priya`) beats 1–2, outline `stepdown-notice`.
 
-- [ ] **Step 1: Write the e2e tests:** Ana's flag is sent; Med Rec is paused after beat 4 and live again after beat 5 with Priya's approval in its history; `stepdown-notice` is visible in `step-down`; no skipped actions. Check at 1440 × 900 that the pause dialog's confirm button isn't under the 88 px bar (deferred from 10.6).
-- [ ] **Step 2:** Run — FAIL.
-- [ ] **Step 3:** Encode; add targets; `pnpm tour:audio`.
-- [ ] **Step 4:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour walkthrough, supervising and step-down`.
+- [x] **Step 1: Write the e2e tests:** Ana's flag is sent; Med Rec is paused after beat 4 and live again after beat 5 with Priya's approval in its history; `stepdown-notice` is visible in `step-down`; no skipped actions. Check at 1440 × 900 that the pause dialog's confirm button isn't under the 88 px bar (deferred from 10.6).
+- [x] **Step 2:** Run — FAIL.
+- [x] **Step 3:** Encode; add targets; `pnpm tour:audio`.
+- [x] **Step 4:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour walkthrough, supervising and step-down`.
 
 ### Task 10.10: Interludes (`problem`, `process`, `validate`) and the landing chapters (`people`, `close`)
 
