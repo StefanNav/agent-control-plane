@@ -51,6 +51,16 @@ test('targets are plain attribute values and cards exist', () => {
   }
 })
 
-test('the whole tour runs 7:30 at most', () => {
-  expect(buildTimeline(CHAPTERS, MANIFEST).total).toBeLessThanOrEqual(450_000)
+/**
+ * What a press of the cursor adds to the running time: its glide and the page answering. After-actions
+ * run once the clip has ended; a click or choose among a beat's actions can outlast it.
+ */
+const PRESS_MS = 650
+
+test('the whole tour runs 7:30 at most, allowing for its clicks', () => {
+  const presses = beats.flatMap((b) => [
+    ...(b.after ?? []),
+    ...(b.actions ?? []).filter((a) => a.kind === 'click' || a.kind === 'choose'),
+  ]).length
+  expect(buildTimeline(CHAPTERS, MANIFEST).total + presses * PRESS_MS).toBeLessThanOrEqual(450_000)
 })
