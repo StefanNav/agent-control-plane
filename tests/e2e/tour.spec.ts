@@ -796,6 +796,9 @@ test('a decision’s screen opens larger: the tour pauses, without a take-over, 
   page,
 }) => {
   const errors = collectErrors(page)
+  const lines = CHAPTERS.find((c) => c.id === 'decisions')!.steps.flatMap((step) =>
+    step.beats.map((beat) => beat.text),
+  )
   await openChapter(page, 'decisions', /\/tour\/decisions\?tour=decisions$/)
   await play(page)
   await expectGlance(
@@ -809,14 +812,24 @@ test('a decision’s screen opens larger: the tour pauses, without a take-over, 
   await expect(dialog.getByRole('img')).toHaveJSProperty('naturalWidth', 1440)
   // Paused as by its own Pause button: Play, not "Resume tour", which would restart the step.
   await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeVisible()
+  // Held on the line it was paused in, before or just after "Instead, each task earns…".
+  const held = (await glance(page)).caption
+  const next = lines[lines.indexOf(held) + 1]
+  expect([lines[2], lines[3]]).toContain(held)
+  // The dialog owns the keyboard (Ruling 32): the tour's keys step and play nothing.
+  await expect(dialog.getByRole('img')).toBeFocused()
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('Space')
+  await expect(dialog).toBeVisible()
+  await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeVisible()
+  expect((await glance(page)).caption).toBe(held)
   await dialog.getByRole('button', { name: 'Close' }).click()
   await expect(dialog).toHaveCount(0)
-  const held = (await glance(page)).caption
+  // Play carries on: the held line ends, and the next one follows.
   await play(page)
   await expect
-    .poll(async () => (await glance(page)).caption, { timeout: CHAPTER_MS })
-    .not.toBe(held)
-  expect((await glance(page)).caption).not.toBe('Three decisions shaped all of this.')
+    .poll(async () => (await glance(page)).caption, { timeout: CHAPTER_MS, intervals: [25] })
+    .toBe(next)
   expect(errors).toEqual([])
 })
 
