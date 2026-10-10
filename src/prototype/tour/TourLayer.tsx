@@ -136,9 +136,10 @@ function useTourUrl(runtime: TourRuntime) {
 
 /**
  * The visitor's input while the tour is open (spec §4.5, §4.6, Review focus 4): Space plays and
- * pauses and ←/→ step, unless focus is on a control (the bar's own are fine for ←/→); a pointer down
- * or a key on a control outside the tour's UI while it plays or is paused is a take-over (Ruling 12);
- * a hidden tab pauses; and the layer going away pauses and silences the voice.
+ * pauses and ←/→ step, unless focus is on a control (the bar's own are fine for ←/→) or a dialog is
+ * open (Ruling 32); a pointer down or a key on a control outside the tour's UI while it plays or is
+ * paused is a take-over (Ruling 12); a hidden tab pauses; and the layer going away pauses and
+ * silences the voice.
  */
 function useTourInput({ player, voice }: TourRuntime) {
   useEffect(() => {
@@ -157,6 +158,8 @@ function useTourInput({ player, voice }: TourRuntime) {
     const onKey = (event: KeyboardEvent) => {
       const { status, play, pause, next, prev } = player.getState()
       if (status === 'idle' || event.defaultPrevented) return
+      // An open dialog owns the keyboard: its arrows and Space are never the tour's (Ruling 32).
+      if (document.querySelector('[role="dialog"]') !== null) return
       if (event.metaKey || event.ctrlKey || event.altKey) return
       const target = elementOf(event.target)
       const control = isControl(target)

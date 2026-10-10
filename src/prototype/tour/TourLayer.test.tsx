@@ -221,6 +221,40 @@ describe('keyboard', () => {
   })
 })
 
+describe('a dialog owns the keyboard (Ruling 32)', () => {
+  test('with the tour’s image open, ←, → and Space leave the tour where it is', async () => {
+    const t = setup('/?tour=problem')
+    await waitFor(() => expect(t.where()).toBe('/tour/problem?tour=problem'))
+    act(() => t.state().next())
+    await waitFor(() => expect(t.where()).toBe('/operations/agents/med-rec?tour=problem'))
+    act(() => runtime.player.setState({ card: { id: 'image-1', side: 'right' } }))
+    await userEvent.click(screen.getByRole('button', { name: 'An early board, open larger' }))
+    const image = within(screen.getByRole('dialog', { name: 'Direction A' })).getByRole('img')
+    expect(image).toHaveFocus()
+    fireEvent.keyDown(image, { key: 'ArrowRight' })
+    fireEvent.keyDown(image, { key: 'ArrowLeft' })
+    fireEvent.keyDown(image, { key: ' ' })
+    expect(t.state()).toMatchObject({ status: 'paused', pos: { chapter: 0, step: 1, beat: 0 } })
+    expect(screen.getByRole('dialog', { name: 'Direction A' })).toBeInTheDocument()
+  })
+
+  test('so does a product dialog; once it closes, the keys are the tour’s again', async () => {
+    const t = setup('/?tour=problem')
+    await waitFor(() => expect(t.where()).toBe('/tour/problem?tour=problem'))
+    const dialog = document.createElement('div')
+    dialog.setAttribute('role', 'dialog')
+    dialog.tabIndex = -1
+    document.body.append(dialog)
+    onTestFinished(() => dialog.remove())
+    fireEvent.keyDown(dialog, { key: 'ArrowRight' })
+    fireEvent.keyDown(dialog, { key: ' ' })
+    expect(t.state()).toMatchObject({ status: 'paused', pos: { chapter: 0, step: 0, beat: 0 } })
+    dialog.remove()
+    fireEvent.keyDown(document.body, { key: 'ArrowRight' })
+    expect(t.state().pos).toEqual({ chapter: 0, step: 1, beat: 0 })
+  })
+})
+
 describe('taking over (spec §4.5)', () => {
   async function playing() {
     const t = setup('/?tour=decisions')
