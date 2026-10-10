@@ -251,10 +251,10 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
 
 **Encoding:** `onboarding`: step intake (`/inventory/agents/med-rec/onboarding/intake`, `onboarding-intake`, `dana`) beats 1–3; step tools (`/inventory/agents/med-rec/onboarding/tools`, `onboarding-tools-tested`, `sam`) beats 4–6; step packet (`/portfolio/reviews/med-rec`, `review-committee`, `drlee`) beat 7. `earning-trust`: step scorecard (`/operations/agents/med-rec?tab=scorecard`, `shadow-day-21`, `priya`) beat 1; step sign (`/inventory/privileges/prv-0142/sign`, `awaiting-signature`, `priya`) beats 2–3. Typed reasons are short, plausible and name no one by pronoun.
 
-- [ ] **Step 1: Write the e2e tests:** `onboarding` ends with the committee decision recorded on Med Rec's record; `earning-trust` ends with Med Rec's admission activity at Draft signed by Priya; no skipped actions.
-- [ ] **Step 2:** Run — FAIL.
-- [ ] **Step 3:** Encode both chapters; add the card and targets; `pnpm tour:audio`.
-- [ ] **Step 4:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour walkthrough, onboarding and earning trust`.
+- [x] **Step 1: Write the e2e tests:** `onboarding` ends with the committee decision recorded on Med Rec's record; `earning-trust` ends with Med Rec's admission activity at Draft signed by Priya; no skipped actions.
+- [x] **Step 2:** Run — FAIL.
+- [x] **Step 3:** Encode both chapters; add the card and targets; `pnpm tour:audio`.
+- [x] **Step 4:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour walkthrough, onboarding and earning trust`.
 
 ### Task 10.9: Walkthrough II (`supervising`, `step-down`)
 
