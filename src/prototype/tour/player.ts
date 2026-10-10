@@ -271,8 +271,12 @@ export function createTourPlayer(
       const { pos } = get()
       const after = nextBeat(chapters, pos)
       if (!after) return close()
-      // Beat 0 is always a new step.
-      if (after.beat === 0) return enter(after, 'playing')
+      // Beat 0 is always a new step. Its first clip waits for the screen, so silence the voice now:
+      // it would otherwise hold the last clip's length, and the bar's clock with it (Ruling 24).
+      if (after.beat === 0) {
+        voice.stop()
+        return enter(after, 'playing')
+      }
       set({ pos: after })
       const { runToken, signal } = claim()
       startBeat(runToken, signal)

@@ -274,6 +274,24 @@ describe('playing beats', () => {
     expect(t.lastCall().actions).toEqual([{ kind: 'clearCard' }])
   })
 
+  test('running on into a new step stops the voice first, so the clock can’t hold the last clip there (Ruling 24)', async () => {
+    const t = setup(FIXTURE_CHAPTERS, { manualSettle: true })
+    t.state().open(0, true)
+    await flush()
+    t.settles.at(-1)!.resolve()
+    await flush()
+    await finishBeat(t)
+    await finishBeat(t)
+    t.voice.stop.mockClear()
+    // Within a step, the next clip's play() restarts the clock; no stop.
+    expect(t.state().pos).toEqual({ chapter: 0, step: 0, beat: 2 })
+    await finishBeat(t)
+    // The next step is entered and settling, and its first clip hasn't started.
+    expect(t.state().pos).toEqual({ chapter: 0, step: 1, beat: 0 })
+    expect(t.voice.stop).toHaveBeenCalledTimes(1)
+    expect(t.voice.play).not.toHaveBeenCalledWith('problem-screen-1')
+  })
+
   test('actions finishing first do not end the beat either', async () => {
     const t = setup()
     t.state().open(1, true)

@@ -7,6 +7,7 @@ import { useDemo } from '../../store'
 import { useStory } from '../stories/progress'
 import type { CardContent } from './cards'
 import { FIXTURE_CHAPTERS } from './fixtures'
+import type { Chapter } from './types'
 import { createTourRuntime, setTourRuntime, type TourRuntime } from './useTour'
 
 const CARDS: Record<string, CardContent> = {
@@ -364,6 +365,51 @@ describe('the tab and the layer going away (Review focus 4)', () => {
     t.view.unmount()
     expect(stop).toHaveBeenCalled()
     expect(t.state().status).toBe('paused')
+  })
+})
+
+describe('the bar’s clock (Ruling 24)', () => {
+  /** One chapter of two 2 s lines; the first ends on a long wait, as a line ending on a confirm does. */
+  const HELD: Chapter[] = [
+    {
+      id: 'supervising',
+      title: 'Supervise',
+      steps: [
+        {
+          id: 'held',
+          route: '/operations',
+          scenario: 'baseline',
+          persona: 'marcus',
+          beats: [
+            { id: 'held-1', text: 'One.', after: [{ kind: 'wait', ms: 20_000 }] },
+            { id: 'held-2', text: 'Two.' },
+          ],
+        },
+      ],
+    },
+  ]
+  const clip = { ms: 2000, source: 'placeholder', textHash: '0' } as const
+
+  test('holds at the end of a line while its after-actions run, never going back', async () => {
+    runtime = createTourRuntime(HELD, { 'held-1': clip, 'held-2': clip }, { voice: 'silent' })
+    setTourRuntime(runtime)
+    const router = createMemoryRouter(
+      [{ element: <AppShell shell="app" />, children: [{ path: '*', element: <Page /> }] }],
+      { initialEntries: ['/?tour=supervising'] },
+    )
+    render(<RouterProvider router={router} />)
+    await userEvent.click(await screen.findByRole('button', { name: 'Play tour' }))
+    const fill = () =>
+      (
+        within(screen.getByRole('group', { name: 'Chapters' })).getByRole('button')
+          .firstElementChild as HTMLElement
+      ).style.width
+    // The silent clip lasts 200 ms; then the wait holds the line, and the clock sits at its end.
+    await waitFor(() => expect(fill()).toBe('50%'), { timeout: 1500 })
+    // Two more ticks of the bar, still in the wait.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 600)))
+    expect(fill()).toBe('50%')
+    expect(bar()).toHaveTextContent('One.')
   })
 })
 

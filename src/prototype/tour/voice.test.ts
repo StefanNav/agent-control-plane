@@ -87,6 +87,35 @@ describe('createSilentVoice', () => {
     expect(voice.currentMs()).toBe(0)
   })
 
+  test('a clip that ran to its end holds its full length until the next play or stop (Ruling 24)', async () => {
+    const voice = createSilentVoice(msFor)
+    const played = track(voice.play('a'))
+    await vi.advanceTimersByTimeAsync(400)
+    expect(played.done).toBe(true)
+    expect(voice.currentMs()).toBe(4000)
+    // Held while the beat's after-actions run.
+    await vi.advanceTimersByTimeAsync(1500)
+    expect(voice.currentMs()).toBe(4000)
+    voice.pause()
+    voice.resume()
+    expect(voice.currentMs()).toBe(4000)
+    // The next clip starts from 0.
+    void voice.play('b')
+    expect(voice.currentMs()).toBe(0)
+    await vi.advanceTimersByTimeAsync(200)
+    expect(voice.currentMs()).toBe(2000)
+    voice.stop()
+    expect(voice.currentMs()).toBe(0)
+  })
+
+  test('a clip cut short by stop holds nothing', async () => {
+    const voice = createSilentVoice(msFor)
+    void voice.play('a')
+    await vi.advanceTimersByTimeAsync(100)
+    voice.stop()
+    expect(voice.currentMs()).toBe(0)
+  })
+
   test('stop resolves a pending play, and playing again resolves the one before', async () => {
     const voice = createSilentVoice(msFor)
     const first = track(voice.play('a'))
@@ -292,6 +321,43 @@ describe('createAudioVoice', () => {
     expect(second.done).toBe(false)
     await vi.advanceTimersByTimeAsync(1)
     expect(second.done).toBe(true)
+  })
+
+  test('a clip that ended holds its full length until the next play or stop (Ruling 24)', async () => {
+    const voice = createAudioVoice(msFor, url)
+    void voice.play('a')
+    main().currentTime = 3.98
+    main().dispatchEvent(new Event('ended'))
+    // The manifest's length, which the bar's timeline is built from, not where the audio stopped.
+    expect(voice.currentMs()).toBe(4000)
+    await vi.advanceTimersByTimeAsync(1500)
+    expect(voice.currentMs()).toBe(4000)
+    // The next clip starts from 0.
+    void voice.play('b')
+    main().currentTime = 0
+    expect(voice.currentMs()).toBe(0)
+    main().currentTime = 0.5
+    expect(voice.currentMs()).toBe(500)
+    main().dispatchEvent(new Event('ended'))
+    expect(voice.currentMs()).toBe(2000)
+    voice.stop()
+    expect(voice.currentMs()).toBe(0)
+  })
+
+  test('a clip ended by its fallback timer or its watchdog holds its full length too (Ruling 24)', async () => {
+    playResult = () => Promise.reject(new DOMException('blocked', 'NotAllowedError'))
+    const voice = createAudioVoice(msFor, url)
+    const blocked = track(voice.play('b'))
+    await vi.advanceTimersByTimeAsync(2000)
+    expect(blocked.done).toBe(true)
+    expect(voice.currentMs()).toBe(2000)
+
+    playResult = () => new Promise(() => {})
+    const stalled = track(voice.play('a'))
+    expect(voice.currentMs()).toBe(0)
+    await vi.advanceTimersByTimeAsync(6000)
+    expect(stalled.done).toBe(true)
+    expect(voice.currentMs()).toBe(4000)
   })
 
   test('currentMs reads the audio position, and the timer once it has fallen back', async () => {

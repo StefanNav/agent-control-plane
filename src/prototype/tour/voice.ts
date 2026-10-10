@@ -7,7 +7,11 @@ export interface Voice {
   /** Ends the clip now and resolves its `play()`. */
   stop(): void
   setRate(rate: number): void
-  /** How far into the current clip it is, in clip milliseconds; 0 when idle. */
+  /**
+   * How far into the current clip it is, in clip milliseconds. A clip that ran to its end holds its
+   * full length until the next `play()` or `stop()`, so the bar's clock stays at the line's end while
+   * its after-actions run (Ruling 24); otherwise 0 when idle.
+   */
   currentMs(): number
   /** Start fetching a beat's clip so it is ready when its turn comes. */
   preload(beatId: string): void
@@ -76,6 +80,8 @@ function startTimer(totalMs: number, fromMs: number, speed: number, done: () => 
 export function createSilentVoice(msFor: (beatId: string) => number, factor = 10): Voice {
   let rate = 1
   let current: { timer: TimerRun; resolve: () => void } | null = null
+  /** The length of the clip that last ran to its end, until the next `play()` or `stop()`. */
+  let heldMs = 0
   const end = () => {
     const run = current
     if (!run) return
@@ -86,19 +92,28 @@ export function createSilentVoice(msFor: (beatId: string) => number, factor = 10
   return {
     play(beatId) {
       end()
+      heldMs = 0
       return new Promise<void>((resolve) => {
-        const run = { timer: startTimer(msFor(beatId), 0, factor * rate, () => end()), resolve }
-        current = run
+        const totalMs = msFor(beatId)
+        // Ran to its end (a clip cut short has its timer cancelled first): hold its length.
+        const finished = () => {
+          heldMs = totalMs
+          end()
+        }
+        current = { timer: startTimer(totalMs, 0, factor * rate, finished), resolve }
       })
     },
     pause: () => current?.timer.pause(),
     resume: () => current?.timer.resume(),
-    stop: end,
+    stop() {
+      end()
+      heldMs = 0
+    },
     setRate(next) {
       rate = next
       current?.timer.setSpeed(factor * rate)
     },
-    currentMs: () => current?.timer.positionMs() ?? 0,
+    currentMs: () => current?.timer.positionMs() ?? heldMs,
     preload: () => {},
     unlock: () => {},
   }
@@ -137,6 +152,8 @@ export function createAudioVoice(
   let rate = 1
   let current: Playing | null = null
   let warmed: string | null = null
+  /** The length of the clip that last ran to its end, until the next `play()` or `stop()`. */
+  let heldMs = 0
 
   const end = (run: Playing) => {
     if (current !== run) return
@@ -147,11 +164,18 @@ export function createAudioVoice(
     run.resolve()
   }
 
+  /** The clip ran to its end (`ended`, its fallback timer or the watchdog): hold its length. */
+  const finish = (run: Playing) => {
+    if (current !== run) return
+    heldMs = run.totalMs
+    end(run)
+  }
+
   /** Stand in for the audio with a timer from where it got to; the timer ends the clip, so the watchdog stands down. */
   const fallBack = (run: Playing) => {
     if (current !== run || run.timer) return
     clearTimeout(run.watchdog)
-    run.timer = startTimer(run.totalMs, audio.currentTime * 1000, rate, () => end(run))
+    run.timer = startTimer(run.totalMs, audio.currentTime * 1000, rate, () => finish(run))
     if (run.paused) run.timer.pause()
   }
 
@@ -166,7 +190,7 @@ export function createAudioVoice(
     run.watchdog = setTimeout(() => {
       if (current !== run) return
       audio.pause()
-      end(run)
+      finish(run)
     }, wait)
   }
 
@@ -186,6 +210,7 @@ export function createAudioVoice(
   return {
     play(beatId) {
       if (current) end(current)
+      heldMs = 0
       return new Promise<void>((resolve) => {
         const run: Playing = {
           totalMs: msFor(beatId),
@@ -199,7 +224,7 @@ export function createAudioVoice(
             audio.removeEventListener('error', onError)
           },
         }
-        const onEnded = () => end(run)
+        const onEnded = () => finish(run)
         const onError = () => fallBack(run)
         audio.addEventListener('ended', onEnded)
         audio.addEventListener('error', onError)
@@ -232,6 +257,7 @@ export function createAudioVoice(
     stop() {
       audio.pause()
       if (current) end(current)
+      heldMs = 0
     },
     setRate(next) {
       rate = next
@@ -243,7 +269,7 @@ export function createAudioVoice(
       }
     },
     currentMs() {
-      if (!current) return 0
+      if (!current) return heldMs
       return current.timer ? current.timer.positionMs() : audio.currentTime * 1000
     },
     preload(beatId) {
