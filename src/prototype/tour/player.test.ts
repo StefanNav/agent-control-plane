@@ -419,6 +419,125 @@ describe('playing beats', () => {
   })
 })
 
+describe('after-actions (Ruling 17)', () => {
+  /** A beat that outlines a row, then clicks through it at the end of its line; then a beat on, and the decisions chapter. */
+  const AFTER: Chapter[] = [
+    {
+      id: 'open',
+      title: 'Open on the product',
+      steps: [
+        {
+          id: 'open-product',
+          route: '/operations',
+          scenario: 'baseline',
+          persona: 'marcus',
+          beats: [
+            {
+              id: 'open-1',
+              text: 'In Medications, that person is Marcus.',
+              actions: [{ kind: 'outline', target: 'board-medications' }],
+              after: [
+                { kind: 'click', target: 'board-medications' },
+                { kind: 'click', target: 'board-open-division' },
+              ],
+            },
+            { id: 'open-2', text: 'This one drafts home medication lists.' },
+          ],
+        },
+      ],
+    },
+    FIXTURE_CHAPTERS[1]!,
+  ]
+  const afterActions = AFTER[0]!.steps[0]!.beats[0]!.after
+
+  test('run with the beat’s host and signal once its clip has ended and its actions are done, then the tour moves on', async () => {
+    const t = setup(AFTER)
+    t.state().open(0, true)
+    await flush()
+    t.finish()
+    await flush()
+    expect(t.calls).toHaveLength(1)
+
+    t.calls[0]!.done()
+    await flush()
+    expect(t.calls).toHaveLength(2)
+    expect(t.calls[1]!.actions).toEqual(afterActions)
+    expect(t.calls[1]!.host).toBe(t.calls[0]!.host)
+    expect(t.calls[1]!.signal).toBe(t.calls[0]!.signal)
+    expect(t.state().pos.beat).toBe(0)
+
+    t.calls[1]!.done(['click:board-open-division'])
+    await flush()
+    expect(t.state().pos.beat).toBe(1)
+    expect(t.voice.play).toHaveBeenLastCalledWith('open-2')
+    expect(t.state().skipped).toEqual(['click:board-open-division'])
+  })
+
+  test('wait for the clip too when the actions finish first', async () => {
+    const t = setup(AFTER)
+    t.state().open(0, true)
+    await flush()
+    t.calls[0]!.done()
+    await flush()
+    expect(t.calls).toHaveLength(1)
+    t.finish()
+    await flush()
+    expect(t.calls).toHaveLength(2)
+    expect(t.calls[1]!.actions).toEqual(afterActions)
+  })
+
+  test('a beat without them goes straight on', async () => {
+    const t = setup(AFTER)
+    t.state().open(0, true)
+    await flush()
+    await finishBeat(t)
+    t.lastCall().done()
+    await flush()
+    expect(t.state().pos.beat).toBe(1)
+    const runs = t.calls.length
+    await finishBeat(t)
+    expect(t.calls).toHaveLength(runs + 1)
+    expect(t.lastCall().actions).toEqual(FIXTURE_CHAPTERS[1]!.steps[0]!.beats[0]!.actions)
+    expect(t.voice.play).toHaveBeenLastCalledWith('decisions-screen-1')
+  })
+
+  test('next() while they run aborts them, and they write nothing', async () => {
+    const t = setup(AFTER)
+    t.state().open(0, true)
+    await flush()
+    await finishBeat(t)
+    const after = t.calls[1]!
+    t.state().next()
+    await flush()
+    expect(after.signal.aborted).toBe(true)
+    expect(t.state()).toMatchObject({ status: 'playing', pos: { chapter: 1, step: 0, beat: 0 } })
+    after.host.setOutline('stale')
+    after.done(['click:stale'])
+    await flush()
+    expect(t.state()).toMatchObject({ outline: null, skipped: [] })
+    expect(t.state().pos).toEqual({ chapter: 1, step: 0, beat: 0 })
+    expect(t.voice.play).toHaveBeenLastCalledWith('decisions-screen-1')
+  })
+
+  test('pause while they run lets them finish, then waits for play() before moving on (Ruling 8)', async () => {
+    const t = setup(AFTER)
+    t.state().open(0, true)
+    await flush()
+    await finishBeat(t)
+    t.state().pause()
+    expect(t.calls[1]!.signal.aborted).toBe(false)
+    t.calls[1]!.done()
+    await flush()
+    expect(t.state()).toMatchObject({ status: 'paused', pos: { chapter: 0, step: 0, beat: 0 } })
+    expect(t.voice.play).toHaveBeenCalledTimes(1)
+
+    t.state().play()
+    await flush()
+    expect(t.state()).toMatchObject({ status: 'playing', pos: { chapter: 0, step: 0, beat: 1 } })
+    expect(t.voice.play).toHaveBeenLastCalledWith('open-2')
+  })
+})
+
 describe('waiting for the step’s screen (Ruling 10)', () => {
   const beat0 = FIXTURE_CHAPTERS[1]!.steps[0]!.beats[0]!
 

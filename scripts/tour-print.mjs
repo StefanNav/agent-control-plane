@@ -20,10 +20,11 @@ function describeAction(action) {
   }
 }
 
-/** One beat: its text, then its actions and reveal in brackets. */
+/** One beat: its text, then its actions, reveal and after-actions in brackets. */
 function describeBeat(beat, number) {
   const notes = [...(beat.actions ?? []).map(describeAction)]
   if (beat.reveal) notes.push(`reveal: ${beat.reveal}`)
+  notes.push(...(beat.after ?? []).map((action) => `after ${describeAction(action)}`))
   const brackets = notes.map((note) => ` \`[${note}]\``).join('')
   return `${number}. ${beat.text}${brackets}`
 }

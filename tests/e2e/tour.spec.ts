@@ -16,6 +16,23 @@ async function playOpening(page: Page) {
   await bar(page).getByRole('button', { name: 'Play tour' }).click()
 }
 
+/**
+ * Which screen a line plays over (Ruling 17): the pathname, sampled while the bar's caption is that
+ * line. Its clicks come at the end of the line, so the screen holds while the line is spoken.
+ */
+async function expectLineOver(page: Page, line: string, pathname: string) {
+  await expect
+    .poll(
+      () =>
+        page.evaluate((start) => {
+          const caption = document.querySelector('[data-tour="bar"] p')?.textContent ?? ''
+          return caption.startsWith(start) ? location.pathname : `caption: ${caption}`
+        }, line),
+      { message: line, timeout: CHAPTER_MS, intervals: [25] },
+    )
+    .toBe(pathname)
+}
+
 /** The opening has clicked its way to the Med Rec Agent and outlined its summary, skipping nothing. */
 async function expectAtMedRec(page: Page) {
   await expect(page).toHaveURL(AT_MED_REC, { timeout: CHAPTER_MS })
@@ -32,6 +49,9 @@ test.beforeEach(async ({ page }) => {
 test('the opening clicks from the board to the Med Rec Agent and ends there', async ({ page }) => {
   const errors = collectErrors(page)
   await playOpening(page)
+  await expectLineOver(page, "You can't watch them all", '/operations')
+  await expectLineOver(page, 'In Medications', '/operations/divisions/medications')
+  await expectLineOver(page, 'This one drafts', '/operations/agents/med-rec')
   await expectAtMedRec(page)
   await expect(bar(page)).toHaveCount(0, { timeout: CHAPTER_MS })
   await expect(page).toHaveURL(/\/operations\/agents\/med-rec$/)

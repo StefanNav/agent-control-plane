@@ -112,10 +112,10 @@ function glide(ms: number, signal: AbortSignal): Promise<void> {
 
 /**
  * The tour's player (not persisted; the URL is the persistence). It plays one beat at a time: the
- * beat's clip and its actions start together, and the beat ends when both are done. Then the next
- * beat, entering its step if it is a new one (R6), or the end (R5). A step's first beat waits for
- * the step's screen to settle (Ruling 10). Only one run is ever live: any entry, take-over or exit
- * aborts the current one, and a run's late writes are dropped.
+ * beat's clip and its actions start together, its after-actions run once both are done (Ruling 17),
+ * and then the beat ends. Then the next beat, entering its step if it is a new one (R6), or the end
+ * (R5). A step's first beat waits for the step's screen to settle (Ruling 10). Only one run is ever
+ * live: any entry, take-over or exit aborts the current one, and a run's late writes are dropped.
  */
 export function createTourPlayer(
   deps: PlayerDeps,
@@ -223,26 +223,31 @@ export function createTourPlayer(
         return { skipped: [] }
       })
 
-    /** Play the beat at `pos` under the given run: its clip and its actions together. */
+    /**
+     * Play the beat at `pos` under the given run: its clip and its actions together, then, once both
+     * are done, its after-actions (Ruling 17), with the same host and signal.
+     */
     const startBeat = (runToken: number, signal: AbortSignal) => {
       phase = 'running'
       const { pos } = get()
       const beat = beatAt(chapters, pos)
       const spoken = voice.play(beat.id)
-      const after = nextBeat(chapters, pos)
-      if (after) voice.preload(beatAt(chapters, after).id)
-      const acted = act(beat.actions ?? [], hostFor(runToken, signal), signal).then(
-        ({ skipped }) => {
+      const upcoming = nextBeat(chapters, pos)
+      if (upcoming) voice.preload(beatAt(chapters, upcoming).id)
+      const host = hostFor(runToken, signal)
+      const perform = (actions: TourAction[]) =>
+        act(actions, host, signal).then(({ skipped }) => {
           if (runToken === token && skipped.length > 0)
             set((s) => ({ skipped: [...s.skipped, ...skipped] }))
-        },
-      )
-      void Promise.all([spoken, acted]).then(() => {
-        if (runToken !== token) return
-        // Paused mid-beat: hold here, so nothing changes on screen until Play.
-        if (get().status === 'playing') advance()
-        else phase = 'done'
-      })
+        })
+      void Promise.all([spoken, perform(beat.actions ?? [])])
+        .then(() => (runToken === token && beat.after ? perform(beat.after) : undefined))
+        .then(() => {
+          if (runToken !== token) return
+          // Paused mid-beat: hold here, so nothing changes on screen until Play.
+          if (get().status === 'playing') advance()
+          else phase = 'done'
+        })
     }
 
     /** After a finished beat: the next beat, entering its step if it is a new one, or the end. */

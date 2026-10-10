@@ -25,6 +25,12 @@
   stroke: var(--cs-raised);
   stroke-width: 1.5;
   stroke-linejoin: round;
+  transition: opacity 300ms ease-out;
+}
+
+/* At rest (Ruling 18): faded out until the next move. The ring is already unseen by then. */
+.cursor[data-idle='true'] .arrow {
+  opacity: 0;
 }
 
 /* One pulse per click, once the glide is over; invisible at rest, so reduced motion shows none. */
@@ -59,7 +65,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cursor {
+  .cursor,
+  .arrow {
     transition: none;
   }
 

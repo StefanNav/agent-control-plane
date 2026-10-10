@@ -36,6 +36,12 @@ export interface Beat {
   text: string
   /** Run in order when the beat starts. */
   actions?: TourAction[]
+  /**
+   * Run in order once the beat's clip has ended and its `actions` are done; then the tour moves on
+   * (Ruling 17). A `[click]` the script writes at the end of a line, one that moves to a new screen
+   * or confirms a dialog, goes here; outlines, in-place clicks and typing go in `actions`.
+   */
+  after?: TourAction[]
   /** Interludes: the item this beat reveals. */
   reveal?: string
 }

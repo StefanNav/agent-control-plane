@@ -10,7 +10,7 @@ import { CHAPTERS } from './script'
 const GENDERED = /\b(he|she|him|her|his|hers|himself|herself)\b/i
 const steps = CHAPTERS.flatMap((c) => c.steps)
 const beats = steps.flatMap((s) => s.beats)
-const actions = beats.flatMap((b) => b.actions ?? [])
+const actions = beats.flatMap((b) => [...(b.actions ?? []), ...(b.after ?? [])])
 
 test('every chapter has a step and every step a beat', () => {
   for (const chapter of CHAPTERS) expect(chapter.steps.length, chapter.id).toBeGreaterThan(0)

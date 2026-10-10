@@ -10,7 +10,8 @@ export const CHAPTERS: Chapter[] = [
     title: 'Open on the product',
     steps: [
       {
-        // One step across three screens: its own clicks go board → Medications → Med Rec Agent.
+        // One step across three screens: its own clicks, each at the end of its line (Ruling 17),
+        // go board → Medications → Med Rec Agent.
         id: 'open-product',
         route: '/operations',
         scenario: 'baseline',
@@ -24,7 +25,8 @@ export const CHAPTERS: Chapter[] = [
           {
             id: 'open-2',
             text: "You can't watch them all, so this screen only asks for your attention where a person is actually needed.",
-            actions: [
+            actions: [{ kind: 'outline', target: 'board-medications' }],
+            after: [
               { kind: 'click', target: 'board-medications' },
               { kind: 'click', target: 'board-open-division' },
             ],
@@ -32,7 +34,8 @@ export const CHAPTERS: Chapter[] = [
           {
             id: 'open-3',
             text: 'In Medications, that person is Marcus, who owns twenty agents, and right now four of them need Marcus.',
-            actions: [
+            actions: [{ kind: 'outline', target: 'division-agents' }],
+            after: [
               { kind: 'click', target: 'division-med-rec' },
               { kind: 'click', target: 'division-open-agent' },
             ],
