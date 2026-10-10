@@ -59,7 +59,7 @@ const TILES = [
   {
     id: 'build',
     group: 'brief',
-    title: '11 build phases',
+    title: '10 build phases',
     line: 'Each one a reviewed pull request',
   },
 ]

@@ -154,7 +154,7 @@ describe('page copy', () => {
       'Design system brief',
       'Explorations',
       '55 frames',
-      '11 build phases',
+      '10 build phases',
     ])
     for (const tile of tiles) expect(tile.children).toHaveLength(2)
   })
