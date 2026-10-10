@@ -228,6 +228,11 @@ export async function runActions(
           skip(action, 'it is not a select')
           break
         }
+        // A person can't pick in a locked select, but React would still take a value set from here.
+        if (el.matches(':disabled')) {
+          skip(action, 'it is disabled')
+          break
+        }
         if (![...el.options].some((option) => option.value === action.value)) {
           skip(action, `it has no option "${action.value}"`)
           break

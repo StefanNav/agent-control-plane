@@ -486,6 +486,44 @@ describe('runActions', () => {
     expect(host.moveCursor).not.toHaveBeenCalled()
   })
 
+  test('choose on a locked select is skipped, and the value stays', async () => {
+    const select = addTarget('o', undefined, 'select') as HTMLSelectElement
+    select.append(new Option('Choose', ''), new Option('Sam', 'sam'))
+    select.disabled = true
+    const changed = vi.fn()
+    select.addEventListener('change', changed)
+    const { host } = makeHost()
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const result = await runActions(
+      [{ kind: 'choose', target: 'o', value: 'sam' }],
+      host,
+      new AbortController().signal,
+    )
+    expect(result).toEqual({ skipped: ['choose:o'] })
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(select.value).toBe('')
+    expect(changed).not.toHaveBeenCalled()
+    expect(host.moveCursor).not.toHaveBeenCalled()
+  })
+
+  test('choose on a select in a disabled fieldset is skipped too', async () => {
+    const fieldset = document.createElement('fieldset')
+    fieldset.disabled = true
+    document.body.append(fieldset)
+    const select = addTarget('o', undefined, 'select') as HTMLSelectElement
+    select.append(new Option('Choose', ''), new Option('Sam', 'sam'))
+    fieldset.append(select)
+    const { host } = makeHost()
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const result = await runActions(
+      [{ kind: 'choose', target: 'o', value: 'sam' }],
+      host,
+      new AbortController().signal,
+    )
+    expect(result).toEqual({ skipped: ['choose:o'] })
+    expect(select.value).toBe('')
+  })
+
   test('choose does not pick if the run is aborted during the glide', async () => {
     const select = addTarget('o', undefined, 'select') as HTMLSelectElement
     select.append(new Option('Choose', ''), new Option('Sam', 'sam'))
