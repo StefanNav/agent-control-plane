@@ -44,6 +44,11 @@ test('narration names people', () => {
   for (const beat of beats) expect(beat.text, beat.id).not.toMatch(GENDERED)
 })
 
+test('what the tour types names people too', () => {
+  for (const action of actions)
+    if (action.kind === 'type') expect(action.text, action.target).not.toMatch(GENDERED)
+})
+
 test('targets are plain attribute values and cards exist', () => {
   for (const action of actions) {
     if ('target' in action) expect(action.target).toMatch(/^[a-z0-9-]+$/)
