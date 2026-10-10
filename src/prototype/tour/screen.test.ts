@@ -102,7 +102,7 @@ describe('settleScreen (Ruling 10)', () => {
     await vi.advanceTimersByTimeAsync(100)
     expect(settled.done).toBe(false)
     // `?tour=` (or any other extra param) alongside is fine.
-    markScreen(2, '/operations/agents/med-rec?tab=scorecard&tour=decision-1')
+    markScreen(2, '/operations/agents/med-rec?tab=scorecard&tour=decisions')
     await vi.advanceTimersByTimeAsync(16)
     expect(settled.done).toBe(true)
   })
@@ -137,7 +137,7 @@ describe('atRoute (Ruling 15)', () => {
     expect(atRoute('/operations/agents/med-rec', route)).toBe(false)
     expect(atRoute('/operations/agents/med-rec?tab=overview', route)).toBe(false)
     expect(atRoute('/operations/agents/med-rec?tab=scorecard', route)).toBe(true)
-    expect(atRoute('/operations/agents/med-rec?tour=decision-1&tab=scorecard', route)).toBe(true)
+    expect(atRoute('/operations/agents/med-rec?tour=decisions&tab=scorecard', route)).toBe(true)
   })
 
   test('a hash on the route does not count', () => {

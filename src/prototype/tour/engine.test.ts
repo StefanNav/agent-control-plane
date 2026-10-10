@@ -24,8 +24,8 @@ const manifest: Manifest = Object.fromEntries(
 
 describe('reading a position', () => {
   test('beatAt and stepAt read the chapter, step and beat', () => {
-    expect(stepAt(chapters, { chapter: 0, step: 1, beat: 0 }).id).toBe('why-screen')
-    expect(beatAt(chapters, { chapter: 0, step: 0, beat: 2 }).id).toBe('why-intro-3')
+    expect(stepAt(chapters, { chapter: 0, step: 1, beat: 0 }).id).toBe('problem-screen')
+    expect(beatAt(chapters, { chapter: 0, step: 0, beat: 2 }).id).toBe('problem-intro-3')
   })
 
   test('chapterStart is the first beat of the chapter', () => {
@@ -112,7 +112,7 @@ describe('enterStep', () => {
     expect(enterStep(stepAt(chapters, { chapter: 0, step: 0, beat: 0 }))).toEqual({
       load: null,
       persona: null,
-      route: '/tour/why',
+      route: '/tour/problem',
     })
   })
 
@@ -127,7 +127,7 @@ describe('enterStep', () => {
 
 describe('isInterlude', () => {
   test('is a route under /tour/', () => {
-    expect(isInterlude('/tour/why')).toBe(true)
+    expect(isInterlude('/tour/problem')).toBe(true)
     expect(isInterlude('/operations')).toBe(false)
     expect(isInterlude('/tourist')).toBe(false)
   })
@@ -150,9 +150,9 @@ describe('buildTimeline', () => {
   test('sums the recorded durations', () => {
     const t = buildTimeline(chapters, manifest)
     expect(t.total).toBe(allBeats.length * 1000)
-    expect(t.beatMs['why-intro-1']).toBe(1000)
-    expect(t.beatStartMs['why-intro-1']).toBe(0)
-    expect(t.beatStartMs['why-intro-2']).toBe(1000)
+    expect(t.beatMs['problem-intro-1']).toBe(1000)
+    expect(t.beatStartMs['problem-intro-1']).toBe(0)
+    expect(t.beatStartMs['problem-intro-2']).toBe(1000)
   })
 
   test('a beat missing from the manifest uses the estimate', () => {
@@ -200,8 +200,8 @@ describe('tourUrlAction', () => {
   })
 
   test('a chapter id opens the tour at that chapter', () => {
-    expect(tourUrlAction(params('tour=decision-1'), chapters)).toEqual({ kind: 'open', chapter: 1 })
-    expect(tourUrlAction(params('tour=why'), chapters)).toEqual({ kind: 'open', chapter: 0 })
+    expect(tourUrlAction(params('tour=decisions'), chapters)).toEqual({ kind: 'open', chapter: 1 })
+    expect(tourUrlAction(params('tour=problem'), chapters)).toEqual({ kind: 'open', chapter: 0 })
   })
 
   test('an unknown or empty chapter is stripped', () => {

@@ -80,8 +80,8 @@ afterEach(() => {
 
 describe('URL sync', () => {
   test('?tour=<chapter> opens that chapter paused, on its first step, and the URL keeps naming it', async () => {
-    const t = setup('/?tour=decision-1')
-    await waitFor(() => expect(t.where()).toBe('/operations?tour=decision-1'))
+    const t = setup('/?tour=decisions')
+    await waitFor(() => expect(t.where()).toBe('/operations?tour=decisions'))
     expect(t.state()).toMatchObject({ status: 'paused', pos: { chapter: 1, step: 0, beat: 0 } })
     expect(screen.getByRole('button', { name: 'Play tour' })).toBeInTheDocument()
     expect(useDemo.getState().personaId).toBe('priya')
@@ -95,31 +95,31 @@ describe('URL sync', () => {
   })
 
   test('while open, a product link that drops ?tour gets it back', async () => {
-    const t = setup('/?tour=why')
-    await waitFor(() => expect(t.where()).toBe('/tour/why?tour=why'))
+    const t = setup('/?tour=problem')
+    await waitFor(() => expect(t.where()).toBe('/tour/problem?tour=problem'))
     await act(() => t.router.navigate('/inventory'))
-    await waitFor(() => expect(t.where()).toBe('/inventory?tour=why'))
+    await waitFor(() => expect(t.where()).toBe('/inventory?tour=problem'))
   })
 
   test('while open, a link to another chapter’s ?tour jumps there (Ruling 16)', async () => {
-    const t = setup('/?tour=why')
-    await waitFor(() => expect(t.where()).toBe('/tour/why?tour=why'))
-    await act(() => t.router.navigate('/?tour=decision-1'))
-    await waitFor(() => expect(t.where()).toBe('/operations?tour=decision-1'))
+    const t = setup('/?tour=problem')
+    await waitFor(() => expect(t.where()).toBe('/tour/problem?tour=problem'))
+    await act(() => t.router.navigate('/?tour=decisions'))
+    await waitFor(() => expect(t.where()).toBe('/operations?tour=decisions'))
     expect(t.state()).toMatchObject({ status: 'paused', pos: { chapter: 1, step: 0, beat: 0 } })
   })
 
   test('while open, an unknown ?tour is stripped and the current chapter named again', async () => {
-    const t = setup('/?tour=why')
-    await waitFor(() => expect(t.where()).toBe('/tour/why?tour=why'))
+    const t = setup('/?tour=problem')
+    await waitFor(() => expect(t.where()).toBe('/tour/problem?tour=problem'))
     await act(() => t.router.navigate('/inventory?tour=nope'))
-    await waitFor(() => expect(t.where()).toBe('/inventory?tour=why'))
+    await waitFor(() => expect(t.where()).toBe('/inventory?tour=problem'))
     expect(t.state().pos.chapter).toBe(0)
   })
 
   test('Exit tour drops ?tour and stays on a product route (R5)', async () => {
-    const t = setup('/?tour=decision-1')
-    await waitFor(() => expect(t.where()).toBe('/operations?tour=decision-1'))
+    const t = setup('/?tour=decisions')
+    await waitFor(() => expect(t.where()).toBe('/operations?tour=decisions'))
     await userEvent.click(screen.getByRole('button', { name: 'Exit tour' }))
     await waitFor(() => expect(t.where()).toBe('/operations'))
     expect(t.state().status).toBe('idle')
@@ -127,8 +127,8 @@ describe('URL sync', () => {
   })
 
   test('Exit tour on an interlude lands on the landing page with no ?tour (R5)', async () => {
-    const t = setup('/?tour=why')
-    await waitFor(() => expect(t.where()).toBe('/tour/why?tour=why'))
+    const t = setup('/?tour=problem')
+    await waitFor(() => expect(t.where()).toBe('/tour/problem?tour=problem'))
     await userEvent.click(screen.getByRole('button', { name: 'Exit tour' }))
     await waitFor(() => expect(t.where()).toBe('/'))
     // Give a late URL write the chance to undo it.
@@ -150,29 +150,29 @@ describe('URL sync', () => {
     })
 
     test('jumping to a chapter on another route lands there, naming the new chapter', async () => {
-      const t = setup('/?tour=why')
+      const t = setup('/?tour=problem')
       await wait(50)
-      expect(t.where()).toBe('/tour/why?tour=why')
+      expect(t.where()).toBe('/tour/problem?tour=problem')
       t.state().jump(1)
       await wait(50)
-      expect(t.where()).toBe('/operations?tour=decision-1')
+      expect(t.where()).toBe('/operations?tour=decisions')
     })
 
     test('a query on the screen it leaves does not follow the tour to the next chapter', async () => {
-      const t = setup('/?tour=why')
+      const t = setup('/?tour=problem')
       await wait(50)
       // Leave the interlude for a screen with a tab in its URL, then for one without.
       act(() => t.state().next())
       await act(() => t.router.navigate('/operations/agents/med-rec?tab=scorecard'))
       await wait(50)
-      expect(t.where()).toBe('/operations/agents/med-rec?tab=scorecard&tour=why')
+      expect(t.where()).toBe('/operations/agents/med-rec?tab=scorecard&tour=problem')
       t.state().jump(1)
       await wait(50)
-      expect(t.where()).toBe('/operations?tour=decision-1')
+      expect(t.where()).toBe('/operations?tour=decisions')
     })
 
     test('exiting on an interlude lands on the landing page', async () => {
-      const t = setup('/?tour=why')
+      const t = setup('/?tour=problem')
       await wait(50)
       t.state().exit()
       await wait(50)
@@ -183,7 +183,7 @@ describe('URL sync', () => {
 
 describe('keyboard', () => {
   test('Space on the page body starts playing, and again pauses', async () => {
-    const t = setup('/?tour=decision-1')
+    const t = setup('/?tour=decisions')
     await waitFor(() => expect(t.state().status).toBe('paused'))
     fireEvent.keyDown(document.body, { key: ' ' })
     expect(t.state().status).toBe('playing')
@@ -192,7 +192,7 @@ describe('keyboard', () => {
   })
 
   test('Space on the main region or its heading toggles too, but not on a button or in a field', async () => {
-    const t = setup('/?tour=decision-1')
+    const t = setup('/?tour=decisions')
     await waitFor(() => expect(t.state().status).toBe('paused'))
     fireEvent.keyDown(screen.getByRole('main'), { key: ' ' })
     expect(t.state().status).toBe('playing')
@@ -206,8 +206,8 @@ describe('keyboard', () => {
   })
 
   test('→ and ← step through the tour from the page or the bar', async () => {
-    const t = setup('/?tour=why')
-    await waitFor(() => expect(t.where()).toBe('/tour/why?tour=why'))
+    const t = setup('/?tour=problem')
+    await waitFor(() => expect(t.where()).toBe('/tour/problem?tour=problem'))
     fireEvent.keyDown(document.body, { key: 'ArrowRight' })
     expect(t.state().pos).toEqual({ chapter: 0, step: 1, beat: 0 })
     fireEvent.keyDown(screen.getByRole('button', { name: 'Captions' }), { key: 'ArrowLeft' })
@@ -220,7 +220,7 @@ describe('keyboard', () => {
 
 describe('taking over (spec §4.5)', () => {
   async function playing() {
-    const t = setup('/?tour=decision-1')
+    const t = setup('/?tour=decisions')
     await waitFor(() => expect(t.state().status).toBe('paused'))
     act(() => t.state().play())
     return t
@@ -274,7 +274,7 @@ describe('taking over (spec §4.5)', () => {
   })
 
   test('while paused, a pointer down on the page hands it over too, so Play restarts the step (Ruling 12)', async () => {
-    const t = setup('/?tour=decision-1')
+    const t = setup('/?tour=decisions')
     await waitFor(() => expect(t.state().status).toBe('paused'))
     fireEvent.pointerDown(screen.getByRole('main'))
     expect(t.state().status).toBe('driving')
@@ -282,14 +282,14 @@ describe('taking over (spec §4.5)', () => {
   })
 
   test('while paused, typing in a field hands it over too (Ruling 12)', async () => {
-    const t = setup('/?tour=decision-1')
+    const t = setup('/?tour=decisions')
     await waitFor(() => expect(t.state().status).toBe('paused'))
     fireEvent.keyDown(screen.getByRole('textbox', { name: 'Reason' }), { key: 'a' })
     expect(t.state().status).toBe('driving')
   })
 
   test('while paused, the tour bar and Space are still the tour’s', async () => {
-    const t = setup('/?tour=decision-1')
+    const t = setup('/?tour=decisions')
     await waitFor(() => expect(t.state().status).toBe('paused'))
     fireEvent.pointerDown(screen.getByRole('button', { name: 'Captions' }))
     expect(t.state().status).toBe('paused')
@@ -298,7 +298,7 @@ describe('taking over (spec §4.5)', () => {
   })
 
   test('the tour’s own enlarged image is not the page: closing it keeps the tour paused', async () => {
-    const t = setup('/?tour=decision-1')
+    const t = setup('/?tour=decisions')
     await waitFor(() => expect(t.state().status).toBe('paused'))
     act(() => runtime.player.setState({ card: { id: 'image-1', side: 'right' } }))
     await userEvent.click(screen.getByRole('button', { name: 'An early board, open larger' }))
@@ -311,8 +311,8 @@ describe('taking over (spec §4.5)', () => {
 
 describe('starting a story closes the tour (Ruling 14)', () => {
   test('from the Stories menu: the tour is closed and the story panel shows its first step', async () => {
-    const t = setup('/?tour=decision-1')
-    await waitFor(() => expect(t.where()).toBe('/operations?tour=decision-1'))
+    const t = setup('/?tour=decisions')
+    await waitFor(() => expect(t.where()).toBe('/operations?tour=decisions'))
     await userEvent.click(screen.getByRole('button', { name: 'Stories' }))
     await userEvent.click(screen.getByRole('menuitem', { name: /Supervise by exception/ }))
     expect(t.state().status).toBe('idle')
@@ -328,11 +328,11 @@ describe('starting a story closes the tour (Ruling 14)', () => {
     try {
       const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
       // A step with a query of its own, so stale params would show.
-      const t = setup('/?tour=why')
+      const t = setup('/?tour=problem')
       await wait(50)
       t.state().next()
       await wait(50)
-      expect(t.where()).toBe('/operations/agents/med-rec?tour=why')
+      expect(t.where()).toBe('/operations/agents/med-rec?tour=problem')
       screen.getByRole('button', { name: 'Stories' }).click()
       await wait(50)
       screen.getByRole('menuitem', { name: /Supervise by exception/ }).click()
@@ -347,7 +347,7 @@ describe('starting a story closes the tour (Ruling 14)', () => {
 
 describe('the tab and the layer going away (Review focus 4)', () => {
   test('hiding the tab pauses the tour', async () => {
-    const t = setup('/?tour=decision-1')
+    const t = setup('/?tour=decisions')
     await waitFor(() => expect(t.state().status).toBe('paused'))
     act(() => t.state().play())
     const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden')
@@ -357,7 +357,7 @@ describe('the tab and the layer going away (Review focus 4)', () => {
   })
 
   test('unmounting stops the voice and pauses, so nothing plays on with nothing on screen', async () => {
-    const t = setup('/?tour=decision-1')
+    const t = setup('/?tour=decisions')
     await waitFor(() => expect(t.state().status).toBe('paused'))
     act(() => t.state().play())
     const stop = vi.spyOn(runtime.voice, 'stop')
@@ -401,8 +401,8 @@ describe('the shell while the tour is open', () => {
   })
 
   test('a step’s first beat waits for its screen, then runs on it: Play shows the step’s card', async () => {
-    const t = setup('/?tour=decision-1')
-    await waitFor(() => expect(t.where()).toBe('/operations?tour=decision-1'))
+    const t = setup('/?tour=decisions')
+    await waitFor(() => expect(t.where()).toBe('/operations?tour=decisions'))
     await userEvent.click(screen.getByRole('button', { name: 'Play tour' }))
     // Well inside the 1500 ms safety wait: the screen settled, not the timeout.
     expect(
@@ -412,7 +412,7 @@ describe('the shell while the tour is open', () => {
   })
 
   test('the outline is one style rule for its target', async () => {
-    const t = setup('/?tour=decision-1')
+    const t = setup('/?tour=decisions')
     await waitFor(() => expect(t.state().status).toBe('paused'))
     act(() => runtime.player.setState({ outline: 'agent-summary' }))
     const rules = Array.from(document.querySelectorAll('style')).map((s) => s.textContent)
@@ -422,7 +422,7 @@ describe('the shell while the tour is open', () => {
   })
 
   test('the cursor shows only while playing, once the tour has moved it', async () => {
-    const t = setup('/?tour=decision-1')
+    const t = setup('/?tour=decisions')
     await waitFor(() => expect(t.state().status).toBe('paused'))
     const cursor = () => document.querySelector('[data-tour="cursor"]')
     expect(cursor()).toHaveAttribute('data-visible', 'false')

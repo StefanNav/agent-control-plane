@@ -3,16 +3,17 @@ import type { PersonaId } from '../../data/types'
 
 /** The tour's chapters, in running order (R1). Also the `?tour=` value. */
 export type ChapterId =
-  | 'cold-open'
-  | 'why'
-  | 'process'
+  | 'open'
+  | 'problem'
+  | 'people'
   | 'onboarding'
-  | 'decision-1'
-  | 'decision-2'
-  | 'decision-3'
+  | 'earning-trust'
+  | 'supervising'
   | 'step-down'
+  | 'decisions'
+  | 'process'
   | 'validate'
-  | 'your-turn'
+  | 'close'
 
 /** A key of `CARDS` in `cards.ts`. */
 export type CardId = string

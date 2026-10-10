@@ -11,15 +11,15 @@ import type { Voice } from './voice'
 const TOUR: Chapter[] = [
   ...FIXTURE_CHAPTERS,
   {
-    id: 'your-turn',
+    id: 'close',
     title: 'Your turn',
     steps: [
       {
-        id: 'your-turn-end',
+        id: 'close-end',
         route: '/tour/end',
         beats: [
           {
-            id: 'your-turn-1',
+            id: 'close-1',
             text: 'Now it is your turn.',
             actions: [{ kind: 'outline', target: 'story-cards' }],
           },
@@ -201,7 +201,7 @@ describe('open', () => {
     t.state().open(0, false)
     expect(t.state().status).toBe('paused')
     expect(t.state().pos).toEqual({ chapter: 0, step: 0, beat: 0 })
-    expect(t.navigate).toHaveBeenCalledWith('/tour/why')
+    expect(t.navigate).toHaveBeenCalledWith('/tour/problem')
     expect(t.state().stepKey).toBe(1)
     expect(t.exitStory).toHaveBeenCalledTimes(1)
     // An interlude has no scenario or persona; nothing plays until Play.
@@ -234,7 +234,7 @@ describe('open', () => {
     t.state().open(1, true)
     await flush()
     expect(t.state().status).toBe('playing')
-    expect(t.voice.play).toHaveBeenCalledWith('decision-1-screen-1')
+    expect(t.voice.play).toHaveBeenCalledWith('decisions-screen-1')
     expect(t.lastCall().actions).toEqual(FIXTURE_CHAPTERS[1]!.steps[0]!.beats[0]!.actions)
   })
 
@@ -256,7 +256,7 @@ describe('playing beats', () => {
     await flush()
     expect(t.state().status).toBe('playing')
     expect(t.voice.play).toHaveBeenCalledTimes(1)
-    expect(t.voice.play).toHaveBeenLastCalledWith('decision-1-screen-1')
+    expect(t.voice.play).toHaveBeenLastCalledWith('decisions-screen-1')
     expect(t.run).toHaveBeenCalledTimes(1)
     expect(t.calls[0]!.actions).toEqual(FIXTURE_CHAPTERS[1]!.steps[0]!.beats[0]!.actions)
 
@@ -267,7 +267,7 @@ describe('playing beats', () => {
     t.calls[0]!.done()
     await flush()
     expect(t.state().pos).toEqual({ chapter: 1, step: 0, beat: 1 })
-    expect(t.voice.play).toHaveBeenLastCalledWith('decision-1-screen-2')
+    expect(t.voice.play).toHaveBeenLastCalledWith('decisions-screen-2')
     expect(t.lastCall().actions).toEqual([{ kind: 'clearCard' }])
   })
 
@@ -294,13 +294,13 @@ describe('playing beats', () => {
     const t = setup()
     t.state().open(0, true)
     await flush()
-    expect(t.voice.preload).toHaveBeenLastCalledWith('why-intro-2')
+    expect(t.voice.preload).toHaveBeenLastCalledWith('problem-intro-2')
     await finishBeat(t)
     await finishBeat(t)
-    expect(t.voice.preload).toHaveBeenLastCalledWith('why-screen-1')
+    expect(t.voice.preload).toHaveBeenLastCalledWith('problem-screen-1')
     t.state().jump(1)
     await flush()
-    expect(t.voice.preload).toHaveBeenLastCalledWith('decision-1-screen-2')
+    expect(t.voice.preload).toHaveBeenLastCalledWith('decisions-screen-2')
     t.voice.preload.mockClear()
     await finishBeat(t)
     expect(t.state().pos).toEqual({ chapter: 1, step: 0, beat: 1 })
@@ -329,7 +329,7 @@ describe('playing beats', () => {
       'persona:marcus',
       'navigate:/operations/agents/med-rec',
     ])
-    expect(t.voice.play).toHaveBeenLastCalledWith('why-screen-1')
+    expect(t.voice.play).toHaveBeenLastCalledWith('problem-screen-1')
 
     await finishBeat(t)
     await finishBeat(t)
@@ -472,7 +472,7 @@ describe('waiting for the step’s screen (Ruling 10)', () => {
     t.settles[1]!.resolve()
     await flush()
     expect(t.voice.play).toHaveBeenCalledTimes(1)
-    expect(t.voice.play).toHaveBeenCalledWith('why-screen-1')
+    expect(t.voice.play).toHaveBeenCalledWith('problem-screen-1')
     expect(t.run).toHaveBeenCalledTimes(1)
     expect(t.calls[0]!.actions).toEqual([{ kind: 'outline', target: 'agent-summary' }])
   })
@@ -606,7 +606,7 @@ describe('pause', () => {
 
     t.state().play()
     expect(t.state()).toMatchObject({ status: 'playing', pos: { chapter: 1, step: 0, beat: 1 } })
-    expect(t.voice.play).toHaveBeenLastCalledWith('decision-1-screen-2')
+    expect(t.voice.play).toHaveBeenLastCalledWith('decisions-screen-2')
   })
 
   test('the cursor hides while paused and shows again on play()', async () => {
@@ -727,7 +727,7 @@ describe('take over and resume', () => {
       stepKey: stepKey + 1,
     })
     await flush()
-    expect(t.voice.play).toHaveBeenLastCalledWith('decision-1-screen-1')
+    expect(t.voice.play).toHaveBeenLastCalledWith('decisions-screen-1')
     expect(t.lastCall().actions).toEqual(FIXTURE_CHAPTERS[1]!.steps[0]!.beats[0]!.actions)
   })
 
@@ -792,7 +792,7 @@ describe('next, prev and jump', () => {
     expect(t.calls).toHaveLength(2)
     expect(t.calls[1]!.actions).toEqual([{ kind: 'outline', target: 'story-cards' }])
     expect(t.voice.play).toHaveBeenCalledTimes(2)
-    expect(t.voice.play).toHaveBeenLastCalledWith('your-turn-1')
+    expect(t.voice.play).toHaveBeenLastCalledWith('close-1')
 
     // The abandoned run tries to write and then finishes, as an aborted runner would.
     const settled = t.state()
@@ -851,7 +851,7 @@ describe('next, prev and jump', () => {
     t.state().prev()
     await flush()
     expect(t.state()).toMatchObject({ status: 'playing', pos: { chapter: 0, step: 1, beat: 0 } })
-    expect(t.voice.play).toHaveBeenLastCalledWith('why-screen-1')
+    expect(t.voice.play).toHaveBeenLastCalledWith('problem-screen-1')
   })
 
   test('jump(1) enters chapter 1 at its first beat', () => {
@@ -874,7 +874,7 @@ describe('next, prev and jump', () => {
     expect(t.calls[0]!.signal.aborted).toBe(true)
     await flush()
     expect(t.state()).toMatchObject({ status: 'playing', pos: { chapter: 1, step: 0, beat: 0 } })
-    expect(t.voice.play).toHaveBeenLastCalledWith('decision-1-screen-1')
+    expect(t.voice.play).toHaveBeenLastCalledWith('decisions-screen-1')
   })
 
   test('jump() to a chapter that does not exist, and next() while closed, do nothing', () => {
