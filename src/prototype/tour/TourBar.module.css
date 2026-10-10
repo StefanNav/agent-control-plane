@@ -1,0 +1,156 @@
+/*
+ * The player bar (spec §4.2, R4): fixed to the foot of the window, full width, 88 px (set inline from
+ * TOUR_BAR_HEIGHT), above dialogs (z 50) like the story panel.
+ */
+.bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 24px;
+  background: var(--cs-raised);
+  border-top: 1px solid var(--cs-line-strong);
+  color: var(--cs-ink);
+}
+
+/* The sentence being spoken: one line. */
+.caption {
+  margin: 0;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-ink);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Play and Pause swap in place without moving the rest of the row. */
+.play {
+  min-width: 104px;
+}
+
+.driving {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-text2);
+  white-space: nowrap;
+}
+
+.chapter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 280px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 3px;
+  background: var(--cs-raised);
+  color: var(--cs-ink);
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.chapterTitle {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.number,
+.start,
+.time {
+  font-family: var(--cs-font-mono);
+}
+
+.start {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+/* One segment per chapter, as wide as the chapter is long. */
+.progress {
+  display: flex;
+  flex: 1;
+  gap: 2px;
+  min-width: 120px;
+}
+
+.segment {
+  position: relative;
+  flex-shrink: 1;
+  flex-basis: 0;
+  min-width: 8px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* The track, as the design system's progress bar: 4 px, line, text2 fill. */
+.segment::before,
+.fill {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.segment::before {
+  content: '';
+  right: 0;
+  background: var(--cs-line);
+}
+
+.segment:hover::before {
+  background: var(--cs-line-strong);
+}
+
+.fill {
+  background: var(--cs-text2);
+}
+
+.time {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-text2);
+  white-space: nowrap;
+}
+
+/* Speed and captions: the filter pill's look (on = ink border, 600). */
+.toggle {
+  height: 32px;
+  min-width: 56px;
+  padding: 0 10px;
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 3px;
+  background: var(--cs-raised);
+  color: var(--cs-text2);
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.toggle[aria-pressed='true'] {
+  border-color: var(--cs-ink);
+  color: var(--cs-ink);
+  font-weight: 600;
+}

@@ -29,7 +29,7 @@ export function ExceptionTrend({ division }: { division: DivisionSummary }) {
 }
 
 const COLUMNS: Column<DivisionSummary>[] = [
-  { id: 'name', header: 'Division', width: 'minmax(0, 1fr)', render: (d) => <span className={styles.divisionName}>{d.name}</span> },
+  { id: 'name', header: 'Division', width: 'minmax(0, 1fr)', render: (d) => <span className={styles.divisionName} data-story-target={`board-${d.id}`}>{d.name}</span> },
   { id: 'owner', header: 'Owner', width: '96px', render: (d) => d.owner },
   { id: 'agents', header: 'Agents', width: '64px', align: 'right', render: (d) => d.agentCount },
   { id: 'judgment', header: 'Judgment', width: 'minmax(0, 1.3fr)', render: (d) => <StatusChip status={d.status} label={d.judgment} /> },

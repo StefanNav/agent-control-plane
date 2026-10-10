@@ -28,3 +28,6 @@ blob-report/
 
 # Agent execution scratch (ledgers, briefs)
 .superpowers/
+
+# Tour assets handed over by Stefan; reviewed before anything moves into public/
+reference/tour-inbox/

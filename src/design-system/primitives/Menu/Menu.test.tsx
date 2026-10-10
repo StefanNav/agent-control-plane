@@ -1,12 +1,13 @@
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Menu } from './Menu'
 
-function setup() {
+function setup(placement?: 'below' | 'above') {
   const onPause = vi.fn()
   const onRetire = vi.fn()
   render(
     <Menu
+      placement={placement}
       trigger={({ toggle, ref, open }) => (
         <button ref={ref} onClick={toggle} aria-expanded={open}>
           Controls
@@ -60,4 +61,16 @@ test('Escape closes and returns focus to the trigger', async () => {
   await userEvent.keyboard('{Escape}')
   expect(screen.queryByRole('menu')).toBeNull()
   expect(trigger).toHaveFocus()
+})
+
+test('opens below its trigger, or above it in a bar at the foot of the window', async () => {
+  setup()
+  await userEvent.click(screen.getByRole('button', { name: 'Controls' }))
+  expect(screen.getByRole('menu').className).not.toMatch(/above/)
+  await userEvent.keyboard('{Escape}')
+  cleanup()
+
+  setup('above')
+  await userEvent.click(screen.getByRole('button', { name: 'Controls' }))
+  expect(screen.getByRole('menu').className).toMatch(/above/)
 })

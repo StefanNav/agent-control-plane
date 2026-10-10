@@ -83,6 +83,7 @@ export function DivisionView() {
             }}
             onOpen={(id) => navigate(`/operations/agents/${id}`)}
             selectOnFocus
+            targetPrefix="division-"
           />
         </div>
       </div>

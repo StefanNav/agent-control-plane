@@ -52,11 +52,17 @@ export function Landing() {
             brings you back.
           </p>
         </div>
-        <div className={styles.grid}>
+        <div className={styles.grid} data-story-target="people-cards">
           {STORIES.map((story) => {
             const persona = personaById(story.personaId)
             return (
-              <Card key={story.id} role="article" aria-label={persona.name} className={styles.card}>
+              <Card
+                key={story.id}
+                role="article"
+                aria-label={persona.name}
+                className={styles.card}
+                data-story-target={`people-${persona.id}`}
+              >
                 <div className={styles.who}>
                   <span className={styles.name}>{persona.name}</span>
                   <span className={type.meta}>{persona.roleLabel}</span>

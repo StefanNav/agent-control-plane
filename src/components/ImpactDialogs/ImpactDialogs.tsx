@@ -20,12 +20,18 @@ export interface PauseDialogProps<Scope extends string> {
   error?: string | null
   /** The viewer may not pause here: the confirm button shows the designed locked state with this reason. */
   locked?: string
+  /**
+   * Gives the effects list `data-story-target="<prefix>impact"` and the confirm button, unless
+   * locked, `"<prefix>confirm"`, so the tour can show and press them.
+   */
+  targetPrefix?: string
   onCancel: () => void
   onConfirm: () => void
 }
 
 /** Stop easy: scope first, the impact before anything stops (component 08). */
 export function PauseDialog<Scope extends string>(props: PauseDialogProps<Scope>) {
+  const target = (name: string) => (props.targetPrefix === undefined ? undefined : `${props.targetPrefix}${name}`)
   return (
     <Modal
       open={props.open}
@@ -39,7 +45,7 @@ export function PauseDialog<Scope extends string>(props: PauseDialogProps<Scope>
           <Button variant="ghost" onClick={props.onCancel}>
             Cancel
           </Button>
-          <Button variant="primary" locked={props.locked} onClick={props.onConfirm}>
+          <Button variant="primary" locked={props.locked} onClick={props.onConfirm} data-story-target={props.locked ? undefined : target('confirm')}>
             Pause agent
           </Button>
         </>
@@ -49,7 +55,7 @@ export function PauseDialog<Scope extends string>(props: PauseDialogProps<Scope>
         <RadioCardGroup name="pause-scope" aria-label="Scope" value={props.scope} onChange={props.onScopeChange} options={props.scopes} />
       </Section>
       <Section label="What happens">
-        <ul className={styles.effects}>
+        <ul className={styles.effects} data-story-target={target('impact')}>
           {props.effects.map((effect) => (
             <li key={effect.lead} className={styles.effect}>
               <span className={styles.effectValue}>{effect.value}</span>

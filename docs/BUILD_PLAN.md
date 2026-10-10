@@ -18,11 +18,11 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | All phases merged: the prototype is launched (Phase 9 ☑) |
-| **Branch** | `main` |
-| **Last completed** | Phase 9 approved and squash-merged (PR #19); production verified: routes, stories and axe pass against the live URL (2026-10-09) |
-| **Next task** | None planned. Open items: Stefan uploads `public/og.png` as the GitHub social preview (Settings → Social preview); deferred minors are listed in each phase's handoff notes |
-| **Blockers** | None |
+| **Current phase** | Phase 10: Guided tour (◐ in progress) |
+| **Branch** | `phase-10-guided-tour` |
+| **Last completed** | 10.8–10.11: all 11 chapters built and reviewed; all 65 lines in Stefan's voice; running time 7:15 (2026-10-10) |
+| **Next task** | **CHECKPOINT C:** Stefan plays the whole tour on PR #21's preview (`/?tour=open`): length, wording, cards, images, the listen list. Then 10.12 landing + Attune rename |
+| **Blockers** | None. Waiting on Stefan (not blocking): Checkpoint B notes, photo. `onboarding-1.m4a` received; it lands with 10.10's import |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
 | **Latest preview** | none open |
@@ -98,6 +98,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 7 | Earned autonomy | ☑ Merged | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | [#17](https://github.com/StefanNav/agent-control-plane/pull/17) | [phase-7-autonomy.md](plans/phase-7-autonomy.md) |
 | 8 | Stories and portfolio layer | ☑ Merged | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | [#18](https://github.com/StefanNav/agent-control-plane/pull/18) | [phase-8-stories.md](plans/phase-8-stories.md) |
 | 9 | Polish and launch | ☑ Merged | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | [#19](https://github.com/StefanNav/agent-control-plane/pull/19) | [phase-9-polish.md](plans/phase-9-polish.md) |
+| 10 | Guided tour | ◐ In progress | `phase-10-guided-tour` | [#20](https://github.com/StefanNav/agent-control-plane/issues/20) | – | [phase-10-guided-tour.md](plans/phase-10-guided-tour.md) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
@@ -618,6 +619,33 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 
 ---
 
+## Phase 10: Guided tour
+
+**Goal:** A narrated tour that plays the prototype by itself (Stefan's voice, a cursor on real controls, decision and artifact cards, a pausable player bar), the Attune brand, and About as the case study.
+**Spec:** [`specs/2026-10-09-guided-tour-design.md`](specs/2026-10-09-guided-tour-design.md) · **Detailed steps:** [`plans/phase-10-guided-tour.md`](plans/phase-10-guided-tour.md)
+
+- [x] 10.0 Plan and tracking
+- [x] 10.1 Script draft → **CHECKPOINT A** (Stefan edits; may reorder)
+- [x] 10.2 Types, engine and text hash
+- [x] 10.3 Manifest, placeholder audio and script printer
+- [x] 10.4 Voice and action runner
+- [x] 10.5 Player
+- [x] 10.6 Tour layer, bar, cursor and cards
+- [ ] 10.7 Opening chapter (vertical slice) → **CHECKPOINT B** (first chapter on a preview)
+- [x] 10.8 Walkthrough I (onboarding, earning trust)
+- [x] 10.9 Walkthrough II (supervising, step-down)
+- [x] 10.10 Interludes (problem, process, validate) and the landing chapters (who it's for, close)
+- [x] 10.11 The decisions page and the explorations → **CHECKPOINT C** (whole tour, in Stefan's voice)
+- [ ] 10.12 Landing, credit and the Attune rename
+- [x] 10.13 Import recordings (`pnpm tour:import`; replaces the recording page)
+- [ ] 10.14 Recording → **CHECKPOINT D** (real voice; Stefan recorded all 11 chapters on 2026-10-10)
+- [ ] 10.15 Case study (About)
+- [ ] 10.16 Phase checkpoint → **CHECKPOINT E** (PR review; merge only on approval)
+
+**Done when:** the tour plays end to end in Stefan's voice in under 7:30; every chapter runs with no skipped actions in e2e; `pnpm tour:audio --check` passes; the brand reads Attune everywhere; Stefan approves the PR.
+
+---
+
 ## Frame tracker
 
 Tick **Built** when the screen exists at its route; tick **QA'd** after the side-by-side visual check at a checkpoint. Phase 9 re-swept all 54 frames side by side on 2026-10-09 (`QA=1 pnpm capture tests/capture/qa.spec.ts`) and fixed the drift it found (see the Phase 9 handoff notes).
@@ -772,6 +800,17 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-09 | Visual sweep of all 54 frames (`pnpm capture`, `QA=1`); drift fixed and pinned in `fidelity.spec.ts`; frame-faithful pickers on 2b and 7d are `Segmented` (gained `disabled`); the record's wording of a judgment comes from `recordLabel()`, not the seed (SEED_VERSION stays 8) | Phase 9 R11 |
 | 2026-10-09 | Launch: README with screenshots, Open Graph/Twitter meta with an absolute 1200 × 630 `og.png`, SVG favicon; `BASE_URL` runs e2e against a deployment; the wall's corner control is its "Exit wall display" link | Phase 9 R12, R13, R15 |
 | 2026-10-09 | Launch: README keeps its credits ("Built phase by phase … with Claude Code", "By StefanNav"); no license file; repo homepage, description and topics set; production checked with `BASE_URL` (routes, stories, axe) | Stefan's approval of PR #19 |
+| 2026-10-09 | Phase 10: a narrated, self-playing tour of the live prototype (not a recorded video), following the Med Rec agent from intake to step-down; three decisions marked in place; player bar along the bottom; actions click the real UI; every step loads its own scenario; one clip per sentence; a dev-only recording page; About becomes the case study; AI chat is v2 (spec T1–T11) | Stefan's walkthrough for a job application: clear, deep, not overwhelming, no video editing |
+| 2026-10-09 | Brand becomes **Attune** (replacing Signal) in Task 10.12; the top-nav wordmark stays AIMS for now | Stefan's call; a name clearly distinct from the real company |
+| 2026-10-09 | Design explorations and Stefan's photo arrive in `reference/tour-inbox/` (git-ignored); images are viewed for names and converted before anything enters `public/` | The forbidden-terms check can't read pixels |
+| 2026-10-09 | Tour engine rulings (Phase 10, SDD ledger): manifest at `src/prototype/tour/manifest.json` (Vite can't import from `public/`); `tour:audio` keeps up-to-date placeholders and encodes at 44.1 kHz; the audio voice has a watchdog (manifest ms ÷ rate + 2 s) so a stalled clip never freezes the tour; `ActionHost` has `outline()` and `reveal(el)`; the player implements the host itself; no `ended` status (finishing = exit) | Plan defects found in pre-flight and review |
+| 2026-10-09 | Tour behaviour rulings: pause pauses the voice only (in-flight actions finish); next/prev/jump keep playing if playing, else land paused; each step's first beat waits for its screen to settle (outlet keyed by step, pathname and the step's query match, one frame, 1.5 s cap); `Voice.unlock()` primes audio inside the Play click (Safari); take-over comes only from visitor input (pointer, or keys on any control or focusable row), also while paused; a finished typing action blurs its field; starting a story exits the tour; a `?tour=<chapter>` link mid-tour jumps there | Reviews of 10.4–10.6: never stall, never act on the wrong screen, wandering off can't break the tour |
+| 2026-10-09 | Script approved: Stefan's hybrid flow (one of three rewrites made with Claude) with eight edits; chapters become `open`, `problem`, `people`, `onboarding`, `earning-trust`, `supervising`, `step-down`, `decisions`, `process`, `validate`, `close`. The three decisions get their own chapter after the walkthrough (spec T3 revised); reviewer behaviour replaces Jordan's trace; "Who it's for" runs on the landing page; plan tasks 10.7–10.11 re-cut | Checkpoint A: the first draft read robotic; the hybrid hooks early, signposts, and maps to the application's three asks |
+| 2026-10-09 | Tour execution rulings from 10.7: a tour click waits for the page to answer (URL change committed, or one frame; 1.5 s cap) before the next action; beats gain `after` actions that run once the line ends (end-of-line clicks that change screen or confirm a dialog); the cursor fades 1.5 s after its last move; `LinkButton` takes an optional `data-story-target`, `AgentTable` a `targetPrefix` | Found playing the opening in a real browser: the second board click hit a stale panel; clicks at line start played narration over the next screen; the cursor sat on a button for half a minute |
+| 2026-10-10 | Recordings: Stefan records one Voice Memos file per chapter (one-second pause between lines) instead of using a recording page; `pnpm tour:import` splits them into per-line clips by pause detection plus each line's expected length; a `<beatId>.m4a` file replaces one line. 10.13 becomes the import and runs before 10.8 so the opening plays in Stefan's voice at Checkpoint B | Stefan prefers Voice Memos; simpler to build; per-line sync kept |
+| 2026-10-10 | Tour rulings from 10.8: a new `choose` action sets native selects; `after` actions wait for Play when the tour is paused; the 7:30 test counts 650 ms per click plus waits; a 1.5 s wait lets a confirmed result show before the next step; `tour:import` won't import a chapter whose split is doubtful (it stays on the placeholder voice unless `--force`), and fits around lines recorded on their own; excerpt cards quote their source verbatim | Stefan's onboarding recording lacks its first line, so the split would have put the wrong words under five captions |
+| 2026-10-10 | Tour rulings from 10.9: while the tour is open the shell sets `--docked-bottom: 88px` and `Modal` shortens by it, so dialog buttons stay clear of the bar; the bar's clock holds at a line's end during its after-actions; after Priya approves the resume, the header status is outlined and scrolled into view; `choose` skips a locked select; the pronoun check covers typed text | The pause dialog's confirm sat 49 px under the bar; the clock jumped back; the resumed status happened off screen |
+| 2026-10-10 | Tour rulings from 10.10–10.11: lines recorded on their own are trimmed of silence; the process page says "10 build phases, each one a reviewed pull request" (Phase 0 had none); interlude items carry `aria-current="step"`; the running-time check models each line as max(clip, actions) + after-actions; decision thumbnails are captured from the live product without the prototype bar; the decisions recording was imported with `--force` (one short line with a natural pause); the tour's Space/←/→ do nothing while a dialog is open | Reviews of 10.10 and 10.11; a public page must only state what the repo shows |
 
 ## Session log
 
@@ -801,3 +840,9 @@ One row per working session. Newest last.
 | 2026-10-09 | 9 | Wrote the Phase 9 plan (rulings R1–R15) after recon: axe on all 36 routes + 14 variants (10 rules, all small; contrast clean), tab-stop and click-target scan, O1 greyscale check (stale and review rings indistinguishable by shape → dashed square) | Task 9.1 |
 | 2026-10-09 | 9 | Built Phase 9 (axe gate on every route, keyboard paths and focus, page titles, scroll on navigation, story panel with dialogs, O1 stale square, 54-frame visual sweep with 9 drift fixes, README, social image, meta). Fresh review: 3 Important + 1 re-graded fixed test-first; 4 minors deferred. PR #19 open | Stefan reviews Phase 9 → merge → launch steps |
 | 2026-10-09 | 9 | Stefan approved; PR #19 squash-merged; #10 closed. Production deploy verified (og.png, favicon, meta, deep links; 57 route and story e2e and 58 axe e2e pass against the live URL). Repo homepage, description and topics set | Project launched |
+| 2026-10-09 | 10 | Brainstormed the walkthrough with Stefan (format, running order, player, architecture, content); wrote and committed the spec; received the Claude Design explorations; wrote the Phase 10 plan with checkpoints A–E and the first script draft (about 1,080 words) | CHECKPOINT A: Stefan edits the script; then 10.2 |
+| 2026-10-09 | 10 | Issue #20 created; built 10.2–10.6 subagent-driven (engine, audio pipeline with placeholder voice, voice with watchdog and action runner, player, bar/cursor/cards with settle and take-over), each with an independent review; fix rounds on 10.5 (settle) and 10.6 (focusable rows, query settle, ?tour jump). 988 unit and 247 e2e tests green; not pushed | CHECKPOINT A: Stefan's script edits → 10.7 |
+| 2026-10-09 | 10 | Checkpoint A: Stefan chose the hybrid script (8 edits applied); chapters re-cut. Built 10.7 (opening chapter, ids renamed, click-settle fix, after-actions, idle cursor), reviewed clean. 1010 unit and 251 e2e tests green | CHECKPOINT B: preview review |
+| 2026-10-10 | 10 | Stefan recorded all 11 chapters in Voice Memos; swapped the recording page for `pnpm tour:import` (pause detection plus syllable-proportional split), built and reviewed it ahead of 10.8; the opening's seven lines are now Stefan's voice. 1026 unit and 251 e2e tests green | CHECKPOINT B feedback, then 10.8 |
+| 2026-10-10 | 10 | Built and reviewed 10.8 (onboarding, earning trust; import holds back doubtful chapters) and 10.9 (supervising, step-down; dialogs clear of the bar). Stefan added `onboarding-1.m4a`; dry run fits. 1056 unit and 255 e2e tests green | 10.10 interludes and landing chapters |
+| 2026-10-10 | 10 | Built and reviewed 10.10 (problem, people, process, validate, close; override trim) and 10.11 (decisions page, explorations, thumbnails, time model). All 65 lines in Stefan's voice; 7:15 modelled. 1090 unit and 276 e2e tests green | CHECKPOINT C on the preview |
