@@ -132,7 +132,11 @@ export const CHAPTERS: Chapter[] = [
                 text: 'Hard stops tested well. Conditions: a pharmacist signs every draft, weekly edit-rate reports to Priya, no dialysis patients yet.',
               },
             ],
-            after: [{ kind: 'click', target: 'packet-record' }],
+            // Hold on the recorded decision before the next chapter loads (Ruling 22).
+            after: [
+              { kind: 'click', target: 'packet-record' },
+              { kind: 'wait', ms: 1500 },
+            ],
           },
         ],
       },

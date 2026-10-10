@@ -57,10 +57,13 @@ test('targets are plain attribute values and cards exist', () => {
  */
 const PRESS_MS = 650
 
-test('the whole tour runs 7:30 at most, allowing for its clicks', () => {
+test('the whole tour runs 7:30 at most, allowing for its clicks and waits', () => {
   const presses = beats.flatMap((b) => [
-    ...(b.after ?? []),
+    ...(b.after ?? []).filter((a) => a.kind !== 'wait'),
     ...(b.actions ?? []).filter((a) => a.kind === 'click' || a.kind === 'choose'),
   ]).length
-  expect(buildTimeline(CHAPTERS, MANIFEST).total + presses * PRESS_MS).toBeLessThanOrEqual(450_000)
+  // Every wait counts in full (at 1×), wherever it is.
+  const waits = actions.reduce((sum, a) => sum + (a.kind === 'wait' ? a.ms : 0), 0)
+  const total = buildTimeline(CHAPTERS, MANIFEST).total
+  expect(total + presses * PRESS_MS + waits).toBeLessThanOrEqual(450_000)
 })

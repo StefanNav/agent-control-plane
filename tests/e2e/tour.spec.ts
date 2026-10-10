@@ -83,13 +83,15 @@ interface Moment {
 
 /**
  * Watch for a moment that may last only until the next step loads: from now on, every change to the
- * page is checked (a MutationObserver sees each render, however brief), and the first match is kept.
- * Returns a check that it was seen.
+ * page is checked (a MutationObserver sees each render, however brief). `seen()` checks that it
+ * happened; `heldMs()` waits for it to end and says how long it lasted.
  */
 async function watchFor(page: Page, moment: Moment) {
-  const mark = `data-tour-seen-${moment.target}`
+  const seenMark = `data-tour-seen-${moment.target}`
+  const heldMark = `data-tour-held-${moment.target}`
   await page.evaluate(
-    ([attribute, m]) => {
+    ([seenAttribute, heldAttribute, m]) => {
+      const root = document.documentElement
       const look = () => {
         if (m.pathname !== undefined && location.pathname !== m.pathname) return false
         const skipped = document.querySelector('[data-tour="bar"]')?.getAttribute('data-skipped')
@@ -99,26 +101,41 @@ async function watchFor(page: Page, moment: Moment) {
         if (m.value !== undefined && (el as HTMLSelectElement).value !== m.value) return false
         return (m.text ?? []).every((t) => (el.textContent ?? '').includes(t))
       }
-      const seen = () => document.documentElement.setAttribute(attribute, '')
-      if (look()) return seen()
-      const observer = new MutationObserver(() => {
-        if (!look()) return
-        seen()
-        observer.disconnect()
-      })
+      let since: number | null = null
+      const observer = new MutationObserver(() => check())
+      const check = () => {
+        const now = look()
+        if (now && since === null) {
+          since = performance.now()
+          root.setAttribute(seenAttribute, '')
+        } else if (!now && since !== null) {
+          observer.disconnect()
+          root.setAttribute(heldAttribute, String(Math.round(performance.now() - since)))
+        }
+      }
       observer.observe(document, {
         subtree: true,
         childList: true,
         characterData: true,
         attributes: true,
       })
+      check()
     },
-    [mark, moment] as const,
+    [seenMark, heldMark, moment] as const,
   )
-  return () =>
-    expect(page.locator('html'), `${moment.target} was never seen`).toHaveAttribute(mark, '', {
-      timeout: 2 * CHAPTER_MS,
-    })
+  const html = page.locator('html')
+  return {
+    seen: () =>
+      expect(html, `${moment.target} was never seen`).toHaveAttribute(seenMark, '', {
+        timeout: 2 * CHAPTER_MS,
+      }),
+    heldMs: async () => {
+      await expect(html, `${moment.target} never ended`).toHaveAttribute(heldMark, /^\d+$/, {
+        timeout: 2 * CHAPTER_MS,
+      })
+      return Number(await html.getAttribute(heldMark))
+    },
+  }
 }
 
 /** The opening has clicked its way to the Med Rec Agent and outlined its summary, skipping nothing. */
@@ -240,11 +257,15 @@ test('onboarding names Sam, then records the board’s decision on Med Rec’s r
   await play(page)
   await expectLineOver(page, 'It starts on October first', INTAKE)
   await expectLineOver(page, 'No agent goes live', INTAKE)
-  await samChosen()
+  await samChosen.seen()
   await expectLineOver(page, 'Marcus writes down', TOOLS)
   await expectLineOver(page, 'And each one is tested', TOOLS)
   await expectLineOver(page, "Dr. Lee's board", PACKET)
-  await decided()
+  // The record holds before the next chapter loads (Ruling 22): still under the line's caption,
+  // for the 1500 ms wait.
+  await expectLineOver(page, "Dr. Lee's board", RECORD)
+  await decided.seen()
+  expect(await decided.heldMs()).toBeGreaterThanOrEqual(1000)
   expect(errors).toEqual([])
 })
 
