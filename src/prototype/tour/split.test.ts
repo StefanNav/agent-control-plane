@@ -1,4 +1,11 @@
-import { cutWindows, splitLines, syllables, type Silence } from './split'
+import {
+  chapterVerdict,
+  cutWindows,
+  fitChapter,
+  splitLines,
+  syllables,
+  type Silence,
+} from './split'
 
 /** Every word here is one vowel group, so a line's syllables are its word count. */
 const line = (words: number) => Array.from({ length: words }, () => 'ba').join(' ')
@@ -74,6 +81,7 @@ describe('splitLines', () => {
       segments: [],
       ratios: [],
       confident: false,
+      cost: Infinity,
     })
   })
 
@@ -135,11 +143,184 @@ describe('splitLines', () => {
       { start: 8, end: 8.5 },
     ]
     const result = splitLines(silences, 8.5, [line(3)])
-    expect(result).toEqual({ segments: [{ start: 0.3, end: 8 }], ratios: [1], confident: true })
+    expect(result).toEqual({
+      segments: [{ start: 0.3, end: 8 }],
+      ratios: [1],
+      confident: true,
+      cost: 0,
+    })
   })
 
   test('no lines is not confident', () => {
-    expect(splitLines([], 10, [])).toEqual({ segments: [], ratios: [], confident: false })
+    expect(splitLines([], 10, [])).toEqual({
+      segments: [],
+      ratios: [],
+      confident: false,
+      cost: Infinity,
+    })
+  })
+})
+
+describe('splitLines cost', () => {
+  test('is what the chosen split costs: lines off their expected length cost more', () => {
+    const even: Silence[] = [
+      { start: 10, end: 11 },
+      { start: 21, end: 22 },
+    ]
+    const uneven: Silence[] = [
+      { start: 4, end: 5 },
+      { start: 21, end: 22 },
+    ]
+    const lines = [line(4), line(4), line(4)]
+    // One-second breaks earn nothing, so the cost is how far the lines are from their lengths.
+    const evenCost = splitLines(even, 32, lines).cost
+    expect(evenCost).toBeLessThan(0.05)
+    expect(splitLines(uneven, 32, lines).cost).toBeGreaterThan(evenCost + 1)
+  })
+})
+
+/**
+ * A real chapter recording (Ruling 21): seven lines in the script, but the narrator didn't record the
+ * first, so only six are spoken. Its pauses as ffmpeg reported them.
+ */
+const SEVEN_LINES = [
+  "So let's go back to how the agent you saw earlier got here.",
+  "It starts on October first, when the hospital's AI committee approves the request for it, and Dana starts onboarding from that approval.",
+  'No agent goes live without four named people who answer for it.',
+  'Marcus writes down what it must never do, starting with never changing a dose.',
+  "Sam turns each of those into a hard stop that sits outside the AI, so the agent can't argue its way past it.",
+  'And each one is tested against the last thirty days, so the board can see what it would actually have caught.',
+  "Dr. Lee's board approves it with conditions, like a pharmacist signing every draft.",
+]
+const SIX_SPOKEN: Silence[] = [
+  { start: 0, end: 1.195812 },
+  { start: 1.195979, end: 1.523104 },
+  { start: 2.97975, end: 3.357167 },
+  { start: 5.262937, end: 5.475125 },
+  { start: 6.261563, end: 6.476229 },
+  { start: 6.619687, end: 7.467875 },
+  { start: 8.044, end: 8.360354 },
+  { start: 9.161958, end: 9.429396 },
+  { start: 10.065396, end: 11.589604 },
+  { start: 12.827146, end: 13.056208 },
+  { start: 13.305312, end: 13.552521 },
+  { start: 15.673562, end: 18.199458 },
+  { start: 19.185479, end: 19.401083 },
+  { start: 20.536917, end: 21.306062 },
+  { start: 21.904812, end: 22.278333 },
+  { start: 23.615479, end: 25.021562 },
+  { start: 25.720208, end: 26.156042 },
+  { start: 27.855542, end: 28.352438 },
+  { start: 29.754229, end: 30.567312 },
+  { start: 30.839292, end: 31.334521 },
+  { start: 31.897604, end: 32.431042 },
+  { start: 33.862979, end: 36.071833 },
+  { start: 38.949833, end: 39.70475 },
+  { start: 40.815208, end: 41.102 },
+  { start: 42.543542, end: 44.471979 },
+  { start: 45.111458, end: 45.432521 },
+  { start: 46.338042, end: 46.810708 },
+  { start: 47.580479, end: 48.136458 },
+  { start: 50.244083, end: 52.673375 },
+]
+const SIX_SPOKEN_TOTAL = 52.736
+
+describe('fitChapter', () => {
+  test('with no line recorded on its own, fits every line', () => {
+    const silences: Silence[] = [
+      { start: 10, end: 11 },
+      { start: 21, end: 22 },
+    ]
+    const fit = fitChapter(silences, 32, [line(4), line(4), line(4)], [false, false, false])
+    expect(fit).toEqual({
+      ...splitLines(silences, 32, [line(4), line(4), line(4)]),
+      over: 'all',
+      lineIndexes: [0, 1, 2],
+    })
+  })
+
+  test('a first line recorded on its own and missing from the chapter: fitting the rest is confident, and kept', () => {
+    const all = splitLines(SIX_SPOKEN, SIX_SPOKEN_TOTAL, SEVEN_LINES)
+    expect(all.confident).toBe(false)
+
+    const own = SEVEN_LINES.map((_, i) => i === 0)
+    const fit = fitChapter(SIX_SPOKEN, SIX_SPOKEN_TOTAL, SEVEN_LINES, own)
+    expect(fit.over).toBe('unrecorded')
+    expect(fit.confident).toBe(true)
+    expect(fit.lineIndexes).toEqual([1, 2, 3, 4, 5, 6])
+    expect(fit.segments).toHaveLength(6)
+    // Each line starts after one of the long pauses.
+    expect(fit.segments.map((segment) => Number(segment.start.toFixed(2)))).toEqual([
+      1.2, 11.59, 18.2, 25.02, 36.07, 44.47,
+    ])
+  })
+
+  test('a chapter that still holds the line recorded on its own: both fits are confident, the cheaper wins', () => {
+    const silences: Silence[] = [
+      { start: 10, end: 11 },
+      { start: 21, end: 22 },
+    ]
+    const lines = [line(4), line(4), line(4)]
+    const own = [true, false, false]
+    const unrecorded = splitLines(silences, 32, [line(4), line(4)])
+    const all = splitLines(silences, 32, lines)
+    expect(unrecorded.confident && all.confident).toBe(true)
+    expect(all.cost).toBeLessThan(unrecorded.cost)
+    expect(fitChapter(silences, 32, lines, own)).toEqual({
+      ...all,
+      over: 'all',
+      lineIndexes: [0, 1, 2],
+    })
+  })
+
+  test('a confident fit wins over a doubtful one, however cheap', () => {
+    const silences: Silence[] = [
+      { start: 4, end: 4.8 },
+      { start: 6.8, end: 10.1 },
+    ]
+    const lines = [line(6), line(1), line(5)]
+    const all = splitLines(silences, 13.1, lines)
+    const unrecorded = splitLines(silences, 13.1, [line(1), line(5)])
+    expect(all.confident).toBe(false)
+    expect(unrecorded.confident).toBe(true)
+    expect(all.cost).toBeLessThan(unrecorded.cost)
+    expect(fitChapter(silences, 13.1, lines, [true, false, false])).toEqual({
+      ...unrecorded,
+      over: 'unrecorded',
+      lineIndexes: [1, 2],
+    })
+  })
+})
+
+describe('chapterVerdict (Ruling 20)', () => {
+  const confident = { segments: [{ start: 0, end: 5 }], ratios: [1], confident: true, cost: 0 }
+  const doubtful = { ...confident, ratios: [0.4], confident: false, cost: 1 }
+  const nowhere = { segments: [], ratios: [], confident: false, cost: Infinity }
+
+  test('a confident fit is imported: OK', () => {
+    expect(chapterVerdict(confident, 7, false)).toEqual({ imported: true, verdict: 'OK', note: '' })
+  })
+
+  test('a doubtful fit is not imported unless forced', () => {
+    expect(chapterVerdict(doubtful, 7, false)).toEqual({
+      imported: false,
+      verdict: 'CHECK',
+      note: 'not imported; listen and use --force, or fix the recording',
+    })
+    expect(chapterVerdict(doubtful, 7, true)).toEqual({
+      imported: true,
+      verdict: 'CHECK',
+      note: 'imported with --force',
+    })
+  })
+
+  test('a recording with too few pauses to cut is never imported, even forced', () => {
+    for (const force of [false, true])
+      expect(chapterVerdict(nowhere, 7, force)).toEqual({
+        imported: false,
+        verdict: 'CHECK',
+        note: "not imported; couldn't find 6 breaks between the lines",
+      })
   })
 })
 

@@ -16,6 +16,8 @@ export interface Split {
   ratios: number[]
   /** False when the cut looks wrong: a ratio outside the bounds, or too few pauses to cut at. */
   confident: boolean
+  /** What the chosen cut costs (lower fits better); Infinity when there was nothing to cut. */
+  cost: number
 }
 
 /**
@@ -48,7 +50,7 @@ export function syllables(text: string): number {
 }
 
 /** A split that found nothing to cut. */
-const none = (): Split => ({ segments: [], ratios: [], confident: false })
+const none = (): Split => ({ segments: [], ratios: [], confident: false, cost: Infinity })
 
 /**
  * Finds where each of `lines` is spoken in a recording of them one after another, given the
@@ -156,7 +158,73 @@ export function splitLines(silences: Silence[], total: number, lines: string[]):
   const mean = Math.exp(raw.reduce((sum, r) => sum + Math.log(r), 0) / raw.length)
   const ratios = raw.map((r) => r / mean)
   const confident = ratios.every((r) => r >= RATIO_MIN && r <= RATIO_MAX)
-  return { segments, ratios, confident }
+  return { segments, ratios, confident, cost: cheapest }
+}
+
+/** A chapter recording fitted to some of its lines. */
+export interface ChapterFit extends Split {
+  /** Every line, or only the lines without a recording of their own. */
+  over: 'all' | 'unrecorded'
+  /** The lines it was fitted to, as indexes into the chapter's lines; the nth segment is the nth. */
+  lineIndexes: number[]
+}
+
+/**
+ * Fits a chapter recording to its lines (Ruling 21). A line with a recording of its own may or may
+ * not be in the chapter recording too, so when there is one the recording is fitted both ways, over
+ * every line and over only the others, and the better fit is kept: a confident one first, then the
+ * lower cost (ties go to every line).
+ */
+export function fitChapter(
+  silences: Silence[],
+  total: number,
+  lines: string[],
+  ownRecording: boolean[],
+): ChapterFit {
+  const every = lines.map((_, i) => i)
+  const all: ChapterFit = { ...splitLines(silences, total, lines), over: 'all', lineIndexes: every }
+  const kept = every.filter((i) => !ownRecording[i])
+  if (kept.length === lines.length) return all
+  const unrecorded: ChapterFit = {
+    ...splitLines(
+      silences,
+      total,
+      kept.map((i) => lines[i] ?? ''),
+    ),
+    over: 'unrecorded',
+    lineIndexes: kept,
+  }
+  if (unrecorded.confident !== all.confident) return unrecorded.confident ? unrecorded : all
+  return unrecorded.cost < all.cost ? unrecorded : all
+}
+
+/** Whether a chapter's cut lines are imported, and what the import report says about it. */
+export interface ChapterVerdict {
+  imported: boolean
+  verdict: 'OK' | 'CHECK'
+  /** Shown in brackets after the verdict; empty for OK. */
+  note: string
+}
+
+/**
+ * Ruling 20: a confident fit is imported; a doubtful one only when forced, so a wrong cut never
+ * replaces a clip by itself; a recording with too few pauses to cut never. `lineCount` is how many
+ * lines it was fitted to.
+ */
+export function chapterVerdict(fit: Split, lineCount: number, force: boolean): ChapterVerdict {
+  if (fit.segments.length === 0)
+    return {
+      imported: false,
+      verdict: 'CHECK',
+      note: `not imported; couldn't find ${lineCount - 1} breaks between the lines`,
+    }
+  if (fit.confident) return { imported: true, verdict: 'OK', note: '' }
+  if (force) return { imported: true, verdict: 'CHECK', note: 'imported with --force' }
+  return {
+    imported: false,
+    verdict: 'CHECK',
+    note: 'not imported; listen and use --force, or fix the recording',
+  }
 }
 
 /**

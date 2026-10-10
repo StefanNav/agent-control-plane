@@ -2,16 +2,14 @@ import { mkdtemp, readdir, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import {
-  ENCODE_ARGS,
-  LOUDNORM,
   audioDir,
   beatIdSet,
   clipMs,
   exists,
   fail,
+  makePlaceholder,
   readManifest,
   requireTools,
-  run,
   writeManifest,
 } from './tour-tools.mjs'
 import { loadTour } from './tour-load.mjs'
@@ -22,14 +20,6 @@ import { loadTour } from './tour-load.mjs'
 // recorded clip.
 
 const check = process.argv.includes('--check')
-
-/** Speaks `text` into `file` as a normalised mono AAC clip. */
-async function makePlaceholder(text, file, tmpDir) {
-  const aiff = path.join(tmpDir, 'line.aiff')
-  // `--` so a line starting with a hyphen is read as text, not an option.
-  await run('say', ['-o', aiff, '--', text])
-  await run('ffmpeg', ['-y', '-i', aiff, '-af', LOUDNORM, ...ENCODE_ARGS, file])
-}
 
 /** Milliseconds as m:ss. */
 function clock(ms) {

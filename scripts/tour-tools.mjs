@@ -5,7 +5,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 // What `tour:audio` and `tour:import` share: running ffmpeg and ffprobe, measuring a clip, the
-// encoding every clip is made with and reading and writing the manifest.
+// encoding every clip is made with, making a placeholder and reading and writing the manifest.
 
 export const root = fileURLToPath(new URL('..', import.meta.url))
 export const audioDir = path.join(root, 'public/tour/audio')
@@ -30,6 +30,14 @@ export const ENCODE_ARGS = [
   '-map_metadata',
   '-1',
 ]
+
+/** Speaks `text` into `file` (macOS `say`) as a normalised mono AAC clip, using `tmpDir` on the way. */
+export async function makePlaceholder(text, file, tmpDir) {
+  const aiff = path.join(tmpDir, 'line.aiff')
+  // `--` so a line starting with a hyphen is read as text, not an option.
+  await run('say', ['-o', aiff, '--', text])
+  await run('ffmpeg', ['-y', '-i', aiff, '-af', LOUDNORM, ...ENCODE_ARGS, file])
+}
 
 /** Exits with a one-line message. */
 export function fail(message) {
