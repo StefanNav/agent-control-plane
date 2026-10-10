@@ -42,7 +42,7 @@ and to show the work. The tour answers all three in about seven minutes without 
 |---|---|---|
 | T1 | A **performed live tour** of the real prototype, not a recorded video | Sharp at any size; pausable and explorable; re-recording a line never means re-editing; a screen recording of the tour gives a video for free |
 | T2 | **One protagonist**: the Med Rec agent, from approved intake to automatic step-down | Collapses 15 epics and 7 personas into one story; matches the email ("follows a medication reconciliation agent … from onboarding through supervision") |
-| T3 | **Decisions sit where they happened** in the story, each opened by a "Decision n of 3" card, rather than in a separate chapter | Keeps the story moving while making the decisions findable |
+| T3 | **The three decisions get their own chapter** after the walkthrough (revised 2026-10-09 with the approved script; the first draft wove them into the story), each card showing the screen it played out on | Maps to the application's explicit ask ("the key design decisions"); the walkthrough stays uninterrupted |
 | T4 | **Player bar** along the bottom, full width (not a corner card) | Reads instantly as "a video I can pause"; captions get a full line; the product keeps its width |
 | T5 | **Actions drive the real interface** (the cursor clicks real controls) | The real dialogs, store actions and audit log run; no second implementation of any flow |
 | T6 | **Navigation is per step**; every step loads its own scenario on entry | Deterministic; nothing to fast-forward; a visitor's own changes can't break the tour |
@@ -54,22 +54,25 @@ and to show the work. The tour answers all three in about seven minutes without 
 
 ## 3. Running order
 
-About 6:50 at 1×, roughly 1,000 words. Dates are the scenario's clock in the story.
+**Approved 2026-10-09: the hybrid flow.** Stefan rewrote the first draft with Claude into three versions (merged, traditional, hybrid). The hybrid was chosen with eight edits; the spoken text is in [`docs/tour/script.md`](../tour/script.md). It replaces the first draft's running order. About 7:00 at 1×, roughly 1,050 words.
 
-| # | Chapter | Time | Screens (scenario, persona) | Performed on screen | Cards |
-|---|---|---|---|---|---|
-| 0 | Cold open | 0:25 | Hospital board → Medications → Med Rec agent (`baseline`, Marcus) | Cursor opens Medications, then Med Rec; outline on "3 drafts held by HS-04 v2". Ends: "It tried to change a home dose three times and couldn't. To see why, go back ten weeks." | none |
-| 1 | Why this problem | 0:30 | Interlude `/tour/why` | Lines appear in time: agents that act; "a person signs everything" becoming rubber-stamping; hospitals already credential and privilege clinicians | Research excerpts R1–R3 (§7.3) |
-| 2 | How I worked | 0:30 | Interlude `/tour/process` | Artifact tiles light up as named: Research, Vision, PRD, Roadmap, Epics and stories, Design system brief, Explorations, 55 frames, 10 reviewed build phases. "AI did the work; a named person signed each step, the same rule the product enforces." | The tiles themselves |
-| 3 | Bring it on safely | 1:00 | Intake (`onboarding-intake`, 01 Oct, Dana) → Tools and hard stops (`onboarding-tools-tested`, 06 Oct, Sam) → Board packet (`review-committee`, 14 Oct, Dr. Lee) | Cursor picks Sam as technical owner; outline on "HS-04 would have blocked 7 of 1,204"; Dr. Lee picks "Approve with conditions" and a reason types itself | E1 story and acceptance criterion; "Hard stops run at the gateway, outside the model" |
-| 4 | Earn the privilege · **Decision 1** | 1:00 | Scorecard (`shadow-day-21`, 05 Nov, Priya) → Sign privilege (`awaiting-signature`, 06 Nov, Priya) | Outline on the missed target (2.6 % vs 2.0 %); Priya's written reason types itself; signed, Shadow → Draft | Decision 1 (§7.2); research R4 |
-| 5 | Supervise by exception · **Decision 2** | 1:05 | Decision interlude → Hospital board (`baseline`, 08 Dec, Marcus) → Epic (`baseline`, Ana) | Board layouts and design system directions explored, why the table and Countersign won, the stale ring that became a dashed square; Ana flags metoprolol in one action from Epic | Decision 2 with the Claude Design exports; research R5 |
-| 6 | Stop easy, resume deliberate · **Decision 3** | 1:05 | Med Rec agent (`baseline`, 09:52, Marcus) → Resume (`resume-requested`, 11:58, Priya) → Action trace ACT-88213 (Jordan) | Cursor opens Controls → Pause agent; preview "12 drafts go back to pharmacists"; paused. Clock skips to 11:58; Priya approves the resume with a reason of Priya's own. Jordan's trace: HS-04 blocked the dose change in 0.4 ms | Decision 3 (§7.2) |
-| 7 | Autonomy steps back down | 0:20 | Med Rec agent (`step-down-threshold`, 09 Dec, Priya) | Outline on the step-down notice: edit rate above 15 % for 3 days, back to Shadow by rule. "Nothing steps back up without a signature." | none |
-| 8 | How I'd validate it | 0:40 | Interlude `/tour/validate` | What I checked; who I'd bring in first; what I'd measure (§7.4) | none |
-| 9 | Your turn | 0:15 | Landing `/` | The tour ends on the seven stories, free explore and the case study | none |
+The tour opens on the live product for a short hook and an agenda, then runs in a traditional order. The walkthrough is one continuous story, split into four chapters in the menu (chapter titles aren't spoken).
 
-**Left out** (still in the seven stories, which the close points to): risk-tier override, the inbox, reviewer behaviour and sampling, unregistered callers, survey evidence, version holds, promoting one branch, retiring an agent. Reviewer behaviour is the first candidate to swap in (for the action trace in chapter 6) if Stefan wants it.
+| # | Chapter (`id`) | Time | Screens (scenario, persona) | What it does |
+|---|---|---|---|---|
+| 1 | Open on the product (`open`) | 0:45 | Hospital board → Medications → Med Rec agent (`baseline`, Marcus) | The hook: 41 agents, colour only where a person is needed, the agent that was stopped three times; then the agenda and "you can pause and click around" |
+| 2 | The problem (`problem`) | 0:40 | Interlude `/tour/problem` | Why this example; approving everything fails (research R1–R3); hospitals already know how to trust someone new |
+| 3 | Who it's for (`people`) | 0:30 | Landing `/` (`baseline`, Marcus) | The seven people, outlined on their story cards |
+| 4 | Bring it on (`onboarding`) | 0:45 | Intake (`onboarding-intake`, Dana) → tools and hard stops (`onboarding-tools-tested`, Sam) → board packet (`review-committee`, Dr. Lee) | Four named people; hard stops outside the model, tested on 30 days; approved with conditions |
+| 5 | Earn trust (`earning-trust`) | 0:30 | Scorecard (`shadow-day-21`, Priya) → sign (`awaiting-signature`, Priya) | Three weeks in shadow; one target missed, signed with a written reason |
+| 6 | Supervise (`supervising`) | 1:10 | Epic (`baseline`, Ana) → Med Rec agent pause (`baseline`, Marcus) → resume (`resume-requested`, Priya) → Reviewer behaviour (`baseline`, Marcus) | Flag in one click; pause in one action with its impact; resume needs Priya too; reviewers checking less, by unit and shift, never by name |
+| 7 | Trust drops (`step-down`) | 0:20 | Med Rec agent (`step-down-threshold`, Priya) | Back to shadow by rule; nothing climbs back without a signature |
+| 8 | Three key decisions (`decisions`) | 1:00 | Interlude `/tour/decisions` | Decision 1 (privileges per task), Decision 2 (protect attention: the five directions, the Ledger conflict, judged on crowded screens), Decision 3 (stop with one, restart with two); each card shows its screen |
+| 9 | How I got here (`process`) | 0:30 | Interlude `/tour/process` | Research first, then vision, PRD, roadmap, stories, design system, build with Claude Code; "I made the calls and signed off on each one" |
+| 10 | How I'd validate it (`validate`) | 0:35 | Interlude `/tour/validate` | What I checked; who I'd bring in; what I'd measure (§7.4) |
+| 11 | Close (`close`) | 0:15 | Landing `/` (`baseline`, Marcus) | The seven walkthroughs, free explore, Reset |
+
+**Left out** (still in the seven stories): the risk-tier override, the inbox, unregistered callers, survey evidence, version holds, promoting one branch, retiring an agent, Jordan's action trace.
 
 ## 4. Visitor experience
 
@@ -77,7 +80,7 @@ About 6:50 at 1×, roughly 1,000 words. Dates are the scenario's clock in the st
 
 - The landing page's primary action becomes **"Play the tour · 7 min"** (indigo), with one line on what it covers and the credit "Narrated by Stefan" beside a small round photo. "Explore freely" becomes a secondary button; the seven story cards stay below under "Or explore on your own".
 - Play is the user gesture that lets the browser play audio.
-- `?tour=<chapter-id>` on any route opens the tour at that chapter, paused, with a "Play" prompt in the bar (so the email can link to `?tour=decision-1`). A refresh mid-tour returns to the start of the chapter, paused. Unknown chapter ids are ignored and stripped (same rule as stories).
+- `?tour=<chapter-id>` on any route opens the tour at that chapter, paused, with a "Play" prompt in the bar (so the email can link to `?tour=decisions`). A refresh mid-tour returns to the start of the chapter, paused. Unknown chapter ids are ignored and stripped (same rule as stories).
 - Starting the tour exits any story in progress; the story panel doesn't render while the tour runs.
 
 ### 4.2 The player bar
@@ -103,7 +106,7 @@ States the bar can show: playing · paused · "Paused. You're driving." with **R
   - **Excerpt**: a short quote, its source line ("Research notes · Chen et al. 2026, preprint"; "PRD · The problem"), set as text.
   - **Image**: a thumbnail of a Claude Design export with a caption; clicking it while paused opens it larger.
   - **Story**: an epic's story and one acceptance criterion, verbatim from `reference/epics-and-stories.txt`.
-- **Interludes** (`/tour/why`, `/tour/process`, `/tour/validate`, and the decision-2 interlude) are calm prototype-layer pages: page title type, no hero images, no display type, no gradients. Each beat reveals or highlights one item (a line, a tile, an option); revealed items stay, the current one is ink, earlier ones are `--cs-text2`.
+- **Interludes** (`/tour/problem`, `/tour/decisions`, `/tour/process`, `/tour/validate`) are calm prototype-layer pages: page title type, no hero images, no display type, no gradients. Each beat reveals or highlights one item (a line, a tile, an option); revealed items stay, the current one is ink, earlier ones are `--cs-text2`.
 - **"Viewing as"** changes with each step's persona, so the bar at the top shows the permissions follow the person.
 
 ### 4.4 Colour
@@ -165,7 +168,7 @@ interface TourStep {
 }
 
 interface Chapter {
-  id: string // 'cold-open', 'why', 'process', 'onboarding', 'decision-1', …
+  id: ChapterId // 'open', 'problem', 'people', 'onboarding', …, 'decisions', 'process', 'validate', 'close'
   title: string
   decision?: 1 | 2 | 3
   steps: TourStep[]
@@ -192,7 +195,7 @@ A small Zustand store (not persisted; the URL is the persistence) holding `statu
 
 ### 5.4 Components
 
-`src/prototype/tour/`: `TourLayer` (URL sync, takes-over listener, renders the pieces; mounted where `StoryLayer` is, in the `app` and `prototype` shells), `TourBar`, `TourCursor`, `TourCard`, `ChapterMenu`, and `interludes/` (`WhyPage`, `ProcessPage`, `DecisionBoardPage`, `ValidatePage`). Interlude routes join the route table as `prototype`-shell routes. Product screens change only by gaining `data-story-target` attributes (Phase 8's rule).
+`src/prototype/tour/`: `TourLayer` (URL sync, takes-over listener, renders the pieces; mounted where `StoryLayer` is, in the `app` and `prototype` shells), `TourBar`, `TourCursor`, `TourCard`, `ChapterMenu`, and `interludes/` (`ProblemPage`, `DecisionsPage`, `ProcessPage`, `ValidatePage`). Interlude routes join the route table as `prototype`-shell routes. Product screens change only by gaining `data-story-target` attributes (Phase 8's rule).
 
 ### 5.5 Audio pipeline
 
@@ -209,7 +212,7 @@ A small Zustand store (not persisted; the URL is the persistence) holding `statu
 
 - **Landing** (§4.1).
 - **About → case study**, generated from the tour's data: each chapter a section with its narration as text, decision cards at full size with their images, excerpts with sources, and per section **"Play from here"** (`/?tour=<chapter>`) and **"Open the live screen"** (the matching story step link). Principles, Countersign and "How it's built" stay. Built last; it can be cut without affecting the tour.
-- **README**: the tour, with a link to `?tour=cold-open` and one screenshot of the bar.
+- **README**: the tour, with a link to `?tour=open` and one screenshot of the bar.
 
 ## 7. Content
 
@@ -242,7 +245,7 @@ Cited on cards with their source; preprints labelled as such. Quotes the notes a
 
 The notes' "open questions to validate with real users" feed chapter 8 (§7.4).
 
-### 7.4 Chapter 8: How I'd validate it
+### 7.4 How I'd validate it (chapter `validate`)
 
 - **What I checked myself:** every screen traces to an acceptance criterion; the working model surfaced contradictions in the frames that were resolved (decision log); a greyscale and wall-distance check changed the stale mark to a dashed square (Phase 9 R10); axe on every screen; all seven stories run as automated tests.
 - **Who I'd bring in first, and what I'd ask** (from the notes' open questions): who supervises a live agent day to day (AI office, sponsor or unit leader); whether "job description" or privileging language matches how staff think about scope; which actions must always stay human; pharmacists on the Epic flag; engineers on what the gateway can enforce.
@@ -274,7 +277,7 @@ Images go to `public/tour/artifacts/` after review (§8), optimised (WebP, max 1
 
 - **Unit, test-first:** engine (flattening, navigation, clamping, timing, URL actions); player state machine (play, pause, take over, resume restarts the step, end resets to baseline as Marcus); action runner (waits for a target, skips after 2 s, clicks, types into a React-controlled field); manifest reader.
 - **Script integrity** (unit): every beat has a manifest entry; every scenario and persona exists; every route is in the route table; no he/she in narration; total ≤ 7:30 at 1×; beat ids unique; every card id resolves; every decision chapter opens with its decision card.
-- **Playwright:** the whole tour with `?tourVoice=silent` at high speed, asserting each step's route and each action's effect (Med Rec paused after chapter 6, privilege signed in chapter 4); no skipped actions; take over then resume; chapter jump; `?tour=decision-1` deep link and a bad id; reduced motion; axe on the bar, interludes and case study; existing story and route suites still pass.
+- **Playwright:** the whole tour with `?tourVoice=silent` at high speed, asserting each step's route and each action's effect (Med Rec paused in `supervising`, privilege signed in `earning-trust`); no skipped actions; take over then resume; chapter jump; `?tour=decisions` deep link and a bad id; reduced motion; axe on the bar, interludes and case study; existing story and route suites still pass.
 - **Recording page:** not shipped; a build test asserts its route and endpoint are absent from `dist/`.
 
 ## 11. Out of scope (v2)

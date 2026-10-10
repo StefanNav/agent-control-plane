@@ -29,8 +29,8 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
 
 ## Rulings (record in the BUILD_PLAN decision log when the task lands)
 
-- **R1 Chapter ids:** `cold-open`, `why`, `process`, `onboarding`, `decision-1`, `decision-2`, `decision-3`, `step-down`, `validate`, `your-turn`.
-- **R2 Positions are 0-based** `{ chapter, step, beat }`; the URL carries only the chapter (`?tour=decision-1`).
+- **R1 Chapter ids** (script approved 2026-10-09, the hybrid flow): `open`, `problem`, `people`, `onboarding`, `earning-trust`, `supervising`, `step-down`, `decisions`, `process`, `validate`, `close`. A step may span screens reached by its own click actions; Resume restarts it from its route.
+- **R2 Positions are 0-based** `{ chapter, step, beat }`; the URL carries only the chapter (`?tour=decisions`).
 - **R3 Timing values:** silent voice = manifest ms ÷ 10; missing manifest entry = `estimateMs(text)` = `max(1500, words × 400)`; action target wait 2000 ms then skip; cursor glide 600 ms ÷ rate; typing 25 ms per character ÷ rate; rates 1, 1.25, 1.5.
 - **R4 The bar** is 88 px tall, full width, z-index 60, `--cs-raised`, top border `--cs-line-strong`; the shell adds 88 px under `<main>` while the tour is open. Cards are 320 px wide, 24 px from the viewport edge, bottom at least 24 px above the bar.
 - **R5 Exit and end** call `reset()` (seed, clock, Marcus) and drop `?tour`; if the current step's route is an interlude (`/tour/…`) they go to `/`, otherwise the visitor stays on the route. The last chapter runs on `/`, so ending stays there.
@@ -81,9 +81,9 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
 - [x] **Step 1:** Draft about 1,000 words in Stefan's voice: conversational, story first, little jargon (explain "privilege", "shadow", "hard stop" in plain words the first time). One sentence per line, numbered per chapter; actions in `[brackets]`; each chapter headed with its screen, date and person. Facts from the story scripts (Phase 8 plan), the research notes, the explorations handoff.
 - [x] **Step 2:** Run the forbidden-terms check on the file and the `GENDERED` regex over the narration lines.
 - [x] **Step 3:** Commit: `docs: tour script draft`.
-- [ ] **Step 4: CHECKPOINT A.** Stefan edits the wording and may reorder chapters. Record the approved order in this plan's "Running order" note below and in spec §3 if it changed.
+- [x] **Step 4: CHECKPOINT A.** Stefan edits the wording and may reorder chapters. Record the approved order in this plan's "Running order" note below and in spec §3 if it changed.
 
-**Running order:** as spec §3 until Checkpoint A.
+**Running order:** approved 2026-10-09: the hybrid flow in `docs/tour/script.md` (spec §3).
 
 ### Task 10.2: Types, engine and text hash
 
@@ -222,74 +222,83 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
 - [x] **Step 4:** Run — PASS. `pnpm check`; `pnpm e2e` (existing suites unaffected).
 - [x] **Step 5:** Commit: `feat: tour bar, cursor and cards`.
 
-### Task 10.7: Cold open (vertical slice) — **CHECKPOINT B**
+### Task 10.7: Opening chapter (vertical slice) — **CHECKPOINT B**
 
 **Files:**
-- Modify: `src/prototype/tour/script.ts` (chapter `cold-open` from the approved script); add `data-story-target` to the Medications row link on the hospital board (`board-medications`, `src/features/board/HospitalBoard.tsx`) and the Med Rec row on the division view (`division-med-rec`, `src/features/board/DivisionView.tsx`)
+- Modify: `src/prototype/tour/types.ts` (`ChapterId` = R1's eleven ids), `src/prototype/tour/fixtures.ts` and the tests that name old ids (use new ids; behaviour unchanged), `src/prototype/tour/script.ts` (chapter `open` from `docs/tour/script.md`); add `data-story-target` to the Medications row link on the hospital board (`board-medications`, `src/features/board/HospitalBoard.tsx`) and the Med Rec row link on the division view (`division-med-rec`, `src/features/board/DivisionView.tsx`)
 - Create: `src/prototype/tour/script.test.ts`, `tests/e2e/tour.spec.ts`
-- Generate: `public/tour/audio/*.m4a`, `manifest.json` via `pnpm tour:audio`
+- Generate: `public/tour/audio/*.m4a` and `src/prototype/tour/manifest.json` via `pnpm tour:audio`
+
+**Encoding `open`:** one step, route `/operations`, scenario `baseline`, persona `marcus`; beats `open-1` … `open-7`, text verbatim from the script's spoken lines (without the brackets). Actions: `open-1` outline `board-divisions`; `open-2` click `board-medications`; `open-3` click `division-med-rec`; `open-4` outline `agent-summary`; `open-5`…`open-7` none.
 
 - [ ] **Step 1: Write the script integrity tests** (`script.test.ts`, over `CHAPTERS` and `MANIFEST`), applying to every chapter added later:
-  - beat ids unique; every beat has a manifest entry; every step's `scenario` is in `SCENARIO_IDS`, `persona` in `PERSONA_IDS`, and `route`'s pathname matches a `routeTable` path (`matchPath`);
-  - no beat text matches `GENDERED`; every `card` action's id is in `CARDS`; every chapter with `decision` shows its decision card in its first step;
+  - every chapter has at least one step and every step at least one beat; beat ids unique; every beat has a manifest entry;
+  - every step's `scenario` is in `SCENARIO_IDS`, `persona` in `PERSONA_IDS`, and `route`'s pathname matches a `routeTable` path (`matchPath`);
+  - no beat text matches `GENDERED`; every `card` action's id is in `CARDS`;
   - `buildTimeline(CHAPTERS, MANIFEST).total` ≤ 450 000 ms (7:30).
-- [ ] **Step 2:** Run — FAIL (no chapters yet is fine for most; the manifest test fails once beats exist without clips).
-- [ ] **Step 3:** Encode `cold-open` (beats, actions, targets); run `pnpm tour:audio`; run tests — PASS.
-- [ ] **Step 4: E2E** in `tour.spec.ts` (`?tourVoice=silent`, `page.emulateMedia({ reducedMotion: 'reduce' })`): `/?tour=cold-open` → "Play tour" → expect `/operations/agents/med-rec` and `[data-story-target="agent-summary"]` visible; the bar's `data-skipped` is `0`; no console errors (`collectErrors`). Also: while driving, open Controls, press "Resume tour" → no `dialog` visible (Review focus 3); with saved state where Med Rec was retired, `/?tour=cold-open` still shows Med Rec live (Review focus 5); `?tour=nope` is stripped.
-- [ ] **Step 5:** `pnpm check`, `pnpm e2e`. Commit: `feat: tour cold open`.
-- [ ] **Step 6: CHECKPOINT B.** Forbidden-terms check; push the branch; with Stefan's OK open a **draft** PR for the Vercel preview; Stefan watches the cold open (placeholder voice) and comments on pacing, cursor, bar and captions. Apply feedback before 10.8.
+- [ ] **Step 2:** Run — FAIL once `open` exists without clips.
+- [ ] **Step 3:** Encode `open`; add the two targets; run `pnpm tour:audio`; run tests — PASS.
+- [ ] **Step 4: E2E** in `tour.spec.ts` (`?tourVoice=silent`, `page.emulateMedia({ reducedMotion: 'reduce' })`): `/?tour=open` → "Play tour" → expect `/operations/agents/med-rec` and `[data-story-target="agent-summary"]` visible; the bar's skipped count is `0`; no console errors (`collectErrors`). Also: while driving, open Controls, press "Resume tour" → no `dialog` visible and the tour is back on `/operations` (Review focus 3); with saved state where Med Rec was retired, `/?tour=open` still shows Med Rec live (Review focus 5); `?tour=nope` is stripped.
+- [ ] **Step 5:** `pnpm check`, `pnpm e2e`. Commit: `feat: tour opening chapter`.
+- [ ] **Step 6: CHECKPOINT B.** Forbidden-terms check; push the branch; open a **draft** PR (Stefan approved, 2026-10-09) for the Vercel preview; Stefan watches the opening (placeholder voice) and comments on pacing, cursor, bar and captions. Apply feedback before 10.8.
 
-### Task 10.8: Chapters 3 and 4 (onboarding, decision 1)
+### Task 10.8: Walkthrough I (`onboarding`, `earning-trust`)
 
 **Files:**
-- Modify: `script.ts` (`onboarding`, `decision-1`), `cards.ts` (story card E1 from `reference/epics-and-stories.txt`; excerpt "Hard stops run at the gateway, outside the model"; decision card 1 per spec §7.2)
-- Add targets: technical-owner picker on the intake step (`intake-tech-owner`, `src/features/onboarding/IntakeStep.tsx`); on the committee packet the "Approve with conditions" option, the reason field and the record button (`packet-approve-conditions`, `packet-reason`, `packet-record`, `src/features/review/PacketPage.tsx`); on the sign page the reason field and the sign button (`sign-reason`, `sign-submit`, `src/features/golive/SignPage.tsx`)
+- Modify: `script.ts`, `cards.ts` (excerpt "Hard stops run outside the model": hard stops sit between the agent and the hospital's systems, so the agent can't argue past them)
+- Add targets: the technical-owner picker on the intake step (`intake-tech-owner`, `src/features/onboarding/IntakeStep.tsx`); on the committee packet the "Approve with conditions" option, the reason field and the record button (`packet-approve-conditions`, `packet-reason`, `packet-record`, `src/features/review/PacketPage.tsx`); on the sign page the reason field and the sign button (`sign-reason`, `sign-submit`, `src/features/golive/SignPage.tsx`)
 - Modify: `tests/e2e/tour.spec.ts`
 
-- [ ] **Step 1: Write the e2e tests:** chapter `onboarding` ends with `record-decision` showing the committee decision on Med Rec's record; chapter `decision-1` ends with Med Rec's admission activity at Draft signed by Priya (the sign page's confirmation, or the agent view's activities row "Draft · Priya"); no skipped actions.
-- [ ] **Step 2:** Run — FAIL.
-- [ ] **Step 3:** Encode both chapters from the approved script; add the cards and targets; `pnpm tour:audio`.
-- [ ] **Step 4:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour onboarding and decision 1`.
+**Encoding:** `onboarding`: step intake (`/inventory/agents/med-rec/onboarding/intake`, `onboarding-intake`, `dana`) beats 1–3; step tools (`/inventory/agents/med-rec/onboarding/tools`, `onboarding-tools-tested`, `sam`) beats 4–6; step packet (`/portfolio/reviews/med-rec`, `review-committee`, `drlee`) beat 7. `earning-trust`: step scorecard (`/operations/agents/med-rec?tab=scorecard`, `shadow-day-21`, `priya`) beat 1; step sign (`/inventory/privileges/prv-0142/sign`, `awaiting-signature`, `priya`) beats 2–3. Typed reasons are short, plausible and name no one by pronoun.
 
-### Task 10.9: Chapters 6 and 7 (decision 3, step-down)
+- [ ] **Step 1: Write the e2e tests:** `onboarding` ends with the committee decision recorded on Med Rec's record; `earning-trust` ends with Med Rec's admission activity at Draft signed by Priya; no skipped actions.
+- [ ] **Step 2:** Run — FAIL.
+- [ ] **Step 3:** Encode both chapters; add the card and targets; `pnpm tour:audio`.
+- [ ] **Step 4:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour walkthrough, onboarding and earning trust`.
+
+### Task 10.9: Walkthrough II (`supervising`, `step-down`)
 
 **Files:**
-- Modify: `script.ts` (`decision-3`, `step-down`), `cards.ts` (decision card 3; excerpt R4 per spec §7.3, beside Jordan's trace as the script places it)
-- Add targets: the agent view's Controls trigger and its "Pause agent" item (`controls-trigger`, `controls-pause`), the pause dialog's impact list and confirm button (`pause-impact`, `pause-confirm`, `src/features/controls/PauseFlow.tsx`), the resume approval reason and button (`resume-reason`, `resume-approve`, `src/features/controls/ResumePanel.tsx`)
+- Modify: `script.ts`
+- Add targets: the agent view's Controls trigger and its "Pause agent" item (`controls-trigger`, `controls-pause`), the pause dialog's impact list and confirm button (`pause-impact`, `pause-confirm`, `src/features/controls/PauseFlow.tsx`), the resume approval reason and button (`resume-reason`, `resume-approve`, `src/features/controls/ResumePanel.tsx`), the independent-check figure on Reviewer behaviour (`reviewers-check`, `src/features/reviewers/ReviewersPage.tsx`); Epic's flag submit if the flag needs a confirm (`epic-flag-submit`)
 - Modify: `tests/e2e/tour.spec.ts`
 
-- [ ] **Step 1: Write the e2e tests:** after the first step of `decision-3`, Med Rec is paused (status chip reads paused); after the resume step, Med Rec is live and the audit/history shows Priya's approval; `step-down` shows `stepdown-notice`; no skipped actions.
-- [ ] **Step 2:** Run — FAIL.
-- [ ] **Step 3:** Encode, add cards and targets, `pnpm tour:audio`.
-- [ ] **Step 4:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour decision 3 and step-down`.
+**Encoding:** `supervising`: step Epic (`/epic`, `baseline`, `ana`) beats 1–2 (outline `epic-agent-panel`, click `epic-flag`); step pause (`/operations/agents/med-rec`, `baseline`, `marcus`) beats 3–4; step resume (`/operations/agents/med-rec`, `resume-requested`, `priya`) beat 5; step reviewers (`/operations/reviewers`, `baseline`, `marcus`) beats 6–8 (outline `reviewers-finding`, then `reviewers-check`). `step-down`: step (`/operations/agents/med-rec`, `step-down-threshold`, `priya`) beats 1–2, outline `stepdown-notice`.
 
-### Task 10.10: Interludes (why, process, validate) and the last chapter
+- [ ] **Step 1: Write the e2e tests:** Ana's flag is sent; Med Rec is paused after beat 4 and live again after beat 5 with Priya's approval in its history; `stepdown-notice` is visible in `step-down`; no skipped actions. Check at 1440 × 900 that the pause dialog's confirm button isn't under the 88 px bar (deferred from 10.6).
+- [ ] **Step 2:** Run — FAIL.
+- [ ] **Step 3:** Encode; add targets; `pnpm tour:audio`.
+- [ ] **Step 4:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour walkthrough, supervising and step-down`.
+
+### Task 10.10: Interludes (`problem`, `process`, `validate`) and the landing chapters (`people`, `close`)
 
 **Files:**
-- Create: `src/prototype/tour/interludes/Interlude.module.css`, `WhyPage.tsx`, `ProcessPage.tsx`, `ValidatePage.tsx`, `useReveal.ts`, `interludes.test.tsx`
-- Modify: `src/app/routes.ts` (`/tour/why` "Why this problem", `/tour/process` "How I worked", `/tour/validate` "How I’d validate it"; `prototype` shell, phase 10, no frames), `src/app/router.tsx` (`PAGES`), `script.ts` (`why`, `process`, `validate`, `your-turn`), `cards.ts` (excerpts R1–R3)
+- Create: `src/prototype/tour/interludes/Interlude.module.css`, `ProblemPage.tsx`, `ProcessPage.tsx`, `ValidatePage.tsx`, `useReveal.ts`, `interludes.test.tsx`
+- Modify: `src/app/routes.ts` (`/tour/problem` "The problem", `/tour/process` "How I got here", `/tour/validate` "How I’d validate it"; `prototype` shell, phase 10, no frames), `src/app/router.tsx` (`PAGES`), `script.ts` (`problem`, `people`, `process`, `validate`, `close`), `cards.ts` (excerpts R1–R3, spec §7.3)
+- Add targets on the landing page: the story-card grid (`people-cards`) and each card (`people-<personaId>`, `src/prototype/Landing/Landing.tsx`)
 - Modify: `tests/e2e/tour.spec.ts`, `tests/e2e/a11y.spec.ts` (the three routes)
 
 **Interfaces:**
-- Produces: `useReveal(stepId: string): Set<string> | 'all'`: the `reveal` ids of beats already reached in that step while the tour is on it; `'all'` when the page is visited outside the tour (so it reads as a static page).
-- Pages: page title type, items in a single column (why: lines; process: nine tiles in a row: Research, Vision, PRD, Roadmap, Epics and stories, Design system brief, Explorations, 55 frames, 10 build phases, each with one line under it; validate: three short lists — what I checked, who I'd bring in, what I'd measure, from spec §7.4). Reached items `--cs-text2`, the current one `--cs-ink` with the 2 px ink outline, unreached ones hidden (`visibility: hidden`, so layout doesn't jump).
-- [ ] **Step 1: Write the failing tests:** `interludes.test.tsx`: outside the tour every item is visible; on a step with two beats reached, exactly those items show and the second is current. E2E: each interlude chapter runs with no skips; axe passes on the three routes.
+- Produces: `useReveal(stepId: string): Set<string> | 'all'`: the `reveal` ids of beats already reached in that step while the tour is on it; `'all'` when the page is visited outside the tour.
+- Pages: page title type, a single column. Problem: three lines (agents that act; a person approving everything; how hospitals trust someone new). Process: nine tiles in a row (Research, Vision, PRD, Roadmap, Epics and stories, Design system brief, Explorations, 55 frames, 10 build phases), each with one line under it. Validate: three short lists from spec §7.4. Reached items `--cs-text2`, the current one `--cs-ink` with the 2 px ink outline, unreached ones `visibility: hidden`.
+- `people` runs on `/` (`baseline`, `marcus`): beat 4 outlines Dana, Sam and Dr. Lee in turn (outline, `wait`, outline, `wait`, outline). `close` runs on `/` (`baseline`, `marcus`); ending stays there (R5).
+- [ ] **Step 1: Write the failing tests:** `interludes.test.tsx`: outside the tour every item is visible; on a step with two beats reached, exactly those items show and the second is current. E2E: each of the five chapters runs with no skips; axe passes on the three routes.
 - [ ] **Step 2:** Run — FAIL.
-- [ ] **Step 3:** Implement; encode the four chapters; `pnpm tour:audio`.
-- [ ] **Step 4:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour interludes`.
+- [ ] **Step 3:** Implement; encode the five chapters; `pnpm tour:audio`.
+- [ ] **Step 4:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour interludes and landing chapters`.
 
-### Task 10.11: Chapter 5 (decision 2) and the explorations — **CHECKPOINT C**
+### Task 10.11: The decisions page (`decisions`) and the explorations — **CHECKPOINT C**
 
 **Files:**
-- Review and convert: `reference/tour-inbox/attune-design-explorations/*.png` → `public/tour/artifacts/*.jpg`
-- Create: `src/prototype/tour/interludes/ExplorationsPage.tsx`
-- Modify: `routes.ts` / `router.tsx` (`/tour/explorations`, "Design explorations"), `script.ts` (`decision-2`), `cards.ts` (decision card 2; excerpts R5, R6; image cards), the Epic flag button target (`epic-flag` exists; add `epic-flag-submit` if the flag needs a confirm), `tests/e2e/tour.spec.ts`, `tests/e2e/a11y.spec.ts`
+- Review and convert: `reference/tour-inbox/attune-design-explorations/*.png` → `public/tour/artifacts/*.jpg`; screenshots of the screens each decision played out on (from `docs/screenshots/` or captured with `pnpm capture`) → `public/tour/artifacts/`
+- Create: `src/prototype/tour/interludes/DecisionsPage.tsx`
+- Modify: `routes.ts` / `router.tsx` (`/tour/decisions`, "Three key decisions"), `script.ts` (`decisions`), `cards.ts` (decision cards 1–3 per spec §7.2, each with its screen thumbnail; image cards for the explorations), `tests/e2e/tour.spec.ts`, `tests/e2e/a11y.spec.ts`
 
-- [ ] **Step 1: Review every image** before converting: open each PNG and check for any company name, URL or real person's name (the handoff says names were swapped to Attune; confirm it). Reject or crop any that fail. Only the images the script uses are converted; candidates: `board-01`…`board-04`, `ds-01`, `ds-03`, `ds-07`, `ds-09`, `ds-12`, `ds-16`, `ds-17`…`ds-21` (one comparison strip), `ds-22`.
+- [ ] **Step 1: Review every image** before converting: open each PNG and check for any company name, URL or real person's name (the handoff says names were swapped to Attune; confirm it). Reject or crop any that fail. Only the images the script uses are converted: the five overviews (`ds-01`…`ds-05`), the Ledger conflict (`ds-09`), the stress test (`ds-07`, `ds-12`), the final division view (`ds-22`).
 - [ ] **Step 2:** Convert each used image: `ffmpeg -y -i <in>.png -vf "scale='min(1600,iw)':-2" -q:v 3 -map_metadata -1 public/tour/artifacts/<name>.jpg` (R7). View one converted file to confirm legibility.
-- [ ] **Step 3: Write the e2e test:** chapter `decision-2` runs with no skips, shows at least one image card and ends on `/epic` with Ana's flag sent (the flag confirmation is visible); axe passes on `/tour/explorations`.
-- [ ] **Step 4:** Run — FAIL. Implement the page (same reveal model as 10.10; images in a row with captions: direction name and one line from the handoff), encode the chapter, add cards. `pnpm tour:audio`.
-- [ ] **Step 5:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour decision 2 and explorations`.
+- [ ] **Step 3: Write the e2e test:** chapter `decisions` runs with no skips and shows all three decision cards; axe passes on `/tour/decisions`.
+- [ ] **Step 4:** Run — FAIL. Implement the page (same reveal model as 10.10: the three decision cards in order, with Decision 2's explorations in a row with captions, direction name and one line from the handoff), encode the chapter, add cards. `pnpm tour:audio`.
+- [ ] **Step 5:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: tour decisions and explorations`.
 - [ ] **Step 6: CHECKPOINT C.** Forbidden-terms check; push; Stefan plays the whole tour on the preview (placeholder voice) and reviews every chapter, card and image. Apply feedback, including any script edits (re-run `pnpm tour:audio`).
 
 ### Task 10.12: Landing, credit and the Attune rename
@@ -335,8 +344,8 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
 
 **Interfaces:**
 - Consumes: `CHAPTERS`, `CARDS`, `STORIES` and `stepHref` (story links).
-- Page: title "About this work"; for each chapter except `your-turn`: its title, its narration joined into paragraphs, its cards at full width (decision cards with their images; excerpts with sources), and links **"Play from here"** (`/?tour=<chapter-id>`) and, for product chapters, **"Open the live screen"** (the matching story step: cold open → Marcus 3; onboarding → Dana 1; decision-1 → Priya 2; decision-2 → Marcus 1; decision-3 → Marcus 6; step-down → Priya 7). Then the existing Principles, Countersign and "How it's built" sections.
-- [ ] **Step 1: Write the failing tests:** every chapter title renders as a heading; "Play from here" links point at `/?tour=<id>`; the three decision cards render with "Decision n of 3"; "Open the live screen" for `decision-3` is Marcus's step 6 href.
+- Page: title "About this work"; for each chapter except `close`: its title, its narration joined into paragraphs, its cards at full width (decision cards with their images; excerpts with sources), and links **"Play from here"** (`/?tour=<chapter-id>`) and, for product chapters, **"Open the live screen"** (the matching story step: open → Marcus 3; onboarding → Dana 1; earning-trust → Priya 2; supervising → Marcus 6; step-down → Priya 7). Then the existing Principles, Countersign and "How it's built" sections.
+- [ ] **Step 1: Write the failing tests:** every chapter title renders as a heading; "Play from here" links point at `/?tour=<id>`; the three decision cards render with "Decision n of 3"; "Open the live screen" for `supervising` is Marcus's step 6 href.
 - [ ] **Step 2:** Run — FAIL. Implement. Run — PASS.
 - [ ] **Step 3:** `pnpm check`, `pnpm e2e`. Commit: `feat: About becomes the case study`.
 
@@ -344,7 +353,7 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
 
 - [ ] **Step 1:** `pnpm check`, `pnpm e2e`, `pnpm tour:audio --check` green.
 - [ ] **Step 2:** Play the whole tour at 1440 × 900 in Chrome and Safari at 1×; note anything off; fix.
-- [ ] **Step 3:** `pnpm capture` to regenerate `public/og.png` and README screenshots with the Attune bar; add one screenshot of the tour bar to `docs/screenshots/tour.png`; README: a "Watch the tour" line linking `/?tour=cold-open`.
+- [ ] **Step 3:** `pnpm capture` to regenerate `public/og.png` and README screenshots with the Attune bar; add one screenshot of the tour bar to `docs/screenshots/tour.png`; README: a "Watch the tour" line linking `/?tour=open`.
 - [ ] **Step 4:** BUILD_PLAN: tick tasks, handoff notes, Start here, decision log (R1–R9 and anything new), session log.
 - [ ] **Step 5:** Forbidden-terms check (must print nothing). Push. Mark the PR ready ("Closes #20"), with the task list, preview URL and screenshots.
 - [ ] **Step 6: CHECKPOINT E. STOP.** Ask Stefan to review the preview URL. Merge only after approval.

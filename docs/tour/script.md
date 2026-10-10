@@ -1,178 +1,179 @@
-# Tour script · first draft
+# Tour script
+
+The hybrid flow (Stefan, 2026-10-09) with eight edits. It opens on the live product for a short hook, gives an agenda, then follows a traditional order: the problem, who it's for, one uninterrupted walkthrough, the three decisions, how I got here, how I'd validate it, and a close.
 
 How to read this:
-- One sentence per numbered line. Each line becomes one short recording.
-- `[brackets]` are what happens on screen while you say that line. They aren't spoken.
-- Each chapter starts with the screen, the date in the story, and whose view it is.
-- Numbers, names and dates match what the screen shows. If you change one, tell me, and I'll check the screen agrees.
-- Your notes on the draft go at the end.
+- Only the numbered lines are spoken. One sentence per line, one recording per line.
+- `[brackets]` are what happens on screen. Italic lines name the screen, the date in the story, and whose view it is. Neither is spoken.
+- Each `##` heading is a chapter in the tour's chapter menu; its id is in `code`. Chapter titles aren't spoken, so the walkthrough runs as one continuous story across four chapters.
+- Read each section aloud as a whole before recording it line by line.
+- Target: about 7 minutes, roughly 1,050 words.
 
 ---
 
-## 0 · Cold open · about 0:25
+## 1 · Open on the product · `open` · about 0:45
 *Hospital board → Medications → Med Rec Agent · Tue 08 Dec, 09:52 · as Marcus*
 
-1. This is Attune's Agent Control Plane, where a hospital keeps an eye on its AI agents. `[outline: the divisions table]`
-2. Lakeshore Health, our made-up hospital, runs 41 agents across five divisions.
-3. Grey means fine, so almost everything here is grey.
-4. Only two divisions have colour, and that's where a person is needed. `[click: Medications]`
-5. Marcus looks after twenty agents here, and four need attention. `[click: Med Rec Agent]`
-6. This one checks patients' home medications when they're admitted. `[outline: "3 drafts held by HS-04 v2"]`
-7. This morning it tried to change three patients' home doses, and it was stopped every time.
-8. To see how, let's go back ten weeks, to the day it was hired.
+1. Hi, I'm Stefan. Imagine you're responsible for forty-one AI agents working across a hospital. `[outline: the divisions table]`
+2. You can't watch them all, so this screen only asks for your attention where a person is actually needed. `[click: Medications]`
+3. In Medications, that person is Marcus, who owns twenty agents, and right now four of them need Marcus. `[click: Med Rec Agent]`
+4. This one drafts each patient's home medication list, and this morning it tried to change three patients' doses and was stopped every time. `[outline: "3 drafts held by HS-04 v2"]`
+5. This is Agent Control Plane, my concept for how a hospital brings on and supervises its AI agents.
+6. Over the next few minutes, I'll cover the problem, who it's for, the life of this one agent, the three decisions that shaped it, how I got here, and how I'd validate it.
+7. You can pause anytime and click around, and everything you click really works.
 
-## 1 · Why this problem · about 0:30
-*Interlude page*
+## 2 · The problem · `problem` · about 0:40
+*Interlude page: the problem*
 
-1. First, why I picked this problem. `[show: line 1]`
-2. Hospitals are moving from AI that suggests things to AI agents that actually do them.
-3. The usual safety net is a person approving every action. `[show: line 2]`
-4. But people tend to approve what's in front of them, and one study found they caught only about one bad agent action in five. `[card: research R1, R2]`
-5. So more approvals isn't the answer.
-6. Hospitals already know how to trust someone new: it's how they bring on a clinician. `[show: line 3]` `[card: research R3]`
-7. A written job, named supervisors, and privileges that are earned on evidence and can be taken away.
-8. I designed the whole product around that idea.
+1. I picked this problem because hospitals are starting to use AI agents that don't just suggest things; they actually do them. `[show: line 1]`
+2. The usual safety net is a person approving every action. `[show: line 2]`
+3. But that doesn't hold up well: in one recent study, people caught only about one in five bad agent actions. `[card: research R1, R2]`
+4. And with dozens of agents, approving everything turns into rubber-stamping.
+5. The thing is, hospitals already know how to trust someone new. `[show: line 3]` `[card: research R3]`
+6. It's how they bring on a clinician: a defined scope, supervision, and privileges earned on evidence that can be taken away.
+7. Residents earn independence one skill at a time, and self-driving cars only operate where they've proven they can.
+8. So I built the whole product around that idea.
 
-## 2 · How I worked · about 0:30
-*Interlude page: nine tiles light up as you name them*
+## 3 · Who it's for · `people` · about 0:30
+*Landing page: the seven people*
 
-1. Here's how I got from that idea to this. `[tile: Research]`
-2. I started with research: how hospitals govern AI today, and what goes wrong when people supervise automation.
-3. That became a vision, a requirements doc and a roadmap, broken into user stories with a clear definition of done. `[tiles: Vision, PRD, Roadmap, Epics and stories]`
-4. Then came a design brief, five visual directions, and fifty-five screens. `[tiles: Brief, Explorations, Frames]`
-5. I built it with Claude Code in ten phases, and reviewed every phase before it went live. `[tile: Build]`
-6. AI did a lot of the work, but I signed off on every step: the same rule the product enforces.
+1. Seven people use it, each with a different job. `[outline: the story cards]`
+2. Marcus owns the agents and supervises them day to day. `[outline: Marcus]`
+3. Priya is the clinical sponsor who signs for what each agent is allowed to do. `[outline: Priya]`
+4. Dana runs the AI program, Sam handles the technical limits, and Dr. Lee chairs the review board. `[outline: Dana, Sam, Dr. Lee]`
+5. Pharmacists like Ana never open the console at all; they work with the agent from inside the medical record. `[outline: Ana]`
+6. And Jordan, in risk, can rebuild anything an agent did after the fact. `[outline: Jordan]`
 
-## 3 · Bring it on safely · about 1:00
+## 4 · Bring it on · `onboarding` · about 0:45
+
+1. So let's go back to how the agent you saw earlier got here.
 
 *Onboarding, the approved request · Thu 01 Oct · as Dana*
 
-1. October first: the hospital's AI committee approves a request for this agent. `[outline: "Carried over from REQ-0093"]`
-2. Dana, who runs the AI program, starts onboarding from that approval, so nothing gets retyped.
-3. No agent goes live without four named people responsible for it. `[outline: Owners]` `[click: Sam as technical owner]`
+2. It starts on October first, when the hospital's AI committee approves the request for it, and Dana starts onboarding from that approval. `[outline: "Carried over from REQ-0093"]`
+3. No agent goes live without four named people who answer for it. `[outline: Owners]` `[click: Sam as technical owner]`
 
 *Onboarding, tools and hard stops · Tue 06 Oct · as Sam*
 
-4. Next, Marcus lists what this agent must never do, and Sam, the technical owner, turns each line into a hard stop. `[outline: the three hard stops]`
-5. A hard stop sits outside the AI, between the agent and the hospital's systems, so the agent can't talk its way past it. `[card: "Hard stops run outside the model"]`
-6. Tested on the last thirty days, the "never change a dose" rule would have caught seven of 1,204 drafts. `[card: the onboarding user story]`
+4. Marcus writes down what it must never do, starting with never changing a dose. `[outline: the three hard stops]`
+5. Sam turns each of those into a hard stop that sits outside the AI, so the agent can't argue its way past it. `[card: "Hard stops run outside the model"]`
+6. And each one is tested against the last thirty days, so the board can see what it would actually have caught. `[outline: "would have blocked 7 of 1,204"]`
 
 *AI review board packet · Wed 14 Oct · as Dr. Lee*
 
-7. Because it touches every admission, the hospital's AI review board decides. `[outline: the packet]`
-8. Dr. Lee approves it with conditions: a pharmacist signs every draft, and patients on dialysis are left out. `[click: Approve with conditions]` `[type: the reason]` `[click: Record decision]`
+7. Dr. Lee's board approves it with conditions, like a pharmacist signing every draft. `[click: Approve with conditions]` `[type: the reason]` `[click: Record decision]`
 
-## 4 · Earn the privilege · Decision 1 · about 1:00
+## 5 · Earn trust · `earning-trust` · about 0:30
 
 *Shadow scorecard · Thu 05 Nov · as Priya*
 
-1. For three weeks, the agent works in shadow: it does the job, but nothing it produces reaches a patient. `[outline: the targets]`
-2. Each draft is compared with the pharmacist's own list, across 1,118 admissions.
-3. Two targets are met, and one is just missed: 2.6 percent of lines are wrong, against a goal of 2.
-4. This is my first key decision. `[card: Decision 1 of 3]`
-5. I could have had a person approve every action, or trusted the agent as a whole.
-6. Instead, each task earns its own privilege, one level at a time: shadow, then draft, then supervised, then autonomous.
-7. And every privilege is signed by a named person, based on evidence.
-8. It's more effort up front, and far less checking later.
+1. For three weeks it works in shadow, doing the job without anything reaching a patient. `[outline: the targets]`
 
 *Signing the privilege · Fri 06 Nov · as Priya*
 
-9. Priya is the clinical lead who answers for medications. `[outline: "Your signature"]`
-10. With a target missed, Priya can still sign, but only with a written reason that stays on the record. `[type: the reason]` `[click: Sign]`
-11. Now the agent moves up to draft: it prepares the list, and a pharmacist signs it.
+2. It meets two targets and just misses the third, so Priya can still move it up, but only with a written reason. `[type: the reason]` `[click: Sign]`
+3. Now the agent drafts, a pharmacist signs, and Priya's name is on that privilege.
 
-## 5 · Keep it quiet · Decision 2 · about 1:05
-
-*Interlude page: the design explorations*
-
-1. My second decision was about keeping the screen quiet. `[card: Decision 2 of 3]`
-2. In control rooms, people spot problems far earlier on calm, grey screens. `[card: research R5, R6]`
-3. I explored five visual directions. `[show: the five overviews]`
-4. The first followed my brief to the letter, and it broke: with one accent colour, the row you'd selected looked like one more problem. `[show: the Ledger conflict]`
-5. So I put every direction onto the same two real, crowded screens. `[show: the stress test]`
-6. A favourite emerged, then lost when I rebuilt a long form in all five. `[show: the onboarding comparison]`
-7. Every time, my decisions changed on a real, crowded screen, never on a tidy specimen sheet.
-8. The winner, Countersign, keeps healthy things grey, and adds colour, a shape and a word only when a person is needed. `[show: the final division view, then the four board layouts]`
+## 6 · Supervise · `supervising` · about 1:10
 
 *The medical record (a stand-in for Epic) · Tue 08 Dec · as Ana*
 
-9. Pharmacists like Ana never open this console; they review the agent's work inside the medical record they already use. `[outline: the agent panel]`
-10. When a dose frequency comes through split across two lines, Ana flags it in one click, and it goes straight to Marcus. `[click: Flag]`
+1. Which brings us back to this morning, and the dose changes the hard stop held.
+2. Ana reviews the agent's drafts right in the medical record, and when something looks off, flags it in one click. `[outline: the agent panel]` `[click: Flag]`
 
-## 6 · Stop easy, resume deliberate · Decision 3 · about 1:05
+*Med Rec Agent → resume request · 09:52 to 11:58 · as Marcus, then Priya*
 
-*Med Rec Agent · Tue 08 Dec, 09:52 · as Marcus*
+3. Marcus pauses it in one action. `[click: Controls]` `[click: Pause agent]`
+4. Before confirming, the screen shows exactly what happens: drafts go back to pharmacists, and nothing is lost. `[outline: what pausing does]` `[click: Pause]`
+5. By noon there's a fix, and Marcus asks to resume, but it stays paused until Priya agrees too. `[type: the reason]` `[click: Approve]`
 
-1. Back to this morning: Marcus decides to pause the agent. `[click: Controls]` `[click: Pause agent]`
-2. My third decision: stopping should be easy, and starting again should be deliberate. `[card: Decision 3 of 3]`
-3. Anyone responsible can pause in one action, and the screen shows what happens first. `[outline: what pausing does]`
-4. Twelve drafts in progress go back to the pharmacists, and nothing is lost. `[click: Pause]`
+*Reviewer behaviour · Tue 08 Dec · as Marcus*
 
-*Resume request · 11:58 · as Priya*
+6. There's also a quieter risk: people trusting the agent too much. `[outline: the 6 North finding]`
+7. On this unit, approvals got faster and edits dropped, but a random second check found more misses, so it's reviewers checking less, not the agent getting better. `[outline: independent check]`
+8. It's shown by unit and shift, never by name.
 
-5. By noon, Sam has fixed the problem, and a replay of 23 recent cases comes back clean. `[outline: the resume panel]`
-6. Marcus asks to resume, but the agent stays paused until Priya agrees too, with a reason of Priya's own, and nobody can approve their own request. `[type: the reason]` `[click: Approve]`
-7. Two people is slower, on purpose: restarting is the riskier moment.
-
-*Action trace · as Jordan*
-
-8. And Jordan, in risk management, can rebuild any action step by step, like this rule blocking that dose change in under a millisecond. `[outline: the trace]` `[card: research R4]`
-
-## 7 · Trust can go back down · about 0:20
+## 7 · Trust drops · `step-down` · about 0:20
 
 *Med Rec Agent · Wed 09 Dec · as Priya*
 
-1. Trust can go down on its own, too. `[outline: the step-down notice]`
-2. By the ninth, pharmacists had been editing more than fifteen percent of its drafts for three days running, so the agent dropped back to shadow by itself.
-3. Nothing climbs back up without someone signing for it.
+1. And trust can go down on its own: when pharmacists kept editing more than fifteen percent of its drafts for three days, the agent dropped back to shadow by rule. `[outline: the step-down notice]`
+2. Nothing climbs back up without someone signing for it.
 
-## 8 · How I'd validate it · about 0:40
+## 8 · Three key decisions · `decisions` · about 1:00
+*Interlude page: the decisions (each card shows a small screenshot of the screen it played out on)*
+
+1. Three decisions shaped all of this.
+
+*Decision 1 of 3*
+
+2. First, how an agent earns trust. `[card: Decision 1 of 3]`
+3. I could have kept a person approving every action, or trusted the agent as a whole once it looked good.
+4. Instead, each task earns its own privilege, one step at a time, signed by a named person; more work up front, and a lot less checking after.
+
+*Decision 2 of 3 · the design explorations*
+
+5. Second, how to protect people's attention. `[card: Decision 2 of 3]`
+6. I explored five visual directions, and the first one, which followed my own brief exactly, broke: the row you'd selected looked like one more problem. `[show: the five overviews, then the Ledger conflict]`
+7. So I judged every direction on real, crowded screens, and the winner keeps everything healthy grey, with colour, a shape and a word only where a person is needed. `[show: the stress test, then the final division view]`
+
+*Decision 3 of 3*
+
+8. Third, how to stop and restart. `[card: Decision 3 of 3]`
+9. One person could resume, or the agent could resume on its own after a fix.
+10. Instead, stopping takes one person and starting again takes two, because restarting is the riskier moment.
+
+## 9 · How I got here · `process` · about 0:30
+*Interlude page: tiles light up as you name them*
+
+1. A quick word on how I got here. `[tile: Research]`
+2. I spent most of my time on research and defining the problem before designing a single screen.
+3. That shaped the vision, requirements and roadmap, then epics and user stories, and only then the screens. `[tiles: Vision, PRD, Roadmap, Epics and stories]`
+4. I explored the design system first, then built it in code with Claude Code, phase by phase. `[tiles: Brief, Explorations, Frames, Build]`
+5. AI sped up every step, but I made the calls and signed off on each one, the same rule the product enforces.
+
+## 10 · How I'd validate it · `validate` · about 0:35
 *Interlude page*
 
-1. So how would I know this works? `[show: what I checked]`
-2. I haven't been able to test it with hospital staff, so here's what I checked, and what I'd do next.
-3. Every screen traces back to a user story, and building it as a working model exposed contradictions in my own designs, which I fixed.
-4. A squint test at wall distance changed how missing data looks, and every screen passes an accessibility check.
-5. On a real team, I'd put it in front of pharmacists, agent owners and engineers early, before anything gets built. `[show: who I'd bring in]`
-6. I'd want to learn who really watches an agent day to day, whether "job description" is the language staff use, and which actions must always stay with a person.
-7. And I'd measure how fast a problem reaches a named person, and whether reviewers are still really reviewing. `[show: what I'd measure]`
+1. So how would I know it works? `[show: what I checked]`
+2. I couldn't test it with hospital staff, so I checked what I could.
+3. Every screen traces back to a user story, and building it for real exposed contradictions in my own designs, which I fixed.
+4. On a real team, I'd put it in front of pharmacists, agent owners and engineers before anything gets built. `[show: who I'd bring in]`
+5. I'd want to learn who actually watches an agent day to day, and which actions must always stay with a person.
+6. And I'd measure how fast a problem reaches a named person, and whether reviewers are still really reviewing. `[show: what I'd measure]`
 
-## 9 · Your turn · about 0:15
+## 11 · Close · `close` · about 0:15
 *Landing page · back to 08 Dec · as Marcus*
 
-1. That's the story of one agent.
-2. Each of the seven people in it has their own walkthrough on this page.
-3. Or explore on your own: everything you click really works, and Reset puts it all back.
-4. Thanks for watching.
+1. That's the life of one agent.
+2. Each of the seven people has their own walkthrough here, or you can explore on your own, and Reset puts everything back.
+3. Thanks for watching.
 
 ---
 
-## Notes for Stefan
+## Notes
 
-**Changes from the spec's running order** (all easy to undo):
-- Chapter 5 no longer goes back to the hospital board. The cold open already shows it, so the time goes to the explorations instead.
-- The audit-trail statistic (research R4) moved from chapter 4 to chapter 6, beside Jordan's trace, where it makes more sense.
-- Chapter 5 is called "Keep it quiet" instead of "Supervise by exception": plainer, and it says what the decision is.
+**The eight edits applied to the hybrid**
+1. "Who it's for" now names all seven people (Jordan added).
+2. A short "How I got here" chapter sits before validation, with the Claude Code line moved there from the close. The opening agenda mentions it too.
+3. "Over the next few minutes" instead of "six minutes".
+4. The problem opens by answering "why this example".
+5. The pause line is split in two, so the impact preview is on screen while it's described.
+6. Reviewer behaviour keeps "shown by unit and shift, never by name".
+7. "Approves the request for it", so the intake committee isn't confused with Dr. Lee's board.
+8. "Was stopped every time"; the problem section ends "So I built the whole product around that idea."
 
-**Already cut to fit** (easy to put back; the cards still show each one):
-- Chapter 3: the warning that Marcus would be stretched too thin.
-- Chapter 5: why the table beat the other board layouts ("it works with five divisions or fifty").
-- Chapter 6: the other ways to resume that I weighed, and the audit-trail statistic.
+**If it runs long, cut in this order**
+1. Problem, line 7 (residents and self-driving)
+2. Who it's for, line 4 (Dana, Sam, Dr. Lee)
+3. Validate, line 3 (traceability and contradictions)
 
-**If it still runs long, cut these next:**
-- Chapter 2, line 2 (what the research covered)
-- Chapter 8, line 4 (the squint test and accessibility check)
-
-**An ordering option to consider:** "How I worked" (chapter 2) could move to just before "How I'd validate it", so the reviewer sees the product sooner and hears about the process once they're invested. The tour supports either order.
-
-**Saying the numbers:** "1,204" reads well as "twelve hundred and four"; "1,118" as "eleven hundred and eighteen"; "2.6 percent".
-
-**Facts tied to the screens** (change the screen or the line, never just one):
-- 41 agents, 5 divisions, 2 need a person
-- 20 agents in Medications, 4 need Marcus
-- 3 patients, the dose rule
-- REQ-0093, four named people
-- 7 of 1,204 drafts; 1,118 admissions; 2.6 % against 2.0 %
-- the conditions: a pharmacist signs every draft; dialysis patients excluded
-- 12 drafts go back; 23 cases replayed; 11:58
-- step-down: above 15 % for 3 days, on 09 Dec
+**Facts tied to the screens** (change the screen or the line, never just one)
+- 41 agents; Marcus owns 20, 4 need a person; 3 dose changes held this morning
+- REQ-0093 approved; 4 named people; Sam as technical owner
+- Hard stops from Marcus's never list; tested on the last 30 days ("would have blocked 7 of 1,204")
+- Board conditions include a pharmacist signing every draft
+- Shadow: 3 weeks, two targets met, one just missed; signing with a missed target needs a written reason
+- Ana's flag reaches Marcus; pause sends drafts back to pharmacists; fix by noon (11:58); resume needs Marcus and Priya
+- 6 North: faster approvals, fewer edits, more misses in the independent check; by unit and shift, never by name
+- Step-down: edits above 15 % for 3 days, back to Shadow by rule

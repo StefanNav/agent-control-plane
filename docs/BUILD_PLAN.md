@@ -21,7 +21,7 @@ Update this block every time a session stops, even mid-phase.
 | **Current phase** | Phase 10: Guided tour (◐ in progress) |
 | **Branch** | `phase-10-guided-tour` |
 | **Last completed** | Tasks 10.2–10.6 (engine, audio pipeline, voice and actions, player, bar/cursor/cards), each reviewed; branch not pushed (2026-10-09) |
-| **Next task** | **CHECKPOINT A:** Stefan finishes editing `docs/tour/script.md` (wording and order). Then 10.7 (cold open) → CHECKPOINT B |
+| **Next task** | 10.7 opening chapter (in progress) → CHECKPOINT B: push, draft PR, preview link for Stefan |
 | **Blockers** | None now. Stefan's photo comes later (10.12 ships the credit without it if needed) |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -631,11 +631,11 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 - [x] 10.4 Voice and action runner
 - [x] 10.5 Player
 - [x] 10.6 Tour layer, bar, cursor and cards
-- [ ] 10.7 Cold open (vertical slice) → **CHECKPOINT B** (first chapter on a preview)
-- [ ] 10.8 Chapters 3 and 4 (onboarding, decision 1)
-- [ ] 10.9 Chapters 6 and 7 (decision 3, step-down)
-- [ ] 10.10 Interludes (why, process, validate) and the last chapter
-- [ ] 10.11 Chapter 5 (decision 2) and the explorations → **CHECKPOINT C** (whole tour, placeholder voice)
+- [ ] 10.7 Opening chapter (vertical slice) → **CHECKPOINT B** (first chapter on a preview)
+- [ ] 10.8 Walkthrough I (onboarding, earning trust)
+- [ ] 10.9 Walkthrough II (supervising, step-down)
+- [ ] 10.10 Interludes (problem, process, validate) and the landing chapters (who it's for, close)
+- [ ] 10.11 The decisions page and the explorations → **CHECKPOINT C** (whole tour, placeholder voice)
 - [ ] 10.12 Landing, credit and the Attune rename
 - [ ] 10.13 Recording page (dev only)
 - [ ] 10.14 Recording → **CHECKPOINT D** (real voice)
@@ -805,6 +805,7 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-09 | Design explorations and Stefan's photo arrive in `reference/tour-inbox/` (git-ignored); images are viewed for names and converted before anything enters `public/` | The forbidden-terms check can't read pixels |
 | 2026-10-09 | Tour engine rulings (Phase 10, SDD ledger): manifest at `src/prototype/tour/manifest.json` (Vite can't import from `public/`); `tour:audio` keeps up-to-date placeholders and encodes at 44.1 kHz; the audio voice has a watchdog (manifest ms ÷ rate + 2 s) so a stalled clip never freezes the tour; `ActionHost` has `outline()` and `reveal(el)`; the player implements the host itself; no `ended` status (finishing = exit) | Plan defects found in pre-flight and review |
 | 2026-10-09 | Tour behaviour rulings: pause pauses the voice only (in-flight actions finish); next/prev/jump keep playing if playing, else land paused; each step's first beat waits for its screen to settle (outlet keyed by step, pathname and the step's query match, one frame, 1.5 s cap); `Voice.unlock()` primes audio inside the Play click (Safari); take-over comes only from visitor input (pointer, or keys on any control or focusable row), also while paused; a finished typing action blurs its field; starting a story exits the tour; a `?tour=<chapter>` link mid-tour jumps there | Reviews of 10.4–10.6: never stall, never act on the wrong screen, wandering off can't break the tour |
+| 2026-10-09 | Script approved: Stefan's hybrid flow (one of three rewrites made with Claude) with eight edits; chapters become `open`, `problem`, `people`, `onboarding`, `earning-trust`, `supervising`, `step-down`, `decisions`, `process`, `validate`, `close`. The three decisions get their own chapter after the walkthrough (spec T3 revised); reviewer behaviour replaces Jordan's trace; "Who it's for" runs on the landing page; plan tasks 10.7–10.11 re-cut | Checkpoint A: the first draft read robotic; the hybrid hooks early, signposts, and maps to the application's three asks |
 
 ## Session log
 
