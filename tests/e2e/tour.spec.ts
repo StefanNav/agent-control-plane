@@ -529,18 +529,23 @@ test('trust drops: Med Rec shows its step-down notice, then the tour ends', asyn
   const errors = collectErrors(page)
   await openChapter(page, 'step-down', /\/operations\/agents\/med-rec\?tour=step-down$/)
   await play(page)
+  // The outline brings the notice into view, between the top bar and the tour bar.
   await expectUnder(
     page,
     { chapter: 'step-down', line: 'And trust can go down', targets: ['stepdown-notice'] },
-    (s) =>
-      [
+    (s) => {
+      const notice = s.box['stepdown-notice']
+      const inView = notice && notice.top >= s.band.top && notice.bottom <= s.band.bottom
+      return [
         s.pathname,
         s.text['stepdown-notice']?.includes('stepped down from Draft to Shadow')
           ? 'stepped down'
           : 'no notice',
         `outlined ${s.outlined.join(', ')}`,
-      ].join(' · '),
-    `${MED_REC} · stepped down · outlined stepdown-notice`,
+        inView ? 'in view' : `out of view ${JSON.stringify(notice)} ${JSON.stringify(s.band)}`,
+      ].join(' · ')
+    },
+    `${MED_REC} · stepped down · outlined stepdown-notice · in view`,
   )
   await expectUnder(
     page,
