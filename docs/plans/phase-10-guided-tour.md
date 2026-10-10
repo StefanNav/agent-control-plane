@@ -231,15 +231,15 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
 
 **Encoding `open`:** one step, route `/operations`, scenario `baseline`, persona `marcus`; beats `open-1` … `open-7`, text verbatim from the script's spoken lines (without the brackets). Actions: `open-1` outline `board-divisions`; `open-2` click `board-medications`; `open-3` click `division-med-rec`; `open-4` outline `agent-summary`; `open-5`…`open-7` none.
 
-- [ ] **Step 1: Write the script integrity tests** (`script.test.ts`, over `CHAPTERS` and `MANIFEST`), applying to every chapter added later:
+- [x] **Step 1: Write the script integrity tests** (`script.test.ts`, over `CHAPTERS` and `MANIFEST`), applying to every chapter added later:
   - every chapter has at least one step and every step at least one beat; beat ids unique; every beat has a manifest entry;
   - every step's `scenario` is in `SCENARIO_IDS`, `persona` in `PERSONA_IDS`, and `route`'s pathname matches a `routeTable` path (`matchPath`);
   - no beat text matches `GENDERED`; every `card` action's id is in `CARDS`;
   - `buildTimeline(CHAPTERS, MANIFEST).total` ≤ 450 000 ms (7:30).
-- [ ] **Step 2:** Run — FAIL once `open` exists without clips.
-- [ ] **Step 3:** Encode `open`; add the two targets; run `pnpm tour:audio`; run tests — PASS.
-- [ ] **Step 4: E2E** in `tour.spec.ts` (`?tourVoice=silent`, `page.emulateMedia({ reducedMotion: 'reduce' })`): `/?tour=open` → "Play tour" → expect `/operations/agents/med-rec` and `[data-story-target="agent-summary"]` visible; the bar's skipped count is `0`; no console errors (`collectErrors`). Also: while driving, open Controls, press "Resume tour" → no `dialog` visible and the tour is back on `/operations` (Review focus 3); with saved state where Med Rec was retired, `/?tour=open` still shows Med Rec live (Review focus 5); `?tour=nope` is stripped.
-- [ ] **Step 5:** `pnpm check`, `pnpm e2e`. Commit: `feat: tour opening chapter`.
+- [x] **Step 2:** Run — FAIL once `open` exists without clips.
+- [x] **Step 3:** Encode `open`; add the two targets; run `pnpm tour:audio`; run tests — PASS.
+- [x] **Step 4: E2E** in `tour.spec.ts` (`?tourVoice=silent`, `page.emulateMedia({ reducedMotion: 'reduce' })`): `/?tour=open` → "Play tour" → expect `/operations/agents/med-rec` and `[data-story-target="agent-summary"]` visible; the bar's skipped count is `0`; no console errors (`collectErrors`). Also: while driving, open Controls, press "Resume tour" → no `dialog` visible and the tour is back on `/operations` (Review focus 3); with saved state where Med Rec was retired, `/?tour=open` still shows Med Rec live (Review focus 5); `?tour=nope` is stripped.
+- [x] **Step 5:** `pnpm check`, `pnpm e2e`. Commit: `feat: tour opening chapter`.
 - [ ] **Step 6: CHECKPOINT B.** Forbidden-terms check; push the branch; open a **draft** PR (Stefan approved, 2026-10-09) for the Vercel preview; Stefan watches the opening (placeholder voice) and comments on pacing, cursor, bar and captions. Apply feedback before 10.8.
 
 ### Task 10.8: Walkthrough I (`onboarding`, `earning-trust`)
