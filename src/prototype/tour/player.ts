@@ -33,6 +33,11 @@ export interface PlayerDeps {
   run: typeof runActions
   /** Scroll an element into view, clear of the bar. */
   reveal(el: HTMLElement): Promise<void>
+  /**
+   * Called just before the tour clicks: resolves once the page has answered the click (re-rendered,
+   * and on screen at any URL it went to). Resolves, not rejects, on abort.
+   */
+  watchClick(signal: AbortSignal): Promise<void>
   reducedMotion(): boolean
   /**
    * Resolves once the screen of step entry `stepKey` has rendered (at once if it already has), so a
@@ -201,6 +206,7 @@ export function createTourPlayer(
           }))
           return glide(deps.reducedMotion() ? 0 : GLIDE_MS / get().rate, signal)
         },
+        watchClick: () => (live() ? deps.watchClick(signal) : Promise.resolve()),
         rate: () => get().rate,
         reducedMotion: () => deps.reducedMotion(),
       }

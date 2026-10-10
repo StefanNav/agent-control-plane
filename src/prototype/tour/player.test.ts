@@ -122,6 +122,7 @@ function setup(
   const navigate = vi.fn((to: string) => void log.push(`navigate:${to}`))
   const exitStory = vi.fn()
   const reveal = vi.fn(async () => {})
+  const watchClick = vi.fn(async () => {})
   const deps: PlayerDeps = {
     chapters,
     timeline: buildTimeline(chapters, {}),
@@ -131,6 +132,7 @@ function setup(
     exitStory,
     run,
     reveal,
+    watchClick,
     reducedMotion: () => reducedMotion,
     settle,
   }
@@ -147,6 +149,7 @@ function setup(
     navigate,
     exitStory,
     reveal,
+    watchClick,
     settle,
     settles,
     log,
@@ -800,10 +803,12 @@ describe('next, prev and jump', () => {
     first.host.setCard({ id: 'stale', side: 'left' })
     void first.host.moveCursor(5, 5, true)
     void first.host.reveal(document.body)
+    void first.host.watchClick()
     first.done(['outline:stale'])
     await flush()
     expect(t.state()).toBe(settled)
     expect(t.reveal).not.toHaveBeenCalled()
+    expect(t.watchClick).not.toHaveBeenCalled()
     expect(t.calls).toHaveLength(2)
   })
 
@@ -907,16 +912,18 @@ describe('settings and exit', () => {
     expect(t.state().captions).toBe(true)
   })
 
-  test('the host reads the outline and forwards reveal and reduced motion', async () => {
+  test('the host reads the outline and forwards reveal, reduced motion and the page answering a click', async () => {
     const t = setup()
     t.state().open(1, true)
     await flush()
-    const { host } = t.calls[0]!
+    const { host, signal } = t.calls[0]!
     host.setOutline('agent-summary')
     expect(host.outline()).toBe('agent-summary')
     expect(host.reducedMotion()).toBe(true)
     await host.reveal(document.body)
     expect(t.reveal).toHaveBeenCalledWith(document.body)
+    await host.watchClick()
+    expect(t.watchClick).toHaveBeenCalledWith(signal)
   })
 
   test('exit() resets the demo, silences the voice and closes, staying on a product route (R5)', async () => {

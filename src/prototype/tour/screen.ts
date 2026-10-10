@@ -74,6 +74,43 @@ export function settleScreen(
   })
 }
 
+/** The browser's location (pathname and query), as the screen reports its own. */
+function pageLocation(): string {
+  return window.location.pathname + window.location.search
+}
+
+/**
+ * Call just before the tour clicks: resolves once the page has answered the click, an animation
+ * frame later or, if the click changed the URL, once the screen is on the new URL. The router
+ * updates the URL during the click but renders it in a transition, so until then the old screen is
+ * still up: a panel still showing the previous selection, its link still going there. Never
+ * rejects: an abort resolves it, and so does the 1500 ms safety wait.
+ */
+export function settleClick(signal: AbortSignal, timeoutMs = SETTLE_TIMEOUT_MS): Promise<void> {
+  const before = pageLocation()
+  return new Promise((resolve) => {
+    if (signal.aborted) return resolve()
+    let frame = 0
+    const finish = () => {
+      listeners.delete(check)
+      cancelAnimationFrame(frame)
+      clearTimeout(timer)
+      signal.removeEventListener('abort', finish)
+      resolve()
+    }
+    const check = () => {
+      if (screen.location === pageLocation()) finish()
+    }
+    const timer = setTimeout(finish, timeoutMs)
+    signal.addEventListener('abort', finish)
+    frame = requestAnimationFrame(() => {
+      if (pageLocation() === before) return finish()
+      listeners.add(check)
+      check()
+    })
+  })
+}
+
 /** Does the visitor ask for less motion? False when the browser can't say. */
 export function prefersReducedMotion(): boolean {
   return (

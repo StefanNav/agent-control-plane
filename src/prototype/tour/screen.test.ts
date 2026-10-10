@@ -1,4 +1,11 @@
-import { atRoute, markScreen, prefersReducedMotion, revealClear, settleScreen } from './screen'
+import {
+  atRoute,
+  markScreen,
+  prefersReducedMotion,
+  revealClear,
+  settleClick,
+  settleScreen,
+} from './screen'
 
 /** Track a promise so a test can tell whether it has settled yet. */
 function track(promise: Promise<void>) {
@@ -123,6 +130,61 @@ describe('settleScreen (Ruling 10)', () => {
     await vi.advanceTimersByTimeAsync(1500)
     expect(settled.done).toBe(true)
     expect(() => markScreen(2, '/a')).not.toThrow()
+  })
+})
+
+describe('settleClick', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    window.history.replaceState(null, '', '/operations')
+    markScreen(1, '/operations')
+  })
+
+  afterEach(() => {
+    window.history.replaceState(null, '', '/')
+  })
+
+  test('a click that leaves the URL alone is answered a frame later', async () => {
+    const answered = track(settleClick(new AbortController().signal))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(answered.done).toBe(false)
+    await vi.advanceTimersByTimeAsync(16)
+    expect(answered.done).toBe(true)
+  })
+
+  test('a click that changes the URL is answered once the screen is on the new URL', async () => {
+    const answered = track(settleClick(new AbortController().signal))
+    window.history.replaceState(null, '', '/operations?division=medications')
+    await vi.advanceTimersByTimeAsync(100)
+    expect(answered.done).toBe(false)
+    markScreen(1, '/operations?division=medications')
+    await flush()
+    expect(answered.done).toBe(true)
+  })
+
+  test('a screen that has caught up by the next frame is answered then', async () => {
+    const answered = track(settleClick(new AbortController().signal))
+    window.history.pushState(null, '', '/operations/divisions/medications')
+    markScreen(1, '/operations/divisions/medications')
+    await vi.advanceTimersByTimeAsync(16)
+    expect(answered.done).toBe(true)
+  })
+
+  test('resolves when aborted, and gives up waiting after 1500 ms', async () => {
+    const controller = new AbortController()
+    const aborted = track(settleClick(controller.signal))
+    window.history.replaceState(null, '', '/nowhere')
+    await vi.advanceTimersByTimeAsync(100)
+    controller.abort()
+    await flush()
+    expect(aborted.done).toBe(true)
+
+    const late = track(settleClick(new AbortController().signal))
+    window.history.replaceState(null, '', '/elsewhere')
+    await vi.advanceTimersByTimeAsync(1499)
+    expect(late.done).toBe(false)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(late.done).toBe(true)
   })
 })
 

@@ -10,6 +10,11 @@ export interface ActionHost {
   setCard(card: { id: string; side: 'left' | 'right' } | null): void
   /** Glide the cursor to a point, and press it there when `click` is true. */
   moveCursor(x: number, y: number, click: boolean): Promise<void>
+  /**
+   * Call just before a click: resolves once the page has answered it (re-rendered, and on screen at
+   * any URL the click went to), so the next action never measures or clicks what it is replacing.
+   */
+  watchClick(): Promise<void>
   rate(): number
   reducedMotion(): boolean
 }
@@ -181,7 +186,11 @@ export async function runActions(
       }
       case 'click': {
         const el = await reach(action)
-        if (el && (await pressOn(el))) el.click()
+        if (!el || !(await pressOn(el))) break
+        // Watch from before the click: a router updates the URL during it.
+        const answered = host.watchClick()
+        el.click()
+        await untilAborted(answered, signal)
         break
       }
       case 'type': {

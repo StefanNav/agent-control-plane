@@ -11,6 +11,7 @@ function makeHost(overrides: Partial<ActionHost> = {}) {
     reveal: vi.fn(async (el) => void log.push(`reveal:${el.dataset.storyTarget}`)),
     setCard: vi.fn((card) => void log.push(`card:${card ? `${card.id}/${card.side}` : 'none'}`)),
     moveCursor: vi.fn(async (x, y, click) => void log.push(`cursor:${x},${y},${click}`)),
+    watchClick: vi.fn(async () => {}),
     rate: () => 1,
     reducedMotion: () => false,
     ...overrides,
@@ -220,6 +221,62 @@ describe('runActions', () => {
     })
     await runActions([{ kind: 'click', target: 'x' }], host, new AbortController().signal)
     expect(host.moveCursor).toHaveBeenCalledWith(50, 120, true)
+  })
+
+  test('a click is watched from just before it lands, and the next action waits for the page to answer it', async () => {
+    const { host, log } = makeHost()
+    let answer = () => {}
+    host.watchClick = vi.fn(() => {
+      log.push('watching')
+      return new Promise<void>((resolve) => {
+        answer = () => {
+          log.push('answered')
+          resolve()
+        }
+      })
+    })
+    addTarget('x').addEventListener('click', () => log.push('clicked'))
+    addTarget('y')
+    const run = runActions(
+      [
+        { kind: 'click', target: 'x' },
+        { kind: 'outline', target: 'y' },
+      ],
+      host,
+      new AbortController().signal,
+    )
+    await vi.waitFor(() => expect(log).toContain('clicked'))
+    expect(log).toEqual(['reveal:x', 'cursor:0,0,true', 'watching', 'clicked'])
+    answer()
+    expect(await run).toEqual({ skipped: [] })
+    expect(log).toEqual([
+      'reveal:x',
+      'cursor:0,0,true',
+      'watching',
+      'clicked',
+      'answered',
+      'reveal:y',
+      'outline:y',
+    ])
+  })
+
+  test('aborting while the page answers a click stops the run there', async () => {
+    const controller = new AbortController()
+    addTarget('x')
+    addTarget('y')
+    const { host, log } = makeHost({ watchClick: vi.fn(() => new Promise<void>(() => {})) })
+    const run = runActions(
+      [
+        { kind: 'click', target: 'x' },
+        { kind: 'outline', target: 'y' },
+      ],
+      host,
+      controller.signal,
+    )
+    await vi.waitFor(() => expect(host.watchClick).toHaveBeenCalled())
+    controller.abort()
+    expect(await run).toEqual({ skipped: [] })
+    expect(log).toEqual(['reveal:x', 'cursor:0,0,true'])
   })
 
   test('click does not land if the run is aborted during the glide', async () => {
