@@ -282,7 +282,7 @@ test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
 })
 
-test('the opening clicks from the board to the Med Rec Agent, then runs on into onboarding', async ({
+test('the opening clicks from the board to the Med Rec Agent, then runs on into the problem', async ({
   page,
 }) => {
   const errors = collectErrors(page)
@@ -291,12 +291,7 @@ test('the opening clicks from the board to the Med Rec Agent, then runs on into 
   await expectLineOver(page, 'In Medications', '/operations/divisions/medications')
   await expectLineOver(page, 'This one drafts', '/operations/agents/med-rec')
   await expectAtMedRec(page)
-  await expect(page).toHaveURL(
-    /\/inventory\/agents\/med-rec\/onboarding\/intake\?tour=onboarding$/,
-    {
-      timeout: CHAPTER_MS,
-    },
-  )
+  await expect(page).toHaveURL(/\/tour\/problem\?tour=problem$/, { timeout: CHAPTER_MS })
   await expect(bar(page)).toBeVisible()
   expect(errors).toEqual([])
 })
@@ -525,7 +520,9 @@ test('supervising: Ana flags a draft, Marcus pauses Med Rec, Priya co-signs its 
   expect(errors).toEqual([])
 })
 
-test('trust drops: Med Rec shows its step-down notice, then the tour ends', async ({ page }) => {
+test('trust drops: Med Rec shows its step-down notice, then the tour runs on into how I got here', async ({
+  page,
+}) => {
   const errors = collectErrors(page)
   await openChapter(page, 'step-down', /\/operations\/agents\/med-rec\?tour=step-down$/)
   await play(page)
@@ -553,9 +550,259 @@ test('trust drops: Med Rec shows its step-down notice, then the tour ends', asyn
     (s) => `${s.pathname} · skipped ${s.skipped}`,
     `${MED_REC} · skipped 0`,
   )
-  // The last chapter so far: the tour ends there and resets the demo.
+  await expect(page).toHaveURL(/\/tour\/process\?tour=process$/, { timeout: CHAPTER_MS })
+  await expect(bar(page)).toBeVisible()
+  expect(errors).toEqual([])
+})
+
+/**
+ * One read of the tour on a prototype page (an interlude or the landing page), taken at a single
+ * moment. Unlike `sample`, it reads nothing from the saved demo: an interlude loads no scenario, so
+ * a fresh browser may have none saved.
+ */
+interface Glance {
+  /** The chapter the URL names while the bar is open; null once the tour has closed. */
+  chapter: string | null
+  caption: string
+  pathname: string
+  skipped: string | null
+  /** The interlude's items on show, in page order, and the ones outlined as current. */
+  shown: string[]
+  current: string[]
+  /** The targets the tour has outlined. */
+  outlined: string[]
+  /** The tour card's text, or null when none is up. */
+  card: string | null
+}
+
+async function glance(page: Page): Promise<Glance> {
+  return page.evaluate(() => {
+    const bar = document.querySelector('[data-tour="bar"]')
+    const items = [...document.querySelectorAll<HTMLElement>('main [data-item]')]
+    const solid = (el: Element) => getComputedStyle(el).outlineStyle === 'solid'
+    return {
+      chapter: bar ? new URLSearchParams(location.search).get('tour') : null,
+      caption: bar?.querySelector('p')?.textContent ?? '',
+      pathname: location.pathname,
+      skipped: bar?.getAttribute('data-skipped') ?? null,
+      shown: items
+        .filter((el) => getComputedStyle(el).visibility === 'visible')
+        .map((el) => el.dataset.item!),
+      current: items.filter(solid).map((el) => el.dataset.item!),
+      outlined: [...document.querySelectorAll<HTMLElement>('[data-story-target]')]
+        .filter(solid)
+        .map((el) => el.dataset.storyTarget!),
+      card: document.querySelector('[data-tour="card"]')?.textContent ?? null,
+    }
+  })
+}
+
+/** As `expectUnder`, for a glance: only glances taken under that line's caption count. */
+async function expectGlance(
+  page: Page,
+  at: { chapter: string; line: string },
+  read: (g: Glance) => string,
+  want: string,
+) {
+  await expect
+    .poll(
+      async () => {
+        const g = await glance(page)
+        if (g.chapter !== at.chapter || !g.caption.startsWith(at.line))
+          return `not under "${at.line}": ${g.chapter} · ${g.caption}`
+        return read(g)
+      },
+      { message: at.line, timeout: CHAPTER_MS, intervals: [25] },
+    )
+    .toBe(want)
+}
+
+/**
+ * From now on, note each target the tour outlines, in order (a MutationObserver sees every render,
+ * however brief); the returned read gives the list so far.
+ */
+async function watchOutlines(page: Page): Promise<() => Promise<string[]>> {
+  await page.evaluate(() => {
+    const seen: string[] = []
+    Reflect.set(window, 'tourOutlines', seen)
+    const look = () => {
+      for (const el of document.querySelectorAll<HTMLElement>('[data-story-target]')) {
+        const target = el.dataset.storyTarget!
+        if (getComputedStyle(el).outlineStyle === 'solid' && seen.at(-1) !== target)
+          seen.push(target)
+      }
+    }
+    new MutationObserver(look).observe(document, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+      attributes: true,
+    })
+    look()
+  })
+  return () => page.evaluate(() => Reflect.get(window, 'tourOutlines') as string[])
+}
+
+/** An interlude's items: which show and which are current. */
+const items = (g: Glance) => `shown ${g.shown.join(', ')} · current ${g.current.join(', ')}`
+
+/** Which research excerpt the card shows, by the start of its quote. */
+function excerpt(card: string | null): string {
+  if (card === null) return 'no card'
+  if (card.startsWith('Plan-level oversight')) return 'R1'
+  if (card.startsWith('Clinicians show strong automation bias')) return 'R2'
+  if (card.startsWith('start in a shadow-like mode')) return 'R3'
+  return `another card: ${card}`
+}
+
+test('the problem: its three lines come in as they are named, with the research cards', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'problem', /\/tour\/problem\?tour=problem$/)
+  // Held on the first line: only its item, current.
+  await expect.poll(async () => items(await glance(page))).toBe('shown act · current act')
+  await play(page)
+  await expectGlance(
+    page,
+    { chapter: 'problem', line: 'The usual safety net' },
+    items,
+    'shown act, approve · current approve',
+  )
+  // The line's two excerpts: the first while it plays, the second once it ends, for the next line.
+  await expectGlance(
+    page,
+    { chapter: 'problem', line: "But that doesn't hold up well" },
+    (g) => excerpt(g.card),
+    'R1',
+  )
+  await expectGlance(
+    page,
+    { chapter: 'problem', line: 'And with dozens of agents' },
+    (g) => excerpt(g.card),
+    'R2',
+  )
+  await expectGlance(
+    page,
+    { chapter: 'problem', line: 'The thing is' },
+    (g) => `${items(g)} · ${excerpt(g.card)}`,
+    'shown act, approve, trust · current trust · R3',
+  )
+  await expectGlance(
+    page,
+    { chapter: 'problem', line: 'So I built the whole product' },
+    (g) => `${items(g)} · ${excerpt(g.card)} · skipped ${g.skipped}`,
+    'shown act, approve, trust · current trust · no card · skipped 0',
+  )
+  // Then on into the people, on the landing page.
+  await expect(page).toHaveURL(/\/\?tour=people$/, { timeout: CHAPTER_MS })
+  expect(errors).toEqual([])
+})
+
+test('who it’s for: the story cards, then each person’s card as they are named', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'people', /\/\?tour=people$/)
+  const outlines = await watchOutlines(page)
+  await play(page)
+  const outlined = (g: Glance) => `${g.pathname} · outlined ${g.outlined.join(', ')}`
+  const under = (line: string) => ({ chapter: 'people', line })
+  await expectGlance(page, under('Seven people use it'), outlined, '/ · outlined people-cards')
+  await expectGlance(page, under('Marcus owns'), outlined, '/ · outlined people-marcus')
+  await expectGlance(page, under('Priya is'), outlined, '/ · outlined people-priya')
+  await expectGlance(page, under('Pharmacists like Ana'), outlined, '/ · outlined people-ana')
+  await expectGlance(
+    page,
+    under('And Jordan'),
+    (g) => `${outlined(g)} · skipped ${g.skipped}`,
+    '/ · outlined people-jordan · skipped 0',
+  )
+  // Then on into onboarding.
+  await expect(page).toHaveURL(
+    /\/inventory\/agents\/med-rec\/onboarding\/intake\?tour=onboarding$/,
+    { timeout: CHAPTER_MS },
+  )
+  // One line names three people, outlined in turn. The silent voice ends the line as the last
+  // outline lands, so that one shows only for a moment: the order is read from the watch.
+  expect((await outlines()).filter((target) => target.startsWith('people-'))).toEqual(
+    ['cards', 'marcus', 'priya', 'dana', 'sam', 'drlee', 'ana', 'jordan'].map((p) => `people-${p}`),
+  )
+  expect(errors).toEqual([])
+})
+
+test('how I got here: Research, then the documents, then the design and the build', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'process', /\/tour\/process\?tour=process$/)
+  await expect.poll(async () => items(await glance(page))).toBe('shown research · current research')
+  await play(page)
+  const documents = ['vision', 'prd', 'roadmap', 'epics'].join(', ')
+  const making = ['brief', 'explorations', 'frames', 'build'].join(', ')
+  await expectGlance(
+    page,
+    { chapter: 'process', line: 'That shaped the vision' },
+    items,
+    `shown research, ${documents} · current ${documents}`,
+  )
+  await expectGlance(
+    page,
+    { chapter: 'process', line: 'AI sped up every step' },
+    (g) => `${items(g)} · skipped ${g.skipped}`,
+    `shown research, ${documents}, ${making} · current ${making} · skipped 0`,
+  )
+  await expect(page).toHaveURL(/\/tour\/validate\?tour=validate$/, { timeout: CHAPTER_MS })
+  expect(errors).toEqual([])
+})
+
+test('how I’d validate it: what I checked, who I’d bring in, what I’d measure', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'validate', /\/tour\/validate\?tour=validate$/)
+  await play(page)
+  const under = (line: string) => ({ chapter: 'validate', line })
+  await expectGlance(page, under("I couldn't test it"), items, 'shown checked · current checked')
+  await expectGlance(
+    page,
+    under("I'd want to learn"),
+    items,
+    'shown checked, bring-in · current bring-in',
+  )
+  await expectGlance(
+    page,
+    under("And I'd measure"),
+    (g) => `${items(g)} · skipped ${g.skipped}`,
+    'shown checked, bring-in, measure · current measure · skipped 0',
+  )
+  // Then on into the close, on the landing page.
+  await expect(page).toHaveURL(/\/\?tour=close$/, { timeout: CHAPTER_MS })
+  expect(errors).toEqual([])
+})
+
+test('the close points at the story cards, then the tour ends on the landing page', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'close', /\/\?tour=close$/)
+  await play(page)
+  await expectGlance(
+    page,
+    { chapter: 'close', line: 'Each of the seven people' },
+    (g) => `${g.pathname} · outlined ${g.outlined.join(', ')}`,
+    '/ · outlined people-cards',
+  )
+  await expectGlance(
+    page,
+    { chapter: 'close', line: 'Thanks for watching' },
+    (g) => `${g.pathname} · skipped ${g.skipped}`,
+    '/ · skipped 0',
+  )
+  // The end (R5): the bar goes, `?tour` with it, and the visitor stays on the landing page.
   await expect(bar(page)).toHaveCount(0, { timeout: CHAPTER_MS })
-  await expect(page).toHaveURL(/\/operations\/agents\/med-rec$/)
+  await expect(page).toHaveURL(/\/$/)
+  await expect(page.getByRole('heading', { level: 1, name: 'Agent Control Plane' })).toBeVisible()
   expect(errors).toEqual([])
 })
 

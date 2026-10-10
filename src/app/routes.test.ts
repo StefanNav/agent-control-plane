@@ -16,6 +16,7 @@ const EXPECTED = [
   '/reports/evidence', '/reports/evidence/:agentId', '/reports/export',
   '/settings/divisions/:divisionId', '/settings/people',
   '/wall', '/epic',
+  '/tour/problem', '/tour/process', '/tour/validate',
 ]
 
 test('route table has exactly the spec routes', () => {
@@ -32,12 +33,20 @@ test('redirect targets exist', () => {
   }
 })
 
-test('wall is kiosk; landing, about, gallery and epic are prototype; the rest are app', () => {
+const PROTOTYPE = ['/', '/about', '/about/components', '/epic', '/tour/problem', '/tour/process', '/tour/validate']
+
+test('wall is kiosk; landing, about, gallery, epic and the tour’s interludes are prototype; the rest are app', () => {
   const shellOf = (path: string) => routeTable.find((r) => r.path === path)?.shell
   expect(shellOf('/wall')).toBe('kiosk')
-  for (const p of ['/', '/about', '/about/components', '/epic']) expect(shellOf(p)).toBe('prototype')
-  for (const r of routeTable.filter((r) => !['/wall', '/', '/about', '/about/components', '/epic'].includes(r.path))) {
+  for (const p of PROTOTYPE) expect(shellOf(p)).toBe('prototype')
+  for (const r of routeTable.filter((r) => r.path !== '/wall' && !PROTOTYPE.includes(r.path))) {
     expect(r.shell, r.path).toBe('app')
+  }
+})
+
+test('the tour’s interludes are Phase 10 pages with no frames', () => {
+  for (const r of routeTable.filter((r) => r.path.startsWith('/tour/'))) {
+    expect(r, r.path).toMatchObject({ phase: 10, frames: [], nav: null })
   }
 })
 

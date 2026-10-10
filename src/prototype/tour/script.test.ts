@@ -3,9 +3,10 @@ import { routeTable } from '../../app/routes'
 import { SCENARIO_IDS } from '../../data/scenarios'
 import { PERSONA_IDS } from '../../data/types'
 import { CARDS } from './cards'
-import { buildTimeline } from './engine'
+import { buildTimeline, isInterlude } from './engine'
 import { MANIFEST } from './manifest'
 import { CHAPTERS } from './script'
+import type { ChapterId } from './types'
 
 const GENDERED = /\b(he|she|him|her|his|hers|himself|herself)\b/i
 const steps = CHAPTERS.flatMap((c) => c.steps)
@@ -22,6 +23,46 @@ test('chapter and beat ids are unique', () => {
   expect(new Set(chapters).size).toBe(chapters.length)
   const ids = beats.map((b) => b.id)
   expect(new Set(ids).size).toBe(ids.length)
+})
+
+test('chapters run in the script’s order (R1)', () => {
+  const ORDER: ChapterId[] = [
+    'open',
+    'problem',
+    'people',
+    'onboarding',
+    'earning-trust',
+    'supervising',
+    'step-down',
+    'decisions',
+    'process',
+    'validate',
+    'close',
+  ]
+  const ids = CHAPTERS.map((c) => c.id)
+  expect(ids).toEqual(ORDER.filter((id) => ids.includes(id)))
+})
+
+test('an interlude loads no scenario and no persona, and only an interlude reveals', () => {
+  for (const step of steps) {
+    if (isInterlude(step.route)) {
+      expect(step.scenario, step.id).toBeUndefined()
+      expect(step.persona, step.id).toBeUndefined()
+    } else {
+      for (const beat of step.beats) expect(beat.reveal, beat.id).toBeUndefined()
+    }
+  }
+})
+
+test('the tour ends on the landing page (R5)', () => {
+  expect(steps.at(-1)?.route).toBe('/')
+})
+
+test('an excerpt that isn’t a product principle cites only “Research notes · …”', () => {
+  for (const card of Object.values(CARDS)) {
+    if (card.kind !== 'excerpt' || card.source === 'Product principles') continue
+    expect(card.source).toMatch(/^Research notes · \S/)
+  }
 })
 
 test('every beat has a clip in the manifest (run `pnpm tour:audio`)', () => {

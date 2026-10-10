@@ -56,6 +56,18 @@ for (const path of READ_ONLY) {
   })
 }
 
+// The interludes' routes are in the table above, read as static pages. On the tour they show only
+// what has been named so far, with the tour bar open.
+for (const chapter of ['problem', 'process', 'validate']) {
+  test(`axe: the ${chapter} interlude on the tour, part revealed`, async ({ page }) => {
+    await page.goto(`/?tour=${chapter}&tourVoice=silent`)
+    await expect(page).toHaveURL(new RegExp(`/tour/${chapter}\\?tour=${chapter}$`))
+    await expect(page.getByRole('complementary', { name: 'Tour' })).toBeVisible()
+    await expect(page.locator('main [data-item][data-state="hidden"]').first()).toBeHidden()
+    expect(await violations(page)).toEqual([])
+  })
+}
+
 test('axe: the agent view with its control menu open', async ({ page }) => {
   await page.goto('/operations/agents/med-rec')
   await page.getByRole('button', { name: 'Controls' }).click()

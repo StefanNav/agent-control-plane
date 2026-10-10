@@ -34,6 +34,76 @@
     "source": "recorded",
     "textHash": "99e8ff33"
   },
+  "problem-1": {
+    "ms": 7444,
+    "source": "recorded",
+    "textHash": "f556333d"
+  },
+  "problem-2": {
+    "ms": 3488,
+    "source": "recorded",
+    "textHash": "50120992"
+  },
+  "problem-3": {
+    "ms": 8150,
+    "source": "recorded",
+    "textHash": "108725a6"
+  },
+  "problem-4": {
+    "ms": 5226,
+    "source": "recorded",
+    "textHash": "81a2205b"
+  },
+  "problem-5": {
+    "ms": 4163,
+    "source": "recorded",
+    "textHash": "89a181ed"
+  },
+  "problem-6": {
+    "ms": 11017,
+    "source": "recorded",
+    "textHash": "37e3302a"
+  },
+  "problem-7": {
+    "ms": 10942,
+    "source": "recorded",
+    "textHash": "1d070e5d"
+  },
+  "problem-8": {
+    "ms": 3242,
+    "source": "recorded",
+    "textHash": "e52e9222"
+  },
+  "people-1": {
+    "ms": 5729,
+    "source": "recorded",
+    "textHash": "dd8e17fb"
+  },
+  "people-2": {
+    "ms": 4628,
+    "source": "recorded",
+    "textHash": "b0afd23b"
+  },
+  "people-3": {
+    "ms": 5125,
+    "source": "recorded",
+    "textHash": "d347cf1d"
+  },
+  "people-4": {
+    "ms": 7924,
+    "source": "recorded",
+    "textHash": "282cb9c0"
+  },
+  "people-5": {
+    "ms": 6301,
+    "source": "recorded",
+    "textHash": "a9a85cae"
+  },
+  "people-6": {
+    "ms": 6458,
+    "source": "recorded",
+    "textHash": "69b3566f"
+  },
   "onboarding-1": {
     "ms": 3500,
     "source": "recorded",
@@ -133,5 +203,75 @@
     "ms": 3127,
     "source": "recorded",
     "textHash": "88f92931"
+  },
+  "process-1": {
+    "ms": 2029,
+    "source": "recorded",
+    "textHash": "24eceb95"
+  },
+  "process-2": {
+    "ms": 5422,
+    "source": "recorded",
+    "textHash": "0b0a2000"
+  },
+  "process-3": {
+    "ms": 7736,
+    "source": "recorded",
+    "textHash": "d6d60bfd"
+  },
+  "process-4": {
+    "ms": 6206,
+    "source": "recorded",
+    "textHash": "5319fa4b"
+  },
+  "process-5": {
+    "ms": 7596,
+    "source": "recorded",
+    "textHash": "fe4148d0"
+  },
+  "validate-1": {
+    "ms": 2537,
+    "source": "recorded",
+    "textHash": "494e946a"
+  },
+  "validate-2": {
+    "ms": 4176,
+    "source": "recorded",
+    "textHash": "bc2442e1"
+  },
+  "validate-3": {
+    "ms": 8652,
+    "source": "recorded",
+    "textHash": "1a0b5d88"
+  },
+  "validate-4": {
+    "ms": 7296,
+    "source": "recorded",
+    "textHash": "1577cd8c"
+  },
+  "validate-5": {
+    "ms": 7643,
+    "source": "recorded",
+    "textHash": "a33185e5"
+  },
+  "validate-6": {
+    "ms": 6111,
+    "source": "recorded",
+    "textHash": "27a44127"
+  },
+  "close-1": {
+    "ms": 2530,
+    "source": "recorded",
+    "textHash": "23aa657f"
+  },
+  "close-2": {
+    "ms": 9925,
+    "source": "recorded",
+    "textHash": "3672acc5"
+  },
+  "close-3": {
+    "ms": 1466,
+    "source": "recorded",
+    "textHash": "51c79962"
   }
 }

@@ -1,5 +1,8 @@
 import type { Chapter } from './types'
 
+/** people-4 (7.9 s): Dana, Sam and Dr. Lee in turn, a third of the line apart. */
+const WAIT_PEOPLE_MS = 2650
+
 /**
  * The tour, in running order; `pnpm tour:audio` makes a clip for each beat. The text is
  * `docs/tour/script.md` verbatim, one beat per numbered line; its brackets are the actions.
@@ -56,6 +59,111 @@ export const CHAPTERS: Chapter[] = [
           {
             id: 'open-7',
             text: 'You can pause anytime and click around, and everything you click really works.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'problem',
+    title: 'The problem',
+    steps: [
+      {
+        // An interlude: its lines come in as the narration names them (spec §4.3).
+        id: 'problem-page',
+        route: '/tour/problem',
+        beats: [
+          {
+            id: 'problem-1',
+            text: "I picked this problem because hospitals are starting to use AI agents that don't just suggest things; they actually do them.",
+            reveal: 'act',
+          },
+          {
+            id: 'problem-2',
+            text: 'The usual safety net is a person approving every action.',
+            reveal: 'approve',
+          },
+          {
+            id: 'problem-3',
+            text: "But that doesn't hold up well: in one recent study, people caught only about one in five bad agent actions.",
+            // R1 while the line gives its finding ("one in five" comes at its end); R2 once it has
+            // ended, for the next line. As an after-action it waits for Play if the tour is paused.
+            actions: [{ kind: 'card', card: 'research-r1' }],
+            after: [{ kind: 'card', card: 'research-r2' }],
+          },
+          {
+            id: 'problem-4',
+            text: 'And with dozens of agents, approving everything turns into rubber-stamping.',
+          },
+          {
+            id: 'problem-5',
+            text: 'The thing is, hospitals already know how to trust someone new.',
+            reveal: 'trust',
+            actions: [{ kind: 'card', card: 'research-r3' }],
+          },
+          {
+            id: 'problem-6',
+            text: "It's how they bring on a clinician: a defined scope, supervision, and privileges earned on evidence that can be taken away.",
+          },
+          {
+            id: 'problem-7',
+            text: "Residents earn independence one skill at a time, and self-driving cars only operate where they've proven they can.",
+            actions: [{ kind: 'clearCard' }],
+          },
+          {
+            id: 'problem-8',
+            text: 'So I built the whole product around that idea.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'people',
+    title: 'Who it’s for',
+    steps: [
+      {
+        id: 'people-landing',
+        route: '/',
+        scenario: 'baseline',
+        persona: 'marcus',
+        beats: [
+          {
+            id: 'people-1',
+            text: 'Seven people use it, each with a different job.',
+            actions: [{ kind: 'outline', target: 'people-cards' }],
+          },
+          {
+            id: 'people-2',
+            text: 'Marcus owns the agents and supervises them day to day.',
+            actions: [{ kind: 'outline', target: 'people-marcus' }],
+          },
+          {
+            id: 'people-3',
+            text: 'Priya is the clinical sponsor who signs for what each agent is allowed to do.',
+            actions: [{ kind: 'outline', target: 'people-priya' }],
+          },
+          {
+            id: 'people-4',
+            text: 'Dana runs the AI program, Sam handles the technical limits, and Dr. Lee chairs the review board.',
+            // Each person in turn, as the line names them.
+            actions: [
+              { kind: 'outline', target: 'people-dana' },
+              { kind: 'wait', ms: WAIT_PEOPLE_MS },
+              { kind: 'outline', target: 'people-sam' },
+              { kind: 'wait', ms: WAIT_PEOPLE_MS },
+              { kind: 'outline', target: 'people-drlee' },
+            ],
+          },
+          {
+            id: 'people-5',
+            text: 'Pharmacists like Ana never open the console at all; they work with the agent from inside the medical record.',
+            actions: [{ kind: 'outline', target: 'people-ana' }],
+          },
+          {
+            id: 'people-6',
+            text: 'And Jordan, in risk, can rebuild anything an agent did after the fact.',
+            actions: [{ kind: 'outline', target: 'people-jordan' }],
           },
         ],
       },
@@ -311,6 +419,95 @@ export const CHAPTERS: Chapter[] = [
             id: 'step-down-2',
             text: 'Nothing climbs back up without someone signing for it.',
           },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'process',
+    title: 'How I got here',
+    steps: [
+      {
+        // An interlude: its tiles light up as the narration names them; one line can name several.
+        id: 'process-page',
+        route: '/tour/process',
+        beats: [
+          { id: 'process-1', text: 'A quick word on how I got here.', reveal: 'research' },
+          {
+            id: 'process-2',
+            text: 'I spent most of my time on research and defining the problem before designing a single screen.',
+          },
+          {
+            id: 'process-3',
+            text: 'That shaped the vision, requirements and roadmap, then epics and user stories, and only then the screens.',
+            reveal: 'vision',
+          },
+          {
+            id: 'process-4',
+            text: 'I explored the design system first, then built it in code with Claude Code, phase by phase.',
+            reveal: 'brief',
+          },
+          {
+            id: 'process-5',
+            text: 'AI sped up every step, but I made the calls and signed off on each one, the same rule the product enforces.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'validate',
+    title: 'How I’d validate it',
+    steps: [
+      {
+        id: 'validate-page',
+        route: '/tour/validate',
+        beats: [
+          { id: 'validate-1', text: 'So how would I know it works?', reveal: 'checked' },
+          {
+            id: 'validate-2',
+            text: "I couldn't test it with hospital staff, so I checked what I could.",
+          },
+          {
+            id: 'validate-3',
+            text: 'Every screen traces back to a user story, and building it for real exposed contradictions in my own designs, which I fixed.',
+          },
+          {
+            id: 'validate-4',
+            text: "On a real team, I'd put it in front of pharmacists, agent owners and engineers before anything gets built.",
+            reveal: 'bring-in',
+          },
+          {
+            id: 'validate-5',
+            text: "I'd want to learn who actually watches an agent day to day, and which actions must always stay with a person.",
+          },
+          {
+            id: 'validate-6',
+            text: "And I'd measure how fast a problem reaches a named person, and whether reviewers are still really reviewing.",
+            reveal: 'measure',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'close',
+    title: 'Close',
+    steps: [
+      {
+        // Back on the landing page, as the tour ends (R5): ending stays here.
+        id: 'close-landing',
+        route: '/',
+        scenario: 'baseline',
+        persona: 'marcus',
+        beats: [
+          { id: 'close-1', text: "That's the life of one agent." },
+          {
+            id: 'close-2',
+            text: 'Each of the seven people has their own walkthrough here, or you can explore on your own, and Reset puts everything back.',
+            actions: [{ kind: 'outline', target: 'people-cards' }],
+          },
+          { id: 'close-3', text: 'Thanks for watching.' },
         ],
       },
     ],

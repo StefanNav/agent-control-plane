@@ -34,6 +34,9 @@ import { NotFound } from '../layout/NotFound'
 import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
 import { About } from '../prototype/About/About'
 import { Landing } from '../prototype/Landing/Landing'
+import { ProblemPage } from '../prototype/tour/interludes/ProblemPage'
+import { ProcessPage } from '../prototype/tour/interludes/ProcessPage'
+import { ValidatePage } from '../prototype/tour/interludes/ValidatePage'
 import { AppShell } from './AppShell'
 import type { RouteHandle, ShellKind } from './nav'
 import { Placeholder } from './Placeholder'
@@ -78,6 +81,9 @@ const PAGES: Record<string, ReactNode> = {
   '/operations/sampling': <SamplingPage />,
   '/inventory/promotions/:promotionId': <PromotionPage />,
   '/portfolio/promotions/:promotionId': <BoardDecisionPage />,
+  '/tour/problem': <ProblemPage />,
+  '/tour/process': <ProcessPage />,
+  '/tour/validate': <ValidatePage />,
 }
 
 function childrenFor(shell: ShellKind): RouteObject[] {

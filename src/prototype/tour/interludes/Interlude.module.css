@@ -1,0 +1,100 @@
+/* The tour's interludes (spec §4.3): calm prototype-layer pages, one column, no display type. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+}
+
+/* Room for nine tiles in a row. */
+.wide {
+  max-width: 1280px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.head h1 {
+  margin: 0;
+  color: var(--cs-ink);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * One item. Each beat brings one in (or a group): items reached earlier are text2, the current one
+ * ink in the tour's outline, and those not reached yet keep their place unseen. Off the tour every
+ * item shows, with its title in ink.
+ */
+.item {
+  border-radius: 6px;
+  color: var(--cs-text2);
+}
+
+.item[data-state='current'] {
+  color: var(--cs-ink);
+  outline: 2px solid var(--cs-ink);
+  outline-offset: 2px;
+}
+
+.item[data-state='hidden'] {
+  visibility: hidden;
+}
+
+.item[data-state='shown'].title,
+.item[data-state='shown'] .title {
+  color: var(--cs-ink);
+}
+
+.title {
+  margin: 0;
+}
+
+/* A line or a list sits flush with the page title; its padding is room for the outline. */
+.flush {
+  margin: 0 -12px;
+  padding: 8px 12px;
+}
+
+.points {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tile {
+  display: flex;
+  flex: 1 1 112px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+}
+
+.tileTitle {
+  font-weight: 600;
+}
