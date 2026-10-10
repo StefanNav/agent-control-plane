@@ -1,7 +1,7 @@
 import { cx } from '../../../lib/cx'
 import type from '../../../design-system/type.module.css'
 import styles from './Interlude.module.css'
-import { itemState, useReveal } from './useReveal'
+import { itemProps, useReveal } from './useReveal'
 
 /** Spec §7.4, as three short lists, each brought in as the narration reaches it. */
 const LISTS = [
@@ -54,7 +54,7 @@ export function ValidatePage() {
           key={list.id}
           aria-labelledby={`validate-${list.id}`}
           data-item={list.id}
-          data-state={itemState(reveal, list.id)}
+          {...itemProps(reveal, list.id)}
           className={cx(styles.item, styles.flush)}
         >
           <h2 id={`validate-${list.id}`} className={cx(styles.title, type.sectionTitle)}>

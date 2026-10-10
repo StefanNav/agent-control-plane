@@ -46,6 +46,13 @@ function items(container: HTMLElement): string[] {
   )
 }
 
+/** The items marked as the current step for assistive tech, in page order. */
+function currentSteps(container: HTMLElement): string[] {
+  return [...container.querySelectorAll<HTMLElement>('[aria-current]')].map(
+    (el) => `${el.dataset.item}:${el.getAttribute('aria-current')}`,
+  )
+}
+
 /** Hold the tour, paused, on beat `beat` of the step `stepId`. */
 function holdAt(stepId: string, beat: number) {
   const chapter = CHAPTERS.findIndex((c) => c.steps.some((s) => s.id === stepId))
@@ -82,13 +89,16 @@ describe('the interludes', () => {
     expect(interludeSteps.map((step) => step.route).sort()).toEqual(Object.keys(PAGES).sort())
   })
 
-  test('every reveal in the script brings in an item on its step’s page', () => {
+  test('each reveal in the script brings in items on its step’s page, and a beat brings in every item there', () => {
     for (const step of interludeSteps) {
       const { container, unmount } = show(step.route)
-      for (const beat of step.beats) {
-        if (beat.reveal === undefined) continue
-        expect(container.querySelector(`[data-item="${beat.reveal}"]`), beat.id).not.toBeNull()
+      const reveals = step.beats.flatMap((beat) => beat.reveal ?? [])
+      for (const reveal of reveals) {
+        const brought = container.querySelectorAll(`[data-reveal="${reveal}"]`)
+        expect(brought.length, `${step.id}: ${reveal}`).toBeGreaterThan(0)
       }
+      for (const item of container.querySelectorAll<HTMLElement>('[data-item]'))
+        expect(reveals, `${step.id}: ${item.dataset.item}`).toContain(item.dataset.reveal)
       unmount()
     }
   })
@@ -99,6 +109,7 @@ describe('the interludes', () => {
       const states = items(container)
       expect(states.length, route).toBeGreaterThan(0)
       for (const state of states) expect(state, route).toMatch(/:shown$/)
+      expect(currentSteps(container), route).toEqual([])
       unmount()
     }
   })
@@ -107,6 +118,7 @@ describe('the interludes', () => {
     const { container } = show('/tour/problem')
     holdAt('problem-page', 1)
     expect(items(container)).toEqual(['act:reached', 'approve:current', 'trust:hidden'])
+    expect(currentSteps(container)).toEqual(['approve:step'])
   })
 
   test('one line can bring in a group: the process tiles it names come in together, all current', () => {
@@ -123,6 +135,19 @@ describe('the interludes', () => {
       'frames:hidden',
       'build:hidden',
     ])
+    expect(currentSteps(container)).toEqual([
+      'vision:step',
+      'prd:step',
+      'roadmap:step',
+      'epics:step',
+    ])
+  })
+
+  test('the validate page marks its current list as the current step', () => {
+    const { container } = show('/tour/validate')
+    holdAt('validate-page', 3)
+    expect(items(container)).toEqual(['checked:reached', 'bring-in:current', 'measure:hidden'])
+    expect(currentSteps(container)).toEqual(['bring-in:step'])
   })
 })
 

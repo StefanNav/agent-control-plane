@@ -1,7 +1,7 @@
 import { cx } from '../../../lib/cx'
 import type from '../../../design-system/type.module.css'
 import styles from './Interlude.module.css'
-import { itemState, useReveal } from './useReveal'
+import { itemProps, useReveal } from './useReveal'
 
 /**
  * The work, in order, each with one line from the repo's docs. `group` is the reveal id that brings a
@@ -78,7 +78,7 @@ export function ProcessPage() {
           <li
             key={tile.id}
             data-item={tile.id}
-            data-state={itemState(reveal, tile.group)}
+            {...itemProps(reveal, tile.group)}
             className={cx(styles.item, styles.tile)}
           >
             <span className={cx(styles.title, styles.tileTitle, type.ui)}>{tile.title}</span>

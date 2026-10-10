@@ -36,3 +36,16 @@ export function itemState(reveal: Reveal, id: string): ItemState {
   if (!reveal.has(id)) return 'hidden'
   return [...reveal].at(-1) === id ? 'current' : 'reached'
 }
+
+/**
+ * What an item carries: the reveal id that brings it in, its state, and, while it is the current
+ * item on the tour, `aria-current="step"` (never on a static page).
+ */
+export function itemProps(reveal: Reveal, id: string) {
+  const state = itemState(reveal, id)
+  return {
+    'data-reveal': id,
+    'data-state': state,
+    'aria-current': state === 'current' ? ('step' as const) : undefined,
+  }
+}

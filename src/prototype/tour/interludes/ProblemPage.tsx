@@ -1,7 +1,7 @@
 import { cx } from '../../../lib/cx'
 import type from '../../../design-system/type.module.css'
 import styles from './Interlude.module.css'
-import { itemState, useReveal } from './useReveal'
+import { itemProps, useReveal } from './useReveal'
 
 /** The problem in three lines, each brought in as the narration names it. */
 const LINES = [
@@ -24,7 +24,7 @@ export function ProblemPage() {
           <li
             key={line.id}
             data-item={line.id}
-            data-state={itemState(reveal, line.id)}
+            {...itemProps(reveal, line.id)}
             className={cx(styles.item, styles.flush, styles.title, type.sectionTitle)}
           >
             {line.text}
