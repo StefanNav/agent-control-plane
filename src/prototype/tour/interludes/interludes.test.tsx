@@ -136,7 +136,7 @@ describe('page copy', () => {
         .map((li) => li.textContent),
     ).toEqual([
       'AI agents that act, not just suggest',
-      'A person approving every action',
+      'Approval of every action, by a person',
       'How hospitals already trust someone new',
     ])
   })

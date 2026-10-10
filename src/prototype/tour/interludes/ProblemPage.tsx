@@ -6,7 +6,7 @@ import { itemState, useReveal } from './useReveal'
 /** The problem in three lines, each brought in as the narration names it. */
 const LINES = [
   { id: 'act', text: 'AI agents that act, not just suggest' },
-  { id: 'approve', text: 'A person approving every action' },
+  { id: 'approve', text: 'Approval of every action, by a person' },
   { id: 'trust', text: 'How hospitals already trust someone new' },
 ]
 
