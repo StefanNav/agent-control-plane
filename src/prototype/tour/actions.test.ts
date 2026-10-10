@@ -412,6 +412,91 @@ describe('runActions', () => {
     expect(host.moveCursor).not.toHaveBeenCalled()
   })
 
+  test('choose presses a select and picks the option, so a React-controlled select changes', async () => {
+    function Picker() {
+      const [value, setValue] = useState('')
+      return createElement(
+        Fragment,
+        null,
+        createElement(
+          'select',
+          {
+            'data-story-target': 'o',
+            'aria-label': 'owner',
+            value,
+            onChange: (e: ChangeEvent<HTMLSelectElement>) => setValue(e.target.value),
+          },
+          createElement('option', { value: '' }, 'Choose an owner'),
+          createElement('option', { value: 'marcus' }, 'Marcus'),
+          createElement('option', { value: 'sam' }, 'Sam'),
+        ),
+        createElement('output', { 'aria-label': 'state' }, value),
+      )
+    }
+    render(createElement(Picker))
+    const { host, log } = makeHost({ reducedMotion: () => true })
+    const select = screen.getByLabelText('owner')
+    const pressedFirst: boolean[] = []
+    select.addEventListener('change', () => pressedFirst.push(log.includes('cursor:0,0,true')))
+    let result: { skipped: string[] } | undefined
+    await act(async () => {
+      result = await runActions(
+        [{ kind: 'choose', target: 'o', value: 'sam' }],
+        host,
+        new AbortController().signal,
+      )
+    })
+    expect(log).toEqual(['reveal:o', 'cursor:0,0,true'])
+    expect(pressedFirst).toEqual([true])
+    expect(select).toHaveValue('sam')
+    expect(screen.getByLabelText('state')).toHaveTextContent('sam')
+    expect(result).toEqual({ skipped: [] })
+  })
+
+  test('choose on something that is not a select is skipped', async () => {
+    addTarget('o', undefined, 'input')
+    const { host } = makeHost()
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const result = await runActions(
+      [{ kind: 'choose', target: 'o', value: 'sam' }],
+      host,
+      new AbortController().signal,
+    )
+    expect(result).toEqual({ skipped: ['choose:o'] })
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(host.moveCursor).not.toHaveBeenCalled()
+  })
+
+  test('choose an option the select does not have is skipped, and the value stays', async () => {
+    const select = addTarget('o', undefined, 'select') as HTMLSelectElement
+    select.append(new Option('Choose', ''), new Option('Marcus', 'marcus'))
+    const changed = vi.fn()
+    select.addEventListener('change', changed)
+    const { host } = makeHost()
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const result = await runActions(
+      [{ kind: 'choose', target: 'o', value: 'sam' }],
+      host,
+      new AbortController().signal,
+    )
+    expect(result).toEqual({ skipped: ['choose:o'] })
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(select.value).toBe('')
+    expect(changed).not.toHaveBeenCalled()
+    expect(host.moveCursor).not.toHaveBeenCalled()
+  })
+
+  test('choose does not pick if the run is aborted during the glide', async () => {
+    const select = addTarget('o', undefined, 'select') as HTMLSelectElement
+    select.append(new Option('Choose', ''), new Option('Sam', 'sam'))
+    const controller = new AbortController()
+    const { host } = makeHost({
+      moveCursor: vi.fn(async () => controller.abort()),
+    })
+    await runActions([{ kind: 'choose', target: 'o', value: 'sam' }], host, controller.signal)
+    expect(select.value).toBe('')
+  })
+
   test('a missing target is skipped after 2000 ms with one warning, and the run carries on', async () => {
     vi.useFakeTimers()
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})

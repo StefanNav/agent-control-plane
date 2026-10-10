@@ -24,6 +24,8 @@ export type TourAction =
   | { kind: 'scroll'; target: string }
   | { kind: 'click'; target: string }
   | { kind: 'type'; target: string; text: string }
+  /** Pick the option with this value in a `<select>`, as a person would from its list. */
+  | { kind: 'choose'; target: string; value: string }
   | { kind: 'card'; card: CardId; side?: 'left' | 'right' }
   | { kind: 'clearCard' }
   | { kind: 'wait'; ms: number }

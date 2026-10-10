@@ -9,6 +9,8 @@ function describeAction(action) {
       return `${action.kind}: ${action.target}`
     case 'type':
       return `type: ${action.target} ← "${action.text}"`
+    case 'choose':
+      return `choose: ${action.target} ← "${action.value}"`
     case 'card':
       return `card: ${action.card}${action.side ? ` (${action.side})` : ''}`
     case 'clearCard':

@@ -121,6 +121,19 @@ export async function typeInto(
 }
 
 /**
+ * Pick the option with `value` in a select, the way a person would from its list: through the
+ * element's native value setter, then the bubbling `input` and `change` events a real pick fires, so
+ * React-controlled selects notice.
+ */
+function chooseIn(el: HTMLSelectElement, value: string): void {
+  const setValue = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set
+  if (setValue) setValue.call(el, value)
+  else el.value = value
+  el.dispatchEvent(new Event('input', { bubbles: true }))
+  el.dispatchEvent(new Event('change', { bubbles: true }))
+}
+
+/**
  * Which side of the screen a card goes: the one away from the target, so it never covers what it
  * talks about. An override wins; with no target, right.
  */
@@ -206,6 +219,20 @@ export async function runActions(
         // Done typing: give focus back to the page, so Space keeps working the tour (Ruling 13).
         // A run cut short leaves it where it is: the visitor has taken over.
         if (!signal.aborted) el.blur()
+        break
+      }
+      case 'choose': {
+        const el = await reach(action)
+        if (!el) break
+        if (!(el instanceof HTMLSelectElement)) {
+          skip(action, 'it is not a select')
+          break
+        }
+        if (![...el.options].some((option) => option.value === action.value)) {
+          skip(action, `it has no option "${action.value}"`)
+          break
+        }
+        if (await pressOn(el)) chooseIn(el, action.value)
         break
       }
       case 'card': {
