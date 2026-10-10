@@ -24,11 +24,12 @@ import {
 // marks those beats recorded in the manifest. A file named `NN-<chapter-id>.m4a` is a whole chapter,
 // one line after another with a pause between (it is split where the pauses best fit each line's
 // length); a file named `<beat-id>.m4a` is one line recorded on its own, and replaces that line's
-// clip. When a chapter has lines recorded on their own, its file is fitted both with and without
-// them, and the better fit is kept (Ruling 21). A chapter whose fit isn't confident is not imported
-// (Ruling 20): its cut lines go back to placeholders, made as `tour:audio` makes them, unless
-// `--force`. Chapters not in the tour script yet are listed and skipped. Writes `import-report.md`
-// beside the recordings. `--dry-run` cuts into a temp folder only and writes nothing.
+// clip, trimmed of the silence around it (Ruling 26). When a chapter has lines recorded on their
+// own, its file is fitted both with and without them, and the better fit is kept (Ruling 21). A
+// chapter whose fit isn't confident is not imported (Ruling 20): its cut lines go back to
+// placeholders, made as `tour:audio` makes them, unless `--force`. Chapters not in the tour script
+// yet are listed and skipped. Writes `import-report.md` beside the recordings. `--dry-run` cuts into
+// a temp folder only and writes nothing.
 
 const dryRun = process.argv.includes('--dry-run')
 const force = process.argv.includes('--force')
@@ -116,13 +117,22 @@ async function cut(wav, from, to, clip) {
   ])
 }
 
-/** Normalises and encodes a line recorded on its own. */
-async function encodeWhole(file, clip) {
+/**
+ * Trims a line recorded on its own to its speech, by the chapters' pause detection and edge rule
+ * (Ruling 26), then normalises and encodes it.
+ */
+async function encodeOwn(tour, file, clip) {
+  const total = await clipSeconds(file)
+  const speech = tour.speechWindow(await detectSilences(file, total), total)
   await run('ffmpeg', [
     '-y',
     '-hide_banner',
     '-loglevel',
     'error',
+    '-ss',
+    time(speech.start),
+    '-to',
+    time(speech.end),
     '-i',
     file,
     '-af',
@@ -199,7 +209,7 @@ async function importChapter(tour, chapter, chapterFile, overrides, tmpDir) {
     const cutLine = cuts.get(i)
     if (override) {
       try {
-        await encodeWhole(override, clip)
+        await encodeOwn(tour, override, clip)
       } catch (error) {
         throw new Error(`tour:import can't read ${path.basename(override)}: ${error.message}`, {
           cause: error,

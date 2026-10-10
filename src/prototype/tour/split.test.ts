@@ -2,6 +2,7 @@ import {
   chapterVerdict,
   cutWindows,
   fitChapter,
+  speechWindow,
   splitLines,
   syllables,
   type Silence,
@@ -357,5 +358,56 @@ describe('cutWindows', () => {
 
   test('has no windows for no segments', () => {
     expect(cutWindows([], 10)).toEqual([])
+  })
+})
+
+describe('speechWindow (Ruling 26)', () => {
+  test('trims the room tone at both ends, keeping 0.15 s before and 0.25 s after the speech', () => {
+    const window = speechWindow(
+      [
+        { start: 0, end: 1.2 },
+        { start: 4.7, end: 5.8 },
+      ],
+      5.8,
+    )
+    expect(window.start).toBeCloseTo(1.05, 9)
+    expect(window.end).toBeCloseTo(4.95, 9)
+  })
+
+  test('takes a silence within 0.25 s of either end as that end, as a chapter split does', () => {
+    // Voice Memos reports the last silence ending a frame short of the file's end.
+    const window = speechWindow(
+      [
+        { start: 0.2, end: 1 },
+        { start: 3, end: 5.65 },
+      ],
+      5.8,
+    )
+    expect(window.start).toBeCloseTo(0.85, 9)
+    expect(window.end).toBeCloseTo(3.25, 9)
+  })
+
+  test('keeps a pause inside the line, and a silence that starts too late to be the lead-in', () => {
+    const silences = [
+      { start: 0.4, end: 1 },
+      { start: 2, end: 2.5 },
+    ]
+    expect(speechWindow(silences, 4)).toEqual({ start: 0, end: 4 })
+  })
+
+  test('never pads past the ends of the recording', () => {
+    const window = speechWindow(
+      [
+        { start: 0, end: 0.1 },
+        { start: 3.9, end: 4 },
+      ],
+      4,
+    )
+    expect(window).toEqual({ start: 0, end: 4 })
+  })
+
+  test('a recording with no silence, or nothing but silence, is kept whole', () => {
+    expect(speechWindow([], 3)).toEqual({ start: 0, end: 3 })
+    expect(speechWindow([{ start: 0, end: 3 }], 3)).toEqual({ start: 0, end: 3 })
   })
 })

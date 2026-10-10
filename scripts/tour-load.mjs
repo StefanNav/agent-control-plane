@@ -15,6 +15,7 @@ const root = fileURLToPath(new URL('..', import.meta.url))
  *   fitChapter: typeof import('../src/prototype/tour/split').fitChapter,
  *   chapterVerdict: typeof import('../src/prototype/tour/split').chapterVerdict,
  *   cutWindows: typeof import('../src/prototype/tour/split').cutWindows,
+ *   speechWindow: typeof import('../src/prototype/tour/split').speechWindow,
  *   RATIO_MIN: number,
  *   RATIO_MAX: number,
  * }>}
@@ -38,6 +39,7 @@ export async function loadTour() {
       fitChapter: split.fitChapter,
       chapterVerdict: split.chapterVerdict,
       cutWindows: split.cutWindows,
+      speechWindow: split.speechWindow,
       RATIO_MIN: split.RATIO_MIN,
       RATIO_MAX: split.RATIO_MAX,
     }

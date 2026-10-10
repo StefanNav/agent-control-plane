@@ -53,16 +53,11 @@ export function syllables(text: string): number {
 const none = (): Split => ({ segments: [], ratios: [], confident: false, cost: Infinity })
 
 /**
- * Finds where each of `lines` is spoken in a recording of them one after another, given the
- * recording's silences. A silence starting at 0 or ending at `total` is trimmed; the rest are the
- * candidate breaks. It picks `lines.length − 1` of them, in order, to minimise how far each segment
- * is (on a log scale) from its expected length, the speech span shared out by syllables, less a
- * reward for longer breaks: a long pause inside a line loses to a shorter one at the right place.
+ * Where the speech in a recording begins and finishes, given its silences sorted by start: a silence
+ * starting within `EDGE` of the start, or ending within `EDGE` of the end, is room tone and is left
+ * out. `first` and `last` bound the silences between (`sorted.slice(first, last)`).
  */
-export function splitLines(silences: Silence[], total: number, lines: string[]): Split {
-  if (lines.length === 0) return none()
-
-  const sorted = silences.filter((s) => s.end > s.start).sort((a, b) => a.start - b.start)
+function speechSpan(sorted: Silence[], total: number) {
   let first = 0
   let last = sorted.length
   let begin = 0
@@ -77,6 +72,33 @@ export function splitLines(silences: Silence[], total: number, lines: string[]):
     finish = tail.start
     last -= 1
   }
+  return { begin, finish, first, last }
+}
+
+/**
+ * Where to cut a line recorded on its own (Ruling 26): its speech, found by the same edge rule as a
+ * chapter's, with the same air either side as a line cut from a chapter, kept inside the recording.
+ * A recording with no speech found is kept whole.
+ */
+export function speechWindow(silences: Silence[], total: number): Segment {
+  const sorted = silences.filter((s) => s.end > s.start).sort((a, b) => a.start - b.start)
+  const { begin, finish } = speechSpan(sorted, total)
+  if (finish <= begin) return { start: 0, end: total }
+  return { start: Math.max(0, begin - LEAD), end: Math.min(total, finish + TAIL) }
+}
+
+/**
+ * Finds where each of `lines` is spoken in a recording of them one after another, given the
+ * recording's silences. A silence starting at 0 or ending at `total` is trimmed; the rest are the
+ * candidate breaks. It picks `lines.length − 1` of them, in order, to minimise how far each segment
+ * is (on a log scale) from its expected length, the speech span shared out by syllables, less a
+ * reward for longer breaks: a long pause inside a line loses to a shorter one at the right place.
+ */
+export function splitLines(silences: Silence[], total: number, lines: string[]): Split {
+  if (lines.length === 0) return none()
+
+  const sorted = silences.filter((s) => s.end > s.start).sort((a, b) => a.start - b.start)
+  const { begin, finish, first, last } = speechSpan(sorted, total)
   const span = finish - begin
   if (span <= 0) return none()
   const breaks = sorted.slice(first, last)
