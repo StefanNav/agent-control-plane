@@ -833,6 +833,59 @@ test('a decision’s screen opens larger: the tour pauses, without a take-over, 
   expect(errors).toEqual([])
 })
 
+test('a decision reached before steps back to text2, and its meta text stays meta', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'decisions', /\/tour\/decisions\?tour=decisions$/)
+  await play(page)
+  await expectGlance(
+    page,
+    { chapter: 'decisions', line: 'Second, how to protect' },
+    items,
+    'shown d1, d2 · current d2',
+  )
+  await bar(page).getByRole('button', { name: 'Pause tour' }).click()
+  /** Each part of a decision by the token its colour comes from. */
+  const colours = (id: string) =>
+    page.evaluate((item) => {
+      const token = (name: string) => {
+        const probe = document.createElement('span')
+        probe.style.color = `var(${name})`
+        document.body.append(probe)
+        const colour = getComputedStyle(probe).color
+        probe.remove()
+        return colour
+      }
+      const names = new Map(['--cs-meta', '--cs-text2', '--cs-ink'].map((n) => [token(n), n]))
+      const el = document.querySelector(`[data-item="${item}"]`)!
+      const chosen = [...el.querySelectorAll('li')].find((li) =>
+        li.textContent?.endsWith('Chosen'),
+      )!
+      const parts = {
+        label: el.querySelector('span'),
+        title: el.querySelector('h2'),
+        option: el.querySelector('li'),
+        chosen,
+        chosenWord: chosen.lastElementChild,
+        tradeoff: [...el.querySelectorAll('p')].find((p) => p.textContent?.startsWith('Trade-off')),
+      }
+      return Object.entries(parts)
+        .map(([part, node]) => {
+          const colour = getComputedStyle(node!).color
+          return `${part} ${names.get(colour) ?? colour}`
+        })
+        .join(' · ')
+    }, id)
+  expect(await colours('d1')).toBe(
+    'label --cs-meta · title --cs-text2 · option --cs-text2 · chosen --cs-text2 · chosenWord --cs-meta · tradeoff --cs-text2',
+  )
+  expect(await colours('d2')).toBe(
+    'label --cs-meta · title --cs-ink · option --cs-text2 · chosen --cs-ink · chosenWord --cs-meta · tradeoff --cs-text2',
+  )
+  expect(errors).toEqual([])
+})
+
 test('how I got here: Research, then the documents, then the design and the build', async ({
   page,
 }) => {

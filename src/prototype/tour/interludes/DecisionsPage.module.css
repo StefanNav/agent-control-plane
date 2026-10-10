@@ -18,8 +18,11 @@
   max-width: 560px;
 }
 
-/* An earlier decision steps back to text2, its chosen dot still marked (spec §4.3). */
-.decision[data-state='reached'] .content * {
+/*
+ * An earlier decision steps back to text2 (spec §4.3): its title and its options, the chosen one
+ * still marked by its dot and weight. The label and "Chosen" keep their own meta colour.
+ */
+.decision[data-state='reached'] .content :is(h2, li) {
   color: var(--cs-text2);
 }
 
