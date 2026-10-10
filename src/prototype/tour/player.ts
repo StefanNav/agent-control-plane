@@ -128,9 +128,12 @@ export function createTourPlayer(
     let controller: AbortController | null = null
     /**
      * The step's work: none, waiting for its screen, screen ready but paused before its first beat,
-     * a beat in flight, or a beat finished while paused (waiting for Play).
+     * a beat in flight, a beat whose after-actions wait for Play (its clip and actions finished while
+     * paused), or a beat finished while paused (waiting for Play).
      */
-    let phase: 'none' | 'settling' | 'settled' | 'running' | 'done' = 'none'
+    let phase: 'none' | 'settling' | 'settled' | 'running' | 'held' | 'done' = 'none'
+    /** While `held`: runs the beat's after-actions, then ends it. */
+    let held: (() => void) | null = null
     /** Has the tour moved the cursor since it opened? */
     let cursorMoved = false
 
@@ -147,6 +150,7 @@ export function createTourPlayer(
       controller?.abort()
       controller = null
       phase = 'none'
+      held = null
     }
 
     /** Start new work under a fresh token and controller; whatever ran before can no longer write. */
@@ -240,14 +244,26 @@ export function createTourPlayer(
           if (runToken === token && skipped.length > 0)
             set((s) => ({ skipped: [...s.skipped, ...skipped] }))
         })
-      void Promise.all([spoken, perform(beat.actions ?? [])])
-        .then(() => (runToken === token && beat.after ? perform(beat.after) : undefined))
-        .then(() => {
-          if (runToken !== token) return
-          // Paused mid-beat: hold here, so nothing changes on screen until Play.
-          if (get().status === 'playing') advance()
-          else phase = 'done'
-        })
+      const end = () => {
+        if (runToken !== token) return
+        // Paused mid-beat: hold here, so nothing changes on screen until Play.
+        if (get().status === 'playing') advance()
+        else phase = 'done'
+      }
+      const finish = (after: TourAction[]) => {
+        phase = 'running'
+        held = null
+        void perform(after).then(end)
+      }
+      void Promise.all([spoken, perform(beat.actions ?? [])]).then(() => {
+        if (runToken !== token) return
+        const after = beat.after
+        if (!after) return end()
+        // Paused before them: they wait for Play, so a pause never clicks through (Ruling 8).
+        if (get().status === 'playing') return finish(after)
+        phase = 'held'
+        held = () => finish(after)
+      })
     }
 
     /** After a finished beat: the next beat, entering its step if it is a new one, or the end. */
@@ -319,6 +335,7 @@ export function createTourPlayer(
         // While still settling, the settle starts the first beat.
         if (phase === 'settled' && controller) startBeat(token, controller.signal)
         else if (phase === 'running') voice.resume()
+        else if (phase === 'held') held?.()
         else if (phase === 'done') advance()
       },
       pause() {
