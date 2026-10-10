@@ -53,6 +53,7 @@ export const routeTable: RouteDef[] = [
     ['/epic', 'Epic stand-in', ['10a', '10b'], 6],
     // The guided tour's interludes (Phase 10 spec §4.3).
     ['/tour/problem', 'The problem', [], 10],
+    ['/tour/decisions', 'Three key decisions', [], 10],
     ['/tour/process', 'How I got here', [], 10],
     ['/tour/validate', 'How I’d validate it', [], 10],
   ]),

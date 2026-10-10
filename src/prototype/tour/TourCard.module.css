@@ -34,73 +34,6 @@
   color: var(--cs-meta);
 }
 
-.title {
-  margin: 0;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 600;
-  color: var(--cs-ink);
-}
-
-.options {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--cs-text2);
-}
-
-.dot {
-  flex: none;
-  width: 8px;
-  height: 8px;
-  border: 1.5px solid var(--cs-icon);
-  border-radius: 50%;
-}
-
-.optionLabel {
-  min-width: 0;
-}
-
-.chosen {
-  color: var(--cs-ink);
-  font-weight: 600;
-}
-
-/* The one indigo mark in a card: the chosen option's dot (spec §4.4). */
-.chosen .dot {
-  background: var(--cs-acc);
-  border-color: var(--cs-acc);
-}
-
-.chosenWord {
-  margin-left: auto;
-  font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 400;
-  color: var(--cs-meta);
-}
-
-.tradeoff {
-  margin: 0;
-  padding-top: 8px;
-  border-top: 1px solid var(--cs-line);
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--cs-text2);
-}
-
 .figure {
   display: flex;
   flex-direction: column;
@@ -135,32 +68,9 @@
   color: var(--cs-text2);
 }
 
-.thumb {
-  display: block;
-  width: 100%;
-  padding: 0;
-  border: 1px solid var(--cs-line);
-  border-radius: 3px;
-  background: var(--cs-sunk);
-  cursor: zoom-in;
-}
-
-.thumbImage {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 2px;
-}
-
 .caption {
   margin: 0;
   font-size: 13px;
   line-height: 18px;
   color: var(--cs-text2);
-}
-
-.full {
-  display: block;
-  max-width: 100%;
-  height: auto;
 }

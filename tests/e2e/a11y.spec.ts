@@ -74,6 +74,32 @@ for (const chapter of ['problem', 'process', 'validate']) {
   })
 }
 
+// The decisions page's first line names nothing on it, so the tour plays to a line that does, then
+// holds there: Decision 1 current, the rest there but unseen.
+test('axe: the decisions interlude on the tour, part revealed', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/?tour=decisions&tourVoice=silent')
+  await expect(page).toHaveURL(/\/tour\/decisions\?tour=decisions$/)
+  const bar = page.getByRole('complementary', { name: 'Tour' })
+  await bar.getByRole('button', { name: 'Play tour' }).click()
+  const main = page.locator('main')
+  await expect(main.locator('[data-item="d1"][data-state="current"]')).toHaveCount(1)
+  await bar.getByRole('button', { name: 'Pause tour' }).click()
+  await expect(main.locator('[aria-current="step"]')).not.toHaveCount(0)
+  const hidden = main.locator('[data-item][data-state="hidden"]')
+  await expect(hidden).not.toHaveCount(0)
+  await expect(hidden.last()).toBeHidden()
+  expect(await violations(page)).toEqual([])
+})
+
+test('axe: the decisions page with an exploration open larger', async ({ page }) => {
+  await page.goto('/tour/decisions')
+  await page.getByRole('button', { name: /^Ledger’s overview sheet: .*, open larger$/ }).click()
+  const dialog = page.getByRole('dialog', { name: 'Ledger' })
+  await expect(dialog.getByRole('img')).toBeFocused()
+  expect(await violations(page)).toEqual([])
+})
+
 test('axe: the agent view with its control menu open', async ({ page }) => {
   await page.goto('/operations/agents/med-rec')
   await page.getByRole('button', { name: 'Controls' }).click()

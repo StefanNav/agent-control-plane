@@ -1,0 +1,23 @@
+/* A thumbnail that opens larger: the whole image, scaled to its box, on a sunk ground. */
+.thumb {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 1px solid var(--cs-line);
+  border-radius: 3px;
+  background: var(--cs-sunk);
+  cursor: zoom-in;
+}
+
+.thumbImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 2px;
+}
+
+.full {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}

@@ -1,10 +1,12 @@
 import { act, render, renderHook, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import type { ComponentType } from 'react'
 import { MemoryRouter } from 'react-router'
 import { isInterlude } from '../engine'
 import { MANIFEST } from '../manifest'
 import { CHAPTERS } from '../script'
 import { createTourRuntime, setTourRuntime, type TourRuntime } from '../useTour'
+import { DecisionsPage } from './DecisionsPage'
 import { ProblemPage } from './ProblemPage'
 import { ProcessPage } from './ProcessPage'
 import { useReveal } from './useReveal'
@@ -13,6 +15,7 @@ import { ValidatePage } from './ValidatePage'
 /** Each interlude's page by its route. */
 const PAGES: Record<string, ComponentType> = {
   '/tour/problem': ProblemPage,
+  '/tour/decisions': DecisionsPage,
   '/tour/process': ProcessPage,
   '/tour/validate': ValidatePage,
 }
@@ -53,11 +56,11 @@ function currentSteps(container: HTMLElement): string[] {
   )
 }
 
-/** Hold the tour, paused, on beat `beat` of the step `stepId`. */
-function holdAt(stepId: string, beat: number) {
+/** Hold the tour on beat `beat` of the step `stepId`: paused, unless it is to be `playing`. */
+function holdAt(stepId: string, beat: number, status: 'paused' | 'playing' = 'paused') {
   const chapter = CHAPTERS.findIndex((c) => c.steps.some((s) => s.id === stepId))
   const step = CHAPTERS[chapter]!.steps.findIndex((s) => s.id === stepId)
-  act(() => runtime.player.setState({ status: 'paused', pos: { chapter, step, beat } }))
+  act(() => runtime.player.setState({ status, pos: { chapter, step, beat } }))
 }
 
 describe('useReveal', () => {
@@ -143,6 +146,37 @@ describe('the interludes', () => {
     ])
   })
 
+  test('the decisions page brings in each decision, and the explorations after Decision 2’s', () => {
+    const { container } = show('/tour/decisions')
+    // "Three decisions shaped all of this": the page's title only.
+    holdAt('decisions-page', 0)
+    expect(items(container)).toEqual([
+      'd1:hidden',
+      'd2:hidden',
+      'directions:hidden',
+      'judged:hidden',
+      'd3:hidden',
+    ])
+    expect(currentSteps(container)).toEqual([])
+    holdAt('decisions-page', 5)
+    expect(items(container)).toEqual([
+      'd1:reached',
+      'd2:reached',
+      'directions:current',
+      'judged:hidden',
+      'd3:hidden',
+    ])
+    expect(currentSteps(container)).toEqual(['directions:step'])
+    holdAt('decisions-page', 9)
+    expect(items(container)).toEqual([
+      'd1:reached',
+      'd2:reached',
+      'directions:reached',
+      'judged:reached',
+      'd3:current',
+    ])
+  })
+
   test('the validate page marks its current list as the current step', () => {
     const { container } = show('/tour/validate')
     holdAt('validate-page', 3)
@@ -196,5 +230,138 @@ describe('page copy', () => {
     ])
     for (const list of screen.getAllByRole('list'))
       expect(within(list).getAllByRole('listitem').length).toBeGreaterThanOrEqual(3)
+  })
+
+  test('three key decisions: each in order, its options with the chosen one marked, its trade-off and its screen', () => {
+    const { container } = show('/tour/decisions')
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Three key decisions' }),
+    ).toBeInTheDocument()
+    const decision = (id: string) => container.querySelector<HTMLElement>(`[data-item="${id}"]`)!
+    const read = (id: string) => {
+      const el = decision(id)
+      return {
+        label: el.querySelector('span')?.textContent,
+        title: within(el).getByRole('heading', { level: 2 }).textContent,
+        options: within(within(el).getByRole('list'))
+          .getAllByRole('listitem')
+          .map((li) => li.textContent),
+        tradeoff: within(el).getByText(/^Trade-off: /).textContent,
+      }
+    }
+    expect(read('d1')).toEqual({
+      label: 'Decision 1 of 3',
+      title: 'How an agent earns trust',
+      options: [
+        'A person approves every action',
+        'Trust the agent as a whole',
+        'Each task earns its own privilege, signed by a named personChosen',
+      ],
+      tradeoff: 'Trade-off: More work up front, a lot less checking after',
+    })
+    expect(read('d2')).toEqual({
+      label: 'Decision 2 of 3',
+      title: 'How to protect people’s attention',
+      options: [
+        'Ledger · precise',
+        'Ward Round · fast to read',
+        'Countersign · accountableChosen',
+        'Linen · calm',
+        'Handover · calm + accountable',
+      ],
+      tradeoff: 'Trade-off: Less colour at a glance, so the colour that does appear is believed',
+    })
+    expect(read('d3')).toEqual({
+      label: 'Decision 3 of 3',
+      title: 'How to stop and restart',
+      options: [
+        'One person resumes',
+        'It resumes on its own after a fix',
+        'Stopping takes one person; starting again takes twoChosen',
+      ],
+      tradeoff: 'Trade-off: Slower recovery, on purpose',
+    })
+    // Each shows the screen it played out on, as the product shows it.
+    const screens = ['d1', 'd2', 'd3'].map((id) =>
+      within(decision(id)).getByRole('img').getAttribute('src'),
+    )
+    expect(screens).toEqual([
+      '/tour/artifacts/decision-1-sign.jpg',
+      '/tour/artifacts/decision-2-division.jpg',
+      '/tour/artifacts/decision-3-resume.jpg',
+    ])
+  })
+
+  test('Decision 2’s explorations: the five directions, the Ledger conflict, then the same crowded screens', () => {
+    const { container } = show('/tour/decisions')
+    const group = (id: string) => container.querySelector<HTMLElement>(`[data-item="${id}"]`)!
+    const figures = (id: string) => within(group(id)).getAllByRole('figure')
+    /** Each figure's name: the first line of its caption. */
+    const names = (id: string) =>
+      figures(id).map((figure) => figure.querySelector('figcaption > :first-child')?.textContent)
+    expect(names('directions')).toEqual([
+      'Ledger',
+      'Ward Round',
+      'Countersign',
+      'Linen',
+      'Handover',
+      'Ledger, on a crowded screen',
+    ])
+    // Each direction has one line under its name.
+    for (const figure of figures('directions'))
+      expect(figure.querySelector('figcaption')?.children).toHaveLength(2)
+    expect(figures('directions').at(-1)).toHaveTextContent(
+      'The selected row and “needs review” were both indigo',
+    )
+    expect(
+      within(group('judged')).getByRole('heading', {
+        level: 3,
+        name: 'Judged on the same real, crowded screens',
+      }),
+    ).toBeInTheDocument()
+    expect(names('judged')).toEqual([
+      'Countersign · the division view',
+      'Countersign · signing',
+      'Final · the division view',
+    ])
+  })
+
+  test('every image says what it shows, keeps its room before it loads, and loads when it is near', () => {
+    const { container } = show('/tour/decisions')
+    const images = [...container.querySelectorAll('img')]
+    // Three screens, five overviews, the conflict, the stress test pair and the final view.
+    expect(images).toHaveLength(12)
+    for (const img of images) {
+      const src = img.getAttribute('src')
+      expect(img.getAttribute('alt')?.length, src!).toBeGreaterThan(20)
+      expect(Number(img.getAttribute('width')), src!).toBeGreaterThan(0)
+      expect(Number(img.getAttribute('height')), src!).toBeGreaterThan(0)
+      expect(img, src!).toHaveAttribute('loading', 'lazy')
+      expect(src).toMatch(/^\/tour\/artifacts\/[a-z0-9-]+\.jpg$/)
+    }
+  })
+
+  test('an image opens larger in a dialog, and closes', async () => {
+    show('/tour/decisions')
+    await userEvent.click(
+      screen.getByRole('button', { name: /^Ledger’s overview sheet.*, open larger$/ }),
+    )
+    const dialog = screen.getByRole('dialog', { name: 'Ledger' })
+    expect(within(dialog).getByRole('img')).toHaveAttribute(
+      'src',
+      '/tour/artifacts/explore-ledger.jpg',
+    )
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Close' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  test('while the tour plays, opening an image pauses it first', async () => {
+    show('/tour/decisions')
+    holdAt('decisions-page', 9, 'playing')
+    await userEvent.click(
+      screen.getByRole('button', { name: /^Med Rec Agent, paused.*, open larger$/ }),
+    )
+    expect(runtime.player.getState().status).toBe('paused')
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 })

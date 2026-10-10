@@ -16,7 +16,7 @@ const EXPECTED = [
   '/reports/evidence', '/reports/evidence/:agentId', '/reports/export',
   '/settings/divisions/:divisionId', '/settings/people',
   '/wall', '/epic',
-  '/tour/problem', '/tour/process', '/tour/validate',
+  '/tour/problem', '/tour/decisions', '/tour/process', '/tour/validate',
 ]
 
 test('route table has exactly the spec routes', () => {
@@ -33,7 +33,7 @@ test('redirect targets exist', () => {
   }
 })
 
-const PROTOTYPE = ['/', '/about', '/about/components', '/epic', '/tour/problem', '/tour/process', '/tour/validate']
+const PROTOTYPE = ['/', '/about', '/about/components', '/epic', '/tour/problem', '/tour/decisions', '/tour/process', '/tour/validate']
 
 test('wall is kiosk; landing, about, gallery, epic and the tour’s interludes are prototype; the rest are app', () => {
   const shellOf = (path: string) => routeTable.find((r) => r.path === path)?.shell

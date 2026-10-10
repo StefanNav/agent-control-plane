@@ -424,6 +424,67 @@ export const CHAPTERS: Chapter[] = [
     ],
   },
   {
+    id: 'decisions',
+    title: 'Three key decisions',
+    steps: [
+      {
+        // An interlude: each decision comes in as the narration reaches it (its card is page content),
+        // and Decision 2's explorations after it. Each reveal scrolls its item into view.
+        id: 'decisions-page',
+        route: '/tour/decisions',
+        beats: [
+          { id: 'decisions-1', text: 'Three decisions shaped all of this.' },
+          {
+            id: 'decisions-2',
+            text: 'First, how an agent earns trust.',
+            reveal: 'd1',
+            actions: [{ kind: 'scroll', target: 'decisions-d1' }],
+          },
+          {
+            id: 'decisions-3',
+            text: 'I could have kept a person approving every action, or trusted the agent as a whole once it looked good.',
+          },
+          {
+            id: 'decisions-4',
+            text: 'Instead, each task earns its own privilege, one step at a time, signed by a named person; more work up front, and a lot less checking after.',
+          },
+          {
+            id: 'decisions-5',
+            text: "Second, how to protect people's attention.",
+            reveal: 'd2',
+            actions: [{ kind: 'scroll', target: 'decisions-d2' }],
+          },
+          {
+            id: 'decisions-6',
+            text: "I explored five visual directions, and the first one, which followed my own brief exactly, broke: the row you'd selected looked like one more problem.",
+            reveal: 'directions',
+            actions: [{ kind: 'scroll', target: 'decisions-directions' }],
+          },
+          {
+            id: 'decisions-7',
+            text: 'So I judged every direction on real, crowded screens, and the winner keeps everything healthy grey, with colour, a shape and a word only where a person is needed.',
+            reveal: 'judged',
+            actions: [{ kind: 'scroll', target: 'decisions-judged' }],
+          },
+          {
+            id: 'decisions-8',
+            text: 'Third, how to stop and restart.',
+            reveal: 'd3',
+            actions: [{ kind: 'scroll', target: 'decisions-d3' }],
+          },
+          {
+            id: 'decisions-9',
+            text: 'One person could resume, or the agent could resume on its own after a fix.',
+          },
+          {
+            id: 'decisions-10',
+            text: 'Instead, stopping takes one person and starting again takes two, because restarting is the riskier moment.',
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: 'process',
     title: 'How I got here',
     steps: [

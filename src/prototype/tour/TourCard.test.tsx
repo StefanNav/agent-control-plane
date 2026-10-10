@@ -64,6 +64,8 @@ const IMAGE: CardContent = {
   kind: 'image',
   src: '/tour/artifacts/board-01.jpg',
   alt: 'An early hospital board',
+  width: 1600,
+  height: 1000,
   caption: 'Direction A: the ledger',
 }
 

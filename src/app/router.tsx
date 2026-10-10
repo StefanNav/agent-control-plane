@@ -34,6 +34,7 @@ import { NotFound } from '../layout/NotFound'
 import { ComponentGallery } from '../prototype/ComponentGallery/ComponentGallery'
 import { About } from '../prototype/About/About'
 import { Landing } from '../prototype/Landing/Landing'
+import { DecisionsPage } from '../prototype/tour/interludes/DecisionsPage'
 import { ProblemPage } from '../prototype/tour/interludes/ProblemPage'
 import { ProcessPage } from '../prototype/tour/interludes/ProcessPage'
 import { ValidatePage } from '../prototype/tour/interludes/ValidatePage'
@@ -82,6 +83,7 @@ const PAGES: Record<string, ReactNode> = {
   '/inventory/promotions/:promotionId': <PromotionPage />,
   '/portfolio/promotions/:promotionId': <BoardDecisionPage />,
   '/tour/problem': <ProblemPage />,
+  '/tour/decisions': <DecisionsPage />,
   '/tour/process': <ProcessPage />,
   '/tour/validate': <ValidatePage />,
 }

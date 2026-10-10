@@ -8,7 +8,7 @@
   padding: 48px 24px 64px;
 }
 
-/* Room for nine tiles in a row. */
+/* Room for a row of tiles or images. */
 .wide {
   max-width: 1280px;
 }

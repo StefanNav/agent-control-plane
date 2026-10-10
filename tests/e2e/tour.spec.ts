@@ -520,7 +520,7 @@ test('supervising: Ana flags a draft, Marcus pauses Med Rec, Priya co-signs its 
   expect(errors).toEqual([])
 })
 
-test('trust drops: Med Rec shows its step-down notice, then the tour runs on into how I got here', async ({
+test('trust drops: Med Rec shows its step-down notice, then the tour runs on into the decisions', async ({
   page,
 }) => {
   const errors = collectErrors(page)
@@ -550,7 +550,7 @@ test('trust drops: Med Rec shows its step-down notice, then the tour runs on int
     (s) => `${s.pathname} · skipped ${s.skipped}`,
     `${MED_REC} · skipped 0`,
   )
-  await expect(page).toHaveURL(/\/tour\/process\?tour=process$/, { timeout: CHAPTER_MS })
+  await expect(page).toHaveURL(/\/tour\/decisions\?tour=decisions$/, { timeout: CHAPTER_MS })
   await expect(bar(page)).toBeVisible()
   expect(errors).toEqual([])
 })
@@ -569,6 +569,11 @@ interface Glance {
   /** The interlude's items on show, in page order, and the ones outlined as current. */
   shown: string[]
   current: string[]
+  /**
+   * Current items not in view above the tour bar: all of one, or the top of one taller than the
+   * window's room.
+   */
+  unseen: string[]
   /** The targets the tour has outlined. */
   outlined: string[]
   /** The tour card's text, or null when none is up. */
@@ -589,6 +594,13 @@ async function glance(page: Page): Promise<Glance> {
         .filter((el) => getComputedStyle(el).visibility === 'visible')
         .map((el) => el.dataset.item!),
       current: items.filter(solid).map((el) => el.dataset.item!),
+      unseen: items.filter(solid).flatMap((el) => {
+        const box = el.getBoundingClientRect()
+        const floor = bar?.getBoundingClientRect().top ?? innerHeight
+        const fits = box.height <= floor
+        const seen = box.top >= 0 && (fits ? box.bottom <= floor : box.top < floor)
+        return seen ? [] : [el.dataset.item!]
+      }),
       outlined: [...document.querySelectorAll<HTMLElement>('[data-story-target]')]
         .filter(solid)
         .map((el) => el.dataset.storyTarget!),
@@ -644,7 +656,8 @@ async function watchOutlines(page: Page): Promise<() => Promise<string[]>> {
 }
 
 /** An interlude's items: which show and which are current. */
-const items = (g: Glance) => `shown ${g.shown.join(', ')} · current ${g.current.join(', ')}`
+const items = (g: Glance) =>
+  `shown ${g.shown.join(', ') || 'none'} · current ${g.current.join(', ') || 'none'}`
 
 /** Which research excerpt the card shows, by the start of its quote. */
 function excerpt(card: string | null): string {
@@ -728,6 +741,82 @@ test('who it’s for: the story cards, then each person’s card as they are nam
   expect((await outlines()).filter((target) => target.startsWith('people-'))).toEqual(
     ['cards', 'marcus', 'priya', 'dana', 'sam', 'drlee', 'ana', 'jordan'].map((p) => `people-${p}`),
   )
+  expect(errors).toEqual([])
+})
+
+test('three key decisions: each comes in as it is named, in view, with Decision 2’s explorations', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'decisions', /\/tour\/decisions\?tour=decisions$/)
+  // Held on the first line, "Three decisions shaped all of this": the page's title alone.
+  await expect.poll(async () => items(await glance(page))).toBe('shown none · current none')
+  await play(page)
+  const under = (line: string) => ({ chapter: 'decisions', line })
+  /** The items, and whether the current one has been brought into view above the bar. */
+  const inView = (g: Glance) =>
+    `${items(g)} · ${g.unseen.length > 0 ? `out of view ${g.unseen.join(', ')}` : 'in view'}`
+  await expectGlance(page, under('I could have kept'), inView, 'shown d1 · current d1 · in view')
+  await expectGlance(
+    page,
+    under('Second, how to protect'),
+    inView,
+    'shown d1, d2 · current d2 · in view',
+  )
+  await expectGlance(
+    page,
+    under('I explored five visual directions'),
+    inView,
+    'shown d1, d2, directions · current directions · in view',
+  )
+  await expectGlance(
+    page,
+    under('So I judged every direction'),
+    inView,
+    'shown d1, d2, directions, judged · current judged · in view',
+  )
+  await expectGlance(
+    page,
+    under('One person could resume'),
+    inView,
+    'shown d1, d2, directions, judged, d3 · current d3 · in view',
+  )
+  // By its end, all three decisions and both groups of explorations are on show.
+  await expectGlance(
+    page,
+    under('Instead, stopping takes one person'),
+    (g) => `${items(g)} · skipped ${g.skipped}`,
+    'shown d1, d2, directions, judged, d3 · current d3 · skipped 0',
+  )
+  await expect(page).toHaveURL(/\/tour\/process\?tour=process$/, { timeout: CHAPTER_MS })
+  expect(errors).toEqual([])
+})
+
+test('a decision’s screen opens larger: the tour pauses, without a take-over, and plays on from there', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'decisions', /\/tour\/decisions\?tour=decisions$/)
+  await play(page)
+  await expectGlance(
+    page,
+    { chapter: 'decisions', line: 'I could have kept' },
+    items,
+    'shown d1 · current d1',
+  )
+  await page.getByRole('button', { name: /^The sign page: .*, open larger$/ }).click()
+  const dialog = page.getByRole('dialog', { name: 'Signing a privilege, as Priya' })
+  await expect(dialog.getByRole('img')).toHaveJSProperty('naturalWidth', 1440)
+  // Paused as by its own Pause button: Play, not "Resume tour", which would restart the step.
+  await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeVisible()
+  await dialog.getByRole('button', { name: 'Close' }).click()
+  await expect(dialog).toHaveCount(0)
+  const held = (await glance(page)).caption
+  await play(page)
+  await expect
+    .poll(async () => (await glance(page)).caption, { timeout: CHAPTER_MS })
+    .not.toBe(held)
+  expect((await glance(page)).caption).not.toBe('Three decisions shaped all of this.')
   expect(errors).toEqual([])
 })
 

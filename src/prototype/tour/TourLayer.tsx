@@ -49,7 +49,7 @@ function elementOf(target: EventTarget | null): Element | null {
   return target instanceof Element ? target : null
 }
 
-/** Inside the tour's own UI (the bar, a card)? */
+/** Inside the tour's own UI (the bar, a card, an image that opens larger)? */
 function inTour(el: Element | null): boolean {
   return el?.closest('[data-tour]') != null
 }
