@@ -20,8 +20,8 @@ Update this block every time a session stops, even mid-phase.
 |---|---|
 | **Current phase** | Phase 10: Guided tour (◐ in progress) |
 | **Branch** | `phase-10-guided-tour` |
-| **Last completed** | Script approved (Checkpoint A); 10.7 opening chapter plays end to end in the browser, reviewed (2026-10-09) |
-| **Next task** | 10.13 import recordings (moved ahead), so the opening plays in Stefan's voice; **CHECKPOINT B** feedback from Stefan on the preview; then 10.8 |
+| **Last completed** | 10.13 import recordings (moved ahead): Stefan's 11 chapter recordings received; the opening plays in Stefan's voice (2026-10-10) |
+| **Next task** | **CHECKPOINT B:** Stefan's feedback on the opening (preview now in Stefan's voice). Then 10.8, importing each chapter's recording as it's encoded |
 | **Blockers** | None now. Stefan's photo comes later (10.12 ships the credit without it if needed) |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -637,7 +637,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 - [ ] 10.10 Interludes (problem, process, validate) and the landing chapters (who it's for, close)
 - [ ] 10.11 The decisions page and the explorations → **CHECKPOINT C** (whole tour, placeholder voice)
 - [ ] 10.12 Landing, credit and the Attune rename
-- [ ] 10.13 Import recordings (`pnpm tour:import`; replaces the recording page)
+- [x] 10.13 Import recordings (`pnpm tour:import`; replaces the recording page)
 - [ ] 10.14 Recording → **CHECKPOINT D** (real voice; Stefan recorded all 11 chapters on 2026-10-10)
 - [ ] 10.15 Case study (About)
 - [ ] 10.16 Phase checkpoint → **CHECKPOINT E** (PR review; merge only on approval)
@@ -840,3 +840,4 @@ One row per working session. Newest last.
 | 2026-10-09 | 10 | Brainstormed the walkthrough with Stefan (format, running order, player, architecture, content); wrote and committed the spec; received the Claude Design explorations; wrote the Phase 10 plan with checkpoints A–E and the first script draft (about 1,080 words) | CHECKPOINT A: Stefan edits the script; then 10.2 |
 | 2026-10-09 | 10 | Issue #20 created; built 10.2–10.6 subagent-driven (engine, audio pipeline with placeholder voice, voice with watchdog and action runner, player, bar/cursor/cards with settle and take-over), each with an independent review; fix rounds on 10.5 (settle) and 10.6 (focusable rows, query settle, ?tour jump). 988 unit and 247 e2e tests green; not pushed | CHECKPOINT A: Stefan's script edits → 10.7 |
 | 2026-10-09 | 10 | Checkpoint A: Stefan chose the hybrid script (8 edits applied); chapters re-cut. Built 10.7 (opening chapter, ids renamed, click-settle fix, after-actions, idle cursor), reviewed clean. 1010 unit and 251 e2e tests green | CHECKPOINT B: preview review |
+| 2026-10-10 | 10 | Stefan recorded all 11 chapters in Voice Memos; swapped the recording page for `pnpm tour:import` (pause detection plus syllable-proportional split), built and reviewed it ahead of 10.8; the opening's seven lines are now Stefan's voice. 1026 unit and 251 e2e tests green | CHECKPOINT B feedback, then 10.8 |

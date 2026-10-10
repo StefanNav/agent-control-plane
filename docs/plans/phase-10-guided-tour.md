@@ -336,11 +336,11 @@ Stefan records one Voice Memos file per chapter (Stefan, 2026-10-10), named `NN-
   5. Manifest entries become `{ ms (ffprobe), source: 'recorded', textHash: textHash(beat.text) }`.
   - Prints, per chapter, each line's duration and ratio, `OK` or `CHECK`, and writes the same as `reference/tour-inbox/recordings/import-report.md`. `--dry-run` writes nothing. A chapter that isn't `confident` is still imported but flagged `CHECK` (Stefan listens at Checkpoint D).
 
-- [ ] **Step 1: Write the failing tests** (`split.test.ts`): `syllables` counts; three lines with two clear long breaks splits at those breaks; a long pause *inside* a long line loses to a shorter pause at the right proportional place; fewer candidate breaks than needed → `confident: false`, empty segments; ratios are normalised (geometric mean 1).
-- [ ] **Step 2:** Run — FAIL. Implement `split.ts`. Run — PASS.
-- [ ] **Step 3:** Implement `tour-import.mjs`; `--dry-run` on `reference/tour-inbox/recordings/` prints `01-open` as imported-to-be and every other chapter as not encoded yet.
-- [ ] **Step 4:** Run `pnpm tour:import` for real: `open-1`…`open-7` become recorded; `pnpm tour:audio --check` passes for `open`; `pnpm check` and `pnpm e2e` green (the e2e uses the silent voice).
-- [ ] **Step 5:** Commit the split code, the script and the seven clips plus manifest: `feat: import chapter recordings`.
+- [x] **Step 1: Write the failing tests** (`split.test.ts`): `syllables` counts; three lines with two clear long breaks splits at those breaks; a long pause *inside* a long line loses to a shorter pause at the right proportional place; fewer candidate breaks than needed → `confident: false`, empty segments; ratios are normalised (geometric mean 1).
+- [x] **Step 2:** Run — FAIL. Implement `split.ts`. Run — PASS.
+- [x] **Step 3:** Implement `tour-import.mjs`; `--dry-run` on `reference/tour-inbox/recordings/` prints `01-open` as imported-to-be and every other chapter as not encoded yet.
+- [x] **Step 4:** Run `pnpm tour:import` for real: `open-1`…`open-7` become recorded; `pnpm tour:audio --check` passes for `open`; `pnpm check` and `pnpm e2e` green (the e2e uses the silent voice).
+- [x] **Step 5:** Commit the split code, the script and the seven clips plus manifest: `feat: import chapter recordings`.
 
 ### Task 10.15: Case study (About)
 
