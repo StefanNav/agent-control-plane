@@ -368,4 +368,4 @@ Stefan records one Voice Memos file per chapter (Stefan, 2026-10-10), named `NN-
 - [x] **Step 3:** `pnpm capture` to regenerate `public/og.png` and README screenshots with the Attune bar; add one screenshot of the tour bar to `docs/screenshots/tour.png`; README: a "Watch the tour" line linking `/?tour=open`.
 - [x] **Step 4:** BUILD_PLAN: tick tasks, handoff notes, Start here, decision log (R1–R9 and anything new), session log.
 - [x] **Step 5:** Forbidden-terms check (must print nothing). Push. Mark the PR ready ("Closes #20"), with the task list, preview URL and screenshots.
-- [ ] **Step 6: CHECKPOINT E. STOP.** Ask Stefan to review the preview URL. Merge only after approval.
+- [x] **Step 6: CHECKPOINT E. STOP.** Ask Stefan to review the preview URL. Merge only after approval.

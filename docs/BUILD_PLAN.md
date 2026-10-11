@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 10: Guided tour (⏸ at Checkpoint E) |
-| **Branch** | `phase-10-guided-tour` |
-| **Last completed** | 10.12–10.16: landing and the Attune rename, the case study, screenshots and README, the final whole-branch review and its fixes; PR #21 ready (2026-10-11) |
-| **Next task** | **CHECKPOINT E:** Stefan reviews PR #21's preview: plays the tour in Chrome and Safari (sound on each step's first line), the listen list, the length. Merge only on approval, then update this block |
-| **Blockers** | None. Waiting on Stefan |
+| **Current phase** | All phases merged: the guided tour is live (Phase 10 ☑) |
+| **Branch** | `main` |
+| **Last completed** | Phase 10 approved and squash-merged (PR #21, 2026-10-11); production verified: routes, stories, the tour and axe pass against the live URL (296 e2e; the caption-fit test now waits for the fonts), and the whole tour plays there in real time in 7:23 with all 65 clips and no stalls; clips are cached for an hour |
+| **Next task** | None planned. Stefan checks the tour in Safari on the live URL (`/?tour=open`, sound on each step's first line) and listens to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`); a line to redo is re-recorded as `<beatId>.m4a` and imported with `pnpm tour:import` on a new branch |
+| **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | [PR #21 preview](https://agent-control-plane-git-phase-10-gui-ade39d-stefannavs-projects.vercel.app/?tour=open) |
+| **Latest preview** | none open |
 
 ### How to resume in a new session
 
@@ -98,7 +98,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 7 | Earned autonomy | ☑ Merged | `phase-7-autonomy` | [#8](https://github.com/StefanNav/agent-control-plane/issues/8) | [#17](https://github.com/StefanNav/agent-control-plane/pull/17) | [phase-7-autonomy.md](plans/phase-7-autonomy.md) |
 | 8 | Stories and portfolio layer | ☑ Merged | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | [#18](https://github.com/StefanNav/agent-control-plane/pull/18) | [phase-8-stories.md](plans/phase-8-stories.md) |
 | 9 | Polish and launch | ☑ Merged | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | [#19](https://github.com/StefanNav/agent-control-plane/pull/19) | [phase-9-polish.md](plans/phase-9-polish.md) |
-| 10 | Guided tour | ⏸ At checkpoint | `phase-10-guided-tour` | [#20](https://github.com/StefanNav/agent-control-plane/issues/20) | [#21](https://github.com/StefanNav/agent-control-plane/pull/21) | [phase-10-guided-tour.md](plans/phase-10-guided-tour.md) |
+| 10 | Guided tour | ☑ Merged | `phase-10-guided-tour` | [#20](https://github.com/StefanNav/agent-control-plane/issues/20) | [#21](https://github.com/StefanNav/agent-control-plane/pull/21) | [phase-10-guided-tour.md](plans/phase-10-guided-tour.md) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
@@ -640,7 +640,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 - [x] 10.13 Import recordings (`pnpm tour:import`; replaces the recording page)
 - [ ] 10.14 Recording → **CHECKPOINT D** (all 65 lines in Stefan's voice since 2026-10-10; his listen pass is folded into Checkpoint E)
 - [x] 10.15 Case study (About)
-- [ ] 10.16 Phase checkpoint → **CHECKPOINT E** (PR review; merge only on approval; Safari play-through is Stefan's)
+- [x] 10.16 Phase checkpoint → **CHECKPOINT E** (Stefan approved and merged 2026-10-11; his Safari play-through follows on the live URL)
 
 **Done when:** the tour plays end to end in Stefan's voice in under 7:30; every chapter runs with no skipped actions in e2e; `pnpm tour:audio --check` passes; the brand reads Attune everywhere; Stefan approves the PR.
 
@@ -900,3 +900,4 @@ One row per working session. Newest last.
 | 2026-10-10 | 10 | Checkpoint C: Stefan kept the mockups' names and the banner. Built and reviewed 10.12 (landing with Play the tour, the photo credit, the Attune rename) and 10.15 (About as the case study) | 10.16 |
 | 2026-10-11 | 10 | 10.16: real-time Chromium run 7:24; screenshots and og.png with Attune; README tour section. Final whole-branch review: 0 Critical, 3 Important, 9 Minor; one fix wave (Back and Forward, Explore freely, a click on interludes pauses, captions at 1024 px, the first chapter announced, copy, guards, audio caching), re-reviewed clean. 1154 unit and 288 e2e tests green; Safari moved to Stefan; PR #21 marked ready | CHECKPOINT E: Stefan reviews the preview, including Safari |
 | 2026-10-11 | 10 | Checkpoint E feedback ("really good"; the Play button is hard to find from a link): built the tour welcome (dimmed product, a card pointing at Play tour) to the approved mockup; reviewed, one small fix round. 1208 unit and 296 e2e tests green. Then "Best with sound on" under the landing page's Play and in the welcome (a page can't read the visitor's volume) | CHECKPOINT E: Stefan reviews the welcome on the preview, then Safari and merge |
+| 2026-10-11 | 10 | Stefan approved; PR #21 squash-merged; #20 closed. Production verified: routes, stories, the tour and axe pass against the live URL (296 e2e; the caption-fit test now waits for the fonts), and the whole tour plays there in real time in 7:23 with all 65 clips and no stalls; clips are cached for an hour | Stefan: Safari and the listen list on the live URL |
