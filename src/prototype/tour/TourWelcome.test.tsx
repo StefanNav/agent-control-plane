@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FIXTURE_CHAPTERS } from './fixtures'
 import { TourWelcome, type TourWelcomeProps } from './TourWelcome'
@@ -70,9 +70,10 @@ test('its body, under the id Play tour is described by, says how long the tour r
   })
 })
 
-test('it is tour UI: inside it, nothing counts as using the page', () => {
-  const { layer } = setup()
-  expect(layer()).toBeInTheDocument()
+test('scrim and card sit in one layer marked data-tour="welcome", the tour’s own UI', () => {
+  const { layer, scrim, region } = setup()
+  expect(layer()).toContainElement(scrim())
+  expect(layer()).toContainElement(region())
 })
 
 test('a link that starts after the first chapter says where it starts', () => {
@@ -114,6 +115,19 @@ test('Escape dismisses it, unless something else has used the key (a menu closin
   expect(onDismiss).toHaveBeenCalledTimes(1)
 })
 
+test('Escape is a dialog’s while one is open (Ruling 32): it leaves the welcome up', () => {
+  const { onDismiss } = setup()
+  const dialog = document.createElement('div')
+  dialog.setAttribute('role', 'dialog')
+  document.body.append(dialog)
+  onTestFinished(() => dialog.remove())
+  fireEvent.keyDown(dialog, { key: 'Escape' })
+  expect(onDismiss).not.toHaveBeenCalled()
+  dialog.remove()
+  fireEvent.keyDown(document.body, { key: 'Escape' })
+  expect(onDismiss).toHaveBeenCalledTimes(1)
+})
+
 test('a click on the dimmed page dismisses it, keeping focus where it was and the click to itself', async () => {
   const { onDismiss, scrim } = setup()
   const play = document.createElement('button')
@@ -141,6 +155,16 @@ test('closing, it leaves the accessibility tree at once and the page after its f
   expect(onDismiss).not.toHaveBeenCalled()
   act(() => vi.advanceTimersByTime(200))
   expect(layer()).not.toBeInTheDocument()
+})
+
+test('fading out after a jump, it still says the chapter it showed while it was up', () => {
+  const later = setup({ chapter: 1 })
+  later.rerender({ open: false, chapter: 0 })
+  expect(screen.getByText('You’re starting at chapter 2 of 2: Decision 1.')).toBeInTheDocument()
+  cleanup()
+  const first = setup({ chapter: 0 })
+  first.rerender({ open: false, chapter: 1 })
+  expect(screen.queryByText(/You’re starting at chapter/)).not.toBeInTheDocument()
 })
 
 test('closed from the start, it renders nothing', () => {

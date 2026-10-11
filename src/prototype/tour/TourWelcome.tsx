@@ -71,10 +71,11 @@ function usePresent(open: boolean): boolean {
 
 /**
  * The welcome (Checkpoint E): when a link opens the tour on the page's first location, the product
- * dims and a card above the bar points at Play tour. A labelled region, not a dialog, so the tour's
- * keys still work while it is up (Ruling 45); it has no Play of its own, so the tour starts from the
- * bar's, inside the visitor's gesture. Look around first, Escape or a click on the dimmed page
- * dismisses it, the tour still paused. Fading out, it is inert and hidden from assistive tech.
+ * dims and a card above the bar points at Play tour. A labelled region, not a dialog, so the
+ * tour's keys still work while it is up (Ruling 45); it has no Play of its own, so the tour starts
+ * from the bar's, inside the visitor's gesture. Look around first, Escape or a click on the dimmed
+ * page dismisses it, the tour still paused. Fading out, it is inert, hidden from assistive tech,
+ * and still says the chapter it showed while it was up.
  */
 export function TourWelcome({
   open,
@@ -85,6 +86,10 @@ export function TourWelcome({
   onDismiss,
 }: TourWelcomeProps) {
   const present = usePresent(open)
+  // The chapter it showed while up: a jump that took it down mustn't change it as it fades.
+  const [held, setHeld] = useState(chapter)
+  if (open && held !== chapter) setHeld(chapter)
+  const shown = open ? chapter : held
   const titleId = useId()
   const cardRef = useRef<HTMLElement>(null)
   const notchRef = useRef<HTMLSpanElement>(null)
@@ -122,7 +127,10 @@ export function TourWelcome({
   useEffect(() => {
     if (!open) return
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !event.defaultPrevented) closeOnKey()
+      if (event.key !== 'Escape' || event.defaultPrevented) return
+      // An open dialog owns Escape (Ruling 32): one press closes it, not the welcome too.
+      if (document.querySelector('[role="dialog"]') !== null) return
+      closeOnKey()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
@@ -132,7 +140,7 @@ export function TourWelcome({
 
   // A press on the dimmed page moves no focus (Play tour keeps it) and selects nothing.
   const hold = (event: PointerEvent | MouseEvent) => event.preventDefault()
-  const n = chapter + 1
+  const n = shown + 1
   return (
     <div
       data-tour="welcome"
@@ -165,9 +173,9 @@ export function TourWelcome({
             and I’ll walk you through it in my own voice, about {minutes} minutes, while it clicks
             through the real screens. Pause or take over at any time.
           </p>
-          {chapter > 0 ? (
+          {shown > 0 ? (
             <p className={styles.partway}>
-              You’re starting at chapter {n} of {chapters.length}: {chapters[chapter]?.title}.
+              You’re starting at chapter {n} of {chapters.length}: {chapters[shown]?.title}.
             </p>
           ) : null}
         </div>
