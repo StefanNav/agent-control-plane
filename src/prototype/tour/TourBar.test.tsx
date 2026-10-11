@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { buildTimeline } from './engine'
 import { FIXTURE_CHAPTERS } from './fixtures'
@@ -168,9 +168,20 @@ test('Exit tour exits', async () => {
   expect(calls).toEqual(['exit'])
 })
 
-test('a status region names the chapter, so a screen reader hears each new one', () => {
+test('the status region mounts empty and names the first chapter a frame later, so it is heard too', async () => {
+  setup()
+  // A region inserted already holding its text isn't announced; a change to it is.
+  expect(screen.getByRole('status')).toBeEmptyDOMElement()
+  await waitFor(() =>
+    expect(screen.getByRole('status')).toHaveTextContent('Chapter 1: Why this problem'),
+  )
+})
+
+test('a status region names the chapter, so a screen reader hears each new one', async () => {
   const { rerender } = setup()
-  expect(screen.getByRole('status')).toHaveTextContent('Chapter 1: Why this problem')
+  await waitFor(() =>
+    expect(screen.getByRole('status')).toHaveTextContent('Chapter 1: Why this problem'),
+  )
   rerender({ pos: { chapter: 1, step: 0, beat: 0 } })
   expect(screen.getByRole('status')).toHaveTextContent('Chapter 2: Decision 1')
 })

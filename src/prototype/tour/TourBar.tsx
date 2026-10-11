@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Button, Icon, Menu, VisuallyHidden } from '../../design-system'
 import { beatAt } from './engine'
 import type { TourControls, TourRate, TourStatus } from './player'
@@ -8,6 +9,20 @@ import styles from './TourBar.module.css'
 
 /** The speeds the bar cycles through (R3). */
 const RATES: readonly TourRate[] = [1, 1.25, 1.5]
+
+/**
+ * What the status region says. It mounts empty and fills a frame later: a region inserted already
+ * holding its text isn't announced, so the first chapter would go unheard. After that it follows
+ * the chapter at once.
+ */
+function useAnnounced(text: string): string {
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setReady(true))
+    return () => cancelAnimationFrame(frame)
+  }, [])
+  return ready ? text : ''
+}
 
 /** Milliseconds as m:ss. */
 function clock(ms: number): string {
@@ -54,6 +69,7 @@ export function TourBar({
   const chapter = chapters[pos.chapter]!
   const n = pos.chapter + 1
   const nextRate = RATES[(RATES.indexOf(rate) + 1) % RATES.length]!
+  const announced = useAnnounced(`Chapter ${n}: ${chapter.title}`)
   return (
     <aside
       aria-label="Tour"
@@ -63,7 +79,7 @@ export function TourBar({
       className={styles.bar}
       style={{ height: TOUR_BAR_HEIGHT }}
     >
-      <VisuallyHidden role="status">{`Chapter ${n}: ${chapter.title}`}</VisuallyHidden>
+      <VisuallyHidden role="status">{announced}</VisuallyHidden>
       {captions ? (
         <p className={styles.caption}>{typographic(beatAt(chapters, pos).text)}</p>
       ) : null}

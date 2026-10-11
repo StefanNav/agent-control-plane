@@ -231,9 +231,11 @@ test('the whole tour plays through in its own voice, in the time the model gives
   await expect(page).toHaveURL(/\/$/)
   await expect(page.getByRole('heading', { level: 1, name: 'Agent Control Plane' })).toBeVisible()
 
-  // Every chapter came up, in order, and every line was spoken, in order.
+  // Every chapter came up, in order, and every line was spoken, in order. The status region mounts
+  // empty and names its chapter a frame later, so a reading in that frame says nothing.
   const chapters = log.readings
     .map((reading) => reading.chapter)
+    .filter((chapter) => chapter !== '')
     .filter((chapter, i, all) => chapter !== all[i - 1])
   expect(chapters).toEqual(CHAPTERS.map((chapter, i) => `Chapter ${i + 1}: ${chapter.title}`))
   expect(log.plays.map((play) => play.clip)).toEqual(beats.map((beat) => beat.id))
