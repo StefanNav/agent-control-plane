@@ -1187,6 +1187,8 @@ test.describe('at the narrowest desktop width', () => {
       ),
     )
     expect(lines).toHaveLength(65)
+    // Measured in Plex, not the fallback face it shows while the fonts load (against a deployment).
+    await page.evaluate(() => document.fonts.ready)
     // Each line set in the bar's caption in turn, as the tour shows it: none cut off. At 1024 px,
     // and at 1100 px, the first width that keeps the larger size.
     for (const width of [1024, 1100]) {
