@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useReducer, useRef, type ReactNode } from 'react'
+import { useEffect, useEffectEvent, useId, useReducer, useRef, type ReactNode } from 'react'
 import { useLocation, useNavigate, useNavigationType, useSearchParams } from 'react-router'
 import { useShallow } from 'zustand/react/shallow'
 import { elapsedMs, isInterlude, stepAt, tourUrlAction } from './engine'
@@ -6,6 +6,8 @@ import { markScreen } from './screen'
 import { TourBar } from './TourBar'
 import { TourCard } from './TourCard'
 import { TourCursor } from './TourCursor'
+import { tourMinutes } from './tourMinutes'
+import { TourWelcome } from './TourWelcome'
 import type { TourStatus } from './player'
 import type { Chapter, Position } from './types'
 import { tourRuntime, type TourRuntime } from './useTour'
@@ -78,8 +80,9 @@ function isControl(el: Element | null): boolean {
 }
 
 /**
- * Keep `?tour=` and the player in step (spec §4.1, R2): a link opens its chapter paused, an unknown
- * chapter is stripped, the URL names the chapter while the tour is open (a product link that drops it
+ * Keep `?tour=` and the player in step (spec §4.1, R2): a link opens its chapter paused (with the
+ * welcome, on the page's first location: a fresh load, a refresh, a shared link), an unknown chapter
+ * is stripped, the URL names the chapter while the tour is open (a product link that drops it
  * gets it back), and closing drops it. Back and Forward never open the tour or move it (Ruling 38):
  * closed, a chapter reached that way is dropped from the URL; open, it is a take-over where the tour
  * is. A navigation on its way (the player's, or a story's that closed the tour) is left to land
@@ -153,7 +156,10 @@ function useTourUrl(runtime: TourRuntime) {
       // Back or Forward onto a chapter's link leaves the tour closed, and drops it from the URL, so
       // nothing that keeps the query (a tab, a dialog) carries it on.
       if (action.kind === 'strip' || (action.kind === 'open' && popped)) write(null)
-      else if (action.kind === 'open') player.getState().open(action.chapter, false)
+      // A link that loaded the page lands a visitor on a busy screen: the welcome points them at
+      // Play. One followed inside the app (About's Play from here) needs none.
+      else if (action.kind === 'open')
+        player.getState().open(action.chapter, false, { welcome: first })
     }
   })
   useEffect(() => {
@@ -248,12 +254,14 @@ function useTicking(active: boolean) {
 
 /**
  * The tour layer of the app and prototype shells: URL sync and input always; while the tour is open,
- * the outline, the cursor, the current card and the player bar.
+ * the outline, the cursor, the current card, the welcome (until the visitor starts) and the player
+ * bar.
  */
 export function TourLayer() {
   const runtime = tourRuntime()
   useTourUrl(runtime)
   useTourInput(runtime)
+  const welcomeBody = useId()
   const { player, chapters, timeline, cards, voice } = runtime
   const state = player(
     useShallow((s) => ({
@@ -266,6 +274,7 @@ export function TourLayer() {
       cursor: s.cursor,
       clicks: s.clicks,
       skipped: s.skipped.length,
+      welcome: s.welcome,
     })),
   )
   useTicking(state.status === 'playing')
@@ -273,6 +282,7 @@ export function TourLayer() {
 
   const controls = player.getState()
   const card = state.card ? cards[state.card.id] : undefined
+  const welcoming = state.status === 'paused' && state.welcome
   return (
     <>
       {state.outline && SAFE_TARGET.test(state.outline) ? (
@@ -287,6 +297,15 @@ export function TourLayer() {
           onPause={controls.pause}
         />
       ) : null}
+      {/* Before the bar, so Shift+Tab from Play tour reaches Look around first. */}
+      <TourWelcome
+        open={welcoming}
+        bodyId={welcomeBody}
+        chapters={chapters}
+        chapter={state.pos.chapter}
+        minutes={tourMinutes(timeline.total)}
+        onDismiss={controls.dismissWelcome}
+      />
       <TourBar
         chapters={chapters}
         timeline={timeline}
@@ -298,6 +317,7 @@ export function TourLayer() {
         skipped={state.skipped}
         controls={controls}
         unlock={() => voice.unlock()}
+        welcome={welcoming ? welcomeBody : undefined}
       />
       <TourCursor
         x={state.cursor.x}

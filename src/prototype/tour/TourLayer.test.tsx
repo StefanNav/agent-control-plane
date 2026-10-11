@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useEffect } from 'react'
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router'
@@ -8,6 +8,7 @@ import { Landing } from '../Landing/Landing'
 import { useStory } from '../stories/progress'
 import type { CardContent } from './cards'
 import { FIXTURE_CHAPTERS } from './fixtures'
+import { tourMinutes } from './tourMinutes'
 import type { Chapter } from './types'
 import { createTourRuntime, setTourRuntime, type TourRuntime } from './useTour'
 
@@ -697,5 +698,155 @@ describe('the shell while the tour is open', () => {
     )
     expect(cursor()).toHaveAttribute('data-visible', 'true')
     expect(cursor()).toHaveStyle({ transform: 'translate(40px, 50px)' })
+  })
+})
+
+describe('the welcome (Checkpoint E)', () => {
+  const welcome = () => screen.queryByRole('region', { name: 'Welcome to Agent Control Plane' })
+  const play = () => screen.getByRole('button', { name: 'Play tour' })
+
+  /** A link to a chapter, opened on the page's first location: the welcome is up over it. */
+  async function linked(at = '/?tour=decisions') {
+    const t = setup(at)
+    await waitFor(() => expect(t.state().status).toBe('paused'))
+    expect(welcome()).toBeInTheDocument()
+    return t
+  }
+
+  test('a link opened on the page’s first location shows it, paused, Play tour focused and described by it', async () => {
+    const t = await linked()
+    expect(t.state()).toMatchObject({ status: 'paused', welcome: true })
+    expect(play()).toHaveFocus()
+    expect(play()).toHaveAccessibleDescription(
+      expect.stringMatching(/^A working prototype of how a hospital brings on/),
+    )
+    // The tour's length, as the landing page's Play says it.
+    expect(welcome()).toHaveTextContent(`about ${tourMinutes(runtime.timeline.total)} minutes`)
+  })
+
+  test('so does a refresh at a later entry in the tab’s history', async () => {
+    setup(['/inventory', '/?tour=decisions'], 1)
+    await waitFor(() => expect(welcome()).toBeInTheDocument())
+  })
+
+  test('not after the landing page’s Play, which plays at once', async () => {
+    runtime = createTourRuntime(FIXTURE_CHAPTERS, {}, { voice: 'silent', cards: CARDS })
+    setTourRuntime(runtime)
+    const router = createMemoryRouter(
+      [
+        {
+          element: <AppShell shell="app" />,
+          children: [
+            { path: '/', element: <Landing /> },
+            { path: '*', element: <Page /> },
+          ],
+        },
+      ],
+      { initialEntries: ['/'] },
+    )
+    render(<RouterProvider router={router} />)
+    await userEvent.click(screen.getByRole('button', { name: /^Play the tour · \d+ min$/ }))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/tour/problem'))
+    expect(runtime.player.getState()).toMatchObject({ status: 'playing', welcome: false })
+    expect(welcome()).not.toBeInTheDocument()
+  })
+
+  test('not for a link followed inside the app (About’s Play from here)', async () => {
+    const t = setup('/inventory')
+    await act(() => t.router.navigate('/?tour=decisions'))
+    await waitFor(() => expect(t.where()).toBe('/operations?tour=decisions'))
+    expect(t.state()).toMatchObject({ status: 'paused', welcome: false })
+    expect(welcome()).not.toBeInTheDocument()
+  })
+
+  test('never on Back or Forward: Back onto a chapter’s link leaves the tour closed', async () => {
+    const t = setup(['/?tour=decisions', '/inventory'], 1)
+    await act(() => t.router.navigate(-1))
+    await waitFor(() => expect(t.where()).toBe('/'))
+    expect(t.state()).toMatchObject({ status: 'idle', welcome: false })
+    expect(welcome()).not.toBeInTheDocument()
+  })
+
+  test('says where a link starts after the first chapter, and nothing of it at the first', async () => {
+    await linked('/?tour=decisions')
+    expect(welcome()).toHaveTextContent('You’re starting at chapter 2 of 2: Decision 1.')
+    act(() => runtime.player.getState().exit())
+    setTourRuntime(null)
+    cleanup()
+    await linked('/?tour=problem')
+    expect(welcome()).not.toHaveTextContent('You’re starting at chapter')
+  })
+
+  test('Play tour starts the tour and takes it down, the audio unlocked inside the click', async () => {
+    const t = await linked()
+    const unlock = vi.spyOn(runtime.voice, 'unlock')
+    await userEvent.click(play())
+    expect(unlock).toHaveBeenCalled()
+    expect(t.state()).toMatchObject({ status: 'playing', welcome: false })
+    expect(welcome()).not.toBeInTheDocument()
+  })
+
+  test('Space, from the focused Play tour, starts it too', async () => {
+    const t = await linked()
+    await userEvent.keyboard(' ')
+    expect(t.state()).toMatchObject({ status: 'playing', welcome: false })
+    expect(welcome()).not.toBeInTheDocument()
+  })
+
+  test('Space from the page body starts it too', async () => {
+    const t = await linked()
+    fireEvent.keyDown(document.body, { key: ' ' })
+    expect(t.state()).toMatchObject({ status: 'playing', welcome: false })
+  })
+
+  test('Escape takes it down, the tour still paused, Play tour still focused', async () => {
+    const t = await linked()
+    fireEvent.keyDown(play(), { key: 'Escape' })
+    expect(t.state()).toMatchObject({ status: 'paused', welcome: false })
+    expect(welcome()).not.toBeInTheDocument()
+    expect(play()).toHaveFocus()
+  })
+
+  test('Look around first takes it down, the tour still paused, focus back on Play tour', async () => {
+    const t = await linked()
+    await userEvent.click(screen.getByRole('button', { name: 'Look around first' }))
+    expect(t.state()).toMatchObject({ status: 'paused', welcome: false })
+    expect(welcome()).not.toBeInTheDocument()
+    expect(play()).toHaveFocus()
+  })
+
+  test('a click on the dimmed page takes it down, and is no take-over: still paused', async () => {
+    const t = await linked()
+    const scrim = document.querySelector<HTMLElement>('[data-tour="welcome"] [data-scrim]')!
+    await userEvent.click(scrim)
+    expect(t.state()).toMatchObject({ status: 'paused', welcome: false })
+    expect(screen.queryByText('Paused. You’re driving.')).not.toBeInTheDocument()
+    expect(welcome()).not.toBeInTheDocument()
+    expect(play()).toHaveFocus()
+  })
+
+  test('a chapter jump from the bar takes it down', async () => {
+    const t = await linked('/?tour=problem')
+    await userEvent.click(screen.getByRole('button', { name: 'Go to chapter 2: Decision 1' }))
+    await waitFor(() => expect(t.where()).toBe('/operations?tour=decisions'))
+    expect(t.state()).toMatchObject({ status: 'paused', welcome: false })
+    expect(welcome()).not.toBeInTheDocument()
+  })
+
+  test('using the page (typing in a field) is a take-over, and takes it down', async () => {
+    const t = await linked()
+    fireEvent.keyDown(screen.getByRole('textbox', { name: 'Reason' }), { key: 'a' })
+    expect(t.state()).toMatchObject({ status: 'driving', welcome: false })
+    expect(welcome()).not.toBeInTheDocument()
+  })
+
+  test('once down, it stays down: Exit and a link to the tour inside the app don’t bring it back', async () => {
+    const t = await linked()
+    await userEvent.click(screen.getByRole('button', { name: 'Look around first' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Exit tour' }))
+    await waitFor(() => expect(t.state().status).toBe('idle'))
+    await act(() => t.router.navigate('/?tour=problem'))
+    await waitFor(() => expect(t.where()).toBe('/tour/problem?tour=problem'))
+    expect(welcome()).not.toBeInTheDocument()
   })
 })
