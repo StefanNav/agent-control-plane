@@ -8,10 +8,10 @@ import { personaById } from '../personas'
 import { STORIES } from '../stories'
 import { useStory } from '../stories/progress'
 import { useStoryActions } from '../stories/useStory'
+import { tourMinutes } from '../tour/tourMinutes'
 import { exitTourIfOpen, tourRuntime, unlockVoice } from '../tour/useTour'
 import { Credit } from './Credit'
 import styles from './Landing.module.css'
-import { tourMinutes } from './tourMinutes'
 
 /**
  * The start page (guided-tour spec §4.1): what this is, the narrated tour as its main action, then
