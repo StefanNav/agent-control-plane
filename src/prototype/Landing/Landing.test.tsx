@@ -41,7 +41,13 @@ afterEach(() => {
 })
 
 /** The tour's length as the button says it: whole minutes. */
-const tourMinutes = () => Math.round(runtime.timeline.total / 60_000)
+const tourMinutes = () => Math.max(1, Math.round(runtime.timeline.total / 60_000))
+
+/** Show the landing over a tour that runs for `total` ms. */
+function showWithLength(total: number) {
+  setTourRuntime({ ...runtime, timeline: { ...runtime.timeline, total } })
+  show()
+}
 
 test('says what the product is, and offers seven stories in persona order', () => {
   show()
@@ -114,10 +120,35 @@ test('one line under the button says what the tour covers', () => {
   ).toBeInTheDocument()
 })
 
-test('credits Stefan as the narrator, with no photo until one is supplied', () => {
-  show()
+test('credits Stefan as the narrator, with his photo as decoration beside it', () => {
+  const { container } = render(
+    <MemoryRouter initialEntries={['/']}>
+      <Landing />
+    </MemoryRouter>,
+  )
   expect(screen.getByText('Narrated by Stefan')).toBeInTheDocument()
-  expect(screen.queryByRole('img')).not.toBeInTheDocument()
+  const photo = container.querySelector('img')
+  expect(photo).toHaveAttribute('src', '/tour/stefan.jpg')
+  expect(photo).toHaveAttribute('alt', '')
+})
+
+test('the Marcus hint sits directly under Explore freely, and describes it', () => {
+  show()
+  const explore = screen.getByRole('button', { name: 'Explore freely' })
+  const hint = screen.getByText('Explore freely starts as Marcus, the agent owner.')
+  expect(explore).toHaveAccessibleDescription('Explore freely starts as Marcus, the agent owner.')
+  // The line right under the row that holds the button.
+  expect(explore.parentElement!.nextElementSibling).toBe(hint)
+})
+
+test('the button says the tour’s length in whole minutes, and never 0', () => {
+  showWithLength((7 * 60 + 2) * 1000)
+  expect(screen.getByRole('button', { name: 'Play the tour · 7 min' })).toBeInTheDocument()
+})
+
+test('a tour of 20 seconds says 1 min', () => {
+  showWithLength(20_000)
+  expect(screen.getByRole('button', { name: 'Play the tour · 1 min' })).toBeInTheDocument()
 })
 
 test('Play the tour primes the voice inside the click, then opens the tour at chapter 0, playing', async () => {

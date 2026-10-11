@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { useNavigate } from 'react-router'
 import { Button, Card, LinkButton } from '../../design-system'
 import type from '../../design-system/type.module.css'
@@ -10,8 +11,7 @@ import { useStoryActions } from '../stories/useStory'
 import { tourRuntime, unlockVoice } from '../tour/useTour'
 import { Credit } from './Credit'
 import styles from './Landing.module.css'
-
-const MS_PER_MINUTE = 60_000
+import { tourMinutes } from './tourMinutes'
 
 /**
  * The start page (guided-tour spec §4.1): what this is, the narrated tour as its main action, then
@@ -24,7 +24,8 @@ export function Landing() {
   const marcus = personaById('marcus')
 
   const { timeline, player } = tourRuntime()
-  const minutes = Math.round(timeline.total / MS_PER_MINUTE)
+  const minutes = tourMinutes(timeline.total)
+  const exploreHintId = useId()
 
   // The click is the gesture that lets the browser play audio, so the voice is primed inside it.
   const playTour = () => {
@@ -53,17 +54,23 @@ export function Landing() {
           <Button variant="primary" onClick={playTour}>
             Play the tour · {minutes} min
           </Button>
-          <Button variant="secondary" onClick={exploreFreely}>
-            Explore freely
-          </Button>
-          <LinkButton to="/about">About this prototype</LinkButton>
+          <div className={styles.more}>
+            <div className={styles.moreButtons}>
+              <Button variant="secondary" aria-describedby={exploreHintId} onClick={exploreFreely}>
+                Explore freely
+              </Button>
+              <LinkButton to="/about">About this prototype</LinkButton>
+            </div>
+            <span id={exploreHintId} className={type.meta}>
+              Explore freely starts as Marcus, the agent owner.
+            </span>
+          </div>
         </div>
         <p className={styles.text}>
           A narrated walkthrough of one agent’s life: the problem, the product, three key decisions
           and how I’d validate it.
         </p>
-        <Credit name="Stefan" />
-        <span className={type.meta}>Explore freely starts as Marcus, the agent owner.</span>
+        <Credit name="Stefan" src="/tour/stefan.jpg" />
       </section>
 
       <section className={styles.stories} aria-labelledby="stories-title">
