@@ -37,7 +37,6 @@ export const FIXTURE_CHAPTERS: Chapter[] = [
   {
     id: 'decisions',
     title: 'Decision 1',
-    decision: 1,
     steps: [
       {
         id: 'decisions-screen',

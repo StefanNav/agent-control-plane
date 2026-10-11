@@ -61,7 +61,6 @@ export interface TourStep {
 export interface Chapter {
   id: ChapterId
   title: string
-  decision?: 1 | 2 | 3
   steps: TourStep[]
 }
 

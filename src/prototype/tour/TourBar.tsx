@@ -141,7 +141,6 @@ export function TourBar({
                     <span className={styles.start}>{clock(timeline.chapterStartMs[i] ?? 0)}</span>
                   </>
                 ),
-                sub: c.decision ? `Decision ${c.decision}` : undefined,
                 onSelect: () => controls.jump(i),
               })),
             },

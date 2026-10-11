@@ -106,7 +106,7 @@ test('shows elapsed and total time as m:ss', () => {
   expect(screen.getByText('0:15 / 0:20')).toBeInTheDocument()
 })
 
-test('the chapter menu shows the current chapter and lists every chapter with its start, decisions marked', async () => {
+test('the chapter menu shows the current chapter and lists every chapter with its start', async () => {
   const { calls } = setup({ pos: { chapter: 0, step: 1, beat: 0 } })
   const trigger = screen.getByRole('button', { name: '1 · Why this problem' })
   expect(trigger).toHaveAttribute('aria-haspopup', 'menu')
@@ -115,7 +115,6 @@ test('the chapter menu shows the current chapter and lists every chapter with it
   expect(items).toHaveLength(2)
   expect(items[0]).toHaveTextContent('Why this problem')
   expect(items[0]).toHaveTextContent('0:00')
-  expect(items[0]).not.toHaveTextContent('Decision')
   expect(items[1]).toHaveTextContent('Decision 1')
   expect(items[1]).toHaveTextContent('0:14')
   await userEvent.click(items[1]!)

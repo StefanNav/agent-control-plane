@@ -43,8 +43,7 @@ const { CHAPTERS } = await loadTour()
 
 const lines = ['# Tour script', '']
 CHAPTERS.forEach((chapter, index) => {
-  const decision = chapter.decision ? ` · decision ${chapter.decision}` : ''
-  lines.push(`## ${index} · ${chapter.title}${decision}`, '')
+  lines.push(`## ${index} · ${chapter.title}`, '')
   let number = 0
   for (const step of chapter.steps) {
     lines.push(`*${describeStep(step)}*`, '')
