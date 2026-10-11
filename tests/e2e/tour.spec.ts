@@ -834,6 +834,74 @@ test('a decision’s screen opens larger: the tour pauses, without a take-over, 
   expect(errors).toEqual([])
 })
 
+test('a click on the decisions page pauses the tour, without a take-over, and Play carries on from the line (Ruling 41)', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  const lines = CHAPTERS.find((c) => c.id === 'decisions')!.steps.flatMap((step) =>
+    step.beats.map((beat) => typographic(beat.text)),
+  )
+  /** From now on, every caption the bar shows, in order (a MutationObserver sees each). */
+  const watchCaptions = async () => {
+    await page.evaluate(() => {
+      const seen: string[] = []
+      Reflect.set(window, 'tourCaptions', seen)
+      const look = () => {
+        const caption = document.querySelector('[data-tour="bar"] p')?.textContent ?? ''
+        if (seen.at(-1) !== caption) seen.push(caption)
+      }
+      new MutationObserver(look).observe(document, {
+        subtree: true,
+        childList: true,
+        characterData: true,
+      })
+      look()
+    })
+    return () => page.evaluate(() => Reflect.get(window, 'tourCaptions') as string[])
+  }
+  /** Paused as by the bar's own Pause: Play tour, and nothing says the visitor is driving. */
+  const expectPaused = async () => {
+    await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeVisible()
+    await expect(bar(page)).not.toContainText('Paused. You’re driving.')
+  }
+  /** Play, then the line held carries on: the next one follows, and the step's first never comes back. */
+  const expectCarriesOn = async (held: string) => {
+    const captions = await watchCaptions()
+    await play(page)
+    await expect
+      .poll(async () => (await glance(page)).caption, { timeout: CHAPTER_MS, intervals: [25] })
+      .toBe(lines[lines.indexOf(held) + 1])
+    expect(await captions()).not.toContain(lines[0])
+  }
+
+  await openChapter(page, 'decisions', /\/tour\/decisions\?tour=decisions$/)
+  await play(page)
+  await expectGlance(
+    page,
+    { chapter: 'decisions', line: 'I could have kept' },
+    items,
+    'shown d1 · current d1',
+  )
+  // A click on the page's own text: paused where it was.
+  await page.locator('[data-item="d1"] h2').click()
+  await expectPaused()
+  const held = (await glance(page)).caption
+  expect(lines.indexOf(held)).toBeGreaterThan(0)
+  await expectCarriesOn(held)
+
+  // A decision's screen, opened larger: the same pause, and the same carrying on once it closes.
+  await page.getByRole('button', { name: /^The sign page: .*, open larger$/ }).click()
+  const dialog = page.getByRole('dialog', { name: 'Signing a privilege, as Priya' })
+  await expect(dialog).toBeVisible()
+  await expectPaused()
+  const heldAgain = (await glance(page)).caption
+  await dialog.getByRole('button', { name: 'Close' }).click()
+  await expect(dialog).toHaveCount(0)
+  await expectPaused()
+  await expectCarriesOn(heldAgain)
+  expect(errors).toEqual([])
+})
+
 test('a decision reached before steps back to text2, and its meta text stays meta', async ({
   page,
 }) => {

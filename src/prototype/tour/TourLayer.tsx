@@ -1,12 +1,13 @@
 import { useEffect, useEffectEvent, useReducer, useRef, type ReactNode } from 'react'
 import { useLocation, useNavigate, useNavigationType, useSearchParams } from 'react-router'
 import { useShallow } from 'zustand/react/shallow'
-import { elapsedMs, tourUrlAction } from './engine'
+import { elapsedMs, isInterlude, stepAt, tourUrlAction } from './engine'
 import { markScreen } from './screen'
 import { TourBar } from './TourBar'
 import { TourCard } from './TourCard'
 import { TourCursor } from './TourCursor'
 import type { TourStatus } from './player'
+import type { Chapter, Position } from './types'
 import { tourRuntime, type TourRuntime } from './useTour'
 
 const SAFE_TARGET = /^[a-z0-9-]+$/
@@ -67,6 +68,11 @@ function handsOver(status: TourStatus): boolean {
   return status === 'playing' || status === 'paused'
 }
 
+/** Is the tour at a step on one of its own pages (an interlude), not a product screen? */
+function onInterlude(chapters: Chapter[], pos: Position): boolean {
+  return isInterlude(stepAt(chapters, pos).route)
+}
+
 function isControl(el: Element | null): boolean {
   return el?.closest(CONTROL) != null
 }
@@ -125,9 +131,12 @@ function useTourUrl(runtime: TourRuntime) {
         { replace: true },
       )
     if (open) {
-      // Back or Forward is the visitor driving: a take-over where the tour is, never a jump. Once,
-      // on arrival: a later sync here is for a status change (Resume, say).
-      if (popped && arrived) now.takeOver()
+      // Back or Forward is the visitor driving: a take-over where the tour is, never a jump. So is
+      // leaving the tour's own page, where input only paused it (Ruling 41). Once, on arrival: a
+      // later sync here is for a status change (Resume, say).
+      const left =
+        onInterlude(chapters, now.pos) && location.pathname !== stepAt(chapters, now.pos).route
+      if (arrived && (popped || left)) now.takeOver()
       const id = chapters[now.pos.chapter]?.id
       if (id === undefined || current === id) return
       // A link the visitor followed that names another chapter: go there (Ruling 16). The
@@ -156,22 +165,30 @@ function useTourUrl(runtime: TourRuntime) {
  * The visitor's input while the tour is open (spec §4.5, §4.6, Review focus 4): Space plays and
  * pauses and ←/→ step, unless focus is on a control (the bar's own are fine for ←/→) or a dialog is
  * open (Ruling 32); a pointer down or a key on a control outside the tour's UI while it plays or is
- * paused is a take-over (Ruling 12); a hidden tab pauses; and the layer going away pauses and
+ * paused is a take-over on a product screen (Ruling 12), and on the tour's own pages a pause, so Play
+ * carries on from the line (Ruling 41); a hidden tab pauses; and the layer going away pauses and
  * silences the voice.
  */
-function useTourInput({ player, voice }: TourRuntime) {
+function useTourInput({ player, voice, chapters }: TourRuntime) {
   useEffect(() => {
+    /** The visitor is using the page while the tour plays or is paused. */
+    const visitorActs = () => {
+      const { status, pos, pause, takeOver } = player.getState()
+      // An interlude has no product state a beat could act on wrongly: hold the line, don't drop it.
+      if (!onInterlude(chapters, pos)) takeOver()
+      else if (status === 'playing') pause()
+    }
     const onPointerDown = (event: PointerEvent) => {
       if (!handsOver(player.getState().status)) return
       if (!onPage(elementOf(event.target))) return
-      player.getState().takeOver()
+      visitorActs()
     }
     // Capture, so a page that stops a key's propagation can't hide it.
     const onKeyCapture = (event: KeyboardEvent) => {
       if (!handsOver(player.getState().status) || PASSIVE_KEYS.has(event.key)) return
       const target = elementOf(event.target)
       if (!onPage(target) || !isControl(target)) return
-      player.getState().takeOver()
+      visitorActs()
     }
     const onKey = (event: KeyboardEvent) => {
       const { status, play, pause, next, prev } = player.getState()
@@ -208,7 +225,7 @@ function useTourInput({ player, voice }: TourRuntime) {
       document.removeEventListener('keydown', onKey)
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [player, voice])
+  }, [player, voice, chapters])
 
   useEffect(
     () => () => {

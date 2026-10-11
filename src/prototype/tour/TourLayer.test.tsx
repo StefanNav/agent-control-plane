@@ -404,6 +404,61 @@ describe('taking over (spec §4.5)', () => {
   })
 })
 
+describe('on the tour’s own pages, input pauses instead (Ruling 41)', () => {
+  /** The problem chapter's interlude, playing. */
+  async function playingInterlude() {
+    const t = setup('/?tour=problem')
+    await waitFor(() => expect(t.where()).toBe('/tour/problem?tour=problem'))
+    act(() => t.state().play())
+    return t
+  }
+
+  test('a pointer down on the page while playing pauses, where it is: Play, not Resume tour', async () => {
+    const t = await playingInterlude()
+    const at = t.state().pos
+    fireEvent.pointerDown(screen.getByRole('main'))
+    expect(t.state()).toMatchObject({ status: 'paused', pos: at })
+    expect(screen.getByRole('button', { name: 'Play tour' })).toBeInTheDocument()
+    expect(screen.queryByText('Paused. You’re driving.')).not.toBeInTheDocument()
+  })
+
+  test('so does a key on a control; while paused, input changes nothing', async () => {
+    const t = await playingInterlude()
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Product button' }), { key: 'Enter' })
+    expect(t.state().status).toBe('paused')
+    fireEvent.pointerDown(screen.getByRole('main'))
+    fireEvent.keyDown(screen.getByRole('textbox', { name: 'Reason' }), { key: 'a' })
+    expect(t.state().status).toBe('paused')
+  })
+
+  test('Play then carries on from the line, not from the step’s start', async () => {
+    const t = await playingInterlude()
+    fireEvent.pointerDown(screen.getByRole('main'))
+    const { stepKey, pos } = t.state()
+    act(() => t.state().play())
+    // A restart would enter the step again: a new step key and its first line.
+    expect(t.state()).toMatchObject({ status: 'playing', stepKey, pos })
+  })
+
+  test('on a product screen it is still a take-over', async () => {
+    const t = await playingInterlude()
+    act(() => t.state().next())
+    await waitFor(() => expect(t.where()).toBe('/operations/agents/med-rec?tour=problem'))
+    act(() => t.state().play())
+    fireEvent.pointerDown(screen.getByRole('main'))
+    expect(t.state().status).toBe('driving')
+  })
+
+  test('input that leaves the page still ends up a take-over: Reset demo goes to Marcus’s division', async () => {
+    const t = await playingInterlude()
+    const at = t.state().pos
+    await userEvent.click(screen.getByRole('button', { name: 'Reset demo' }))
+    await waitFor(() => expect(t.where()).toBe('/operations/divisions/medications?tour=problem'))
+    expect(t.state()).toMatchObject({ status: 'driving', pos: at })
+    expect(screen.getByRole('button', { name: 'Resume tour' })).toBeInTheDocument()
+  })
+})
+
 describe('starting a story closes the tour (Ruling 14)', () => {
   test('from the Stories menu: the tour is closed and the story panel shows its first step', async () => {
     const t = setup('/?tour=decisions')
