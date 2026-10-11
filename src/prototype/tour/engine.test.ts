@@ -19,7 +19,7 @@ const chapters = FIXTURE_CHAPTERS
 const allBeats = chapters.flatMap((c) => c.steps.flatMap((s) => s.beats))
 /** Every beat has a recorded 1000 ms clip. */
 const manifest: Manifest = Object.fromEntries(
-  allBeats.map((b) => [b.id, { ms: 1000, source: 'recorded' as const, textHash: 'x' }]),
+  allBeats.map((b) => [b.id, { ms: 1000, source: 'recorded' as const, textHash: 'x', levels: '' }]),
 )
 
 describe('reading a position', () => {

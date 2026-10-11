@@ -96,6 +96,6 @@ test('the tour runs for the sum of its beats, with the estimate for a line with 
       ],
     },
   ]
-  const manifest: Manifest = { a: { ms: 2000, source: 'recorded', textHash: 'x' } }
+  const manifest: Manifest = { a: { ms: 2000, source: 'recorded', textHash: 'x', levels: '' } }
   expect(runningMs(chapters, manifest)).toBe(2000 + 650 + 3000)
 })

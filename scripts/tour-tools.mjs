@@ -126,6 +126,76 @@ export function beatIdSet(beats) {
   return ids
 }
 
+/** A clip's levels are one digit per window this long (the app reads them so, `levels.ts`). */
+export const LEVEL_WINDOW_MS = 50
+
+/**
+ * The RMS level of every 50 ms window of a clip (2205 samples at 44.1 kHz), printed one per window.
+ * Clips are 44.1 kHz already; the resample only makes sure of it.
+ */
+const LEVELS_FILTER = [
+  'aresample=44100',
+  'asetnsamples=n=2205:p=0',
+  'astats=metadata=1:reset=1',
+  'ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-',
+].join(',')
+
+/** Quieter than this is 0, and this loud or louder is 9, on the voice meter (dB RMS). */
+const LEVEL_FLOOR_DB = -50
+const LEVEL_CEILING_DB = -12
+
+/** A window's RMS level in dB as a digit, 0–9: linear from −50 dB (or silence) to −12 dB, rounded. */
+export function levelDigit(db) {
+  if (!(db > LEVEL_FLOOR_DB)) return 0
+  if (db >= LEVEL_CEILING_DB) return 9
+  return Math.round(((db - LEVEL_FLOOR_DB) / (LEVEL_CEILING_DB - LEVEL_FLOOR_DB)) * 9)
+}
+
+/** ffmpeg's printed RMS levels (see `LEVELS_FILTER`) as a string of digits, one per window. */
+export function levelsFromAstats(text) {
+  let digits = ''
+  for (const line of text.split('\n')) {
+    const value = /^lavfi\.astats\.Overall\.RMS_level=(\S+)/.exec(line.trim())?.[1]
+    if (value === undefined) continue
+    digits += String(levelDigit(value === '-inf' ? -Infinity : Number.parseFloat(value)))
+  }
+  return digits
+}
+
+/** Do these levels belong to a clip this long: digits, within 2 windows of its length? */
+export function levelsFit(levels, ms) {
+  return (
+    typeof levels === 'string' &&
+    /^[0-9]+$/.test(levels) &&
+    Math.abs(levels.length - Math.ceil(ms / LEVEL_WINDOW_MS)) <= 2
+  )
+}
+
+/** A clip's loudness, one digit (0–9) per 50 ms, for the tour bar's voice meter. */
+export async function clipLevels(file) {
+  const { stdout } = await runCapture('ffmpeg', [
+    '-hide_banner',
+    '-nostats',
+    '-loglevel',
+    'error',
+    '-i',
+    file,
+    '-af',
+    LEVELS_FILTER,
+    '-f',
+    'null',
+    '-',
+  ])
+  const levels = levelsFromAstats(stdout)
+  if (levels === '') throw new Error(`ffmpeg gave no levels for ${file}`)
+  return levels
+}
+
+/** The levels an entry already has, if they fit the clip's length; otherwise the clip's, measured. */
+export async function levelsFor(entry, file, ms) {
+  return levelsFit(entry?.levels, ms) ? entry.levels : clipLevels(file)
+}
+
 /** The manifest as it is on disk (empty if there isn't one yet). */
 export async function readManifest() {
   return JSON.parse(await readFile(manifestPath, 'utf8').catch(() => '{}'))

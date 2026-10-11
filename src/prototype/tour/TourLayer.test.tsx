@@ -599,7 +599,7 @@ describe('the bar’s clock (Ruling 24)', () => {
       ],
     },
   ]
-  const clip = { ms: 2000, source: 'placeholder', textHash: '0' } as const
+  const clip = { ms: 2000, source: 'placeholder', textHash: '0', levels: '' } as const
 
   test('holds at the end of a line while its after-actions run, never going back', async () => {
     runtime = createTourRuntime(HELD, { 'held-1': clip, 'held-2': clip }, { voice: 'silent' })

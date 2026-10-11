@@ -7,10 +7,12 @@ import {
   LOUDNORM,
   audioDir,
   beatIdSet,
+  clipLevels,
   clipMs,
   clipSeconds,
   exists,
   fail,
+  levelsFor,
   makePlaceholder,
   readManifest,
   requireTools,
@@ -27,9 +29,10 @@ import {
 // clip, trimmed of the silence around it (Ruling 26). When a chapter has lines recorded on their
 // own, its file is fitted both with and without them, and the better fit is kept (Ruling 21). A
 // chapter whose fit isn't confident is not imported (Ruling 20): its cut lines go back to
-// placeholders, made as `tour:audio` makes them, unless `--force`. Chapters not in the tour script
-// yet are listed and skipped. Writes `import-report.md` beside the recordings. `--dry-run` cuts into
-// a temp folder only and writes nothing.
+// placeholders, made as `tour:audio` makes them, unless `--force`. Every clip it writes has its
+// levels (the bar's voice meter) measured into its manifest entry too. Chapters not in the tour
+// script yet are listed and skipped. Writes `import-report.md` beside the recordings. `--dry-run`
+// cuts into a temp folder only and writes nothing.
 
 const dryRun = process.argv.includes('--dry-run')
 const force = process.argv.includes('--force')
@@ -237,17 +240,28 @@ async function importChapter(tour, chapter, chapterFile, overrides, tmpDir) {
 
 /**
  * Puts a placeholder in place of the beat's clip, as `tour:audio` makes one, and returns its manifest
- * entry. An up-to-date placeholder is kept as it is.
+ * entry, levels and all. An up-to-date placeholder is kept as it is.
  */
 async function placeholderFor(beat, previous, textHash, tmpDir) {
   const file = path.join(audioDir, `${beat.id}.m4a`)
   const hash = textHash(beat.text)
   if (previous?.source === 'placeholder' && previous.textHash === hash && (await exists(file))) {
-    return { ms: await clipMs(file), source: 'placeholder', textHash: hash }
+    const ms = await clipMs(file)
+    return {
+      ms,
+      source: 'placeholder',
+      textHash: hash,
+      levels: await levelsFor(previous, file, ms),
+    }
   }
   await rm(file, { force: true })
   await makePlaceholder(beat.text, file, tmpDir)
-  return { ms: await clipMs(file), source: 'placeholder', textHash: hash }
+  return {
+    ms: await clipMs(file),
+    source: 'placeholder',
+    textHash: hash,
+    levels: await clipLevels(file),
+  }
 }
 
 /** Seconds, one decimal. */
@@ -321,7 +335,12 @@ async function main() {
       const manifest = await readManifest()
       for (const { beat, clip, ms } of imported) {
         await copyFile(clip, path.join(audioDir, `${beat.id}.m4a`))
-        manifest[beat.id] = { ms, source: 'recorded', textHash: textHash(beat.text) }
+        manifest[beat.id] = {
+          ms,
+          source: 'recorded',
+          textHash: textHash(beat.text),
+          levels: await clipLevels(clip),
+        }
       }
       for (const beat of placeholders) {
         const previous = manifest[beat.id]
