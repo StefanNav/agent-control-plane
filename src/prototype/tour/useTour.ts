@@ -36,7 +36,8 @@ export interface TourRuntime {
   /**
    * Is this the location the page loaded on (initial load, refresh, a shared link)? True for the first
    * location URL sync sees in this page load until it sees another, so Back to it later reads as a
-   * Back (Ruling 38). Kept here, not in TourLayer, because the layer remounts with each shell.
+   * Back (Ruling 38). Kept here, not in TourLayer, because the layer can mount again within a page
+   * load (the kiosk shell has none), and a Back into the app then must not read as the first.
    */
   isFirstLocation(key: string): boolean
 }
