@@ -19,6 +19,8 @@ const REVIEWERS = '/operations/reviewers'
 
 const bar = (page: Page) => page.getByRole('complementary', { name: 'Tour' })
 const summary = (page: Page) => page.locator('[data-story-target="agent-summary"]')
+const welcome = (page: Page) =>
+  page.getByRole('region', { name: 'Welcome to Agent Control Plane' })
 
 /** What the tour types into a field, from the script. */
 function typedInto(target: string): string {
@@ -30,14 +32,20 @@ function typedInto(target: string): string {
   throw new Error(`The tour types nothing into ${target}`)
 }
 
-/** Open a chapter from a link and wait for its first screen, paused. */
+/**
+ * Open a chapter from a link and wait for its first screen, paused. A link that loads the page shows
+ * the welcome, pointing at the bar's Play tour.
+ */
 async function openChapter(page: Page, chapter: string, first: RegExp) {
   await page.goto(`/?tour=${chapter}&tourVoice=silent`)
   await expect(page).toHaveURL(first)
+  await expect(welcome(page)).toBeVisible()
 }
 
+/** Press the bar's Play tour, as a visitor does: on a link's first screen, the welcome goes with it. */
 async function play(page: Page) {
   await bar(page).getByRole('button', { name: 'Play tour' }).click()
+  await expect(welcome(page)).toBeHidden()
 }
 
 /** Open the chapter from a link and press Play. */
@@ -1205,4 +1213,132 @@ test('an unknown chapter is stripped from the URL', async ({ page }) => {
   await expect(page).toHaveURL(/\/operations$/)
   await expect(bar(page)).toHaveCount(0)
   expect(errors).toEqual([])
+})
+
+test.describe('the welcome, on a link’s first screen (Checkpoint E)', () => {
+  /** The middle of a box, where a visitor would click it. */
+  const middle = (box: { x: number; y: number; width: number; height: number }) => ({
+    x: box.x + box.width / 2,
+    y: box.y + box.height / 2,
+  })
+
+  test('dims the page, keeps the bar usable and points at Play tour, which has focus', async ({
+    page,
+  }) => {
+    const errors = collectErrors(page)
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    const playTour = bar(page).getByRole('button', { name: 'Play tour' })
+    await expect(playTour).toBeFocused()
+    await expect(playTour).toHaveAccessibleDescription(
+      /^A working prototype of how a hospital brings on and supervises its AI agents\./,
+    )
+    // What a pointer would reach: the dimmed page over the product and the prototype bar, the bar
+    // itself over the bar.
+    const reached = await page.evaluate(() => {
+      const play = document.querySelector('[data-tour="play"]')!.getBoundingClientRect()
+      const at = (x: number, y: number) => {
+        const el = document.elementFromPoint(x, y)
+        if (el?.closest('[data-scrim]')) return 'dimmed'
+        if (el?.closest('[data-tour="bar"]')) return 'bar'
+        return el?.tagName ?? 'nothing'
+      }
+      return {
+        board: at(innerWidth / 2, innerHeight / 3),
+        prototypeBar: at(innerWidth - 40, 10),
+        play: at(play.left + play.width / 2, play.top + play.height / 2),
+      }
+    })
+    expect(reached).toEqual({ board: 'dimmed', prototypeBar: 'dimmed', play: 'bar' })
+    // The card sits above the bar, its pointer over the middle of Play tour.
+    const aim = await page.evaluate(() => {
+      const play = document.querySelector('[data-tour="play"]')!.getBoundingClientRect()
+      const notch = document.querySelector('[data-tour="welcome"] [data-notch]')!
+      const tip = notch.getBoundingClientRect()
+      const barTop = document.querySelector('[data-tour="bar"]')!.getBoundingClientRect().top
+      return {
+        off: Math.abs(tip.left + tip.width / 2 - (play.left + play.width / 2)),
+        aboveBar: tip.bottom <= barTop,
+      }
+    })
+    expect(aim.off).toBeLessThanOrEqual(1)
+    expect(aim.aboveBar).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  test('a click on the dimmed page takes it down: still paused, nothing on the page clicked', async ({
+    page,
+  }) => {
+    const errors = collectErrors(page)
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    // A click where a product link is, under the dimmed page.
+    const link = page.getByRole('main').getByRole('link', { name: 'Open division' })
+    const at = middle((await link.boundingBox())!)
+    await page.evaluate(() =>
+      document.querySelector('main')!.addEventListener(
+        'click',
+        () => document.documentElement.setAttribute('data-product-clicked', ''),
+        true,
+      ),
+    )
+    await page.mouse.click(at.x, at.y)
+    await expect(welcome(page)).toBeHidden()
+    await expect(page.locator('[data-tour="welcome"]')).toHaveCount(0)
+    await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeFocused()
+    await expect(bar(page)).not.toContainText('Paused. You’re driving.')
+    await expect(page).toHaveURL(/\/operations\?tour=open$/)
+    await expect(page.locator('html')).not.toHaveAttribute('data-product-clicked', '')
+    expect(errors).toEqual([])
+  })
+
+  test('Look around first and Escape take it down, the tour still paused', async ({ page }) => {
+    const errors = collectErrors(page)
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    await welcome(page).getByRole('button', { name: 'Look around first' }).click()
+    await expect(welcome(page)).toBeHidden()
+    await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeFocused()
+    await expect(bar(page)).not.toContainText('Paused. You’re driving.')
+    // A fresh load of the link brings it back; Escape takes it down the same way.
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    await page.keyboard.press('Escape')
+    await expect(welcome(page)).toBeHidden()
+    await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeFocused()
+    expect(errors).toEqual([])
+  })
+
+  test('refreshed, it is back; Play tour fades it and the tour plays; Enter on the focused Play does too', async ({
+    page,
+  }) => {
+    const errors = collectErrors(page)
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    // A refresh of the URL it landed on (the silent voice asked for again, as the URL drops it).
+    await page.goto('/operations?tour=open&tourVoice=silent')
+    await expect(page).toHaveURL(/\/operations\?tour=open$/)
+    await expect(welcome(page)).toBeVisible()
+    await bar(page).getByRole('button', { name: 'Play tour' }).click()
+    await expect(welcome(page)).toBeHidden()
+    await expect(page.locator('[data-tour="welcome"]')).toHaveCount(0)
+    await expect(bar(page).getByRole('button', { name: 'Pause tour' })).toBeVisible()
+    await expectLineOver(page, "You can't watch them all", '/operations')
+    // From the keyboard: focus is already on Play tour.
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    await page.keyboard.press('Enter')
+    await expect(welcome(page)).toBeHidden()
+    await expect(bar(page).getByRole('button', { name: 'Pause tour' })).toBeVisible()
+    expect(errors).toEqual([])
+  })
+
+  test('a link that starts partway says which chapter it starts at', async ({ page }) => {
+    const errors = collectErrors(page)
+    const at = CHAPTERS.findIndex((c) => c.id === 'decisions')
+    await openChapter(page, 'decisions', /\/tour\/decisions\?tour=decisions$/)
+    await expect(welcome(page)).toContainText(
+      `You’re starting at chapter ${at + 1} of ${CHAPTERS.length}: ${CHAPTERS[at]!.title}.`,
+    )
+    expect(errors).toEqual([])
+  })
+
+  test('at the first chapter it says nothing about where it starts', async ({ page }) => {
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    await expect(welcome(page)).not.toContainText('You’re starting at chapter')
+  })
 })

@@ -17,6 +17,8 @@ test('Play from here opens the tour on that chapter, paused', async ({ page }) =
   await expect(page).toHaveURL(/\/tour\/decisions\?tour=decisions$/)
   const bar = page.getByRole('complementary', { name: 'Tour' })
   await expect(bar.getByRole('button', { name: 'Play tour' })).toBeVisible()
+  // A link followed inside the app: no welcome (that is for a link that loads the page).
+  await expect(page.locator('[data-tour="welcome"]')).toHaveCount(0)
   expect(errors).toEqual([])
 })
 

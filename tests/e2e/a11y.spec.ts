@@ -56,6 +56,36 @@ for (const path of READ_ONLY) {
   })
 }
 
+/** A link's first screen shows the welcome: Look around first takes it down, the tour still paused. */
+async function lookAround(page: Page) {
+  const welcome = page.getByRole('region', { name: 'Welcome to Agent Control Plane' })
+  await welcome.getByRole('button', { name: 'Look around first' }).click()
+  await expect(welcome).toBeHidden()
+}
+
+// The welcome over a link's first screen: the hospital board dimmed, the card pointing at Play tour.
+for (const [chapter, first] of [
+  ['open', /\/operations\?tour=open$/],
+  ['decisions', /\/tour\/decisions\?tour=decisions$/],
+] as const) {
+  test(`axe: the tour's welcome over the ${chapter} chapter's first screen`, async ({ page }) => {
+    await page.goto(`/?tour=${chapter}&tourVoice=silent`)
+    await expect(page).toHaveURL(first)
+    await expect(page.getByRole('region', { name: 'Welcome to Agent Control Plane' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Play tour' })).toBeFocused()
+    // Once it has faded in, so axe reads its colours as they stay.
+    await page.evaluate(() =>
+      Promise.all(
+        document
+          .querySelector('[data-tour="welcome"]')!
+          .getAnimations({ subtree: true })
+          .map((animation) => animation.finished),
+      ),
+    )
+    expect(await violations(page)).toEqual([])
+  })
+}
+
 // The interludes' routes are in the table above, read as static pages. On the tour they show only
 // what has been named so far, with the tour bar open.
 for (const chapter of ['problem', 'process', 'validate']) {
@@ -63,6 +93,7 @@ for (const chapter of ['problem', 'process', 'validate']) {
     await page.goto(`/?tour=${chapter}&tourVoice=silent`)
     await expect(page).toHaveURL(new RegExp(`/tour/${chapter}\\?tour=${chapter}$`))
     await expect(page.getByRole('complementary', { name: 'Tour' })).toBeVisible()
+    await lookAround(page)
     // Part revealed: the first line's item is current, and later ones are there but unseen.
     const main = page.locator('main')
     await expect(main.locator('[data-item][data-state="current"]')).not.toHaveCount(0)

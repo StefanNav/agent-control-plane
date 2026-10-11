@@ -26,6 +26,8 @@ test('Play the tour opens the tour on its first chapter, playing', async ({ page
   await expect(page).toHaveURL(/\/operations\?tour=open$/)
   const bar = page.getByRole('complementary', { name: 'Tour' })
   await expect(bar.getByRole('button', { name: 'Pause tour' })).toBeVisible()
+  // Playing at once, it needs no welcome.
+  await expect(page.locator('[data-tour="welcome"]')).toHaveCount(0)
   expect(errors).toEqual([])
 })
 

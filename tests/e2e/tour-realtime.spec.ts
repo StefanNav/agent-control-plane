@@ -213,7 +213,8 @@ test('the whole tour plays through in its own voice, in the time the model gives
     }
   }
 
-  // Opened from the link (the tour waits there, paused), then played with a real press.
+  // Opened from the link (the tour waits there, paused, its welcome pointing at Play), then played
+  // with a real press of the bar's Play.
   await page.goto('/?tour=open')
   await expect(page).toHaveURL(/\/operations\?tour=open$/)
   await page
