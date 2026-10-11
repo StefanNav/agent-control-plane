@@ -34,35 +34,16 @@ for (const shot of SHOTS) {
   })
 }
 
-/** The opening's fourth line: the Med Rec Agent's page, its summary outlined. */
-const TOUR_LINE = 'This one drafts'
-
+/** A link to the tour, as the README's "Watch the tour" opens it: the welcome over the hospital board. */
 test('screenshot tour', async ({ page }) => {
-  // Reduced motion, so the cursor jumps and nothing is caught mid-glide.
+  // Reduced motion, so nothing is caught mid-fade.
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/?tour=open&tourVoice=silent')
   await expect(page).toHaveURL(/\/operations\?tour=open$/)
-  // The silent voice gives each line a tenth of its time, too short to catch from here. So the page
-  // presses Pause itself, in the same moment the line comes up. (Paused, the tour hides its cursor.)
-  await page.evaluate((line) => {
-    new MutationObserver((_, observer) => {
-      const caption = document.querySelector('[data-tour="bar"] p')?.textContent ?? ''
-      if (!caption.startsWith(line)) return
-      observer.disconnect()
-      const pause = [...document.querySelectorAll('button')].find(
-        (b) => b.textContent === 'Pause tour',
-      )
-      pause?.click()
-    }).observe(document, { subtree: true, childList: true, characterData: true })
-  }, TOUR_LINE)
-  const bar = page.getByRole('complementary', { name: 'Tour' })
-  await bar.getByRole('button', { name: 'Play tour' }).click()
-  await expect(bar.locator('p')).toHaveText(new RegExp(`^${TOUR_LINE}`))
-  await expect(bar.getByRole('button', { name: 'Play tour' })).toBeVisible()
-  await expect(page.locator('[data-story-target="agent-summary"]')).toHaveCSS(
-    'outline-style',
-    'solid',
-  )
+  const welcome = page.getByRole('region', { name: 'Welcome to Agent Control Plane' })
+  await expect(welcome).toBeVisible()
+  await expect(welcome.locator('img')).toHaveJSProperty('naturalWidth', 144)
+  await expect(page.getByRole('button', { name: 'Play tour' })).toBeFocused()
   await settle(page)
   mkdirSync('docs/screenshots', { recursive: true })
   await page.screenshot({ path: 'docs/screenshots/tour.png' })

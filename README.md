@@ -36,7 +36,7 @@
 - **A mock hospital that remembers what you do**: pause an agent and the board, the agent view and the inbox all agree. Reset demo puts it back.
 - **A wall display** for a pharmacy or command centre, and the **Countersign component sheet** in light and dark.
 
-![The guided tour paused on the Med Rec Agent: its "3 drafts held" notice outlined, and the tour bar below with the line being spoken, Play, the chapter menu and the progress](docs/screenshots/tour.png)
+![The guided tour opened from its link: the hospital board dimmed behind a welcome from Stefan, which points at Play tour in the tour bar below, beside the first line, the chapter menu and the progress](docs/screenshots/tour.png)
 
 | | |
 |---|---|
@@ -51,7 +51,7 @@
 - **The mock hospital** is one versioned Zustand store with named scenarios (moments in time such as "resume requested" or "nine days later"). Every change goes through `can()` for permissions and writes the audit log, so any action can be traced back.
 - **The story engine** (`src/prototype/stories`) keeps `?story=&step=` in the URL, loads the moment each step needs, and keeps what the visitor did between steps.
 - **The guided tour** (`src/prototype/tour`) is data: eleven chapters of narration, each line with the clicks and outlines that play under it. A player runs one line at a time, clip and actions together, over the same router and store as everything else. Its recorded clips live in `public/tour/audio`, with their lengths in a manifest.
-- **Tests:** 1154 unit tests (Vitest and Testing Library) and 288 end-to-end tests (Playwright), including every route, every story from a shared link, every chapter of the tour, keyboard paths, and an axe accessibility check (WCAG 2.1 AA) on every screen. A further run, opt-in because it takes 7½ minutes, plays the whole tour in real time in its recorded voice. `pnpm capture` screenshots each frame beside its design for visual QA.
+- **Tests:** 1201 unit tests (Vitest and Testing Library) and 296 end-to-end tests (Playwright), including every route, every story from a shared link, every chapter of the tour, keyboard paths, and an axe accessibility check (WCAG 2.1 AA) on every screen. A further run, opt-in because it takes 7½ minutes, plays the whole tour in real time in its recorded voice. `pnpm capture` screenshots each frame beside its design for visual QA.
 
 ## Run it locally
 
