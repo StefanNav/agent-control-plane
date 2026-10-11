@@ -639,7 +639,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 - [x] 10.12 Landing, credit and the Attune rename
 - [x] 10.13 Import recordings (`pnpm tour:import`; replaces the recording page)
 - [ ] 10.14 Recording → **CHECKPOINT D** (real voice; Stefan recorded all 11 chapters on 2026-10-10)
-- [ ] 10.15 Case study (About)
+- [x] 10.15 Case study (About)
 - [ ] 10.16 Phase checkpoint → **CHECKPOINT E** (PR review; merge only on approval)
 
 **Done when:** the tour plays end to end in Stefan's voice in under 7:30; every chapter runs with no skipped actions in e2e; `pnpm tour:audio --check` passes; the brand reads Attune everywhere; Stefan approves the PR.

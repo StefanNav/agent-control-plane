@@ -357,9 +357,9 @@ Stefan records one Voice Memos file per chapter (Stefan, 2026-10-10), named `NN-
 **Interfaces:**
 - Consumes: `CHAPTERS`, `CARDS`, `STORIES` and `stepHref` (story links).
 - Page: title "About this work"; for each chapter except `close`: its title, its narration joined into paragraphs, its cards at full width (decision cards with their images; excerpts with sources), and links **"Play from here"** (`/?tour=<chapter-id>`) and, for product chapters, **"Open the live screen"** (the matching story step: open → Marcus 3; onboarding → Dana 1; earning-trust → Priya 2; supervising → Marcus 6; step-down → Priya 7). Then the existing Principles, Countersign and "How it's built" sections.
-- [ ] **Step 1: Write the failing tests:** every chapter title renders as a heading; "Play from here" links point at `/?tour=<id>`; the three decision cards render with "Decision n of 3"; "Open the live screen" for `supervising` is Marcus's step 6 href.
-- [ ] **Step 2:** Run — FAIL. Implement. Run — PASS.
-- [ ] **Step 3:** `pnpm check`, `pnpm e2e`. Commit: `feat: About becomes the case study`.
+- [x] **Step 1: Write the failing tests:** every chapter title renders as a heading; "Play from here" links point at `/?tour=<id>`; the three decision cards render with "Decision n of 3"; "Open the live screen" for `supervising` is Marcus's step 6 href.
+- [x] **Step 2:** Run — FAIL. Implement. Run — PASS.
+- [x] **Step 3:** `pnpm check`, `pnpm e2e`. Commit: `feat: About becomes the case study`.
 
 ### Task 10.16: Phase checkpoint — **CHECKPOINT E**
 
