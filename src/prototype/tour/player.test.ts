@@ -195,6 +195,7 @@ test('starts closed, at the first beat, at 1×, with captions on', () => {
     clicks: 0,
     stepKey: 0,
     skipped: [],
+    welcome: false,
   })
 })
 
@@ -1188,5 +1189,66 @@ describe('settings and exit', () => {
     t.state().exit()
     expect(t.demo.reset).not.toHaveBeenCalled()
     expect(t.voice.stop).not.toHaveBeenCalled()
+  })
+})
+
+describe('the welcome (a link opened on the page’s first location)', () => {
+  test('open(chapter, false, { welcome: true }) enters the chapter paused, with the welcome up', () => {
+    const t = setup()
+    t.state().open(1, false, { welcome: true })
+    expect(t.state()).toMatchObject({
+      status: 'paused',
+      pos: { chapter: 1, step: 0, beat: 0 },
+      welcome: true,
+    })
+  })
+
+  test('an open without it has none: Play from here, or the landing page’s Play, which plays at once', () => {
+    const t = setup()
+    t.state().open(1, false)
+    expect(t.state().welcome).toBe(false)
+    t.state().open(0, true, { welcome: true })
+    expect(t.state()).toMatchObject({ status: 'playing', welcome: false })
+  })
+
+  test('opening again without it takes it down', () => {
+    const t = setup()
+    t.state().open(1, false, { welcome: true })
+    t.state().open(0, false)
+    expect(t.state().welcome).toBe(false)
+  })
+
+  test.each<[string, (s: ReturnType<ReturnType<typeof setup>['state']>) => void]>([
+    ['play()', (s) => s.play()],
+    ['takeOver()', (s) => s.takeOver()],
+    ['resume()', (s) => s.resume()],
+    ['next()', (s) => s.next()],
+    ['prev(), even on the first step', (s) => s.prev()],
+    ['jump()', (s) => s.jump(1)],
+    ['exit()', (s) => s.exit()],
+    ['dismissWelcome() (Look around first, Escape, the scrim)', (s) => s.dismissWelcome()],
+  ])('%s takes it down for good', (_, control) => {
+    const t = setup()
+    t.state().open(0, false, { welcome: true })
+    control(t.state())
+    expect(t.state().welcome).toBe(false)
+  })
+
+  test('dismissWelcome() leaves the tour paused where it is, with nothing played', () => {
+    const t = setup()
+    t.state().open(1, false, { welcome: true })
+    t.state().dismissWelcome()
+    expect(t.state()).toMatchObject({ status: 'paused', pos: { chapter: 1, step: 0, beat: 0 } })
+    expect(t.voice.play).not.toHaveBeenCalled()
+    expect(t.state().stepKey).toBe(1)
+  })
+
+  test('speed, captions and a hidden tab’s pause() leave it up', () => {
+    const t = setup()
+    t.state().open(0, false, { welcome: true })
+    t.state().setRate(1.5)
+    t.state().toggleCaptions()
+    t.state().pause()
+    expect(t.state().welcome).toBe(true)
   })
 })

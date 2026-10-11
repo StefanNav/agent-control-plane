@@ -62,11 +62,21 @@ export interface TourState {
   stepKey: number
   /** Every action skipped since the tour opened, as `kind:target`. */
   skipped: string[]
+  /**
+   * The welcome is up: the tour was opened by a link on the page's first location and the visitor
+   * hasn't started it yet. Any control but speed and captions takes it down for good.
+   */
+  welcome: boolean
+}
+
+export interface OpenOptions {
+  /** Paused, with the welcome up (a link opened on the page's first location). */
+  welcome?: boolean
 }
 
 export interface TourControls {
-  /** Open (or reopen) the tour at a chapter's first beat, playing or paused. */
-  open(chapter: number, autoplay: boolean): void
+  /** Open (or reopen) the tour at a chapter's first beat, playing or paused (with the welcome, if asked). */
+  open(chapter: number, autoplay: boolean, options?: OpenOptions): void
   play(): void
   pause(): void
   /** The visitor is using the prototype: stop the tour's actions and hold its voice. */
@@ -80,6 +90,8 @@ export interface TourControls {
   toggleCaptions(): void
   /** Close the tour (R5). */
   exit(): void
+  /** Take the welcome down, leaving the tour paused where it is (Look around first, Escape, the scrim). */
+  dismissWelcome(): void
 }
 
 /** How long the cursor takes to glide to a target at 1× (R3). */
@@ -143,6 +155,11 @@ export function createTourPlayer(
     })
 
     const hasChapter = (i: number) => Number.isInteger(i) && i >= 0 && i < chapters.length
+
+    /** The visitor has used the player: the welcome goes, for good (until the next page load). */
+    const dismissWelcome = () => {
+      if (get().welcome) set({ welcome: false })
+    }
 
     /** Abandon the current run: abort its actions and ignore anything it still reports. */
     const dropRun = () => {
@@ -296,6 +313,7 @@ export function createTourPlayer(
         card: null,
         cursor: HIDDEN_CURSOR,
         skipped: [],
+        welcome: false,
       })
       if (isInterlude(route)) deps.navigate('/')
     }
@@ -304,6 +322,8 @@ export function createTourPlayer(
     const goTo = (target: (pos: Position) => Position | null) => {
       const { status, pos } = get()
       if (status === 'idle') return
+      // Even a step that goes nowhere (prev on the first) is the visitor using the player.
+      dismissWelcome()
       const to = target(pos)
       if (!to) return
       dropRun()
@@ -322,19 +342,22 @@ export function createTourPlayer(
       clicks: 0,
       stepKey: 0,
       skipped: [],
+      welcome: false,
 
-      open(chapter, autoplay) {
+      open(chapter, autoplay, options = {}) {
         if (!hasChapter(chapter)) return
         if (get().status === 'idle') deps.exitStory()
         dropRun()
         voice.stop()
-        set({ skipped: [] })
+        // Only a tour that waits for Play has a welcome; one that plays at once needs none.
+        set({ skipped: [], welcome: !autoplay && options.welcome === true })
         enter(chapterStart(chapter), autoplay ? 'playing' : 'paused')
       },
       play() {
         const { status } = get()
         if (status === 'driving') return get().resume()
         if (status !== 'paused') return
+        dismissWelcome()
         set(withStatus('playing'))
         // While still settling, the settle starts the first beat.
         if (phase === 'settled' && controller) startBeat(token, controller.signal)
@@ -350,6 +373,7 @@ export function createTourPlayer(
       takeOver() {
         const { status } = get()
         if (status !== 'playing' && status !== 'paused') return
+        dismissWelcome()
         dropRun()
         voice.pause()
         set(withStatus('driving'))
@@ -381,6 +405,7 @@ export function createTourPlayer(
       exit() {
         if (get().status !== 'idle') close()
       },
+      dismissWelcome,
     }
   })
 }
