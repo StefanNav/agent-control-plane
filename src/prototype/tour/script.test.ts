@@ -5,6 +5,7 @@ import { PERSONA_IDS } from '../../data/types'
 import { CARDS } from './cards'
 import { isInterlude } from './engine'
 import { textHash } from './hash'
+import { LEVEL_WINDOW_MS } from './levels'
 import { MANIFEST } from './manifest'
 import { runningMs } from './runningTime'
 import { CHAPTERS } from './script'
@@ -74,6 +75,23 @@ test('every clip is recorded, from its line as the script has it now (a caption 
   for (const beat of beats) {
     expect(MANIFEST[beat.id]?.source, beat.id).toBe('recorded')
     expect(MANIFEST[beat.id]?.textHash, beat.id).toBe(textHash(beat.text))
+  }
+})
+
+test('every clip has its levels, a digit per 50 ms of it (run `pnpm tour:audio`)', () => {
+  for (const beat of beats) {
+    const entry = MANIFEST[beat.id]!
+    expect(entry.levels, beat.id).toMatch(/^[0-9]+$/)
+    const windows = Math.ceil(entry.ms / LEVEL_WINDOW_MS)
+    expect(Math.abs(entry.levels.length - windows), beat.id).toBeLessThanOrEqual(2)
+  }
+})
+
+test('every recorded clip’s levels show speech, not silence', () => {
+  for (const beat of beats) {
+    const entry = MANIFEST[beat.id]!
+    if (entry.source !== 'recorded') continue
+    expect(Math.max(...[...entry.levels].map(Number)), beat.id).toBeGreaterThanOrEqual(5)
   }
 })
 

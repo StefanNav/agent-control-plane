@@ -599,7 +599,7 @@ describe('the bar’s clock (Ruling 24)', () => {
       ],
     },
   ]
-  const clip = { ms: 2000, source: 'placeholder', textHash: '0' } as const
+  const clip = { ms: 2000, source: 'placeholder', textHash: '0', levels: '' } as const
 
   test('holds at the end of a line while its after-actions run, never going back', async () => {
     runtime = createTourRuntime(HELD, { 'held-1': clip, 'held-2': clip }, { voice: 'silent' })
@@ -621,6 +621,73 @@ describe('the bar’s clock (Ruling 24)', () => {
     await act(() => new Promise((resolve) => setTimeout(resolve, 600)))
     expect(fill()).toBe('50%')
     expect(bar()).toHaveTextContent('One.')
+  })
+})
+
+describe('the voice meter', () => {
+  /** A 20 s line, then a 5 s line ending on a long wait: 2 s and 500 ms in the silent voice. */
+  const SPOKEN: Chapter[] = [
+    {
+      id: 'supervising',
+      title: 'Supervise',
+      steps: [
+        {
+          id: 'spoken',
+          route: '/operations',
+          scenario: 'baseline',
+          persona: 'marcus',
+          beats: [
+            { id: 'spoken-1', text: 'One.' },
+            { id: 'spoken-2', text: 'Two.', after: [{ kind: 'wait', ms: 20_000 }] },
+          ],
+        },
+      ],
+    },
+  ]
+  const meter = () => document.querySelector('[data-tour="voice-level"]')
+  const bars = () => [...meter()!.children].map((bar) => (bar as HTMLElement).style.transform)
+  /** All four bars at a level (0–9): its share of the 14 px bar, never under 2 px. */
+  const at = (level: number) => Array(4).fill(`scaleY(${Math.max(2, (level / 9) * 14) / 14})`)
+
+  test('moves with each line’s own levels while it plays; quiet through a line’s after-actions; hidden when paused', async () => {
+    runtime = createTourRuntime(
+      SPOKEN,
+      {
+        'spoken-1': { ms: 20_000, source: 'recorded', textHash: '0', levels: '9'.repeat(400) },
+        'spoken-2': { ms: 5000, source: 'recorded', textHash: '0', levels: '5'.repeat(100) },
+      },
+      { voice: 'silent' },
+    )
+    setTourRuntime(runtime)
+    const router = createMemoryRouter(
+      [{ element: <AppShell shell="app" />, children: [{ path: '*', element: <Page /> }] }],
+      { initialEntries: ['/?tour=supervising'] },
+    )
+    render(<RouterProvider router={router} />)
+    expect(await screen.findByRole('button', { name: 'Play tour' })).toBeInTheDocument()
+    expect(meter()).not.toBeVisible()
+    await userEvent.click(screen.getByRole('button', { name: 'Play tour' }))
+    expect(meter()).toBeVisible()
+    await waitFor(() => expect(meter()).toHaveAttribute('data-speaking', 'true'))
+    // Every window of the first line is at 9: full height.
+    await waitFor(() => expect(bars()).toEqual(at(9)))
+
+    await userEvent.click(screen.getByRole('button', { name: 'Pause tour' }))
+    expect(meter()).not.toBeVisible()
+    expect(meter()).toHaveAttribute('data-speaking', 'false')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Play tour' }))
+    await waitFor(() => expect(meter()).toHaveAttribute('data-speaking', 'true'))
+    // The second line reads its own levels, at 5.
+    await waitFor(() => expect(bar()).toHaveTextContent('Two.'), { timeout: 3000 })
+    await waitFor(() => expect(bars()).toEqual(at(5)))
+    // Its clip ends, and its wait holds the line: still shown, quiet.
+    await waitFor(() => expect(meter()).toHaveAttribute('data-speaking', 'false'), {
+      timeout: 1500,
+    })
+    expect(bar()).toHaveTextContent('Two.')
+    expect(meter()).toBeVisible()
+    expect(bars()).toEqual(at(0))
   })
 })
 

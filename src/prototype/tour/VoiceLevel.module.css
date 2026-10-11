@@ -1,0 +1,30 @@
+/*
+ * The voice meter, after Play/Pause in the tour bar: four indigo bars 3 px wide, 2 px apart, up to
+ * 14 px tall from a shared baseline. Each bar is always 14 px and scales down from its foot, so its
+ * height moves without layout. Shown only while the tour plays; otherwise hidden, keeping its space,
+ * so Play and Pause swap without moving the row.
+ */
+.meter {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+  visibility: hidden;
+}
+
+.meter[data-playing='true'] {
+  visibility: visible;
+}
+
+.bar {
+  width: 3px;
+  height: 14px;
+  border-radius: 1px;
+  background: var(--cs-acc);
+  /* 2 of 14 px until a frame, or the still profile, says otherwise. */
+  transform: scaleY(0.1429);
+  transform-origin: bottom;
+  /* Glides between the 50 ms windows; none under reduced motion (global.css). */
+  transition: transform 50ms linear;
+}

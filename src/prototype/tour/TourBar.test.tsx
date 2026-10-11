@@ -31,6 +31,7 @@ function setup(overrides: Partial<TourBarProps> = {}) {
     skipped: 0,
     controls,
     unlock: record('unlock'),
+    meter: { levels: '', clipMs: 0, currentMs: () => 0, reducedMotion: true },
     ...overrides,
   }
   const view = render(<TourBar {...props} />)
@@ -80,6 +81,47 @@ test.each<TourStatus>(['playing', 'paused'])(
     expect(screen.queryByRole('button', { name: 'Resume tour' })).not.toBeInTheDocument()
   },
 )
+
+describe('the voice meter', () => {
+  const meter = () => document.querySelector('[data-tour="voice-level"]')
+
+  test.each<[TourBarProps['status'], string]>([
+    ['paused', 'Play tour'],
+    ['playing', 'Pause tour'],
+  ])('%s, it sits right after %s, with it in one group', (status, name) => {
+    setup({ status })
+    const button = screen.getByRole('button', { name })
+    expect(button.nextElementSibling).toBe(meter())
+    expect(button.parentElement?.children).toHaveLength(2)
+    expect(meter()).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  test('shown while playing; paused, hidden but still there, so Play and Pause swap in place', () => {
+    const { rerender } = setup({
+      status: 'playing',
+      meter: { levels: '9999', clipMs: 200, currentMs: () => 100, reducedMotion: true },
+    })
+    expect(meter()).toBeVisible()
+    expect(meter()).toHaveAttribute('data-speaking', 'true')
+    rerender({ status: 'paused' })
+    expect(meter()).toBeInTheDocument()
+    expect(meter()).not.toBeVisible()
+    expect(meter()).toHaveAttribute('data-speaking', 'false')
+  })
+
+  test('driving, there is none: Resume tour stands alone', () => {
+    setup({ status: 'driving' })
+    expect(meter()).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Resume tour' }).nextElementSibling,
+    ).toHaveTextContent('Paused. You’re driving.')
+  })
+
+  test('with captions off, it is still there', () => {
+    setup({ status: 'playing', captions: false })
+    expect(meter()).toBeVisible()
+  })
+})
 
 test('one progress segment per chapter, labelled, each jumping to its chapter (Ruling 6)', async () => {
   const { calls } = setup()

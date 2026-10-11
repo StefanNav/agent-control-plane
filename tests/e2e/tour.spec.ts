@@ -1173,6 +1173,133 @@ test('Back while a product step plays is a take-over: the tour stops where it wa
   expect(errors).toEqual([])
 })
 
+test.describe('the voice meter, beside Play/Pause', () => {
+  const meter = (page: Page) => bar(page).locator('[data-tour="voice-level"]')
+  /** Bars' inline transforms (`scaleY` of the 14 px bar) as heights in whole pixels. */
+  const heights = (transforms: string[]) =>
+    transforms.map((t) => Math.round(Number(/scaleY\(([\d.e-]+)\)/.exec(t)?.[1]) * 14))
+
+  /**
+   * Wait for the meter to say the tour is speaking, then press Pause tour at that moment, so the
+   * pause lands mid-line. Returns the bars' inline transforms as they were just before.
+   */
+  async function pauseWhileSpeaking(page: Page): Promise<string[]> {
+    return page.evaluate(
+      () =>
+        new Promise<string[]>((resolve) => {
+          const meter = document.querySelector('[data-tour="voice-level"]')!
+          const pause = () => {
+            if (meter.getAttribute('data-speaking') !== 'true') return false
+            const bars = [...meter.children].map((bar) => (bar as HTMLElement).style.transform)
+            const button = [...document.querySelectorAll('[data-tour="bar"] button')].find(
+              (b) => b.textContent === 'Pause tour',
+            ) as HTMLButtonElement
+            button.click()
+            resolve(bars)
+            return true
+          }
+          if (pause()) return
+          const observer = new MutationObserver(() => {
+            if (pause()) observer.disconnect()
+          })
+          observer.observe(meter, { attributes: true })
+        }),
+    )
+  }
+
+  /** Pause tour or Play tour, the meter and the chapter menu, left to right: where each starts and ends. */
+  async function row(page: Page) {
+    return page.evaluate(() => {
+      const meter = document.querySelector('[data-tour="voice-level"]')!
+      const button = meter.previousElementSibling!.getBoundingClientRect()
+      const box = meter.getBoundingClientRect()
+      const menu = document.querySelector('[data-tour="bar"] [aria-haspopup="menu"]')!
+      return {
+        buttonRight: button.right,
+        buttonMiddle: (button.top + button.bottom) / 2,
+        meterLeft: box.left,
+        meterRight: box.right,
+        meterMiddle: (box.top + box.bottom) / 2,
+        menuLeft: menu.getBoundingClientRect().left,
+      }
+    })
+  }
+
+  test('hidden until Play; held still while a line is spoken under reduced motion; hidden again once paused', async ({
+    page,
+  }) => {
+    const errors = collectErrors(page)
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    await expect(meter(page)).toBeHidden()
+    await expect(meter(page)).toHaveAttribute('data-speaking', 'false')
+    const paused = await row(page)
+    await play(page)
+    await expect(meter(page)).toBeVisible()
+    // 6 px after its button, on its middle, and 12 px before the chapter menu; Play and Pause swap
+    // in place, so the menu hasn't moved.
+    const playing = await row(page)
+    expect(playing.meterLeft - playing.buttonRight).toBe(6)
+    expect(playing.menuLeft - playing.meterRight).toBe(12)
+    expect(playing.meterMiddle).toBe(playing.buttonMiddle)
+    expect(playing.menuLeft).toBe(paused.menuLeft)
+
+    expect(heights(await pauseWhileSpeaking(page))).toEqual([6, 10, 8, 12])
+    await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeVisible()
+    await expect(meter(page)).toBeHidden()
+    await expect(meter(page)).toHaveAttribute('data-speaking', 'false')
+    expect(errors).toEqual([])
+  })
+
+  test('moves with the voice when motion is allowed, in indigo, shown all the while the tour plays', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    const errors = collectErrors(page)
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    await play(page)
+    await expect(meter(page)).toHaveAttribute('data-speaking', 'true')
+    // Every frame for 1.5 s, across the end of a line and the next one: the heights while it
+    // speaks, its colour, and any frame the tour played with the meter hidden.
+    const seen = await page.evaluate(
+      () =>
+        new Promise<{ heights: number; colours: string[]; indigo: string; hidden: number }>(
+          (resolve) => {
+            const meter = document.querySelector('[data-tour="voice-level"]')!
+            const probe = document.createElement('span')
+            probe.style.color = 'var(--cs-acc)'
+            document.body.append(probe)
+            const indigo = getComputedStyle(probe).color
+            probe.remove()
+            const heights = new Set<string>()
+            const colours = new Set<string>()
+            let hidden = 0
+            const until = performance.now() + 1500
+            const sample = () => {
+              const bars = [...meter.children]
+              const playing = [...document.querySelectorAll('[data-tour="bar"] button')].some(
+                (b) => b.textContent === 'Pause tour',
+              )
+              if (playing && getComputedStyle(meter).visibility !== 'visible') hidden++
+              if (playing) colours.add(getComputedStyle(bars[0]!).backgroundColor)
+              if (meter.getAttribute('data-speaking') === 'true')
+                heights.add(bars.map((bar) => getComputedStyle(bar).transform).join(' '))
+              if (performance.now() < until) requestAnimationFrame(sample)
+              else resolve({ heights: heights.size, colours: [...colours], indigo, hidden })
+            }
+            requestAnimationFrame(sample)
+          },
+        ),
+    )
+    expect(seen.heights).toBeGreaterThan(1)
+    expect(seen.colours).toEqual([seen.indigo])
+    expect(seen.hidden).toBe(0)
+    await bar(page).getByRole('button', { name: 'Pause tour' }).click()
+    await expect(meter(page)).toBeHidden()
+    await expect(meter(page)).toHaveAttribute('data-speaking', 'false')
+    expect(errors).toEqual([])
+  })
+})
+
 test.describe('at the narrowest desktop width', () => {
   test.use({ viewport: { width: 1024, height: 768 } })
 

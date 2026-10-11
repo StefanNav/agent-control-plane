@@ -77,6 +77,11 @@ export interface ManifestEntry {
   source: 'placeholder' | 'recorded'
   /** `textHash` of the beat text the clip was made from; a mismatch means the clip is stale. */
   textHash: string
+  /**
+   * The clip's loudness, one digit (0–9) per 50 ms of it, for the bar's voice meter: written with
+   * `ms`, so it can't drift from the clip.
+   */
+  levels: string
 }
 
 /** Clip lengths by beat id. */

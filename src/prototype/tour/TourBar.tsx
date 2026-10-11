@@ -5,6 +5,7 @@ import type { TourControls, TourRate, TourStatus } from './player'
 import type { Chapter, Position, Timeline } from './types'
 import { typographic } from './typographic'
 import { TOUR_BAR_HEIGHT } from './useTour'
+import { VoiceLevel, type VoiceLevelProps } from './VoiceLevel'
 import styles from './TourBar.module.css'
 
 /** The speeds the bar cycles through (R3). */
@@ -47,6 +48,8 @@ export interface TourBarProps {
   >
   /** Called inside the Play and Resume clicks, before playing, so the browser lets the clips play. */
   unlock(): void
+  /** The voice meter's line and voice: the current line's levels and clip, and the voice's playhead. */
+  meter: Omit<VoiceLevelProps, 'playing'>
   /**
    * The id of the welcome's body while the welcome is up: Play tour, which it points at, is ringed,
    * takes focus (so Enter or Space starts the tour) and is described by it.
@@ -56,8 +59,9 @@ export interface TourBarProps {
 
 /**
  * The player bar (spec §4.2, R4): the sentence being spoken, then Play/Pause (the one indigo
- * control), the chapter menu, one progress segment per chapter, the time, speed, captions and Exit.
- * After a take-over it says the visitor is driving and offers Resume tour instead of Play.
+ * control) with the voice meter beside it while the tour plays, the chapter menu, one progress
+ * segment per chapter, the time, speed, captions and Exit. After a take-over it says the visitor is
+ * driving and offers Resume tour instead of Play, with no meter.
  */
 export function TourBar({
   chapters,
@@ -70,6 +74,7 @@ export function TourBar({
   skipped,
   controls,
   unlock,
+  meter,
   welcome,
 }: TourBarProps) {
   const playRef = useRef<HTMLButtonElement>(null)
@@ -107,25 +112,32 @@ export function TourBar({
             </Button>
             <span className={styles.driving}>Paused. You’re driving.</span>
           </>
-        ) : status === 'playing' ? (
-          <Button variant="primary" className={styles.play} onClick={() => controls.pause()}>
-            Pause tour
-          </Button>
         ) : (
-          <Button
-            ref={playRef}
-            variant="primary"
-            className={styles.play}
-            data-tour="play"
-            data-welcome={welcome ? '' : undefined}
-            aria-describedby={welcome}
-            onClick={() => {
-              unlock()
-              controls.play()
-            }}
-          >
-            Play tour
-          </Button>
+          // Play/Pause and the voice meter, close together. The meter keeps its space while
+          // hidden, so Play and Pause swap in place without moving the rest of the row.
+          <div className={styles.player}>
+            {status === 'playing' ? (
+              <Button variant="primary" className={styles.play} onClick={() => controls.pause()}>
+                Pause tour
+              </Button>
+            ) : (
+              <Button
+                ref={playRef}
+                variant="primary"
+                className={styles.play}
+                data-tour="play"
+                data-welcome={welcome ? '' : undefined}
+                aria-describedby={welcome}
+                onClick={() => {
+                  unlock()
+                  controls.play()
+                }}
+              >
+                Play tour
+              </Button>
+            )}
+            <VoiceLevel playing={status === 'playing'} {...meter} />
+          </div>
         )}
         <Menu
           placement="above"

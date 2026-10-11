@@ -1,8 +1,16 @@
-import { useEffect, useEffectEvent, useId, useReducer, useRef, type ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useId,
+  useReducer,
+  useRef,
+  type ReactNode,
+} from 'react'
 import { useLocation, useNavigate, useNavigationType, useSearchParams } from 'react-router'
 import { useShallow } from 'zustand/react/shallow'
-import { elapsedMs, isInterlude, stepAt, tourUrlAction } from './engine'
-import { markScreen } from './screen'
+import { beatAt, elapsedMs, isInterlude, stepAt, tourUrlAction } from './engine'
+import { markScreen, prefersReducedMotion } from './screen'
 import { TourBar } from './TourBar'
 import { TourCard } from './TourCard'
 import { TourCursor } from './TourCursor'
@@ -264,7 +272,7 @@ export function TourLayer() {
   useTourUrl(runtime)
   useTourInput(runtime)
   const welcomeBody = useId()
-  const { player, chapters, timeline, cards, voice } = runtime
+  const { player, chapters, manifest, timeline, cards, voice } = runtime
   const state = player(
     useShallow((s) => ({
       status: s.status,
@@ -280,9 +288,12 @@ export function TourLayer() {
     })),
   )
   useTicking(state.status === 'playing')
+  // One function for the life of the voice, so the meter's frame loop isn't restarted every tick.
+  const currentMs = useCallback(() => voice.currentMs(), [voice])
   if (state.status === 'idle') return null
 
   const controls = player.getState()
+  const beatId = beatAt(chapters, state.pos).id
   const card = state.card ? cards[state.card.id] : undefined
   const welcoming = state.status === 'paused' && state.welcome
   return (
@@ -319,6 +330,13 @@ export function TourLayer() {
         skipped={state.skipped}
         controls={controls}
         unlock={() => voice.unlock()}
+        meter={{
+          levels: manifest[beatId]?.levels ?? '',
+          clipMs: timeline.beatMs[beatId] ?? 0,
+          currentMs,
+          // Read as the bar renders (every tick while playing), so a change in the setting follows.
+          reducedMotion: prefersReducedMotion(),
+        }}
         welcome={welcoming ? welcomeBody : undefined}
       />
       <TourCursor
