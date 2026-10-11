@@ -29,7 +29,7 @@
 ## What's in it
 
 - **All 55 designed frames** of epics E1–E15: onboarding and go-live, the command board and inbox, stop and resume, replay and audit, divisions and access, version changes and unregistered callers, clinician feedback from Epic, reviewer behaviour, survey evidence, review levels, promotion and automatic step-down.
-- **A guided tour** that plays the prototype by itself: eleven chapters narrated in Stefan's voice, clicking through the real screens with captions, a chapter menu and speed control. Touch anything and it hands over; Resume tour starts the step again.
+- **A guided tour** that plays the prototype by itself: eleven chapters narrated in Stefan's voice, clicking through the real screens with captions, a chapter menu and speed control. Touch a product screen and it hands over to you; Resume tour starts the step again.
 - **About this work**, the case study: the tour in reading form, a chapter at a time with its cards, images that open full size and a Play from here link on each, then the principles, the design system and how it's built.
 - **Seven guided stories** with a narration panel; any step can be shared as a link.
 - **A persona switcher with real permissions**: controls a person can't use render locked, with the reason.
