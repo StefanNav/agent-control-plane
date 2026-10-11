@@ -4,6 +4,7 @@ import { SCENARIO_IDS } from '../../data/scenarios'
 import { PERSONA_IDS } from '../../data/types'
 import { CARDS } from './cards'
 import { isInterlude } from './engine'
+import { textHash } from './hash'
 import { MANIFEST } from './manifest'
 import { runningMs } from './runningTime'
 import { CHAPTERS } from './script'
@@ -67,6 +68,13 @@ test('an excerpt that isn’t a product principle cites only “Research notes �
 
 test('every beat has a clip in the manifest (run `pnpm tour:audio`)', () => {
   for (const beat of beats) expect(MANIFEST[beat.id], beat.id).toBeDefined()
+})
+
+test('every clip is recorded, from its line as the script has it now (a caption edit needs a new take)', () => {
+  for (const beat of beats) {
+    expect(MANIFEST[beat.id]?.source, beat.id).toBe('recorded')
+    expect(MANIFEST[beat.id]?.textHash, beat.id).toBe(textHash(beat.text))
+  }
 })
 
 test('every step loads a real scenario as a real persona, on a real route', () => {
