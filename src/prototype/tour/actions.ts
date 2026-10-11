@@ -1,3 +1,4 @@
+import { TYPE_MS } from './runningTime'
 import type { TourAction } from './types'
 
 /** What the player lends the runner: the tour's overlay (outline, card, cursor) and its settings. */
@@ -21,9 +22,6 @@ export interface ActionHost {
 
 /** A tour action that names an element. */
 type TargetAction = Extract<TourAction, { target: string }>
-
-/** Milliseconds a character takes to type at rate 1. */
-const TYPE_MS = 25
 
 /** How long to wait for a target to render before skipping its action. */
 const TARGET_WAIT_MS = 2000

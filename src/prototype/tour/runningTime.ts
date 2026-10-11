@@ -4,7 +4,7 @@ import type { Beat, Chapter, Manifest, TourAction } from './types'
 /** What a press of the cursor adds to the running time: its glide and the page answering (Ruling 27). */
 export const PRESS_MS = 650
 
-/** Typing, per character at 1× (R3). */
+/** Typing, per character at 1× (R3): the action runner's pace, and so the model's. */
 export const TYPE_MS = 25
 
 /** How long a list of actions takes to run: presses, waits and typing; the rest take no time. */
