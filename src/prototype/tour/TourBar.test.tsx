@@ -184,3 +184,47 @@ test('a status region names the chapter, so a screen reader hears each new one',
   rerender({ pos: { chapter: 1, step: 0, beat: 0 } })
   expect(screen.getByRole('status')).toHaveTextContent('Chapter 2: Decision 1')
 })
+
+describe('with the welcome up', () => {
+  /** The bar beside the welcome's body, as the tour layer renders them. */
+  function withWelcome(overrides: Partial<TourBarProps> = {}) {
+    render(<p id="welcome-body">A working prototype.</p>)
+    return setup({ welcome: 'welcome-body', ...overrides })
+  }
+
+  test('Play tour takes focus, is described by the welcome’s body and is ringed', () => {
+    withWelcome()
+    const play = screen.getByRole('button', { name: 'Play tour' })
+    expect(play).toHaveFocus()
+    expect(play).toHaveAccessibleDescription('A working prototype.')
+    expect(play).toHaveAttribute('data-welcome')
+  })
+
+  test('Play still unlocks the audio inside the click before playing', async () => {
+    const { calls } = withWelcome()
+    await userEvent.keyboard(' ')
+    expect(calls).toEqual(['unlock', 'play'])
+  })
+
+  test('once it goes, Play keeps focus but loses the ring and the description', () => {
+    const { rerender } = withWelcome()
+    rerender({ welcome: undefined })
+    const play = screen.getByRole('button', { name: 'Play tour' })
+    expect(play).toHaveFocus()
+    expect(play).not.toHaveAttribute('aria-describedby')
+    expect(play).not.toHaveAttribute('data-welcome')
+  })
+})
+
+test('without the welcome, Play tour is neither focused nor ringed', () => {
+  setup()
+  const play = screen.getByRole('button', { name: 'Play tour' })
+  expect(play).not.toHaveFocus()
+  expect(play).not.toHaveAttribute('aria-describedby')
+  expect(play).not.toHaveAttribute('data-welcome')
+})
+
+test('Play tour is the tour’s play button, for the welcome to point at', () => {
+  setup()
+  expect(screen.getByRole('button', { name: 'Play tour' })).toHaveAttribute('data-tour', 'play')
+})

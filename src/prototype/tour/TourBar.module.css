@@ -55,6 +55,16 @@
   min-width: 104px;
 }
 
+/*
+ * While the welcome points at it: an indigo ring (the primary action), clear of the button's own
+ * fill and of the keyboard focus ring inside it.
+ */
+.play[data-welcome] {
+  box-shadow:
+    0 0 0 3px var(--cs-raised),
+    0 0 0 5px var(--cs-acc);
+}
+
 .driving {
   font-size: 14px;
   line-height: 20px;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button, Icon, Menu, VisuallyHidden } from '../../design-system'
 import { beatAt } from './engine'
 import type { TourControls, TourRate, TourStatus } from './player'
@@ -47,6 +47,11 @@ export interface TourBarProps {
   >
   /** Called inside the Play and Resume clicks, before playing, so the browser lets the clips play. */
   unlock(): void
+  /**
+   * The id of the welcome's body while the welcome is up: Play tour, which it points at, is ringed,
+   * takes focus (so Enter or Space starts the tour) and is described by it.
+   */
+  welcome?: string
 }
 
 /**
@@ -65,7 +70,12 @@ export function TourBar({
   skipped,
   controls,
   unlock,
+  welcome,
 }: TourBarProps) {
+  const playRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (welcome) playRef.current?.focus()
+  }, [welcome])
   const chapter = chapters[pos.chapter]!
   const n = pos.chapter + 1
   const nextRate = RATES[(RATES.indexOf(rate) + 1) % RATES.length]!
@@ -103,8 +113,12 @@ export function TourBar({
           </Button>
         ) : (
           <Button
+            ref={playRef}
             variant="primary"
             className={styles.play}
+            data-tour="play"
+            data-welcome={welcome ? '' : undefined}
+            aria-describedby={welcome}
             onClick={() => {
               unlock()
               controls.play()
