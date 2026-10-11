@@ -81,9 +81,9 @@ function isControl(el: Element | null): boolean {
 
 /**
  * Keep `?tour=` and the player in step (spec §4.1, R2): a link opens its chapter paused (with the
- * welcome, on the page's first location: a fresh load, a refresh, a shared link), an unknown chapter
- * is stripped, the URL names the chapter while the tour is open (a product link that drops it
- * gets it back), and closing drops it. Back and Forward never open the tour or move it (Ruling 38):
+ * welcome on the page's first location: a fresh load, a refresh, a shared link), an unknown
+ * chapter is stripped, the URL names the chapter while the tour is open (a product link that drops
+ * it gets it back), and closing drops it. Back and Forward never open the tour or move it (Ruling 38):
  * closed, a chapter reached that way is dropped from the URL; open, it is a take-over where the tour
  * is. A navigation on its way (the player's, or a story's that closed the tour) is left to land
  * first, so a URL write never races one and undoes it.

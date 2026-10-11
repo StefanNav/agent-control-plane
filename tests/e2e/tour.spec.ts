@@ -19,8 +19,7 @@ const REVIEWERS = '/operations/reviewers'
 
 const bar = (page: Page) => page.getByRole('complementary', { name: 'Tour' })
 const summary = (page: Page) => page.locator('[data-story-target="agent-summary"]')
-const welcome = (page: Page) =>
-  page.getByRole('region', { name: 'Welcome to Agent Control Plane' })
+const welcome = (page: Page) => page.getByRole('region', { name: 'Welcome to Agent Control Plane' })
 
 /** What the tour types into a field, from the script. */
 function typedInto(target: string): string {
@@ -1274,11 +1273,13 @@ test.describe('the welcome, on a link’s first screen (Checkpoint E)', () => {
     const link = page.getByRole('main').getByRole('link', { name: 'Open division' })
     const at = middle((await link.boundingBox())!)
     await page.evaluate(() =>
-      document.querySelector('main')!.addEventListener(
-        'click',
-        () => document.documentElement.setAttribute('data-product-clicked', ''),
-        true,
-      ),
+      document
+        .querySelector('main')!
+        .addEventListener(
+          'click',
+          () => document.documentElement.setAttribute('data-product-clicked', ''),
+          true,
+        ),
     )
     await page.mouse.click(at.x, at.y)
     await expect(welcome(page)).toBeHidden()
