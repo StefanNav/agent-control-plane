@@ -32,8 +32,8 @@ function typedInto(target: string): string {
 }
 
 /**
- * Open a chapter from a link and wait for its first screen, paused. A link that loads the page shows
- * the welcome, pointing at the bar's Play tour.
+ * Open a chapter from a link and wait for its first screen, paused. A link that loads the page
+ * shows the welcome, pointing at the bar's Play tour.
  */
 async function openChapter(page: Page, chapter: string, first: RegExp) {
   await page.goto(`/?tour=${chapter}&tourVoice=silent`)
@@ -41,7 +41,7 @@ async function openChapter(page: Page, chapter: string, first: RegExp) {
   await expect(welcome(page)).toBeVisible()
 }
 
-/** Press the bar's Play tour, as a visitor does: on a link's first screen, the welcome goes with it. */
+/** Press the bar's Play tour, as a visitor does: on a link's first screen, the welcome goes too. */
 async function play(page: Page) {
   await bar(page).getByRole('button', { name: 'Play tour' }).click()
   await expect(welcome(page)).toBeHidden()

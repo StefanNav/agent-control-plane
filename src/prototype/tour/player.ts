@@ -75,7 +75,10 @@ export interface OpenOptions {
 }
 
 export interface TourControls {
-  /** Open (or reopen) the tour at a chapter's first beat, playing or paused (with the welcome, if asked). */
+  /**
+   * Open (or reopen) the tour at a chapter's first beat, playing or paused (with the welcome, if
+   * asked).
+   */
   open(chapter: number, autoplay: boolean, options?: OpenOptions): void
   play(): void
   pause(): void
@@ -90,7 +93,10 @@ export interface TourControls {
   toggleCaptions(): void
   /** Close the tour (R5). */
   exit(): void
-  /** Take the welcome down, leaving the tour paused where it is (Look around first, Escape, the scrim). */
+  /**
+   * Take the welcome down, leaving the tour paused where it is (Look around first, Escape, the
+   * scrim).
+   */
   dismissWelcome(): void
 }
 

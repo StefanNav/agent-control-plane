@@ -56,14 +56,14 @@ for (const path of READ_ONLY) {
   })
 }
 
-/** A link's first screen shows the welcome: Look around first takes it down, the tour still paused. */
+/** A link's first screen shows the welcome; Look around first takes it down, the tour paused. */
 async function lookAround(page: Page) {
   const welcome = page.getByRole('region', { name: 'Welcome to Agent Control Plane' })
   await welcome.getByRole('button', { name: 'Look around first' }).click()
   await expect(welcome).toBeHidden()
 }
 
-// The welcome over a link's first screen: the hospital board dimmed, the card pointing at Play tour.
+// The welcome over a link's first screen: the page dimmed, the card pointing at Play tour.
 for (const [chapter, first] of [
   ['open', /\/operations\?tour=open$/],
   ['decisions', /\/tour\/decisions\?tour=decisions$/],

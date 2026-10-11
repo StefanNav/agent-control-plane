@@ -34,7 +34,7 @@ for (const shot of SHOTS) {
   })
 }
 
-/** A link to the tour, as the README's "Watch the tour" opens it: the welcome over the hospital board. */
+/** The tour's link, as the README's "Watch the tour" opens it: the welcome over the board. */
 test('screenshot tour', async ({ page }) => {
   // Reduced motion, so nothing is caught mid-fade.
   await page.emulateMedia({ reducedMotion: 'reduce' })
