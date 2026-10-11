@@ -140,11 +140,17 @@ const LEVELS_FILTER = [
   'ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-',
 ].join(',')
 
-/** Quieter than this is 0, and this loud or louder is 9, on the voice meter (dB RMS). */
-const LEVEL_FLOOR_DB = -50
-const LEVEL_CEILING_DB = -12
+/**
+ * Quieter than this is 0, and this loud or louder is 9, on the voice meter (dB RMS). Chosen from the
+ * 65 recorded clips' 8,499 windows: their room tone sits at −50 to −44 dB, so it reads 0 (a window
+ * reads 0 below about −41.8 dB); their speech, brought to −16 LUFS, sits mostly at −24 to −12 dB, so
+ * 7–9 (−15.1 dB and up) are about a quarter of the windows with speech in them (27%) and the bars
+ * move through their range. The loudest windows reach about −8 dB (an 8); 9 is headroom.
+ */
+const LEVEL_FLOOR_DB = -44
+const LEVEL_CEILING_DB = -4
 
-/** A window's RMS level in dB as a digit, 0–9: linear from −50 dB (or silence) to −12 dB, rounded. */
+/** A window's RMS level in dB as a digit, 0–9: linear from −44 dB (or silence) to −4 dB, rounded. */
 export function levelDigit(db) {
   if (!(db > LEVEL_FLOOR_DB)) return 0
   if (db >= LEVEL_CEILING_DB) return 9

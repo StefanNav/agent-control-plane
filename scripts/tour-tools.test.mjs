@@ -3,27 +3,30 @@ import { describe, expect, test } from 'vitest'
 import { levelDigit, levelsFit, levelsFromAstats } from './tour-tools.mjs'
 
 describe('levelDigit', () => {
-  test('silence, and anything at −50 dB or quieter, is 0', () => {
+  // −44 dB to −4 dB: the clips' room tone (−50 to −44 dB) reads 0, and 7–9 are about a quarter of
+  // the windows with speech in them, so the bars move through their whole range.
+  test('silence, and the room tone at −44 dB or quieter, is 0', () => {
     expect(levelDigit(-Infinity)).toBe(0)
-    expect(levelDigit(-50)).toBe(0)
+    expect(levelDigit(-44)).toBe(0)
+    expect(levelDigit(-47.3)).toBe(0)
     expect(levelDigit(-86.2)).toBe(0)
   })
 
-  test('−12 dB or louder is 9', () => {
-    expect(levelDigit(-12)).toBe(9)
-    expect(levelDigit(-5.4)).toBe(9)
+  test('−4 dB or louder is 9', () => {
+    expect(levelDigit(-4)).toBe(9)
     expect(levelDigit(0)).toBe(9)
     expect(levelDigit(3)).toBe(9)
   })
 
   test('in between it is linear, rounded to the nearest digit', () => {
-    // (db + 50) / 38 × 9
-    expect(levelDigit(-31)).toBe(5) // 4.5
-    expect(levelDigit(-40)).toBe(2) // 2.37
-    expect(levelDigit(-39)).toBe(3) // 2.61
-    expect(levelDigit(-47.9)).toBe(0) // 0.50 − a hair
-    expect(levelDigit(-46)).toBe(1) // 0.95
-    expect(levelDigit(-12.9)).toBe(9) // 8.79
+    // (db + 44) / 40 × 9
+    expect(levelDigit(-42)).toBe(0) // 0.45: still a pause
+    expect(levelDigit(-41.5)).toBe(1) // 0.56
+    expect(levelDigit(-24)).toBe(5) // 4.5
+    expect(levelDigit(-16)).toBe(6) // 6.3
+    expect(levelDigit(-15)).toBe(7) // 6.53
+    expect(levelDigit(-8)).toBe(8) // 8.1
+    expect(levelDigit(-5)).toBe(9) // 8.78
   })
 
   test('a reading that isn’t a number is silence', () => {
@@ -49,7 +52,7 @@ describe('levelsFromAstats', () => {
       'lavfi.astats.Overall.RMS_level=-12.871356',
       '',
     ].join('\n')
-    expect(levelsFromAstats(text)).toBe('004909')
+    expect(levelsFromAstats(text)).toBe('002707')
   })
 
   test('no readings, no levels', () => {

@@ -21,10 +21,12 @@ import { loadTour } from './tour-load.mjs'
 // placeholder is missing or was made from different text), measures every clip with `ffprobe` and
 // rewrites the manifest. Each entry also holds its clip's levels, for the bar's voice meter: kept
 // while they fit the clip's length, otherwise measured with `ffmpeg` (no clip is re-encoded for
-// them). `--check` writes nothing and exits 1 unless every beat has a current recorded clip whose
-// levels fit it; it needs only `ffprobe`.
+// them). `--levels` measures every clip's levels again, even ones that fit: `--check` can't tell a
+// clip swapped by hand for one of the same length. `--check` writes nothing and exits 1 unless every
+// beat has a current recorded clip whose levels fit it; it needs only `ffprobe`.
 
 const check = process.argv.includes('--check')
+const remeasure = process.argv.includes('--levels')
 
 /** Milliseconds as m:ss. */
 function clock(ms) {
@@ -58,9 +60,12 @@ async function main() {
         counts.levels++
         console.log(`${entry.levels === undefined ? 'no levels    ' : 'stale levels '}${beat.id}`)
       }
-      /** The entry's levels if they fit the clip, otherwise the clip's, measured (and said so). */
+      /**
+       * The entry's levels if they fit the clip (unless `--levels`), otherwise the clip's, measured
+       * (and said so, if they changed).
+       */
       const levels = async (ms) => {
-        const measured = await levelsFor(entry, file, ms)
+        const measured = remeasure ? await clipLevels(file) : await levelsFor(entry, file, ms)
         if (measured !== entry?.levels) console.log(`levels       ${beat.id}`)
         return measured
       }
