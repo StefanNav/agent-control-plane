@@ -355,6 +355,16 @@ describe('page copy', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
+  test('opening an image from the keyboard while the welcome shows takes the welcome down', async () => {
+    show('/tour/decisions')
+    holdAt('decisions-page', 9)
+    act(() => runtime.player.setState({ welcome: true }))
+    screen.getByRole('button', { name: /^Med Rec Agent, paused.*, open larger$/ }).focus()
+    await userEvent.keyboard('{Enter}')
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(runtime.player.getState()).toMatchObject({ status: 'paused', welcome: false })
+  })
+
   test('while the tour plays, opening an image pauses it first', async () => {
     show('/tour/decisions')
     holdAt('decisions-page', 9, 'playing')

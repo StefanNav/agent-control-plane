@@ -16,10 +16,11 @@ import styles from './DecisionsPage.module.css'
 import interlude from './Interlude.module.css'
 import { itemProps, useReveal, type Reveal } from './useReveal'
 
-/** Opening an image while the tour plays pauses it first. */
+/** Opening an image while the tour plays pauses it first; opening one at all closes the welcome. */
 interface Zoom {
   playing: boolean
   onPause(): void
+  onOpen(): void
 }
 
 /** An exploration: its image, at a sheet's shape or a screen's, then its name and one line. */
@@ -85,7 +86,12 @@ function DecisionItem({
 export function DecisionsPage() {
   const reveal = useReveal('decisions-page')
   const playing = useTour((s) => s.status === 'playing')
-  const zoom: Zoom = { playing, onPause: () => tourRuntime().player.getState().pause() }
+  const zoom: Zoom = {
+    playing,
+    onPause: () => tourRuntime().player.getState().pause(),
+    // Reached by the keyboard under the welcome's scrim: opening an image is using the tour.
+    onOpen: () => tourRuntime().player.getState().dismissWelcome(),
+  }
   return (
     <article className={cx(interlude.page, interlude.wide)}>
       <header className={interlude.head}>

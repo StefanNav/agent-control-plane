@@ -11,6 +11,8 @@ export interface ZoomImageProps {
   /** While the tour plays, opening the image pauses it first. */
   playing: boolean
   onPause(): void
+  /** Called whenever it opens, playing or not (the tour's welcome goes then). */
+  onOpen?(): void
   className?: string
 }
 
@@ -18,7 +20,7 @@ export interface ZoomImageProps {
  * A thumbnail that opens its image larger in a dialog (spec §4.3), pausing the tour first if it is
  * playing. The full image takes focus, so the keyboard can scroll a tall one.
  */
-export function ZoomImage({ image, title, playing, onPause, className }: ZoomImageProps) {
+export function ZoomImage({ image, title, playing, onPause, onOpen, className }: ZoomImageProps) {
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
   return (
@@ -31,6 +33,7 @@ export function ZoomImage({ image, title, playing, onPause, className }: ZoomIma
         aria-label={`${image.alt}, open larger`}
         onClick={() => {
           if (playing) onPause()
+          onOpen?.()
           setOpen(true)
         }}
       >
