@@ -52,7 +52,7 @@ export const CARDS: Record<string, CardContent> = {
   },
   'research-r3': {
     kind: 'excerpt',
-    quote: "start in a shadow-like mode, then 'earn' autonomy.",
+    quote: 'start in a shadow-like mode, then ‘earn’ autonomy.',
     source: 'Research notes · UCHealth',
   },
   // decisions: spec §7.2 as the script tells them; each card's screen is captured from the

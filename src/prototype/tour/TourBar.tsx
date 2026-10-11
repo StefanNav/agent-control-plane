@@ -2,6 +2,7 @@ import { Button, Icon, Menu, VisuallyHidden } from '../../design-system'
 import { beatAt } from './engine'
 import type { TourControls, TourRate, TourStatus } from './player'
 import type { Chapter, Position, Timeline } from './types'
+import { typographic } from './typographic'
 import { TOUR_BAR_HEIGHT } from './useTour'
 import styles from './TourBar.module.css'
 
@@ -63,7 +64,9 @@ export function TourBar({
       style={{ height: TOUR_BAR_HEIGHT }}
     >
       <VisuallyHidden role="status">{`Chapter ${n}: ${chapter.title}`}</VisuallyHidden>
-      {captions ? <p className={styles.caption}>{beatAt(chapters, pos).text}</p> : null}
+      {captions ? (
+        <p className={styles.caption}>{typographic(beatAt(chapters, pos).text)}</p>
+      ) : null}
       <div className={styles.controls}>
         {status === 'driving' ? (
           <>

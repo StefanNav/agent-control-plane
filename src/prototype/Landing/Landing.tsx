@@ -59,7 +59,7 @@ export function Landing() {
               <Button variant="secondary" aria-describedby={exploreHintId} onClick={exploreFreely}>
                 Explore freely
               </Button>
-              <LinkButton to="/about">About this prototype</LinkButton>
+              <LinkButton to="/about">About this work</LinkButton>
             </div>
             <span id={exploreHintId} className={type.meta}>
               Explore freely starts as Marcus, the agent owner.

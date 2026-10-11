@@ -14,6 +14,7 @@ import {
 } from '../tour/decisionCards'
 import { DecisionContent } from '../tour/DecisionContent'
 import type { Chapter } from '../tour/types'
+import { typographic } from '../tour/typographic'
 import { ZoomImage } from '../tour/ZoomImage'
 import styles from './About.module.css'
 import { CASE_CHAPTERS, cardIds, liveLink, paragraphs, playLink } from './caseStudy'
@@ -168,7 +169,7 @@ function ChapterSection({ chapter }: { chapter: Chapter }) {
       </h2>
       {paragraphs(chapter).map((paragraph) => (
         <Fragment key={paragraph.text}>
-          <p>{paragraph.text}</p>
+          <p>{typographic(paragraph.text)}</p>
           {paragraph.reveal ? <Revealed reveal={paragraph.reveal} /> : null}
         </Fragment>
       ))}

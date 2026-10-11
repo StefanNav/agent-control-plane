@@ -4,6 +4,7 @@ import { buildTimeline } from './engine'
 import { FIXTURE_CHAPTERS } from './fixtures'
 import type { TourRate, TourStatus } from './player'
 import { TourBar, type TourBarProps } from './TourBar'
+import type { Chapter } from './types'
 
 const timeline = buildTimeline(FIXTURE_CHAPTERS, {})
 
@@ -141,6 +142,24 @@ test('captions show the sentence being spoken; the toggle hides the caption line
   rerender({ pos: { chapter: 0, step: 0, beat: 1 }, captions: false })
   expect(screen.getByRole('button', { name: 'Captions' })).toHaveAttribute('aria-pressed', 'false')
   expect(screen.queryByText('Nobody can say who owns one.')).not.toBeInTheDocument()
+})
+
+test("the caption sets the narration’s apostrophes as type, ’ not '", () => {
+  const chapters: Chapter[] = [
+    {
+      id: 'problem',
+      title: 'Why this problem',
+      steps: [
+        {
+          id: 'step',
+          route: '/tour/problem',
+          beats: [{ id: 'beat', text: "I'd say it's Priya's to sign, and I don't mind." }],
+        },
+      ],
+    },
+  ]
+  setup({ chapters, timeline: buildTimeline(chapters, {}) })
+  expect(screen.getByText('I’d say it’s Priya’s to sign, and I don’t mind.')).toBeInTheDocument()
 })
 
 test('Exit tour exits', async () => {

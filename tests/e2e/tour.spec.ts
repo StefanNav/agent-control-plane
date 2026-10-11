@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { CHAPTERS } from '../../src/prototype/tour/script'
+import { typographic } from '../../src/prototype/tour/typographic'
 import { collectErrors } from './console'
 
 // The silent voice makes each beat a tenth of its clip; reduced motion makes the cursor jump.
@@ -65,7 +66,7 @@ async function expectLineOver(page: Page, line: string, route: string) {
               [...wanted.searchParams].every(([name, value]) => params.get(name) === value)
             return there ? want : location.pathname + location.search
           },
-          [line, route] as const,
+          [typographic(line), route] as const,
         ),
       { message: line, timeout: CHAPTER_MS, intervals: [25] },
     )
@@ -231,7 +232,7 @@ async function expectUnder(
     .poll(
       async () => {
         const s = await sample(page, at.targets)
-        if (s.chapter !== at.chapter || !s.caption.startsWith(at.line))
+        if (s.chapter !== at.chapter || !s.caption.startsWith(typographic(at.line)))
           return `not under "${at.line}": ${s.chapter} · ${s.caption}`
         return read(s)
       },
@@ -620,7 +621,7 @@ async function expectGlance(
     .poll(
       async () => {
         const g = await glance(page)
-        if (g.chapter !== at.chapter || !g.caption.startsWith(at.line))
+        if (g.chapter !== at.chapter || !g.caption.startsWith(typographic(at.line)))
           return `not under "${at.line}": ${g.chapter} · ${g.caption}`
         return read(g)
       },
@@ -797,7 +798,7 @@ test('a decision’s screen opens larger: the tour pauses, without a take-over, 
 }) => {
   const errors = collectErrors(page)
   const lines = CHAPTERS.find((c) => c.id === 'decisions')!.steps.flatMap((step) =>
-    step.beats.map((beat) => beat.text),
+    step.beats.map((beat) => typographic(beat.text)),
   )
   await openChapter(page, 'decisions', /\/tour\/decisions\?tour=decisions$/)
   await play(page)

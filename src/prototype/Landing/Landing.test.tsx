@@ -63,7 +63,7 @@ test('says what the product is, and offers seven stories in persona order', () =
   expect(within(card).getByText(storyById('priya')!.title)).toBeInTheDocument()
   expect(within(card).getByText(storyById('priya')!.summary)).toBeInTheDocument()
   expect(within(card).getByText(`${storyById('priya')!.steps.length} steps`)).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'About this prototype' })).toHaveAttribute(
+  expect(screen.getByRole('link', { name: 'About this work' })).toHaveAttribute(
     'href',
     '/about',
   )

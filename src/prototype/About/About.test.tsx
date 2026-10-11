@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router'
 import { stepHref, storyById } from '../stories'
 import { CARDS } from '../tour/cards'
 import { CHAPTERS } from '../tour/script'
+import { typographic } from '../tour/typographic'
 import { About } from './About'
 
 const show = () =>
@@ -53,8 +54,16 @@ test('each chapter tells its narration, word for word', () => {
   for (const chapter of CASE) {
     const text = section(chapter.title).textContent ?? ''
     for (const step of chapter.steps)
-      for (const beat of step.beats) expect(text, beat.id).toContain(beat.text)
+      for (const beat of step.beats) expect(text, beat.id).toContain(typographic(beat.text))
   }
+})
+
+test("the narration shows ’ for its apostrophes, never '", () => {
+  show()
+  expect(section('Open on the product')).toHaveTextContent(
+    'Hi, I’m Stefan. Imagine you’re responsible for forty-one AI agents',
+  )
+  for (const chapter of CASE) expect(section(chapter.title).textContent).not.toContain("'")
 })
 
 test('Play from here opens the tour on that chapter', () => {
