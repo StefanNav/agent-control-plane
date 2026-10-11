@@ -45,6 +45,8 @@ test('the heading levels never skip one', () => {
 test('opens with a line that says it is the tour in reading form, and links to play it', () => {
   const { container } = show()
   expect(container).toHaveTextContent('This is the guided tour in reading form')
+  // Its images show as thumbnails, each a click from full size.
+  expect(container).toHaveTextContent('with its cards, and images that open full size.')
   expect(screen.getByRole('link', { name: 'Play the tour' })).toHaveAttribute('href', '/?tour=open')
   expect(container).toHaveTextContent('Attune, Lakeshore Health and everyone in it are fictional')
 })

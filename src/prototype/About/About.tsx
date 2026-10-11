@@ -214,8 +214,8 @@ export function About() {
         <h1 className={type.pageTitle}>About this work</h1>
         <span className={type.mono}>Attune · Agent Control Plane</span>
         <p className={styles.lead}>
-          This is the guided tour in reading form: the same story in the same order, with its cards
-          and images at full size.{' '}
+          This is the guided tour in reading form: the same story in the same order, with its cards,
+          and images that open full size.{' '}
           <Link to="/?tour=open" className={styles.link}>
             Play the tour
           </Link>{' '}
