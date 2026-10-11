@@ -9,6 +9,7 @@ import {
   type PointerEvent,
 } from 'react'
 import { Button } from '../../design-system'
+import { NARRATOR_PHOTO } from './narrator'
 import type { Chapter } from './types'
 import styles from './TourWelcome.module.css'
 
@@ -153,7 +154,7 @@ export function TourWelcome({
       />
       <section ref={cardRef} aria-labelledby={titleId} className={styles.card}>
         <div className={styles.head}>
-          <img className={styles.photo} src="/tour/stefan.jpg" alt="" width={40} height={40} />
+          <img className={styles.photo} src={NARRATOR_PHOTO} alt="" width={40} height={40} />
           <h2 id={titleId} className={styles.title}>
             Welcome to Agent Control Plane
           </h2>

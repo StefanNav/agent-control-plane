@@ -8,6 +8,7 @@ import { personaById } from '../personas'
 import { STORIES } from '../stories'
 import { useStory } from '../stories/progress'
 import { useStoryActions } from '../stories/useStory'
+import { NARRATOR_PHOTO } from '../tour/narrator'
 import { tourMinutes } from '../tour/tourMinutes'
 import { exitTourIfOpen, tourRuntime, unlockVoice } from '../tour/useTour'
 import { Credit } from './Credit'
@@ -73,7 +74,7 @@ export function Landing() {
           A narrated walkthrough of one agent’s life: the problem, the product, three key decisions
           and how I’d validate it.
         </p>
-        <Credit name="Stefan" src="/tour/stefan.jpg" />
+        <Credit name="Stefan" src={NARRATOR_PHOTO} />
       </section>
 
       <section className={styles.stories} aria-labelledby="stories-title">
