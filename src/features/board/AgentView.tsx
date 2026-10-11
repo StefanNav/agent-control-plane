@@ -89,7 +89,7 @@ export function AgentView() {
       <PageHeader
         breadcrumb={`Operations / ${view.division} / ${view.name}`}
         title={view.name}
-        status={heldHeader?.status ?? stepDown?.levelLine ?? view.levelLine}
+        status={<span data-story-target="agent-status">{heldHeader?.status ?? stepDown?.levelLine ?? view.levelLine}</span>}
         idLine={heldHeader?.idLine ?? view.idLine}
         chips={
           <>
@@ -104,7 +104,7 @@ export function AgentView() {
                 align="right"
                 width={302}
                 trigger={({ toggle, ref, open }) => (
-                  <Button ref={ref} onClick={toggle} aria-expanded={open} aria-haspopup="menu">
+                  <Button ref={ref} onClick={toggle} aria-expanded={open} aria-haspopup="menu" data-story-target="controls-trigger">
                     Controls
                     <Icon name="chevron" size={10} />
                   </Button>
@@ -113,6 +113,9 @@ export function AgentView() {
                   label: group.label,
                   items: group.items.map((item) => ({
                     ...item,
+                    // A click on the label reaches the menu item, so the tour can press it. A locked
+                    // item has no target, so the tour skips it rather than pressing nothing.
+                    label: item.id === 'pause-agent' && !item.locked ? <span data-story-target="controls-pause">{item.label}</span> : item.label,
                     onSelect: () => setControl(item.control),
                   })),
                 }))}

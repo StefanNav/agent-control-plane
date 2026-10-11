@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent, useMemo } from 'react'
 import { useNavigate, useSearchParams, type SetURLSearchParams } from 'react-router'
 import { useDemo } from '../../store'
+import { exitTourIfOpen } from '../tour/useTour'
 import { applyStep } from './apply'
 import { stepHref, urlAction } from './engine'
 import { STORIES, storyById } from './index'
@@ -47,6 +48,8 @@ export function useStoryActions(stories: readonly Story[] = STORIES) {
       start: (id: StoryId) => {
         const story = storyById(id, stories)
         if (!story) return
+        // A story takes over from the tour (Ruling 14).
+        exitTourIfOpen()
         useStory.getState().requestPanelFocus()
         open(story, 1, true)
       },

@@ -1,0 +1,94 @@
+/* The decisions interlude: three decision panels, and Decision 2's explorations between them. */
+
+/* A decision beside the screen it played out on. */
+.decision {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 40px;
+  align-items: start;
+  padding: 20px 24px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 560px;
+}
+
+/*
+ * An earlier decision steps back to text2 (spec §4.3): its title and its options, the chosen one
+ * still marked by its dot and weight. The label and "Chosen" keep their own meta colour.
+ */
+.decision[data-state='reached'] .content :is(h2, li) {
+  color: var(--cs-text2);
+}
+
+.screen,
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+/* A group of explorations; its padding is room for the outline. */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 -12px;
+  padding: 8px 12px 12px;
+}
+
+.groupTitle {
+  margin: 0;
+  font-weight: 600;
+}
+
+.group[data-state='shown'] .groupTitle,
+.group[data-state='shown'] .name {
+  color: var(--cs-ink);
+}
+
+/* Five overviews in a row, then the conflict at the width of two. */
+.directions {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) minmax(0, 2.2fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.judged {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.name {
+  font-weight: 600;
+}
+
+/* Thumbnails show the top of their image at one shape; the whole image opens larger. */
+.tall img,
+.wide img {
+  object-fit: cover;
+  object-position: top;
+}
+
+.tall img {
+  aspect-ratio: 3 / 4;
+}
+
+.wide img {
+  aspect-ratio: 16 / 10;
+}

@@ -1,0 +1,134 @@
+/*
+ * The welcome (Checkpoint E): above dialogs (z 50) and the page, under the tour bar (z 60), so the
+ * bar stays bright and usable while everything else dims.
+ */
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+}
+
+/* Fading out (200 ms, as FADE_MS): it no longer takes the pointer. */
+.layer[data-state='closing'] {
+  pointer-events: none;
+}
+
+/* Each part fades on its own: opacity on the layer would cut the scrim's blur off from the page. */
+.scrim,
+.card {
+  animation: fade-in 200ms ease-out;
+}
+
+.layer[data-state='closing'] .scrim,
+.layer[data-state='closing'] .card {
+  opacity: 0;
+  transition: opacity 200ms ease-in;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Darker than a dialog's, with a light blur, so the card and the bar read first. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--cs-scrim-strong);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+/*
+ * 360 px, just above the 88 px bar: its pointer's tip (8.5 px below the card) clears the bar's top.
+ * Lined up with Play tour (left set inline, measured; 24 px until then, the bar's padding).
+ */
+.card {
+  position: absolute;
+  bottom: calc(88px + 12px);
+  left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  padding: 16px 20px;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line-strong);
+  border-radius: 6px;
+  box-shadow: var(--cs-shadow-modal);
+  color: var(--cs-ink);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* As the landing page's credit, at 40 px. */
+.photo {
+  display: block;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--cs-line-strong);
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cs-ink);
+  text-wrap: pretty;
+}
+
+.note,
+.partway {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--cs-text2);
+  text-wrap: pretty;
+}
+
+/* One quiet action, on the right; the margin lines the ghost button's text up with the card's. */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: -4px -8px -4px 0;
+}
+
+/*
+ * The pointer: a square turned 45°, its two lower edges the card's border, centred on the card's
+ * bottom edge under Play tour (left set inline, measured, from inside the 1 px border; 51 px until
+ * then, the middle of a 104 px Play at the card's left).
+ */
+.notch {
+  position: absolute;
+  bottom: -7px;
+  left: 51px;
+  width: 12px;
+  height: 12px;
+  background: var(--cs-raised);
+  border-right: 1px solid var(--cs-line-strong);
+  border-bottom: 1px solid var(--cs-line-strong);
+  transform: translateX(-50%) rotate(45deg);
+}

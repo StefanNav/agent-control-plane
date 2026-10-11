@@ -18,9 +18,9 @@ const head = new DOMParser().parseFromString(indexHtml, 'text/html')
 const meta = (selector: string) => head.querySelector(selector)?.getAttribute('content')
 
 test('index.html carries the title, description and a share card with an absolute image', () => {
-  expect(head.title).toBe('Signal · Agent Control Plane')
+  expect(head.title).toBe('Attune · Agent Control Plane')
   expect(meta('meta[name="description"]')).toBe(PITCH)
-  expect(meta('meta[property="og:title"]')).toBe('Signal · Agent Control Plane')
+  expect(meta('meta[property="og:title"]')).toBe('Attune · Agent Control Plane')
   expect(meta('meta[property="og:description"]')).toBe(PITCH)
   expect(meta('meta[property="og:type"]')).toBe('website')
   expect(meta('meta[property="og:url"]')).toBe(LIVE)

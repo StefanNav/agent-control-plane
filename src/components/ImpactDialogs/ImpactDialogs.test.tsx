@@ -41,6 +41,43 @@ test('pause dialog (6b): scope, numbered effects, resume rule and confirm', asyn
   expect(onConfirm).toHaveBeenCalled()
 })
 
+function Pause(props: { targetPrefix?: string; locked?: string }) {
+  return (
+    <PauseDialog
+      open
+      agentName="Med Rec Agent"
+      scopes={[{ value: 'agent', title: 'This agent · both activities' }]}
+      scope="agent"
+      onScopeChange={() => {}}
+      effects={[{ value: '12', lead: 'drafts in progress go back to pharmacists', text: 'They appear in the 7 West and 8 East worklists within a minute.' }]}
+      resumeRule={{ lead: 'Resuming needs Priya and you,', text: 'both with a reason.' }}
+      reason=""
+      onReasonChange={() => {}}
+      audit="Logs Marcus · 09:52"
+      onCancel={() => {}}
+      onConfirm={() => {}}
+      {...props}
+    />
+  )
+}
+
+test('with a target prefix, the pause dialog’s impact list and confirm are tour targets', () => {
+  render(<Pause targetPrefix="pause-" />)
+  expect(document.querySelector('[data-story-target="pause-impact"]')).toBe(screen.getByRole('list'))
+  expect(document.querySelector('[data-story-target="pause-confirm"]')).toBe(screen.getByRole('button', { name: 'Pause agent' }))
+})
+
+test('a locked confirm is no tour target, so a tour click on it is skipped and reported', () => {
+  render(<Pause targetPrefix="pause-" locked="Read-only access" />)
+  expect(document.querySelector('[data-story-target="pause-impact"]')).not.toBeNull()
+  expect(document.querySelector('[data-story-target="pause-confirm"]')).toBeNull()
+})
+
+test('without a target prefix, the pause dialog has no targets', () => {
+  render(<Pause />)
+  expect(document.querySelector('[data-story-target]')).toBeNull()
+})
+
 function Resume({ reason, onSubmit }: { reason: string; onSubmit: () => void }) {
   return (
     <ResumeDialog

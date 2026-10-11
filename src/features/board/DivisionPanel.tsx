@@ -50,7 +50,7 @@ export function DivisionPanel({ division: d }: { division: DivisionSummary }) {
         {critical ? <PanelRow label="Exception" value={`${critical.code} · raised ${formatClock(critical.raisedAt)}`} /> : null}
         {d.nextDeadline && d.status !== 'crit' ? <PanelRow label="Next deadline" value={`${d.nextDeadline.at} · goes to ${d.nextDeadline.to}`} /> : null}
         <div className={styles.panelFoot}>
-          <LinkButton to={`/operations/divisions/${d.id}`} variant="primary">
+          <LinkButton to={`/operations/divisions/${d.id}`} variant="primary" data-story-target="board-open-division">
             Open division
           </LinkButton>
           {d.incidentId ? (

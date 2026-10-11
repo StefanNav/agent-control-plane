@@ -23,11 +23,13 @@ export interface MenuProps {
   trigger: (props: { open: boolean; toggle: () => void; ref: Ref<HTMLButtonElement> }) => ReactNode
   groups: MenuGroup[]
   align?: 'left' | 'right'
+  /** Opens below the trigger, or above it (a bar at the foot of the window). Default below. */
+  placement?: 'below' | 'above'
   /** Panel width in px. Default 280. */
   width?: number
 }
 
-export function Menu({ trigger, groups, align = 'left', width = 280 }: MenuProps) {
+export function Menu({ trigger, groups, align = 'left', placement = 'below', width = 280 }: MenuProps) {
   const [open, setOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -80,7 +82,7 @@ export function Menu({ trigger, groups, align = 'left', width = 280 }: MenuProps
         <div
           ref={panelRef}
           role="menu"
-          className={cx(styles.panel, align === 'right' && styles.right)}
+          className={cx(styles.panel, align === 'right' && styles.right, placement === 'above' && styles.above)}
           style={{ width }}
           onKeyDown={onKeyDown}
         >

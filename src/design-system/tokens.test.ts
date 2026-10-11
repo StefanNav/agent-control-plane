@@ -36,6 +36,7 @@ const LIGHT: Array<[string, string]> = [
   ['--cs-lad-lock', 'oklch(0.925 0.004 90)'],
   ['--cs-canvas', 'oklch(0.93 0.003 90)'],
   ['--cs-scrim', 'oklch(0.21 0.004 90 / 0.32)'],
+  ['--cs-scrim-strong', 'oklch(0.21 0.004 90 / 0.55)'],
   ['--cs-shadow-menu', '0 8px 24px oklch(0.21 0.004 90 / 0.14)'],
   ['--cs-shadow-modal', '0 16px 48px oklch(0.21 0.004 90 / 0.2)'],
 ]

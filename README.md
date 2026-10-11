@@ -1,14 +1,16 @@
-# Signal Agent Control Plane: clickable prototype
+# Attune Agent Control Plane: clickable prototype
 
 > A hospital should bring on an AI agent the way it brings on a clinician: a written job, named people accountable, privileges earned on evidence, and supervision that spends human attention only where it matters.
 
-**Agent Control Plane** is the operations console of Signal's AI management system (AIMS) for hospitals. Named people onboard an agent, grant it staged privileges (Shadow → Draft → Supervised → Autonomous), supervise it by exception, stop it in one action and reconstruct anything it did for an auditor. This is a high-fidelity, front-end-only prototype built from the **Countersign** design system, running on mock data for a fictional hospital, Lakeshore Health.
+**Agent Control Plane** is the operations console of Attune's AI management system (AIMS) for hospitals. Named people onboard an agent, grant it staged privileges (Shadow → Draft → Supervised → Autonomous), supervise it by exception, stop it in one action and reconstruct anything it did for an auditor. This is a high-fidelity, front-end-only prototype built from the **Countersign** design system, running on mock data for a fictional hospital, Lakeshore Health.
 
 **Try it: [agent-control-plane-mocha.vercel.app](https://agent-control-plane-mocha.vercel.app)** (desktop browser, 1024 px or wider)
 
+**Watch the tour: [agent-control-plane-mocha.vercel.app/?tour=open](https://agent-control-plane-mocha.vercel.app/?tour=open)** opens it; press Play and it narrates and plays the prototype by itself, in Stefan's voice, for about 7½ minutes. Pause it any time and take over, and everything you click really works.
+
 - **Follow a story.** Pick one of seven people on the landing page and follow them through the real screens, step by step.
 - **Explore freely.** Start as Marcus, the agent owner, and switch to anyone from the bar at the top. Locks, inboxes and landing pages change with the person.
-- **Read [About](https://agent-control-plane-mocha.vercel.app/about)** for the problem, the principles and the design system.
+- **Read [About this work](https://agent-control-plane-mocha.vercel.app/about)**, the case study: the problem, the decisions, the principles and the design system.
 
 ![The Medications division board: twenty agents, the four that need a human first](docs/screenshots/division-board.png)
 
@@ -27,10 +29,14 @@
 ## What's in it
 
 - **All 55 designed frames** of epics E1–E15: onboarding and go-live, the command board and inbox, stop and resume, replay and audit, divisions and access, version changes and unregistered callers, clinician feedback from Epic, reviewer behaviour, survey evidence, review levels, promotion and automatic step-down.
+- **A guided tour** that plays the prototype by itself: eleven chapters narrated in Stefan's voice, clicking through the real screens with captions, a chapter menu and speed control. Touch a product screen and it hands over to you; Resume tour starts the step again.
+- **About this work**, the case study: the tour in reading form, a chapter at a time with its cards, images that open full size and a Play from here link on each, then the principles, the design system and how it's built.
 - **Seven guided stories** with a narration panel; any step can be shared as a link.
 - **A persona switcher with real permissions**: controls a person can't use render locked, with the reason.
 - **A mock hospital that remembers what you do**: pause an agent and the board, the agent view and the inbox all agree. Reset demo puts it back.
 - **A wall display** for a pharmacy or command centre, and the **Countersign component sheet** in light and dark.
+
+![The guided tour opened from its link: the hospital board dimmed behind a welcome from Stefan, which points at Play tour in the tour bar below, beside the first line, the chapter menu and the progress](docs/screenshots/tour.png)
 
 | | |
 |---|---|
@@ -44,7 +50,8 @@
 - **Three layers:** `src/design-system` (tokens and primitives, no hospital knowledge) → `src/components` (the ten Countersign product components: props in, callbacks out) → `src/features` (screens that read through selectors and change data only through store actions).
 - **The mock hospital** is one versioned Zustand store with named scenarios (moments in time such as "resume requested" or "nine days later"). Every change goes through `can()` for permissions and writes the audit log, so any action can be traced back.
 - **The story engine** (`src/prototype/stories`) keeps `?story=&step=` in the URL, loads the moment each step needs, and keeps what the visitor did between steps.
-- **Tests:** 749 unit tests (Vitest and Testing Library) and 247 end-to-end tests (Playwright), including every route, every story from a shared link, keyboard paths, and an axe accessibility check (WCAG 2.1 AA) on every screen. `pnpm capture` screenshots each frame beside its design for visual QA.
+- **The guided tour** (`src/prototype/tour`) is data: eleven chapters of narration, each line with the clicks and outlines that play under it. A player runs one line at a time, clip and actions together, over the same router and store as everything else. Its recorded clips live in `public/tour/audio`, with their lengths in a manifest.
+- **Tests:** 1208 unit tests (Vitest and Testing Library) and 296 end-to-end tests (Playwright), including every route, every story from a shared link, every chapter of the tour, keyboard paths, and an axe accessibility check (WCAG 2.1 AA) on every screen. A further run, opt-in because it takes 7½ minutes, plays the whole tour in real time in its recorded voice. `pnpm capture` screenshots each frame beside its design for visual QA.
 
 ## Run it locally
 
@@ -57,6 +64,10 @@ pnpm check        # typecheck, lint, unit tests, build
 pnpm e2e          # Playwright end-to-end tests
 pnpm designs      # the design frames on http://localhost:4599
 pnpm capture      # README screenshots and the social image (QA=1 also writes frame pairs)
+pnpm tour:script  # print each line of the narration with its actions in brackets beside it
+pnpm tour:audio   # placeholder clips for new lines (macOS say + ffmpeg), all clips measured into the manifest; --check needs only ffprobe
+pnpm tour:import  # cut recorded narration into one clip per line (needs the local recordings)
+TOUR_REALTIME=1 pnpm e2e tests/e2e/tour-realtime.spec.ts   # play the whole tour in real time (7½ min)
 ```
 
 ## Docs
@@ -64,14 +75,14 @@ pnpm capture      # README screenshots and the social image (QA=1 also writes fr
 - [Build plan](docs/BUILD_PLAN.md): phases, checkpoints, frame tracker, decisions
 - [Design spec](docs/specs/2026-10-08-agent-control-plane-prototype-design.md): scope, visitor experience, architecture, routes, data model
 - [Design handoff](docs/design-handoff.md): Countersign tokens, primitives, the 10 product components, interaction rules
-- [Phase plans](docs/plans/phase-9-polish.md): each phase's step-by-step plan, ending with this one
+- [Phase plans](docs/plans/phase-10-guided-tour.md): each phase's step-by-step plan, ending with this one
 - [`designs/`](designs/): the high-fidelity frames for epics E1–E15
 
 ## About the names
 
-Signal, Lakeshore Health and every person here are fictional, and all data is mock. The Epic screens are a neutral stand-in, not Epic's interface; only the panel on the right belongs to the product.
+Attune, Lakeshore Health and every person here are fictional, and all data is mock. The Epic screens are a neutral stand-in, not Epic's interface; only the panel on the right belongs to the product.
 
-Built phase by phase from a written spec with Claude Code; every phase was a reviewed pull request.
+Built phase by phase from a written spec with Claude Code; every build phase was a reviewed pull request.
 
 By [StefanNav](https://github.com/StefanNav).
 

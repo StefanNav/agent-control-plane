@@ -122,10 +122,11 @@ export function SignPage() {
                 ) : null}
                 {view.belowTarget ? (
                   <Field label="Reason for signing below target" htmlFor="sign-reason">
-                    <Textarea id="sign-reason" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} readOnly={!allowed} />
+                    <Textarea id="sign-reason" data-story-target="sign-reason" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} readOnly={!allowed} />
                   </Field>
                 ) : null}
-                <Checkbox checked={accepted} onChange={setAccepted} disabled={!allowed} label={view.accept} />
+                {/* The tour ticks this; a click on the label reaches the checkbox. */}
+                <Checkbox checked={accepted} onChange={setAccepted} disabled={!allowed} label={<span data-story-target="sign-accept">{view.accept}</span>} />
                 <span className={onboarding.monoMeta}>{view.records}</span>
                 {returning ? (
                   <div className={onboarding.replyForm}>
@@ -151,7 +152,7 @@ export function SignPage() {
                     {!allowed ? (
                       <Button locked={lockReason('signPrivilege', state.personaId)}>{view.button}</Button>
                     ) : ready ? (
-                      <Button variant="primary" onClick={sign}>
+                      <Button variant="primary" onClick={sign} data-story-target="sign-submit">
                         {view.button}
                       </Button>
                     ) : (

@@ -36,6 +36,7 @@ export function PauseFlow({ agentId, agentName, initialScope, onClose }: PauseFl
       audit={preview.audit}
       error={refused}
       locked={locked}
+      targetPrefix="pause-"
       onCancel={onClose}
       onConfirm={() => {
         const result = pauseAgent(agentId, { scope, reason })

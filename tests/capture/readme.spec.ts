@@ -1,10 +1,10 @@
 import { mkdirSync } from 'node:fs'
-import { test, type Page } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import type { PersonaId } from '../../src/data/types'
 import { STORIES, stepHref } from '../../src/prototype/stories'
 import { viewAs } from './persona'
 
-/** README screenshots (1440 × 900) and the social preview image (1200 × 630), Phase 9 R12. */
+/** README screenshots (1440 × 900) and the social preview image (1200 × 630), Phase 9 R12; tour.png, Phase 10. */
 
 const marcus = STORIES.find((s) => s.id === 'marcus')!
 
@@ -34,9 +34,27 @@ for (const shot of SHOTS) {
   })
 }
 
+/** The tour's link, as the README's "Watch the tour" opens it: the welcome over the board. */
+test('screenshot tour', async ({ page }) => {
+  // Reduced motion, so nothing is caught mid-fade.
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/?tour=open&tourVoice=silent')
+  await expect(page).toHaveURL(/\/operations\?tour=open$/)
+  const welcome = page.getByRole('region', { name: 'Welcome to Agent Control Plane' })
+  await expect(welcome).toBeVisible()
+  await expect(welcome.locator('img')).toHaveJSProperty('naturalWidth', 144)
+  await expect(page.getByRole('button', { name: 'Play tour' })).toBeFocused()
+  await settle(page)
+  mkdirSync('docs/screenshots', { recursive: true })
+  await page.screenshot({ path: 'docs/screenshots/tour.png' })
+})
+
 test('social preview image', async ({ browser }) => {
   // 1440 × 756 at 1200/1440 scale is exactly 1200 × 630, laid out as the designed width.
-  const context = await browser.newContext({ viewport: { width: 1440, height: 756 }, deviceScaleFactor: 1200 / 1440 })
+  const context = await browser.newContext({
+    viewport: { width: 1440, height: 756 },
+    deviceScaleFactor: 1200 / 1440,
+  })
   const page = await context.newPage()
   await page.goto('/operations/divisions/medications')
   await settle(page)

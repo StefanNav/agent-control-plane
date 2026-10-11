@@ -1,0 +1,1345 @@
+import { expect, test, type Page } from '@playwright/test'
+import { CHAPTERS } from '../../src/prototype/tour/script'
+import { typographic } from '../../src/prototype/tour/typographic'
+import { collectErrors } from './console'
+
+// The silent voice makes each beat a tenth of its clip; reduced motion makes the cursor jump.
+const AT_MED_REC = /\/operations\/agents\/med-rec\?tour=open$/
+const CHAPTER_MS = 10_000
+
+const INTAKE = '/inventory/agents/med-rec/onboarding/intake'
+const TOOLS = '/inventory/agents/med-rec/onboarding/tools'
+const PACKET = '/portfolio/reviews/med-rec'
+const RECORD = '/inventory/agents/med-rec'
+const SCORECARD = '/operations/agents/med-rec?tab=scorecard'
+const SIGN = '/inventory/privileges/prv-0142/sign'
+const EPIC = '/epic'
+const MED_REC = '/operations/agents/med-rec'
+const REVIEWERS = '/operations/reviewers'
+
+const bar = (page: Page) => page.getByRole('complementary', { name: 'Tour' })
+const summary = (page: Page) => page.locator('[data-story-target="agent-summary"]')
+const welcome = (page: Page) => page.getByRole('region', { name: 'Welcome to Agent Control Plane' })
+
+/** What the tour types into a field, from the script. */
+function typedInto(target: string): string {
+  for (const chapter of CHAPTERS)
+    for (const step of chapter.steps)
+      for (const beat of step.beats)
+        for (const action of [...(beat.actions ?? []), ...(beat.after ?? [])])
+          if (action.kind === 'type' && action.target === target) return action.text
+  throw new Error(`The tour types nothing into ${target}`)
+}
+
+/**
+ * Open a chapter from a link and wait for its first screen, paused. A link that loads the page
+ * shows the welcome, pointing at the bar's Play tour.
+ */
+async function openChapter(page: Page, chapter: string, first: RegExp) {
+  await page.goto(`/?tour=${chapter}&tourVoice=silent`)
+  await expect(page).toHaveURL(first)
+  await expect(welcome(page)).toBeVisible()
+}
+
+/** Press the bar's Play tour, as a visitor does: on a link's first screen, the welcome goes too. */
+async function play(page: Page) {
+  await bar(page).getByRole('button', { name: 'Play tour' }).click()
+  await expect(welcome(page)).toBeHidden()
+}
+
+/** Open the chapter from a link and press Play. */
+async function playOpening(page: Page) {
+  await openChapter(page, 'open', /\/operations\?tour=open$/)
+  await play(page)
+}
+
+/**
+ * Which screen a line plays over (Ruling 17): the pathname, and any query the route sets, sampled
+ * while the bar's caption is that line. Its clicks come at the end of the line, so the screen holds
+ * while the line is spoken.
+ */
+async function expectLineOver(page: Page, line: string, route: string) {
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          ([start, want]) => {
+            const caption = document.querySelector('[data-tour="bar"] p')?.textContent ?? ''
+            if (!caption.startsWith(start)) return `caption: ${caption}`
+            const wanted = new URL(want, location.origin)
+            const params = new URLSearchParams(location.search)
+            const there =
+              location.pathname === wanted.pathname &&
+              [...wanted.searchParams].every(([name, value]) => params.get(name) === value)
+            return there ? want : location.pathname + location.search
+          },
+          [typographic(line), route] as const,
+        ),
+      { message: line, timeout: CHAPTER_MS, intervals: [25] },
+    )
+    .toBe(route)
+}
+
+/**
+ * A moment on screen: an element by its target, on a pathname, with a value or some text, while the
+ * bar shows this many skipped actions.
+ */
+interface Moment {
+  target: string
+  pathname?: string
+  value?: string
+  text?: string[]
+  skipped?: number
+}
+
+/**
+ * Watch for a moment that may last only until the next step loads: from now on, every change to the
+ * page is checked (a MutationObserver sees each render, however brief). `seen()` checks that it
+ * happened; `heldMs()` waits for it to end and says how long it lasted.
+ */
+async function watchFor(page: Page, moment: Moment) {
+  const seenMark = `data-tour-seen-${moment.target}`
+  const heldMark = `data-tour-held-${moment.target}`
+  await page.evaluate(
+    ([seenAttribute, heldAttribute, m]) => {
+      const root = document.documentElement
+      const look = () => {
+        if (m.pathname !== undefined && location.pathname !== m.pathname) return false
+        const skipped = document.querySelector('[data-tour="bar"]')?.getAttribute('data-skipped')
+        if (m.skipped !== undefined && skipped !== String(m.skipped)) return false
+        const el = document.querySelector<HTMLElement>(`[data-story-target="${m.target}"]`)
+        if (!el) return false
+        if (m.value !== undefined && (el as HTMLSelectElement).value !== m.value) return false
+        return (m.text ?? []).every((t) => (el.textContent ?? '').includes(t))
+      }
+      let since: number | null = null
+      const observer = new MutationObserver(() => check())
+      const check = () => {
+        const now = look()
+        if (now && since === null) {
+          since = performance.now()
+          root.setAttribute(seenAttribute, '')
+        } else if (!now && since !== null) {
+          observer.disconnect()
+          root.setAttribute(heldAttribute, String(Math.round(performance.now() - since)))
+        }
+      }
+      observer.observe(document, {
+        subtree: true,
+        childList: true,
+        characterData: true,
+        attributes: true,
+      })
+      check()
+    },
+    [seenMark, heldMark, moment] as const,
+  )
+  const html = page.locator('html')
+  return {
+    seen: () =>
+      expect(html, `${moment.target} was never seen`).toHaveAttribute(seenMark, '', {
+        timeout: 2 * CHAPTER_MS,
+      }),
+    heldMs: async () => {
+      await expect(html, `${moment.target} never ended`).toHaveAttribute(heldMark, /^\d+$/, {
+        timeout: 2 * CHAPTER_MS,
+      })
+      return Number(await html.getAttribute(heldMark))
+    },
+  }
+}
+
+/** One read of the page and the saved demo, taken at a single moment. */
+interface Sample {
+  /** The chapter the URL names while the bar is open; null once the tour has closed. */
+  chapter: string | null
+  caption: string
+  pathname: string
+  skipped: string | null
+  /** The targets the tour has outlined. */
+  outlined: string[]
+  /** Each asked-for target's text, or null when it isn't on the page. */
+  text: Record<string, string | null>
+  /** Each asked-for target's top and bottom on screen, or null when it isn't on the page. */
+  box: Record<string, { top: number; bottom: number } | null>
+  /** The band a target shows in: from under the app's top bar (or the window's top) to the tour bar. */
+  band: { top: number; bottom: number }
+  /** Med Rec Agent in the saved demo, and its history as `action · who · reason`. */
+  medRec: { lifecycle: string; pausedBy: string | null; pausedAt: string | null; history: string[] }
+}
+
+async function sample(page: Page, targets: string[] = []): Promise<Sample> {
+  return page.evaluate((names) => {
+    interface Saved {
+      state: {
+        agents: {
+          id: string
+          code: string
+          lifecycle: string
+          pausedBy?: string
+          pausedAt?: string
+        }[]
+        audit: { action: string; who: string; target: string; reason?: string }[]
+      }
+    }
+    const bar = document.querySelector('[data-tour="bar"]')
+    const { state } = JSON.parse(localStorage.getItem('acp-demo') ?? 'null') as Saved
+    const agent = state.agents.find((a) => a.id === 'med-rec')!
+    const targets = [...document.querySelectorAll<HTMLElement>('[data-story-target]')]
+    return {
+      chapter: bar ? new URLSearchParams(location.search).get('tour') : null,
+      caption: bar?.querySelector('p')?.textContent ?? '',
+      pathname: location.pathname,
+      skipped: bar?.getAttribute('data-skipped') ?? null,
+      outlined: targets
+        .filter((el) => getComputedStyle(el).outlineStyle === 'solid')
+        .map((el) => el.dataset.storyTarget!),
+      text: Object.fromEntries(
+        names.map((name) => [
+          name,
+          document.querySelector(`[data-story-target="${name}"]`)?.textContent ?? null,
+        ]),
+      ),
+      box: Object.fromEntries(
+        names.map((name) => {
+          const rect = document
+            .querySelector(`[data-story-target="${name}"]`)
+            ?.getBoundingClientRect()
+          return [name, rect ? { top: rect.top, bottom: rect.bottom } : null]
+        }),
+      ),
+      band: {
+        top: Math.max(0, document.querySelector('header')?.getBoundingClientRect().bottom ?? 0),
+        bottom: bar?.getBoundingClientRect().top ?? innerHeight,
+      },
+      medRec: {
+        lifecycle: agent.lifecycle,
+        pausedBy: agent.pausedBy ?? null,
+        pausedAt: agent.pausedAt ?? null,
+        history: state.audit
+          .filter((a) => a.target === agent.code)
+          .map((a) => `${a.action} · ${a.who} · ${a.reason ?? ''}`),
+      },
+    }
+  }, targets)
+}
+
+/**
+ * Check a moment while a line plays: `read` turns each sample taken under that line's caption (the
+ * bar open, the URL naming the chapter) into words, until they are `want`. Samples taken anywhere
+ * else read as where the tour was, so a later step, or the seed the tour resets to, can't pass it.
+ */
+async function expectUnder(
+  page: Page,
+  at: { chapter: string; line: string; targets?: string[] },
+  read: (s: Sample) => string,
+  want: string,
+) {
+  await expect
+    .poll(
+      async () => {
+        const s = await sample(page, at.targets)
+        if (s.chapter !== at.chapter || !s.caption.startsWith(typographic(at.line)))
+          return `not under "${at.line}": ${s.chapter} · ${s.caption}`
+        return read(s)
+      },
+      { message: at.line, timeout: CHAPTER_MS, intervals: [25] },
+    )
+    .toBe(want)
+}
+
+/**
+ * Note where a target is at the moment the tour clicks it: `clear` when all of it shows above the bar,
+ * otherwise how far under the bar it reaches. The returned check waits for that click.
+ */
+async function watchClickOn(page: Page, target: string) {
+  const mark = `data-tour-click-${target}`
+  await page.evaluate(
+    ([name, attribute]) => {
+      document.addEventListener(
+        'click',
+        (event) => {
+          const el = (event.target as Element | null)?.closest(`[data-story-target="${name}"]`)
+          const bar = document.querySelector('[data-tour="bar"]')
+          if (!el || !bar) return
+          const under = el.getBoundingClientRect().bottom - bar.getBoundingClientRect().top
+          const where = under <= 0 ? 'clear' : `${Math.ceil(under)} px under the bar`
+          document.documentElement.setAttribute(attribute, where)
+        },
+        true,
+      )
+    },
+    [target, mark] as const,
+  )
+  return () =>
+    expect(page.locator('html'), `${target} when clicked`).toHaveAttribute(mark, 'clear', {
+      timeout: 2 * CHAPTER_MS,
+    })
+}
+
+/** The opening has clicked its way to the Med Rec Agent and outlined its summary, skipping nothing. */
+async function expectAtMedRec(page: Page) {
+  await expect(page).toHaveURL(AT_MED_REC, { timeout: CHAPTER_MS })
+  await expect(summary(page)).toBeVisible()
+  // The outline is the chapter's last action, so by now every action has run or been skipped.
+  await expect(summary(page)).toHaveCSS('outline-style', 'solid')
+  await expect(bar(page)).toHaveAttribute('data-skipped', '0')
+}
+
+test.beforeEach(async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+})
+
+test('the opening clicks from the board to the Med Rec Agent, then runs on into the problem', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await playOpening(page)
+  await expectLineOver(page, "You can't watch them all", '/operations')
+  await expectLineOver(page, 'In Medications', '/operations/divisions/medications')
+  await expectLineOver(page, 'This one drafts', '/operations/agents/med-rec')
+  await expectAtMedRec(page)
+  await expect(page).toHaveURL(/\/tour\/problem\?tour=problem$/, { timeout: CHAPTER_MS })
+  await expect(bar(page)).toBeVisible()
+  expect(errors).toEqual([])
+})
+
+test('Resume tour after a take-over closes what the visitor opened (Review focus 3)', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await playOpening(page)
+  await expect(page).toHaveURL(AT_MED_REC, { timeout: CHAPTER_MS })
+  await page.getByRole('button', { name: 'Controls' }).click()
+  await expect(bar(page)).toContainText('Paused. You’re driving.')
+  await page.getByRole('menuitem', { name: /Pause this agent…/ }).click()
+  await expect(page.getByRole('dialog', { name: 'Pause Med Rec Agent?' })).toBeVisible()
+  await bar(page).getByRole('button', { name: 'Resume tour' }).click()
+  // Hold the restarted step on its first screen.
+  await bar(page).getByRole('button', { name: 'Pause tour' }).click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(page).toHaveURL(/\/operations\?tour=open$/)
+  expect(errors).toEqual([])
+})
+
+test('a saved state with Med Rec retired still tours Med Rec live (Review focus 5)', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await page.goto('/inventory')
+  await page.getByRole('button', { name: /^Viewing as/ }).click()
+  await page.getByRole('menuitem', { name: /Dana/ }).click()
+  await page.goto('/inventory')
+  await page.getByRole('table', { name: 'Agents' }).getByText('Med Rec Agent').click()
+  await page
+    .getByRole('complementary', { name: 'Selected record' })
+    .getByRole('button', { name: 'Disable or retire…' })
+    .click()
+  const dialog = page.getByRole('dialog', { name: 'Disable or retire Med Rec Agent' })
+  await dialog.getByRole('radio', { name: /Retire for good/ }).check()
+  await dialog.getByRole('textbox', { name: /Type the agent’s name/ }).fill('Med Rec Agent')
+  await dialog.getByRole('textbox', { name: /Reason/ }).fill('Replaced by a new build.')
+  await dialog.getByRole('button', { name: 'Retire agent' }).click()
+  await expect(dialog).toBeHidden()
+  await page.goto('/operations/agents/med-rec')
+  await expect(page.getByRole('button', { name: 'Controls' })).toHaveCount(0)
+
+  await playOpening(page)
+  // Checked in one sample while the opening is still on: once the tour closes it resets the demo,
+  // which would bring Controls back for the wrong reason.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const touring =
+            document.querySelector('[data-tour="bar"]') !== null &&
+            new URLSearchParams(location.search).get('tour') === 'open'
+          if (!touring) return 'not in the opening'
+          if (location.pathname !== '/operations/agents/med-rec') return location.pathname
+          const controls = [...document.querySelectorAll('button')].some(
+            (b) => b.textContent?.trim() === 'Controls',
+          )
+          return controls ? 'Controls' : 'no Controls'
+        }),
+      { timeout: CHAPTER_MS, intervals: [25] },
+    )
+    .toBe('Controls')
+  await expectAtMedRec(page)
+  expect(errors).toEqual([])
+})
+
+test('onboarding names Sam, then records the board’s decision on Med Rec’s record', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  const reason = typedInto('packet-reason')
+  await openChapter(
+    page,
+    'onboarding',
+    /\/inventory\/agents\/med-rec\/onboarding\/intake\?tour=onboarding$/,
+  )
+  // Sam is chosen in place, and the step moves on soon after.
+  const samChosen = await watchFor(page, { target: 'intake-tech-owner', value: 'sam' })
+  // The record shows the decision only until the next chapter loads its own hospital. It is the
+  // chapter's last screen, so by then every action has run or been skipped.
+  const decided = await watchFor(page, {
+    target: 'record-decision',
+    pathname: RECORD,
+    text: ['Approved with conditions', reason],
+    skipped: 0,
+  })
+  await play(page)
+  await expectLineOver(page, 'It starts on October first', INTAKE)
+  await expectLineOver(page, 'No agent goes live', INTAKE)
+  await samChosen.seen()
+  await expectLineOver(page, 'Marcus writes down', TOOLS)
+  await expectLineOver(page, 'And each one is tested', TOOLS)
+  await expectLineOver(page, "Dr. Lee's board", PACKET)
+  // The record holds before the next chapter loads (Ruling 22): still under the line's caption,
+  // for the 1500 ms wait.
+  await expectLineOver(page, "Dr. Lee's board", RECORD)
+  await decided.seen()
+  expect(await decided.heldMs()).toBeGreaterThanOrEqual(1000)
+  expect(errors).toEqual([])
+})
+
+test('earning trust reads the scorecard, then Priya signs admission med rec to Draft with a reason', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  const reason = typedInto('sign-reason')
+  await openChapter(
+    page,
+    'earning-trust',
+    /\/operations\/agents\/med-rec\?tab=scorecard&tour=earning-trust$/,
+  )
+  await play(page)
+  await expectLineOver(page, 'For three weeks', SCORECARD)
+  await expectLineOver(page, 'It meets two targets', SIGN)
+  await expectLineOver(page, 'Now the agent drafts', SIGN)
+  // Sampled while the last line plays: once the tour ends it resets the demo, whose seed has this
+  // privilege signed too.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          ([start, typed]) => {
+            const caption = document.querySelector('[data-tour="bar"] p')?.textContent ?? ''
+            if (!caption.startsWith(start)) return `caption: ${caption}`
+            const signature =
+              document.querySelector('[data-story-target="sign-signature"]')?.textContent ?? ''
+            const level = document.querySelector('main [data-state="current"]')?.textContent ?? ''
+            const skipped = document
+              .querySelector('[data-tour="bar"]')
+              ?.getAttribute('data-skipped')
+            return [
+              signature.includes('Signed by Priya') ? 'signed by Priya' : 'not signed',
+              signature.includes(typed) ? 'with the reason' : 'without the reason',
+              `current level ${level}`,
+              `skipped ${skipped}`,
+            ].join(' · ')
+          },
+          ['Now the agent drafts', reason] as const,
+        ),
+      { timeout: CHAPTER_MS, intervals: [25] },
+    )
+    .toBe('signed by Priya · with the reason · current level CurrentDraft · skipped 0')
+  // Then on into supervising, in the medical record.
+  await expect(page).toHaveURL(/\/epic\?tour=supervising$/, { timeout: CHAPTER_MS })
+  await expect(bar(page)).toBeVisible()
+  expect(errors).toEqual([])
+})
+
+test('supervising: Ana flags a draft, Marcus pauses Med Rec, Priya co-signs its resume, then reviewer behaviour', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  const reason = typedInto('resume-reason')
+  await openChapter(page, 'supervising', /\/epic\?tour=supervising$/)
+  // Deferred from 10.6: a tall dialog, or a panel low on the page, must not put its button under the bar.
+  const confirmClear = await watchClickOn(page, 'pause-confirm')
+  const approveClear = await watchClickOn(page, 'resume-approve')
+  await play(page)
+  await expectLineOver(page, 'Which brings us back', EPIC)
+  // Line 2 ends on Send flag, and holds there before Marcus's step loads its own hospital.
+  await expectUnder(
+    page,
+    { chapter: 'supervising', line: 'Ana reviews', targets: ['epic-flag', 'epic-agent-panel'] },
+    (s) =>
+      [
+        s.pathname,
+        s.text['epic-flag']?.startsWith('Flagged · ') ? 'flagged' : 'not flagged',
+        s.text['epic-agent-panel']?.includes('sent to Marcus') ? 'sent to Marcus' : 'not sent',
+      ].join(' · '),
+    `${EPIC} · flagged · sent to Marcus`,
+  )
+  await expectLineOver(page, 'Marcus pauses it', MED_REC)
+  // Paused by the tour's click at 09:52 (the resume step's own hospital was paused at 09:47).
+  await expectUnder(
+    page,
+    { chapter: 'supervising', line: 'Before confirming' },
+    (s) =>
+      [s.pathname, s.medRec.lifecycle, s.medRec.pausedBy, s.medRec.pausedAt?.slice(11, 16)].join(
+        ' · ',
+      ),
+    `${MED_REC} · paused · marcus · 09:52`,
+  )
+  await confirmClear()
+  // Line 5 ends on Approve: live again, with Priya's approval and reason in its history. The hold
+  // outlines the header's status and brings it into view, between the top bar and the tour bar
+  // (Ruling 25).
+  await expectUnder(
+    page,
+    { chapter: 'supervising', line: 'By noon', targets: ['agent-status'] },
+    (s) => {
+      const status = s.box['agent-status']
+      const inView = status && status.top >= s.band.top && status.bottom <= s.band.bottom
+      return [
+        s.pathname,
+        s.medRec.lifecycle,
+        s.medRec.history.includes(`Resumed · priya · ${reason}`)
+          ? 'resumed by Priya with the reason'
+          : 'not resumed by Priya',
+        `status ${s.text['agent-status']}`,
+        `outlined ${s.outlined.join(', ')}`,
+        inView ? 'in view' : `out of view ${JSON.stringify(status)} ${JSON.stringify(s.band)}`,
+      ].join(' · ')
+    },
+    `${MED_REC} · live · resumed by Priya with the reason · status Draft · since 06 Nov · outlined agent-status · in view`,
+  )
+  await approveClear()
+  await expectLineOver(page, "There's also a quieter risk", REVIEWERS)
+  await expectUnder(
+    page,
+    { chapter: 'supervising', line: 'On this unit' },
+    (s) => `${s.pathname} · outlined ${s.outlined.join(', ')}`,
+    `${REVIEWERS} · outlined reviewers-check`,
+  )
+  await expectUnder(
+    page,
+    { chapter: 'supervising', line: "It's shown by unit" },
+    (s) => `${s.pathname} · outlined ${s.outlined.join(', ')} · skipped ${s.skipped}`,
+    `${REVIEWERS} · outlined reviewers-by-unit · skipped 0`,
+  )
+  // Then on into the step-down.
+  await expect(page).toHaveURL(/\/operations\/agents\/med-rec\?tour=step-down$/, {
+    timeout: CHAPTER_MS,
+  })
+  expect(errors).toEqual([])
+})
+
+test('trust drops: Med Rec shows its step-down notice, then the tour runs on into the decisions', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'step-down', /\/operations\/agents\/med-rec\?tour=step-down$/)
+  await play(page)
+  // The outline brings the notice into view, between the top bar and the tour bar.
+  await expectUnder(
+    page,
+    { chapter: 'step-down', line: 'And trust can go down', targets: ['stepdown-notice'] },
+    (s) => {
+      const notice = s.box['stepdown-notice']
+      const inView = notice && notice.top >= s.band.top && notice.bottom <= s.band.bottom
+      return [
+        s.pathname,
+        s.text['stepdown-notice']?.includes('stepped down from Draft to Shadow')
+          ? 'stepped down'
+          : 'no notice',
+        `outlined ${s.outlined.join(', ')}`,
+        inView ? 'in view' : `out of view ${JSON.stringify(notice)} ${JSON.stringify(s.band)}`,
+      ].join(' · ')
+    },
+    `${MED_REC} · stepped down · outlined stepdown-notice · in view`,
+  )
+  await expectUnder(
+    page,
+    { chapter: 'step-down', line: 'Nothing climbs back up' },
+    (s) => `${s.pathname} · skipped ${s.skipped}`,
+    `${MED_REC} · skipped 0`,
+  )
+  await expect(page).toHaveURL(/\/tour\/decisions\?tour=decisions$/, { timeout: CHAPTER_MS })
+  await expect(bar(page)).toBeVisible()
+  expect(errors).toEqual([])
+})
+
+/**
+ * One read of the tour on a prototype page (an interlude or the landing page), taken at a single
+ * moment. Unlike `sample`, it reads nothing from the saved demo: an interlude loads no scenario, so
+ * a fresh browser may have none saved.
+ */
+interface Glance {
+  /** The chapter the URL names while the bar is open; null once the tour has closed. */
+  chapter: string | null
+  caption: string
+  pathname: string
+  skipped: string | null
+  /** The interlude's items on show, in page order, and the ones outlined as current. */
+  shown: string[]
+  current: string[]
+  /**
+   * Current items not in view above the tour bar: all of one, or the top of one taller than the
+   * window's room.
+   */
+  unseen: string[]
+  /** The targets the tour has outlined. */
+  outlined: string[]
+  /** The tour card's text, or null when none is up. */
+  card: string | null
+}
+
+async function glance(page: Page): Promise<Glance> {
+  return page.evaluate(() => {
+    const bar = document.querySelector('[data-tour="bar"]')
+    const items = [...document.querySelectorAll<HTMLElement>('main [data-item]')]
+    const solid = (el: Element) => getComputedStyle(el).outlineStyle === 'solid'
+    return {
+      chapter: bar ? new URLSearchParams(location.search).get('tour') : null,
+      caption: bar?.querySelector('p')?.textContent ?? '',
+      pathname: location.pathname,
+      skipped: bar?.getAttribute('data-skipped') ?? null,
+      shown: items
+        .filter((el) => getComputedStyle(el).visibility === 'visible')
+        .map((el) => el.dataset.item!),
+      current: items.filter(solid).map((el) => el.dataset.item!),
+      unseen: items.filter(solid).flatMap((el) => {
+        const box = el.getBoundingClientRect()
+        const floor = bar?.getBoundingClientRect().top ?? innerHeight
+        const fits = box.height <= floor
+        const seen = box.top >= 0 && (fits ? box.bottom <= floor : box.top < floor)
+        return seen ? [] : [el.dataset.item!]
+      }),
+      outlined: [...document.querySelectorAll<HTMLElement>('[data-story-target]')]
+        .filter(solid)
+        .map((el) => el.dataset.storyTarget!),
+      card: document.querySelector('[data-tour="card"]')?.textContent ?? null,
+    }
+  })
+}
+
+/** As `expectUnder`, for a glance: only glances taken under that line's caption count. */
+async function expectGlance(
+  page: Page,
+  at: { chapter: string; line: string },
+  read: (g: Glance) => string,
+  want: string,
+) {
+  await expect
+    .poll(
+      async () => {
+        const g = await glance(page)
+        if (g.chapter !== at.chapter || !g.caption.startsWith(typographic(at.line)))
+          return `not under "${at.line}": ${g.chapter} · ${g.caption}`
+        return read(g)
+      },
+      { message: at.line, timeout: CHAPTER_MS, intervals: [25] },
+    )
+    .toBe(want)
+}
+
+/**
+ * From now on, note each target the tour outlines, in order (a MutationObserver sees every render,
+ * however brief); the returned read gives the list so far.
+ */
+async function watchOutlines(page: Page): Promise<() => Promise<string[]>> {
+  await page.evaluate(() => {
+    const seen: string[] = []
+    Reflect.set(window, 'tourOutlines', seen)
+    const look = () => {
+      for (const el of document.querySelectorAll<HTMLElement>('[data-story-target]')) {
+        const target = el.dataset.storyTarget!
+        if (getComputedStyle(el).outlineStyle === 'solid' && seen.at(-1) !== target)
+          seen.push(target)
+      }
+    }
+    new MutationObserver(look).observe(document, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+      attributes: true,
+    })
+    look()
+  })
+  return () => page.evaluate(() => Reflect.get(window, 'tourOutlines') as string[])
+}
+
+/** An interlude's items: which show and which are current. */
+const items = (g: Glance) =>
+  `shown ${g.shown.join(', ') || 'none'} · current ${g.current.join(', ') || 'none'}`
+
+/** Which research excerpt the card shows, by the start of its quote. */
+function excerpt(card: string | null): string {
+  if (card === null) return 'no card'
+  if (card.startsWith('Plan-level oversight')) return 'R1'
+  if (card.startsWith('Clinicians show strong automation bias')) return 'R2'
+  if (card.startsWith('start in a shadow-like mode')) return 'R3'
+  return `another card: ${card}`
+}
+
+test('the problem: its three lines come in as they are named, with the research cards', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'problem', /\/tour\/problem\?tour=problem$/)
+  // Held on the first line: only its item, current.
+  await expect.poll(async () => items(await glance(page))).toBe('shown act · current act')
+  await play(page)
+  await expectGlance(
+    page,
+    { chapter: 'problem', line: 'The usual safety net' },
+    items,
+    'shown act, approve · current approve',
+  )
+  // The line's two excerpts: the first while it plays, the second once it ends, for the next line.
+  await expectGlance(
+    page,
+    { chapter: 'problem', line: "But that doesn't hold up well" },
+    (g) => excerpt(g.card),
+    'R1',
+  )
+  await expectGlance(
+    page,
+    { chapter: 'problem', line: 'And with dozens of agents' },
+    (g) => excerpt(g.card),
+    'R2',
+  )
+  await expectGlance(
+    page,
+    { chapter: 'problem', line: 'The thing is' },
+    (g) => `${items(g)} · ${excerpt(g.card)}`,
+    'shown act, approve, trust · current trust · R3',
+  )
+  await expectGlance(
+    page,
+    { chapter: 'problem', line: 'So I built the whole product' },
+    (g) => `${items(g)} · ${excerpt(g.card)} · skipped ${g.skipped}`,
+    'shown act, approve, trust · current trust · no card · skipped 0',
+  )
+  // Then on into the people, on the landing page.
+  await expect(page).toHaveURL(/\/\?tour=people$/, { timeout: CHAPTER_MS })
+  expect(errors).toEqual([])
+})
+
+test('who it’s for: the story cards, then each person’s card as they are named', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'people', /\/\?tour=people$/)
+  const outlines = await watchOutlines(page)
+  await play(page)
+  const outlined = (g: Glance) => `${g.pathname} · outlined ${g.outlined.join(', ')}`
+  const under = (line: string) => ({ chapter: 'people', line })
+  await expectGlance(page, under('Seven people use it'), outlined, '/ · outlined people-cards')
+  await expectGlance(page, under('Marcus owns'), outlined, '/ · outlined people-marcus')
+  await expectGlance(page, under('Priya is'), outlined, '/ · outlined people-priya')
+  await expectGlance(page, under('Pharmacists like Ana'), outlined, '/ · outlined people-ana')
+  await expectGlance(
+    page,
+    under('And Jordan'),
+    (g) => `${outlined(g)} · skipped ${g.skipped}`,
+    '/ · outlined people-jordan · skipped 0',
+  )
+  // Then on into onboarding.
+  await expect(page).toHaveURL(
+    /\/inventory\/agents\/med-rec\/onboarding\/intake\?tour=onboarding$/,
+    { timeout: CHAPTER_MS },
+  )
+  // One line names three people, outlined in turn. The silent voice ends the line as the last
+  // outline lands, so that one shows only for a moment: the order is read from the watch.
+  expect((await outlines()).filter((target) => target.startsWith('people-'))).toEqual(
+    ['cards', 'marcus', 'priya', 'dana', 'sam', 'drlee', 'ana', 'jordan'].map((p) => `people-${p}`),
+  )
+  expect(errors).toEqual([])
+})
+
+test('three key decisions: each comes in as it is named, in view, with Decision 2’s explorations', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'decisions', /\/tour\/decisions\?tour=decisions$/)
+  // Held on the first line, "Three decisions shaped all of this": the page's title alone.
+  await expect.poll(async () => items(await glance(page))).toBe('shown none · current none')
+  await play(page)
+  const under = (line: string) => ({ chapter: 'decisions', line })
+  /** The items, and whether the current one has been brought into view above the bar. */
+  const inView = (g: Glance) =>
+    `${items(g)} · ${g.unseen.length > 0 ? `out of view ${g.unseen.join(', ')}` : 'in view'}`
+  await expectGlance(page, under('I could have kept'), inView, 'shown d1 · current d1 · in view')
+  await expectGlance(
+    page,
+    under('Second, how to protect'),
+    inView,
+    'shown d1, d2 · current d2 · in view',
+  )
+  await expectGlance(
+    page,
+    under('I explored five visual directions'),
+    inView,
+    'shown d1, d2, directions · current directions · in view',
+  )
+  await expectGlance(
+    page,
+    under('So I judged every direction'),
+    inView,
+    'shown d1, d2, directions, judged · current judged · in view',
+  )
+  await expectGlance(
+    page,
+    under('One person could resume'),
+    inView,
+    'shown d1, d2, directions, judged, d3 · current d3 · in view',
+  )
+  // By its end, all three decisions and both groups of explorations are on show.
+  await expectGlance(
+    page,
+    under('Instead, stopping takes one person'),
+    (g) => `${items(g)} · skipped ${g.skipped}`,
+    'shown d1, d2, directions, judged, d3 · current d3 · skipped 0',
+  )
+  await expect(page).toHaveURL(/\/tour\/process\?tour=process$/, { timeout: CHAPTER_MS })
+  expect(errors).toEqual([])
+})
+
+test('a decision’s screen opens larger: the tour pauses, without a take-over, and plays on from there', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  const lines = CHAPTERS.find((c) => c.id === 'decisions')!.steps.flatMap((step) =>
+    step.beats.map((beat) => typographic(beat.text)),
+  )
+  await openChapter(page, 'decisions', /\/tour\/decisions\?tour=decisions$/)
+  await play(page)
+  await expectGlance(
+    page,
+    { chapter: 'decisions', line: 'I could have kept' },
+    items,
+    'shown d1 · current d1',
+  )
+  await page.getByRole('button', { name: /^The sign page: .*, open larger$/ }).click()
+  const dialog = page.getByRole('dialog', { name: 'Signing a privilege, as Priya' })
+  await expect(dialog.getByRole('img')).toHaveJSProperty('naturalWidth', 1440)
+  // Paused as by its own Pause button: Play, not "Resume tour", which would restart the step.
+  await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeVisible()
+  // Held on the line it was paused in, before or just after "Instead, each task earns…".
+  const held = (await glance(page)).caption
+  const next = lines[lines.indexOf(held) + 1]
+  expect([lines[2], lines[3]]).toContain(held)
+  // The dialog owns the keyboard (Ruling 32): the tour's keys step and play nothing.
+  await expect(dialog.getByRole('img')).toBeFocused()
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('Space')
+  await expect(dialog).toBeVisible()
+  await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeVisible()
+  expect((await glance(page)).caption).toBe(held)
+  await dialog.getByRole('button', { name: 'Close' }).click()
+  await expect(dialog).toHaveCount(0)
+  // Play carries on: the held line ends, and the next one follows.
+  await play(page)
+  await expect
+    .poll(async () => (await glance(page)).caption, { timeout: CHAPTER_MS, intervals: [25] })
+    .toBe(next)
+  expect(errors).toEqual([])
+})
+
+test('a click on the decisions page pauses the tour, without a take-over, and Play carries on from the line (Ruling 41)', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  const lines = CHAPTERS.find((c) => c.id === 'decisions')!.steps.flatMap((step) =>
+    step.beats.map((beat) => typographic(beat.text)),
+  )
+  /** From now on, every caption the bar shows, in order (a MutationObserver sees each). */
+  const watchCaptions = async () => {
+    await page.evaluate(() => {
+      const seen: string[] = []
+      Reflect.set(window, 'tourCaptions', seen)
+      const look = () => {
+        const caption = document.querySelector('[data-tour="bar"] p')?.textContent ?? ''
+        if (seen.at(-1) !== caption) seen.push(caption)
+      }
+      new MutationObserver(look).observe(document, {
+        subtree: true,
+        childList: true,
+        characterData: true,
+      })
+      look()
+    })
+    return () => page.evaluate(() => Reflect.get(window, 'tourCaptions') as string[])
+  }
+  /** Paused as by the bar's own Pause: Play tour, and nothing says the visitor is driving. */
+  const expectPaused = async () => {
+    await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeVisible()
+    await expect(bar(page)).not.toContainText('Paused. You’re driving.')
+  }
+  /** Play, then the line held carries on: the next one follows, and the step's first never comes back. */
+  const expectCarriesOn = async (held: string) => {
+    const captions = await watchCaptions()
+    await play(page)
+    await expect
+      .poll(async () => (await glance(page)).caption, { timeout: CHAPTER_MS, intervals: [25] })
+      .toBe(lines[lines.indexOf(held) + 1])
+    expect(await captions()).not.toContain(lines[0])
+  }
+
+  await openChapter(page, 'decisions', /\/tour\/decisions\?tour=decisions$/)
+  await play(page)
+  await expectGlance(
+    page,
+    { chapter: 'decisions', line: 'I could have kept' },
+    items,
+    'shown d1 · current d1',
+  )
+  // A click on the page's own text: paused where it was.
+  await page.locator('[data-item="d1"] h2').click()
+  await expectPaused()
+  const held = (await glance(page)).caption
+  expect(lines.indexOf(held)).toBeGreaterThan(0)
+  await expectCarriesOn(held)
+
+  // A decision's screen, opened larger: the same pause, and the same carrying on once it closes.
+  await page.getByRole('button', { name: /^The sign page: .*, open larger$/ }).click()
+  const dialog = page.getByRole('dialog', { name: 'Signing a privilege, as Priya' })
+  await expect(dialog).toBeVisible()
+  await expectPaused()
+  const heldAgain = (await glance(page)).caption
+  await dialog.getByRole('button', { name: 'Close' }).click()
+  await expect(dialog).toHaveCount(0)
+  await expectPaused()
+  await expectCarriesOn(heldAgain)
+  expect(errors).toEqual([])
+})
+
+test('a decision reached before steps back to text2, and its meta text stays meta', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'decisions', /\/tour\/decisions\?tour=decisions$/)
+  await play(page)
+  await expectGlance(
+    page,
+    { chapter: 'decisions', line: 'Second, how to protect' },
+    items,
+    'shown d1, d2 · current d2',
+  )
+  await bar(page).getByRole('button', { name: 'Pause tour' }).click()
+  /** Each part of a decision by the token its colour comes from. */
+  const colours = (id: string) =>
+    page.evaluate((item) => {
+      const token = (name: string) => {
+        const probe = document.createElement('span')
+        probe.style.color = `var(${name})`
+        document.body.append(probe)
+        const colour = getComputedStyle(probe).color
+        probe.remove()
+        return colour
+      }
+      const names = new Map(['--cs-meta', '--cs-text2', '--cs-ink'].map((n) => [token(n), n]))
+      const el = document.querySelector(`[data-item="${item}"]`)!
+      const chosen = [...el.querySelectorAll('li')].find((li) =>
+        li.textContent?.endsWith('Chosen'),
+      )!
+      const parts = {
+        label: el.querySelector('span'),
+        title: el.querySelector('h2'),
+        option: el.querySelector('li'),
+        chosen,
+        chosenWord: chosen.lastElementChild,
+        tradeoff: [...el.querySelectorAll('p')].find((p) => p.textContent?.startsWith('Trade-off')),
+      }
+      return Object.entries(parts)
+        .map(([part, node]) => {
+          const colour = getComputedStyle(node!).color
+          return `${part} ${names.get(colour) ?? colour}`
+        })
+        .join(' · ')
+    }, id)
+  expect(await colours('d1')).toBe(
+    'label --cs-meta · title --cs-text2 · option --cs-text2 · chosen --cs-text2 · chosenWord --cs-meta · tradeoff --cs-text2',
+  )
+  expect(await colours('d2')).toBe(
+    'label --cs-meta · title --cs-ink · option --cs-text2 · chosen --cs-ink · chosenWord --cs-meta · tradeoff --cs-text2',
+  )
+  expect(errors).toEqual([])
+})
+
+test('how I got here: Research, then the documents, then the design and the build', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'process', /\/tour\/process\?tour=process$/)
+  await expect.poll(async () => items(await glance(page))).toBe('shown research · current research')
+  await play(page)
+  const documents = ['vision', 'prd', 'roadmap', 'epics'].join(', ')
+  const making = ['brief', 'explorations', 'frames', 'build'].join(', ')
+  await expectGlance(
+    page,
+    { chapter: 'process', line: 'That shaped the vision' },
+    items,
+    `shown research, ${documents} · current ${documents}`,
+  )
+  await expectGlance(
+    page,
+    { chapter: 'process', line: 'AI sped up every step' },
+    (g) => `${items(g)} · skipped ${g.skipped}`,
+    `shown research, ${documents}, ${making} · current ${making} · skipped 0`,
+  )
+  await expect(page).toHaveURL(/\/tour\/validate\?tour=validate$/, { timeout: CHAPTER_MS })
+  expect(errors).toEqual([])
+})
+
+test('how I’d validate it: what I checked, who I’d bring in, what I’d measure', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'validate', /\/tour\/validate\?tour=validate$/)
+  await play(page)
+  const under = (line: string) => ({ chapter: 'validate', line })
+  await expectGlance(page, under("I couldn't test it"), items, 'shown checked · current checked')
+  await expectGlance(
+    page,
+    under("I'd want to learn"),
+    items,
+    'shown checked, bring-in · current bring-in',
+  )
+  await expectGlance(
+    page,
+    under("And I'd measure"),
+    (g) => `${items(g)} · skipped ${g.skipped}`,
+    'shown checked, bring-in, measure · current measure · skipped 0',
+  )
+  // Then on into the close, on the landing page.
+  await expect(page).toHaveURL(/\/\?tour=close$/, { timeout: CHAPTER_MS })
+  expect(errors).toEqual([])
+})
+
+test('the close points at the story cards, then the tour ends on the landing page', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'close', /\/\?tour=close$/)
+  await play(page)
+  await expectGlance(
+    page,
+    { chapter: 'close', line: 'Each of the seven people' },
+    (g) => `${g.pathname} · outlined ${g.outlined.join(', ')}`,
+    '/ · outlined people-cards',
+  )
+  await expectGlance(
+    page,
+    { chapter: 'close', line: 'Thanks for watching' },
+    (g) => `${g.pathname} · skipped ${g.skipped}`,
+    '/ · skipped 0',
+  )
+  // The end (R5): the bar goes, `?tour` with it, and the visitor stays on the landing page.
+  await expect(bar(page)).toHaveCount(0, { timeout: CHAPTER_MS })
+  await expect(page).toHaveURL(/\/$/)
+  await expect(page.getByRole('heading', { level: 1, name: 'Agent Control Plane' })).toBeVisible()
+  expect(errors).toEqual([])
+})
+
+test('the bar’s own jumps cut a beat off mid-action cleanly, and Exit tour resets the demo (spec §10)', async ({
+  page,
+}) => {
+  // Typing at its real pace, so there is a moment mid-action to jump from.
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  const errors = collectErrors(page)
+  const reason = typedInto('packet-reason')
+  /** The saved demo's data. */
+  const saved = () =>
+    page.evaluate(
+      () => (JSON.parse(localStorage.getItem('acp-demo') ?? 'null') as { state: unknown }).state,
+    )
+  await openChapter(
+    page,
+    'onboarding',
+    /\/inventory\/agents\/med-rec\/onboarding\/intake\?tour=onboarding$/,
+  )
+  await play(page)
+  // Dr. Lee's board, part way through its reason.
+  await expect
+    .poll(
+      () =>
+        page.evaluate((full) => {
+          const field = document.querySelector<HTMLTextAreaElement>(
+            '[data-story-target="packet-reason"]',
+          )
+          const typed = field?.value.length ?? 0
+          return typed > 0 && typed < full.length ? 'typing' : `${typed} of ${full.length}`
+        }, reason),
+      { timeout: 2 * CHAPTER_MS, intervals: [25] },
+    )
+    .toBe('typing')
+
+  // A progress segment: on into the step-down, still playing.
+  await bar(page).getByRole('button', { name: 'Go to chapter 7: Trust drops' }).click()
+  await expect(page).toHaveURL(/\/operations\/agents\/med-rec\?tour=step-down$/)
+  await expect(bar(page).getByRole('button', { name: 'Pause tour' })).toBeVisible()
+  // The chapter menu: on into supervising.
+  await bar(page).getByRole('button', { name: '7 · Trust drops' }).click()
+  await page.getByRole('menuitem', { name: /^Supervise/ }).click()
+  await expect(page).toHaveURL(/\/epic\?tour=supervising$/)
+  // Well into the chapter, so anything the cut-off beats still had to do would have run by now.
+  await expectUnder(
+    page,
+    { chapter: 'supervising', line: 'Ana reviews' },
+    (s) => `${s.pathname} · skipped ${s.skipped}`,
+    `${EPIC} · skipped 0`,
+  )
+
+  await bar(page).getByRole('button', { name: 'Exit tour' }).click()
+  await expect(bar(page)).toHaveCount(0)
+  await expect(page).toHaveURL(/\/epic$/)
+  // The demo is reset: Marcus, on the seed's data, as Reset demo leaves it.
+  const exited = await saved()
+  expect(exited).toMatchObject({ personaId: 'marcus' })
+  await page.getByRole('button', { name: 'Reset demo' }).click()
+  await expect(page).toHaveURL(/\/operations\/divisions\/medications$/)
+  expect(exited).toEqual(await saved())
+  expect(errors).toEqual([])
+})
+
+/** From now on, note on the page whether the tour bar ever shows, however briefly. */
+async function watchForBar(page: Page) {
+  await page.evaluate(() => {
+    const look = () => {
+      if (document.querySelector('[data-tour="bar"]'))
+        document.documentElement.setAttribute('data-tour-bar-seen', '')
+    }
+    new MutationObserver(look).observe(document, { subtree: true, childList: true })
+    look()
+  })
+  return async () => {
+    // Long enough for a re-opened tour to have landed on its chapter's screen.
+    await page.waitForTimeout(1000)
+    await expect(page.locator('html')).not.toHaveAttribute('data-tour-bar-seen', '')
+    await expect(bar(page)).toHaveCount(0)
+  }
+}
+
+test('once the tour has ended, Back never brings it back (Ruling 38)', async ({ page }) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'close', /\/\?tour=close$/)
+  await play(page)
+  await expect(bar(page)).toHaveCount(0, { timeout: CHAPTER_MS })
+  await expect(page).toHaveURL(/\/$/)
+  const stayedClosed = await watchForBar(page)
+  // Back to the link the page loaded on: left since, so it is a Back like any other.
+  await page.goBack()
+  await expect(page).toHaveURL(/\/\?tourVoice=silent$/)
+  await stayedClosed()
+  expect(errors).toEqual([])
+})
+
+test('after Exit tour on an interlude, Back through the tour’s pages leaves it closed (Ruling 38)', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'validate', /\/tour\/validate\?tour=validate$/)
+  await bar(page).getByRole('button', { name: 'Exit tour' }).click()
+  await expect(page).toHaveURL(/\/$/)
+  // On the landing page, as a visitor sees it before pressing Back.
+  await expect(page.getByRole('heading', { level: 1, name: 'Agent Control Plane' })).toBeVisible()
+  const stayedClosed = await watchForBar(page)
+  await page.goBack()
+  await expect(page).toHaveURL(/\/tour\/validate$/)
+  await page.goBack()
+  await expect(page).toHaveURL(/\/\?tourVoice=silent$/)
+  await stayedClosed()
+  expect(errors).toEqual([])
+})
+
+test('Back while a product step plays is a take-over: the tour stops where it was (Ruling 38)', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await playOpening(page)
+  await expect(page).toHaveURL(AT_MED_REC, { timeout: CHAPTER_MS })
+  await page.goBack()
+  // The division, with the row the tour selected there.
+  const division = /\/operations\/divisions\/medications\?tour=open&agent=med-rec$/
+  await expect(page).toHaveURL(division)
+  await expect(bar(page)).toContainText('Paused. You’re driving.')
+  const held = await glance(page)
+  // Playing on, the opening would finish its lines over this screen and load the problem chapter
+  // well within this wait.
+  await page.waitForTimeout(3000)
+  await expect(page).toHaveURL(division)
+  await expect(bar(page)).toContainText('Paused. You’re driving.')
+  expect(await glance(page)).toMatchObject({
+    chapter: 'open',
+    caption: held.caption,
+    skipped: '0',
+  })
+  expect(errors).toEqual([])
+})
+
+test.describe('at the narrowest desktop width', () => {
+  test.use({ viewport: { width: 1024, height: 768 } })
+
+  test('every line of the tour shows in full in the caption (captions carry the tour, WCAG 1.2.2)', async ({
+    page,
+  }) => {
+    const errors = collectErrors(page)
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    const lines = CHAPTERS.flatMap((chapter) =>
+      chapter.steps.flatMap((step) =>
+        step.beats.map((beat) => ({ id: beat.id, text: typographic(beat.text) })),
+      ),
+    )
+    expect(lines).toHaveLength(65)
+    // Each line set in the bar's caption in turn, as the tour shows it: none cut off. At 1024 px,
+    // and at 1100 px, the first width that keeps the larger size.
+    for (const width of [1024, 1100]) {
+      await page.setViewportSize({ width, height: 768 })
+      const cut = await page.evaluate((all) => {
+        const caption = document.querySelector<HTMLElement>('[data-tour="bar"] p')!
+        return all.flatMap(({ id, text }) => {
+          caption.textContent = text
+          return caption.scrollWidth > caption.clientWidth
+            ? [`${id}: ${caption.scrollWidth} px in ${caption.clientWidth}`]
+            : []
+        })
+      }, lines)
+      expect(cut, `at ${width} px`).toEqual([])
+    }
+    expect(errors).toEqual([])
+  })
+})
+
+test('an unknown chapter is stripped from the URL', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/operations?tour=nope')
+  await expect(page).toHaveURL(/\/operations$/)
+  await expect(bar(page)).toHaveCount(0)
+  expect(errors).toEqual([])
+})
+
+test.describe('the welcome, on a link’s first screen (Checkpoint E)', () => {
+  /** The middle of a box, where a visitor would click it. */
+  const middle = (box: { x: number; y: number; width: number; height: number }) => ({
+    x: box.x + box.width / 2,
+    y: box.y + box.height / 2,
+  })
+
+  test('dims the page, keeps the bar usable and points at Play tour, which has focus', async ({
+    page,
+  }) => {
+    const errors = collectErrors(page)
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    const playTour = bar(page).getByRole('button', { name: 'Play tour' })
+    await expect(playTour).toBeFocused()
+    await expect(playTour).toHaveAccessibleDescription(
+      /^A working prototype of how a hospital brings on and supervises its AI agents\./,
+    )
+    // What a pointer would reach: the dimmed page over the product and the prototype bar, the bar
+    // itself over the bar.
+    const reached = await page.evaluate(() => {
+      const play = document.querySelector('[data-tour="play"]')!.getBoundingClientRect()
+      const at = (x: number, y: number) => {
+        const el = document.elementFromPoint(x, y)
+        if (el?.closest('[data-scrim]')) return 'dimmed'
+        if (el?.closest('[data-tour="bar"]')) return 'bar'
+        return el?.tagName ?? 'nothing'
+      }
+      return {
+        board: at(innerWidth / 2, innerHeight / 3),
+        prototypeBar: at(innerWidth - 40, 10),
+        play: at(play.left + play.width / 2, play.top + play.height / 2),
+      }
+    })
+    expect(reached).toEqual({ board: 'dimmed', prototypeBar: 'dimmed', play: 'bar' })
+    // The card sits above the bar, its pointer over the middle of Play tour.
+    const aim = await page.evaluate(() => {
+      const play = document.querySelector('[data-tour="play"]')!.getBoundingClientRect()
+      const notch = document.querySelector('[data-tour="welcome"] [data-notch]')!
+      const tip = notch.getBoundingClientRect()
+      const barTop = document.querySelector('[data-tour="bar"]')!.getBoundingClientRect().top
+      return {
+        off: Math.abs(tip.left + tip.width / 2 - (play.left + play.width / 2)),
+        aboveBar: tip.bottom <= barTop,
+      }
+    })
+    expect(aim.off).toBeLessThanOrEqual(1)
+    expect(aim.aboveBar).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  test('a click on the dimmed page takes it down: still paused, nothing on the page clicked', async ({
+    page,
+  }) => {
+    const errors = collectErrors(page)
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    // A click where a product link is, under the dimmed page.
+    const link = page.getByRole('main').getByRole('link', { name: 'Open division' })
+    const at = middle((await link.boundingBox())!)
+    await page.evaluate(() =>
+      document
+        .querySelector('main')!
+        .addEventListener(
+          'click',
+          () => document.documentElement.setAttribute('data-product-clicked', ''),
+          true,
+        ),
+    )
+    await page.mouse.click(at.x, at.y)
+    await expect(welcome(page)).toBeHidden()
+    await expect(page.locator('[data-tour="welcome"]')).toHaveCount(0)
+    await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeFocused()
+    await expect(bar(page)).not.toContainText('Paused. You’re driving.')
+    await expect(page).toHaveURL(/\/operations\?tour=open$/)
+    await expect(page.locator('html')).not.toHaveAttribute('data-product-clicked', '')
+    expect(errors).toEqual([])
+  })
+
+  test('Look around first and Escape take it down, the tour still paused', async ({ page }) => {
+    const errors = collectErrors(page)
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    await welcome(page).getByRole('button', { name: 'Look around first' }).click()
+    await expect(welcome(page)).toBeHidden()
+    await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeFocused()
+    await expect(bar(page)).not.toContainText('Paused. You’re driving.')
+    // A fresh load of the link brings it back; Escape takes it down the same way.
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    await page.keyboard.press('Escape')
+    await expect(welcome(page)).toBeHidden()
+    await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeFocused()
+    expect(errors).toEqual([])
+  })
+
+  test('refreshed, it is back; Play tour fades it and the tour plays; Enter on the focused Play does too', async ({
+    page,
+  }) => {
+    const errors = collectErrors(page)
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    // A refresh of the URL it landed on (the silent voice asked for again, as the URL drops it).
+    await page.goto('/operations?tour=open&tourVoice=silent')
+    await expect(page).toHaveURL(/\/operations\?tour=open$/)
+    await expect(welcome(page)).toBeVisible()
+    await bar(page).getByRole('button', { name: 'Play tour' }).click()
+    await expect(welcome(page)).toBeHidden()
+    await expect(page.locator('[data-tour="welcome"]')).toHaveCount(0)
+    await expect(bar(page).getByRole('button', { name: 'Pause tour' })).toBeVisible()
+    await expectLineOver(page, "You can't watch them all", '/operations')
+    // From the keyboard: focus is already on Play tour.
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    await page.keyboard.press('Enter')
+    await expect(welcome(page)).toBeHidden()
+    await expect(bar(page).getByRole('button', { name: 'Pause tour' })).toBeVisible()
+    expect(errors).toEqual([])
+  })
+
+  test('a link that starts partway says which chapter it starts at', async ({ page }) => {
+    const errors = collectErrors(page)
+    const at = CHAPTERS.findIndex((c) => c.id === 'decisions')
+    await openChapter(page, 'decisions', /\/tour\/decisions\?tour=decisions$/)
+    await expect(welcome(page)).toContainText(
+      `You’re starting at chapter ${at + 1} of ${CHAPTERS.length}: ${CHAPTERS[at]!.title}.`,
+    )
+    expect(errors).toEqual([])
+  })
+
+  test('at the first chapter it says nothing about where it starts', async ({ page }) => {
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    await expect(welcome(page)).not.toContainText('You’re starting at chapter')
+  })
+})

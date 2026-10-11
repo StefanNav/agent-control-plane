@@ -47,10 +47,15 @@ function outside(shell: ShellKind, defs: Def[]): RouteDef[] {
 
 export const routeTable: RouteDef[] = [
   ...outside('prototype', [
-    ['/', 'Signal · Agent Control Plane', [], 8],
-    ['/about', 'About this prototype', [], 8],
+    ['/', 'Attune · Agent Control Plane', [], 8],
+    ['/about', 'About this work', [], 8],
     ['/about/components', 'Countersign components', ['C'], 1],
     ['/epic', 'Epic stand-in', ['10a', '10b'], 6],
+    // The guided tour's interludes (Phase 10 spec §4.3).
+    ['/tour/problem', 'The problem', [], 10],
+    ['/tour/decisions', 'Three key decisions', [], 10],
+    ['/tour/process', 'How I got here', [], 10],
+    ['/tour/validate', 'How I’d validate it', [], 10],
   ]),
   ...outside('kiosk', [['/wall', 'Wall display', ['4e'], 3]]),
   ...app('operations', [

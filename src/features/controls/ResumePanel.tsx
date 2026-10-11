@@ -91,7 +91,7 @@ export function ResumePanel({ agentId }: { agentId: string }) {
 
       {view.mode === 'request' || view.mode === 'approve' ? (
         <Field label={view.mode === 'approve' ? 'Your reason' : 'Reason'} htmlFor={`${statusId}-reason`} hint="Required">
-          <Textarea id={`${statusId}-reason`} rows={2} className={styles.reason} value={reason} onChange={(event) => setReason(event.target.value)} />
+          <Textarea id={`${statusId}-reason`} rows={2} className={styles.reason} value={reason} onChange={(event) => setReason(event.target.value)} data-story-target="resume-reason" />
         </Field>
       ) : null}
 
@@ -114,7 +114,8 @@ export function ResumePanel({ agentId }: { agentId: string }) {
             </>
           ) : view.mode === 'approve' ? (
             <>
-              <Button variant={ready ? 'primary' : 'blocked'} aria-disabled={!ready} onClick={() => run(approveResume(agentId, reason))}>
+              {/* A tour target only once it can be pressed: an approval that can't go through is skipped and reported. */}
+              <Button variant={ready ? 'primary' : 'blocked'} aria-disabled={!ready} onClick={() => run(approveResume(agentId, reason))} data-story-target={ready ? 'resume-approve' : undefined}>
                 Approve and resume
               </Button>
               <Button variant={ready ? 'secondary' : 'blocked'} aria-disabled={!ready} onClick={() => run(declineResume(agentId, reason))}>

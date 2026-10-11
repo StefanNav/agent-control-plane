@@ -33,7 +33,7 @@ export function DesktopGate({ children }: { children: ReactNode }) {
   if (useWideEnough()) return children
   return (
     <main className={styles.page}>
-      <span className={type.mono}>Signal · Agent Control Plane · Prototype</span>
+      <span className={type.mono}>Attune · Agent Control Plane · Prototype</span>
       <h1 className={type.pageTitle}>Best viewed on a desktop</h1>
       <p className={styles.strong}>
         This prototype is designed for screens 1024 px and wider. Open it on a laptop or desktop to

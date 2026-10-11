@@ -80,7 +80,7 @@ export function ReviewersPage() {
                   <h2 className={styles.caps}>{view.weekly.head}</h2>
                   <div className={styles.cards}>
                     {view.weekly.cards.map((c) => (
-                      <div key={c.label} className={styles.card}>
+                      <div key={c.label} className={styles.card} data-story-target={c.label.startsWith('Independent check') ? 'reviewers-check' : undefined}>
                         <span className={styles.meta}>{c.label}</span>
                         <span className={styles.value}>
                           {c.value} <span className={styles.meta}>{c.was}</span>
@@ -150,7 +150,7 @@ export function ReviewersPage() {
                     {r}
                   </span>
                 ))}
-                <span className={styles.sub}>
+                <span className={styles.sub} data-story-target="reviewers-by-unit">
                   <strong className={styles.strong}>By unit and shift, never by name.</strong> This is about workload and habits, not blame.
                 </span>
                 <span className={styles.inline}>

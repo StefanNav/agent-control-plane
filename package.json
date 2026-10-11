@@ -15,7 +15,10 @@
     "e2e": "playwright test",
     "designs": "serve designs -l 4599",
     "format": "prettier --write .",
-    "capture": "playwright test -c playwright.capture.config.ts"
+    "capture": "playwright test -c playwright.capture.config.ts",
+    "tour:audio": "node scripts/tour-audio.mjs",
+    "tour:import": "node scripts/tour-import.mjs",
+    "tour:script": "node scripts/tour-print.mjs"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.3.0",

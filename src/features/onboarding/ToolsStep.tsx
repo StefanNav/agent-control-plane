@@ -75,7 +75,7 @@ export function ToolsStep({ agentId }: { agentId: string }) {
                   ]}
                 >
                   {l.test ? (
-                    <div className={styles.testBox}>
+                    <div className={styles.testBox} data-story-target="tools-hardstop-test">
                       <h4 className={styles.caps}>{l.test.head}</h4>
                       <strong className={styles.testResult}>{l.test.resultLong}</strong>
                       {l.test.examples.length ? (

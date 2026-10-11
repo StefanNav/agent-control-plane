@@ -37,6 +37,8 @@ export interface AgentTableProps {
   selectOnFocus?: boolean
   /** `full` = component-sheet widths; `withPanel` = division view beside the 344px agent panel (4b). */
   layout?: 'full' | 'withPanel'
+  /** Gives each agent's name `data-story-target="<prefix><agent id>"`, so the tour can click it. */
+  targetPrefix?: string
   ariaLabel: string
 }
 
@@ -46,7 +48,7 @@ const WIDTHS = {
 } as const
 
 /** The division view's agent rows (component 02): judgment first, quality next to volume. */
-export function AgentTable({ rows, selectedId = null, onSelect, onOpen, selectOnFocus = false, layout = 'full', ariaLabel }: AgentTableProps) {
+export function AgentTable({ rows, selectedId = null, onSelect, onOpen, selectOnFocus = false, layout = 'full', targetPrefix, ariaLabel }: AgentTableProps) {
   const w = WIDTHS[layout]
   const number = (row: AgentRowView, value: string, extra?: string) => (
     <span className={cx(styles.number, row.status === 'stale' && styles.withdrawn, extra)}>{value}</span>
@@ -69,7 +71,9 @@ export function AgentTable({ rows, selectedId = null, onSelect, onOpen, selectOn
       width: w[1],
       render: (row) => (
         <span className={styles.agent}>
-          <span className={cx(styles.name, row.id === selectedId && styles.selectedName)}>{row.name}</span>
+          <span className={cx(styles.name, row.id === selectedId && styles.selectedName)} data-story-target={targetPrefix === undefined ? undefined : `${targetPrefix}${row.id}`}>
+            {row.name}
+          </span>
           <span className={styles.version}>{row.version}</span>
         </span>
       ),

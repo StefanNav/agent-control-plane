@@ -36,11 +36,11 @@ test('the wall has no skip link', async ({ page }) => {
 
 test('every page names itself in the browser tab (R3)', async ({ page }) => {
   await page.goto('/operations/divisions/medications')
-  await expect(page).toHaveTitle('Division view · Signal Agent Control Plane')
+  await expect(page).toHaveTitle('Division view · Attune Agent Control Plane')
   await page.goto('/')
-  await expect(page).toHaveTitle('Signal · Agent Control Plane')
+  await expect(page).toHaveTitle('Attune · Agent Control Plane')
   await page.goto('/no-such-page')
-  await expect(page).toHaveTitle('Page not found · Signal Agent Control Plane')
+  await expect(page).toHaveTitle('Page not found · Attune Agent Control Plane')
 })
 
 test('the division board follows the keyboard, and opening an agent lands on its page (R4, R7)', async ({ page }) => {
@@ -108,15 +108,17 @@ test('starting a story by keyboard puts focus on its first step (R6)', async ({ 
   await expect(page.getByRole('status').filter({ hasText: /^Step 1 of 9: / })).toHaveCount(1)
 })
 
-test('the landing page reads in order: Explore freely, then the seven stories', async ({ page }) => {
+test('the landing page reads in order: Play the tour, Explore freely, then the seven stories', async ({ page }) => {
   await page.goto('/')
   const names: string[] = []
-  for (let i = 0; i < 40 && names.length < 1 + STORIES.length; i++) {
+  for (let i = 0; i < 40 && names.length < 2 + STORIES.length; i++) {
     await page.keyboard.press('Tab')
     const name = await page.evaluate(() => (document.activeElement as HTMLElement | null)?.innerText.trim() ?? '')
-    if (name === 'Explore freely' || /^Follow .+ story →$/.test(name)) names.push(name)
+    if (/^Play the tour · \d+ min$/.test(name) || name === 'Explore freely' || /^Follow .+ story →$/.test(name))
+      names.push(name.replace(/\d+ min$/, 'N min'))
   }
   expect(names).toEqual([
+    'Play the tour · N min',
     'Explore freely',
     ...STORIES.map((story) => `Follow ${personaById(story.personaId).name}’s story →`),
   ])

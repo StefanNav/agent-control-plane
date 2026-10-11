@@ -58,3 +58,17 @@ test('clicking a row selects it; the selected name is bold', async () => {
   expect(onSelect).toHaveBeenCalledWith('renal')
   expect(screen.getByText('Med Rec Agent').className).toMatch(/selectedName/)
 })
+
+test('with a target prefix, each agent name is a tour target', async () => {
+  const onSelect = vi.fn()
+  render(<AgentTable ariaLabel="Medications agents" rows={ROWS} onSelect={onSelect} targetPrefix="division-" />)
+  const name = document.querySelector<HTMLElement>('[data-story-target="division-med-rec"]')
+  expect(name).toHaveTextContent('Med Rec Agent')
+  await userEvent.click(name!)
+  expect(onSelect).toHaveBeenCalledWith('med-rec')
+})
+
+test('without one, no targets', () => {
+  setup()
+  expect(document.querySelector('[data-story-target]')).toBeNull()
+})

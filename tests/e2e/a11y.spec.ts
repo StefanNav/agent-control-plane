@@ -56,6 +56,81 @@ for (const path of READ_ONLY) {
   })
 }
 
+/** A link's first screen shows the welcome; Look around first takes it down, the tour paused. */
+async function lookAround(page: Page) {
+  const welcome = page.getByRole('region', { name: 'Welcome to Agent Control Plane' })
+  await welcome.getByRole('button', { name: 'Look around first' }).click()
+  await expect(welcome).toBeHidden()
+}
+
+// The welcome over a link's first screen: the page dimmed, the card pointing at Play tour.
+for (const [chapter, first] of [
+  ['open', /\/operations\?tour=open$/],
+  ['decisions', /\/tour\/decisions\?tour=decisions$/],
+] as const) {
+  test(`axe: the tour's welcome over the ${chapter} chapter's first screen`, async ({ page }) => {
+    await page.goto(`/?tour=${chapter}&tourVoice=silent`)
+    await expect(page).toHaveURL(first)
+    await expect(page.getByRole('region', { name: 'Welcome to Agent Control Plane' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Play tour' })).toBeFocused()
+    // Once it has faded in, so axe reads its colours as they stay.
+    await page.evaluate(() =>
+      Promise.all(
+        document
+          .querySelector('[data-tour="welcome"]')!
+          .getAnimations({ subtree: true })
+          .map((animation) => animation.finished),
+      ),
+    )
+    expect(await violations(page)).toEqual([])
+  })
+}
+
+// The interludes' routes are in the table above, read as static pages. On the tour they show only
+// what has been named so far, with the tour bar open.
+for (const chapter of ['problem', 'process', 'validate']) {
+  test(`axe: the ${chapter} interlude on the tour, part revealed`, async ({ page }) => {
+    await page.goto(`/?tour=${chapter}&tourVoice=silent`)
+    await expect(page).toHaveURL(new RegExp(`/tour/${chapter}\\?tour=${chapter}$`))
+    await expect(page.getByRole('complementary', { name: 'Tour' })).toBeVisible()
+    await lookAround(page)
+    // Part revealed: the first line's item is current, and later ones are there but unseen.
+    const main = page.locator('main')
+    await expect(main.locator('[data-item][data-state="current"]')).not.toHaveCount(0)
+    await expect(main.locator('[aria-current="step"]')).not.toHaveCount(0)
+    const hidden = main.locator('[data-item][data-state="hidden"]')
+    await expect(hidden).not.toHaveCount(0)
+    await expect(hidden.first()).toBeHidden()
+    expect(await violations(page)).toEqual([])
+  })
+}
+
+// The decisions page's first line names nothing on it, so the tour plays to a line that does, then
+// holds there: Decision 1 current, the rest there but unseen.
+test('axe: the decisions interlude on the tour, part revealed', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/?tour=decisions&tourVoice=silent')
+  await expect(page).toHaveURL(/\/tour\/decisions\?tour=decisions$/)
+  const bar = page.getByRole('complementary', { name: 'Tour' })
+  await bar.getByRole('button', { name: 'Play tour' }).click()
+  const main = page.locator('main')
+  await expect(main.locator('[data-item="d1"][data-state="current"]')).toHaveCount(1)
+  await bar.getByRole('button', { name: 'Pause tour' }).click()
+  await expect(main.locator('[aria-current="step"]')).not.toHaveCount(0)
+  const hidden = main.locator('[data-item][data-state="hidden"]')
+  await expect(hidden).not.toHaveCount(0)
+  await expect(hidden.last()).toBeHidden()
+  expect(await violations(page)).toEqual([])
+})
+
+test('axe: the decisions page with an exploration open larger', async ({ page }) => {
+  await page.goto('/tour/decisions')
+  await page.getByRole('button', { name: /^Ledger’s overview sheet: .*, open larger$/ }).click()
+  const dialog = page.getByRole('dialog', { name: 'Ledger' })
+  await expect(dialog.getByRole('img')).toBeFocused()
+  expect(await violations(page)).toEqual([])
+})
+
 test('axe: the agent view with its control menu open', async ({ page }) => {
   await page.goto('/operations/agents/med-rec')
   await page.getByRole('button', { name: 'Controls' }).click()

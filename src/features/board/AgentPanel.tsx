@@ -11,7 +11,7 @@ export function AgentPanel({ panel: p }: { panel: AgentPanelView }) {
     <aside aria-label="Selected agent" className={styles.panel}>
       <div className={styles.block}>
         <span className={styles.label}>Selected agent</span>
-        <Link to={`/operations/agents/${p.id}`} className={cx(styles.agentName, styles.agentLink)}>
+        <Link to={`/operations/agents/${p.id}`} className={cx(styles.agentName, styles.agentLink)} data-story-target="division-open-agent">
           {p.name}
         </Link>
         <span className={styles.mono}>{p.idLine}</span>

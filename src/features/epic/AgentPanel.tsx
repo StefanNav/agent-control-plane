@@ -146,7 +146,7 @@ function FlagForm({ view, onClose }: { view: EpicView; onClose: () => void }) {
       {view.form.edit && reason === view.form.reason ? <span className={styles.meta}>Picked from your edit. Change it if it’s wrong.</span> : null}
       <Textarea aria-label="Add a note (optional)" placeholder="Add a note (optional)" rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
       <span className={styles.actions}>
-        <Button variant="primary" onClick={send}>
+        <Button variant="primary" onClick={send} data-story-target="epic-flag-submit">
           Send flag
         </Button>
         <Button variant="ghost" onClick={onClose}>
