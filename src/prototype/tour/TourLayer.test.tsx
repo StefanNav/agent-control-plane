@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router'
 import { AppShell } from '../../app/AppShell'
 import { useDemo } from '../../store'
+import { Landing } from '../Landing/Landing'
 import { useStory } from '../stories/progress'
 import type { CardContent } from './cards'
 import { FIXTURE_CHAPTERS } from './fixtures'
@@ -433,6 +434,67 @@ describe('starting a story closes the tour (Ruling 14)', () => {
       await wait(50)
       expect(t.state().status).toBe('idle')
       expect(t.where()).toBe('/operations?story=marcus&step=1')
+    } finally {
+      Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', actEnvironment)
+    }
+  })
+})
+
+describe('Explore freely closes the tour (Ruling 39)', () => {
+  /** The app with the real landing page at `/`, the tour open at `chapter`, the visitor on `/`. */
+  async function onLanding(chapter: string, first: string) {
+    runtime = createTourRuntime(FIXTURE_CHAPTERS, {}, { voice: 'silent', cards: CARDS })
+    setTourRuntime(runtime)
+    const router = createMemoryRouter(
+      [
+        {
+          element: <AppShell shell="app" />,
+          children: [
+            { path: '/', element: <Landing /> },
+            { path: '*', element: <Page /> },
+          ],
+        },
+      ],
+      { initialEntries: [`/?tour=${chapter}`] },
+    )
+    render(<RouterProvider router={router} />)
+    const where = () => router.state.location.pathname + router.state.location.search
+    await waitFor(() => expect(where()).toBe(first))
+    await act(() => router.navigate('/'))
+    await waitFor(() => expect(where()).toBe(`/?tour=${chapter}`))
+    act(() => useDemo.getState().setPersona('jordan'))
+    return where
+  }
+
+  test.each([
+    ['a product step', 'decisions', '/operations?tour=decisions'],
+    ['an interlude, whose exit goes to the landing page', 'problem', '/tour/problem?tour=problem'],
+  ])(
+    'from %s: the tour closes, and the visitor is Marcus on his division',
+    async (_, chapter, first) => {
+      const where = await onLanding(chapter, first)
+      expect(runtime.player.getState().status).not.toBe('idle')
+      await userEvent.click(screen.getByRole('button', { name: 'Explore freely' }))
+      expect(runtime.player.getState().status).toBe('idle')
+      expect(bar()).not.toBeInTheDocument()
+      expect(useDemo.getState().personaId).toBe('marcus')
+      await waitFor(() => expect(where()).toBe('/operations/divisions/medications'))
+      // Give a late URL write the chance to undo it.
+      await act(() => new Promise((resolve) => setTimeout(resolve, 20)))
+      expect(where()).toBe('/operations/divisions/medications')
+    },
+  )
+
+  test('scheduled as in the browser (no act), the exit’s own navigation doesn’t win', async () => {
+    const where = await onLanding('problem', '/tour/problem?tour=problem')
+    const actEnvironment = Reflect.get(globalThis, 'IS_REACT_ACT_ENVIRONMENT')
+    Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', false)
+    try {
+      const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+      screen.getByRole('button', { name: 'Explore freely' }).click()
+      await wait(50)
+      expect(runtime.player.getState().status).toBe('idle')
+      expect(where()).toBe('/operations/divisions/medications')
     } finally {
       Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', actEnvironment)
     }

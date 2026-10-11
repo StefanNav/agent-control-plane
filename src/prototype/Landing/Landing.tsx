@@ -8,7 +8,7 @@ import { personaById } from '../personas'
 import { STORIES } from '../stories'
 import { useStory } from '../stories/progress'
 import { useStoryActions } from '../stories/useStory'
-import { tourRuntime, unlockVoice } from '../tour/useTour'
+import { exitTourIfOpen, tourRuntime, unlockVoice } from '../tour/useTour'
 import { Credit } from './Credit'
 import styles from './Landing.module.css'
 import { tourMinutes } from './tourMinutes'
@@ -34,6 +34,9 @@ export function Landing() {
   }
 
   const exploreFreely = () => {
+    // Exploring takes over from the tour, as a story does (Rulings 14, 39). Closing it first
+    // resets the demo, so Marcus below is the persona left, and this navigation the last one.
+    exitTourIfOpen()
     useStory.getState().exit()
     setPersona(marcus.id)
     navigate(marcus.landing)
