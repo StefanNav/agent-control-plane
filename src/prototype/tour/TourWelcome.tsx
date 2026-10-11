@@ -173,6 +173,7 @@ export function TourWelcome({
             and I’ll walk you through it in my own voice, about {minutes} minutes, while it clicks
             through the real screens. Pause or take over at any time.
           </p>
+          <p className={styles.note}>Best with sound on. Captions run too, if you’d rather read.</p>
           {shown > 0 ? (
             <p className={styles.partway}>
               You’re starting at chapter {n} of {chapters.length}: {chapters[shown]?.title}.

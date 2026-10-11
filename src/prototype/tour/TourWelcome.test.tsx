@@ -76,6 +76,13 @@ test('scrim and card sit in one layer marked data-tour="welcome", the tour’s o
   expect(layer()).toContainElement(region())
 })
 
+test('it asks for sound, and says the captions run too, as part of what Play is described by', () => {
+  setup()
+  expect(document.getElementById('welcome-body')).toHaveTextContent(
+    'Best with sound on. Captions run too, if you’d rather read.',
+  )
+})
+
 test('a link that starts after the first chapter says where it starts', () => {
   setup({ chapter: 1 })
   expect(screen.getByText('You’re starting at chapter 2 of 2: Decision 1.')).toBeInTheDocument()

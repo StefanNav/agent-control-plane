@@ -100,11 +100,13 @@
   text-wrap: pretty;
 }
 
+.note,
 .partway {
   margin: 0;
   font-size: 13px;
   line-height: 18px;
   color: var(--cs-text2);
+  text-wrap: pretty;
 }
 
 /* One quiet action, on the right; the margin lines the ghost button's text up with the card's. */

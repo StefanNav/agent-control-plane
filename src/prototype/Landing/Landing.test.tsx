@@ -141,6 +141,14 @@ test('the Marcus hint sits directly under Explore freely, and describes it', () 
   expect(explore.parentElement!.nextElementSibling).toBe(hint)
 })
 
+test('the sound hint sits directly under Play the tour, and describes it', () => {
+  show()
+  const play = screen.getByRole('button', { name: /^Play the tour · \d+ min$/ })
+  const hint = screen.getByText('Best with sound on')
+  expect(play).toHaveAccessibleDescription('Best with sound on')
+  expect(play.nextElementSibling).toBe(hint)
+})
+
 test('the button says the tour’s length in whole minutes, and never 0', () => {
   showWithLength((7 * 60 + 2) * 1000)
   expect(screen.getByRole('button', { name: 'Play the tour · 7 min' })).toBeInTheDocument()

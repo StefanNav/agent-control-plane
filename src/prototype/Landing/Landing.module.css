@@ -41,6 +41,7 @@
   margin-top: 8px;
 }
 
+.play,
 .more {
   display: flex;
   flex-direction: column;

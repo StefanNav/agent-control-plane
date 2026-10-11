@@ -27,6 +27,7 @@ export function Landing() {
   const { timeline, player } = tourRuntime()
   const minutes = tourMinutes(timeline.total)
   const exploreHintId = useId()
+  const soundHintId = useId()
 
   // The click is the gesture that lets the browser play audio, so the voice is primed inside it.
   const playTour = () => {
@@ -55,9 +56,14 @@ export function Landing() {
           41 agents in 5 divisions. The clock is frozen at Tue 08 Dec 2026, 09:52.
         </p>
         <div className={styles.actions}>
-          <Button variant="primary" onClick={playTour}>
-            Play the tour · {minutes} min
-          </Button>
+          <div className={styles.play}>
+            <Button variant="primary" aria-describedby={soundHintId} onClick={playTour}>
+              Play the tour · {minutes} min
+            </Button>
+            <span id={soundHintId} className={type.meta}>
+              Best with sound on
+            </span>
+          </div>
           <div className={styles.more}>
             <div className={styles.moreButtons}>
               <Button variant="secondary" aria-describedby={exploreHintId} onClick={exploreFreely}>
