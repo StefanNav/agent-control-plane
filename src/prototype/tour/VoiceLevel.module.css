@@ -1,0 +1,29 @@
+/*
+ * The voice meter, after Play/Pause in the tour bar: four bars 3 px wide, 2 px apart, up to 14 px
+ * tall from a shared baseline. Each bar is always 14 px and scales down from its foot, so its height
+ * moves without layout. Grey and flat (2 px) at rest, as the bar's inactive marks; indigo, the
+ * current thing, while the voice speaks.
+ */
+.meter {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+}
+
+.bar {
+  width: 3px;
+  height: 14px;
+  border-radius: 1px;
+  background: var(--cs-line-strong);
+  /* 2 of 14 px until a frame, or the still profile, says otherwise. */
+  transform: scaleY(0.1429);
+  transform-origin: bottom;
+  /* Glides between the 50 ms windows; none under reduced motion (global.css). */
+  transition: transform 50ms linear;
+}
+
+.meter[data-speaking='true'] .bar {
+  background: var(--cs-acc);
+}

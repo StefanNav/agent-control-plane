@@ -624,6 +624,65 @@ describe('the bar’s clock (Ruling 24)', () => {
   })
 })
 
+describe('the voice meter', () => {
+  /** A 20 s line, then a 2 s line ending on a long wait: 2 s and 200 ms in the silent voice. */
+  const SPOKEN: Chapter[] = [
+    {
+      id: 'supervising',
+      title: 'Supervise',
+      steps: [
+        {
+          id: 'spoken',
+          route: '/operations',
+          scenario: 'baseline',
+          persona: 'marcus',
+          beats: [
+            { id: 'spoken-1', text: 'One.' },
+            { id: 'spoken-2', text: 'Two.', after: [{ kind: 'wait', ms: 20_000 }] },
+          ],
+        },
+      ],
+    },
+  ]
+  const meter = () => document.querySelector('[data-tour="voice-level"]')
+  const bars = () => [...meter()!.children].map((bar) => (bar as HTMLElement).style.transform)
+
+  test('moves with the line’s clip while it plays; flat when paused and through the line’s after-actions', async () => {
+    runtime = createTourRuntime(
+      SPOKEN,
+      {
+        'spoken-1': { ms: 20_000, source: 'recorded', textHash: '0', levels: '9'.repeat(400) },
+        'spoken-2': { ms: 2000, source: 'recorded', textHash: '0', levels: '9'.repeat(40) },
+      },
+      { voice: 'silent' },
+    )
+    setTourRuntime(runtime)
+    const router = createMemoryRouter(
+      [{ element: <AppShell shell="app" />, children: [{ path: '*', element: <Page /> }] }],
+      { initialEntries: ['/?tour=supervising'] },
+    )
+    render(<RouterProvider router={router} />)
+    await userEvent.click(await screen.findByRole('button', { name: 'Play tour' }))
+    await waitFor(() => expect(meter()).toHaveAttribute('data-speaking', 'true'))
+    // Every window of the line is at 9: full height.
+    await waitFor(() => expect(bars()).toEqual(Array(4).fill('scaleY(1)')))
+
+    await userEvent.click(screen.getByRole('button', { name: 'Pause tour' }))
+    expect(meter()).toHaveAttribute('data-speaking', 'false')
+    expect(bars()).toEqual(Array(4).fill(`scaleY(${2 / 14})`))
+
+    await userEvent.click(screen.getByRole('button', { name: 'Play tour' }))
+    await waitFor(() => expect(meter()).toHaveAttribute('data-speaking', 'true'))
+    // The second line: its 200 ms clip ends, and its wait holds the line, flat.
+    await waitFor(() => expect(bar()).toHaveTextContent('Two.'), { timeout: 3000 })
+    await waitFor(() => expect(meter()).toHaveAttribute('data-speaking', 'false'), {
+      timeout: 1500,
+    })
+    expect(bar()).toHaveTextContent('Two.')
+    expect(bars()).toEqual(Array(4).fill(`scaleY(${2 / 14})`))
+  })
+})
+
 describe('the shell while the tour is open', () => {
   test('the story panel renders nothing while the tour is open', async () => {
     const t = setup('/operations')

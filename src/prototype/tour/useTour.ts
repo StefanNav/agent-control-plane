@@ -19,6 +19,8 @@ export type TourPlayer = UseBoundStore<StoreApi<TourState & TourControls>>
 /** The tour wired to the app: its script, timings, cards, voice and player. */
 export interface TourRuntime {
   chapters: Chapter[]
+  /** Each line's clip: its length, and its levels for the bar's voice meter. */
+  manifest: Manifest
   timeline: Timeline
   cards: Record<string, CardContent>
   voice: Voice
@@ -91,6 +93,7 @@ export function createTourRuntime(
   })
   return {
     chapters,
+    manifest,
     timeline,
     cards: options.cards ?? CARDS,
     voice,

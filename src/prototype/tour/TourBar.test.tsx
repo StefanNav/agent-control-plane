@@ -31,6 +31,7 @@ function setup(overrides: Partial<TourBarProps> = {}) {
     skipped: 0,
     controls,
     unlock: record('unlock'),
+    meter: { levels: '', clipMs: 0, currentMs: () => 0, reducedMotion: true },
     ...overrides,
   }
   const view = render(<TourBar {...props} />)
@@ -80,6 +81,35 @@ test.each<TourStatus>(['playing', 'paused'])(
     expect(screen.queryByRole('button', { name: 'Resume tour' })).not.toBeInTheDocument()
   },
 )
+
+describe('the voice meter', () => {
+  const meter = () => document.querySelector('[data-tour="voice-level"]')
+
+  test.each<[TourStatus, string]>([
+    ['paused', 'Play tour'],
+    ['playing', 'Pause tour'],
+    ['driving', 'Resume tour'],
+  ])('%s, it sits right after %s', (status, name) => {
+    setup({ status: status as TourBarProps['status'] })
+    expect(screen.getByRole('button', { name }).nextElementSibling).toBe(meter())
+    expect(meter()).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  test('playing, while the line’s clip runs, it shows the voice speaking', () => {
+    const { rerender } = setup({
+      status: 'playing',
+      meter: { levels: '9999', clipMs: 200, currentMs: () => 100, reducedMotion: true },
+    })
+    expect(meter()).toHaveAttribute('data-speaking', 'true')
+    rerender({ status: 'paused' })
+    expect(meter()).toHaveAttribute('data-speaking', 'false')
+  })
+
+  test('with captions off, it is still there', () => {
+    setup({ captions: false })
+    expect(meter()).toBeInTheDocument()
+  })
+})
 
 test('one progress segment per chapter, labelled, each jumping to its chapter (Ruling 6)', async () => {
   const { calls } = setup()

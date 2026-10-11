@@ -1173,6 +1173,109 @@ test('Back while a product step plays is a take-over: the tour stops where it wa
   expect(errors).toEqual([])
 })
 
+test.describe('the voice meter, after Play/Pause', () => {
+  const meter = (page: Page) => bar(page).locator('[data-tour="voice-level"]')
+  /** Bars' inline transforms (`scaleY` of the 14 px bar) as heights in whole pixels. */
+  const heights = (transforms: string[]) =>
+    transforms.map((t) => Math.round(Number(/scaleY\(([\d.e-]+)\)/.exec(t)?.[1]) * 14))
+
+  /**
+   * Wait for the meter to say the tour is speaking, then press Pause tour at that moment, so the
+   * pause lands mid-line. Returns the bars' inline transforms as they were just before.
+   */
+  async function pauseWhileSpeaking(page: Page): Promise<string[]> {
+    return page.evaluate(
+      () =>
+        new Promise<string[]>((resolve) => {
+          const meter = document.querySelector('[data-tour="voice-level"]')!
+          const pause = () => {
+            if (meter.getAttribute('data-speaking') !== 'true') return false
+            const bars = [...meter.children].map((bar) => (bar as HTMLElement).style.transform)
+            const button = [...document.querySelectorAll('[data-tour="bar"] button')].find(
+              (b) => b.textContent === 'Pause tour',
+            ) as HTMLButtonElement
+            button.click()
+            resolve(bars)
+            return true
+          }
+          if (pause()) return
+          const observer = new MutationObserver(() => {
+            if (pause()) observer.disconnect()
+          })
+          observer.observe(meter, { attributes: true })
+        }),
+    )
+  }
+
+  test('shows a line being spoken, held still under reduced motion, and lies flat once paused', async ({
+    page,
+  }) => {
+    const errors = collectErrors(page)
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    await expect(meter(page)).toHaveAttribute('data-speaking', 'false')
+    await play(page)
+    expect(heights(await pauseWhileSpeaking(page))).toEqual([6, 10, 8, 12])
+    await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeVisible()
+    await expect(meter(page)).toHaveAttribute('data-speaking', 'false')
+    const flat = await meter(page)
+      .locator('span')
+      .evaluateAll((bars) => bars.map((bar) => (bar as HTMLElement).style.transform))
+    expect(heights(flat)).toEqual([2, 2, 2, 2])
+    expect(errors).toEqual([])
+  })
+
+  test('moves with the voice, in indigo, when motion is allowed', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    const errors = collectErrors(page)
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    await play(page)
+    await expect(meter(page)).toHaveAttribute('data-speaking', 'true')
+    // A few frames' heights while it speaks, and its colour against the indigo and grey tokens.
+    const seen = await page.evaluate(
+      () =>
+        new Promise<{ heights: string[]; colour: string; indigo: string; grey: string }>(
+          (resolve) => {
+            const meter = document.querySelector('[data-tour="voice-level"]')!
+            const probe = (token: string) => {
+              const el = document.createElement('span')
+              el.style.color = `var(${token})`
+              document.body.append(el)
+              const colour = getComputedStyle(el).color
+              el.remove()
+              return colour
+            }
+            const heights = new Set<string>()
+            let colour = ''
+            const until = performance.now() + 1500
+            const sample = () => {
+              if (meter.getAttribute('data-speaking') === 'true') {
+                const bars = [...meter.children]
+                heights.add(bars.map((bar) => getComputedStyle(bar).transform).join(' '))
+                colour = getComputedStyle(bars[0]!).backgroundColor
+              }
+              if (performance.now() < until) requestAnimationFrame(sample)
+              else
+                resolve({
+                  heights: [...heights],
+                  colour,
+                  indigo: probe('--cs-acc'),
+                  grey: probe('--cs-line-strong'),
+                })
+            }
+            requestAnimationFrame(sample)
+          },
+        ),
+    )
+    expect(seen.heights.length).toBeGreaterThan(3)
+    expect(seen.colour).toBe(seen.indigo)
+    await bar(page).getByRole('button', { name: 'Pause tour' }).click()
+    await expect(meter(page)).toHaveAttribute('data-speaking', 'false')
+    const flat = meter(page).locator('span').first()
+    await expect(flat).toHaveCSS('background-color', seen.grey)
+    expect(errors).toEqual([])
+  })
+})
+
 test.describe('at the narrowest desktop width', () => {
   test.use({ viewport: { width: 1024, height: 768 } })
 
