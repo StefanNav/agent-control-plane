@@ -160,13 +160,14 @@ test('the whole tour plays through in its own voice, in the time the model gives
         : `played in ${clock(wall)} (${(wall / 1000).toFixed(1)} s); the model gives ${clock(modelledS * 1000)} (${modelledS.toFixed(1)} s)`,
     ]
 
-    // Where it ran slower than the model: each beat from its clip starting to the next one's.
+    // Where it ran slower than the model: each beat from its clip starting to the next one's. Only
+    // as many as there are beats, should a run have played more clips than the script has.
     const starts = [
       ...log.plays.map((play) => play.at),
       ...(log.closedAt === null ? [] : [log.closedAt]),
     ]
     const slowest = starts
-      .slice(1)
+      .slice(1, beats.length + 1)
       .map((next, i) => ({ beat: beats[i]!.id, over: next - starts[i]! - modelled[i]! }))
       .sort((a, b) => b.over - a.over)
     lines.push(
@@ -200,6 +201,18 @@ test('the whole tour plays through in its own voice, in the time the model gives
     return lines
   }
 
+  /** `describe`, but a log it can't read still gives what it has, never a TypeError of its own. */
+  const describeSafely = (log: TourLog): string => {
+    try {
+      return describe(log).join('\n')
+    } catch (error) {
+      return [
+        `the run could not be described: ${error instanceof Error ? error.message : String(error)}`,
+        `${log.plays.length} clips played (the script has ${beats.length}), ${log.events.length} audio events, ${log.readings.length} bar readings; the bar ${log.closedAt === null ? 'never closed' : 'closed'}`,
+      ].join('\n')
+    }
+  }
+
   // Opened from the link (the tour waits there, paused), then played with a real press.
   await page.goto('/?tour=open')
   await expect(page).toHaveURL(/\/operations\?tour=open$/)
@@ -218,7 +231,7 @@ test('the whole tour plays through in its own voice, in the time the model gives
     // before anything below can fail.
     log = await page.evaluate(() => Reflect.get(window, 'tourLog') as TourLog).catch(() => null)
     if (log) {
-      const measured = describe(log).join('\n')
+      const measured = describeSafely(log)
       console.log(measured)
       await test.info().attach('realtime', { body: measured, contentType: 'text/plain' })
     }
