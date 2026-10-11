@@ -18,7 +18,10 @@
   color: var(--cs-ink);
 }
 
-/* The sentence being spoken: one line. */
+/*
+ * The sentence being spoken: one line. Captions carry the tour with the sound off (WCAG 1.2.2), so
+ * every line must show in full; the ellipsis is only a last resort.
+ */
 .caption {
   margin: 0;
   overflow: hidden;
@@ -27,6 +30,17 @@
   color: var(--cs-ink);
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/*
+ * The longest lines need about 1070 px at 14 px. Below 1100 px (room for a scrollbar), the caption
+ * steps down to the dense size, where they need about 1000 px: in full at 1024 px, the desktop gate.
+ */
+@media (max-width: 1099px) {
+  .caption {
+    font-size: 13px;
+    line-height: 18px;
+  }
 }
 
 .controls {

@@ -1037,6 +1037,39 @@ test('Back while a product step plays is a take-over: the tour stops where it wa
   expect(errors).toEqual([])
 })
 
+test.describe('at the narrowest desktop width', () => {
+  test.use({ viewport: { width: 1024, height: 768 } })
+
+  test('every line of the tour shows in full in the caption (captions carry the tour, WCAG 1.2.2)', async ({
+    page,
+  }) => {
+    const errors = collectErrors(page)
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    const lines = CHAPTERS.flatMap((chapter) =>
+      chapter.steps.flatMap((step) =>
+        step.beats.map((beat) => ({ id: beat.id, text: typographic(beat.text) })),
+      ),
+    )
+    expect(lines).toHaveLength(65)
+    // Each line set in the bar's caption in turn, as the tour shows it: none cut off. At 1024 px,
+    // and at 1100 px, the first width that keeps the larger size.
+    for (const width of [1024, 1100]) {
+      await page.setViewportSize({ width, height: 768 })
+      const cut = await page.evaluate((all) => {
+        const caption = document.querySelector<HTMLElement>('[data-tour="bar"] p')!
+        return all.flatMap(({ id, text }) => {
+          caption.textContent = text
+          return caption.scrollWidth > caption.clientWidth
+            ? [`${id}: ${caption.scrollWidth} px in ${caption.clientWidth}`]
+            : []
+        })
+      }, lines)
+      expect(cut, `at ${width} px`).toEqual([])
+    }
+    expect(errors).toEqual([])
+  })
+})
+
 test('an unknown chapter is stripped from the URL', async ({ page }) => {
   const errors = collectErrors(page)
   await page.goto('/operations?tour=nope')
