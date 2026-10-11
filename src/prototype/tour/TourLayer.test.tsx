@@ -840,6 +840,23 @@ describe('the welcome (Checkpoint E)', () => {
     expect(welcome()).not.toBeInTheDocument()
   })
 
+  test.each([
+    [
+      'a key on a control',
+      () =>
+        fireEvent.keyDown(screen.getByRole('button', { name: 'Product button' }), { key: 'Enter' }),
+    ],
+    ['a pointer down on the page', () => fireEvent.pointerDown(screen.getByRole('main'))],
+  ])(
+    'on the tour’s own pages, where input only pauses, %s still takes it down',
+    async (_, input) => {
+      const t = await linked('/?tour=problem')
+      input()
+      expect(t.state()).toMatchObject({ status: 'paused', welcome: false })
+      expect(welcome()).not.toBeInTheDocument()
+    },
+  )
+
   test('once down, it stays down: Exit and a link to the tour inside the app don’t bring it back', async () => {
     const t = await linked()
     await userEvent.click(screen.getByRole('button', { name: 'Look around first' }))

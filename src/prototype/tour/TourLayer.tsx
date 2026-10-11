@@ -83,10 +83,10 @@ function isControl(el: Element | null): boolean {
  * Keep `?tour=` and the player in step (spec §4.1, R2): a link opens its chapter paused (with the
  * welcome on the page's first location: a fresh load, a refresh, a shared link), an unknown
  * chapter is stripped, the URL names the chapter while the tour is open (a product link that drops
- * it gets it back), and closing drops it. Back and Forward never open the tour or move it (Ruling 38):
- * closed, a chapter reached that way is dropped from the URL; open, it is a take-over where the tour
- * is. A navigation on its way (the player's, or a story's that closed the tour) is left to land
- * first, so a URL write never races one and undoes it.
+ * it gets it back), and closing drops it. Back and Forward never open the tour or move it
+ * (Ruling 38): closed, a chapter reached that way is dropped from the URL; open, it is a take-over
+ * where the tour is. A navigation on its way (the player's, or a story's that closed the tour) is
+ * left to land first, so a URL write never races one and undoes it.
  */
 function useTourUrl(runtime: TourRuntime) {
   const { player, chapters, bindNavigate } = runtime
@@ -179,7 +179,9 @@ function useTourInput({ player, voice, chapters }: TourRuntime) {
   useEffect(() => {
     /** The visitor is using the page while the tour plays or is paused. */
     const visitorActs = () => {
-      const { status, pos, pause, takeOver } = player.getState()
+      const { status, pos, pause, takeOver, dismissWelcome } = player.getState()
+      // Even where input only pauses (or, paused, changes nothing), the visitor has moved on.
+      dismissWelcome()
       // An interlude has no product state a beat could act on wrongly: hold the line, don't drop it.
       if (!onInterlude(chapters, pos)) takeOver()
       else if (status === 'playing') pause()
