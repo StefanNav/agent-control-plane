@@ -3,10 +3,11 @@ import { routeTable } from '../../app/routes'
 import { SCENARIO_IDS } from '../../data/scenarios'
 import { PERSONA_IDS } from '../../data/types'
 import { CARDS } from './cards'
-import { buildTimeline, isInterlude } from './engine'
+import { isInterlude } from './engine'
 import { MANIFEST } from './manifest'
+import { runningMs } from './runningTime'
 import { CHAPTERS } from './script'
-import type { Beat, ChapterId, TourAction } from './types'
+import type { ChapterId } from './types'
 
 const GENDERED = /\b(he|she|him|her|his|hers|himself|herself)\b/i
 const steps = CHAPTERS.flatMap((c) => c.steps)
@@ -112,56 +113,8 @@ test('the decisions page brings in each decision, then the explorations, as the 
   ])
 })
 
-/** What a press of the cursor adds to the running time: its glide and the page answering. */
-const PRESS_MS = 650
-
-/** Typing, per character at 1× (R3). */
-const TYPE_MS = 25
-
-/** How long a list of actions takes to run (Ruling 27): presses, waits and typing; the rest take no time. */
-function actionsMs(list: TourAction[] = []): number {
-  let ms = 0
-  for (const action of list) {
-    if (action.kind === 'click' || action.kind === 'choose') ms += PRESS_MS
-    else if (action.kind === 'wait') ms += action.ms
-    else if (action.kind === 'type') ms += action.text.length * TYPE_MS
-  }
-  return ms
-}
-
-/**
- * A beat's running time (Ruling 27): its clip and its actions start together, and the beat runs on
- * until both are done; then its after-actions run.
- */
-function runningMs(beat: Beat, clipMs: number): number {
-  return Math.max(clipMs, actionsMs(beat.actions)) + actionsMs(beat.after)
-}
-
-test('a beat runs for its clip or its actions, whichever is longer, then its after-actions', () => {
-  const beat: Beat = {
-    id: 'x',
-    text: 'x',
-    actions: [
-      { kind: 'outline', target: 'a' },
-      { kind: 'click', target: 'b' },
-      { kind: 'type', target: 'c', text: 'abcd' },
-    ],
-    after: [
-      { kind: 'click', target: 'd' },
-      { kind: 'wait', ms: 1500 },
-    ],
-  }
-  // Actions 650 + 4 × 25 = 750, inside a 2000 ms clip; after 650 + 1500.
-  expect(runningMs(beat, 2000)).toBe(2000 + 2150)
-  // Actions that outlast the clip set the pace.
-  expect(runningMs(beat, 500)).toBe(750 + 2150)
-  expect(runningMs({ id: 'y', text: 'y', actions: [{ kind: 'wait', ms: 3000 }] }, 2000)).toBe(3000)
-})
-
 test('the whole tour runs 7:30 at most, by its clips and what its actions add (Ruling 27)', () => {
   // With every chapter in Stefan's voice, the model gives 7:15, so the ceiling stays at 7:30
   // (Ruling 28 would raise it to 8:30 only past that).
-  const { beatMs } = buildTimeline(CHAPTERS, MANIFEST)
-  const total = beats.reduce((sum, beat) => sum + runningMs(beat, beatMs[beat.id]!), 0)
-  expect(total).toBeLessThanOrEqual(450_000)
+  expect(runningMs(CHAPTERS, MANIFEST)).toBeLessThanOrEqual(450_000)
 })
