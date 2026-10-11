@@ -85,29 +85,41 @@ test.each<TourStatus>(['playing', 'paused'])(
 describe('the voice meter', () => {
   const meter = () => document.querySelector('[data-tour="voice-level"]')
 
-  test.each<[TourStatus, string]>([
+  test.each<[TourBarProps['status'], string]>([
     ['paused', 'Play tour'],
     ['playing', 'Pause tour'],
-    ['driving', 'Resume tour'],
-  ])('%s, it sits right after %s', (status, name) => {
-    setup({ status: status as TourBarProps['status'] })
-    expect(screen.getByRole('button', { name }).nextElementSibling).toBe(meter())
+  ])('%s, it sits right after %s, with it in one group', (status, name) => {
+    setup({ status })
+    const button = screen.getByRole('button', { name })
+    expect(button.nextElementSibling).toBe(meter())
+    expect(button.parentElement?.children).toHaveLength(2)
     expect(meter()).toHaveAttribute('aria-hidden', 'true')
   })
 
-  test('playing, while the line’s clip runs, it shows the voice speaking', () => {
+  test('shown while playing; paused, hidden but still there, so Play and Pause swap in place', () => {
     const { rerender } = setup({
       status: 'playing',
       meter: { levels: '9999', clipMs: 200, currentMs: () => 100, reducedMotion: true },
     })
+    expect(meter()).toBeVisible()
     expect(meter()).toHaveAttribute('data-speaking', 'true')
     rerender({ status: 'paused' })
+    expect(meter()).toBeInTheDocument()
+    expect(meter()).not.toBeVisible()
     expect(meter()).toHaveAttribute('data-speaking', 'false')
   })
 
+  test('driving, there is none: Resume tour stands alone', () => {
+    setup({ status: 'driving' })
+    expect(meter()).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Resume tour' }).nextElementSibling,
+    ).toHaveTextContent('Paused. You’re driving.')
+  })
+
   test('with captions off, it is still there', () => {
-    setup({ captions: false })
-    expect(meter()).toBeInTheDocument()
+    setup({ status: 'playing', captions: false })
+    expect(meter()).toBeVisible()
   })
 })
 

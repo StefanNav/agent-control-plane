@@ -52,10 +52,11 @@ function setup(overrides: Partial<VoiceLevelProps> = {}) {
     })
   const rerender = (next: Partial<VoiceLevelProps>) =>
     view.rerender(<VoiceLevel {...props} {...next} />)
-  return { voice, meter, heights, rerender }
+  return { voice, meter, heights, rerender, unmount: view.unmount }
 }
 
-const FLAT = [2, 2, 2, 2]
+/** Every bar at the 2 px minimum: a quiet moment while the tour plays. */
+const QUIET = [2, 2, 2, 2]
 
 test('four bars, hidden from assistive tech (the captions carry the words)', () => {
   const { meter } = setup({ playing: false })
@@ -63,16 +64,19 @@ test('four bars, hidden from assistive tech (the captions carry the words)', () 
   expect(meter().children).toHaveLength(4)
 })
 
-test('paused, it lies flat and says it isn’t speaking, with no animation loop', () => {
-  const { voice, meter, heights } = setup({ playing: false })
+test('paused, it is hidden (keeping its space) and says it isn’t speaking, with no animation loop', () => {
+  const { voice, meter } = setup({ playing: false })
   voice.ms = 260
+  expect(meter()).toHaveAttribute('data-playing', 'false')
+  expect(meter()).not.toBeVisible()
   expect(meter()).toHaveAttribute('data-speaking', 'false')
-  expect(heights()).toEqual(FLAT)
   expect(window.requestAnimationFrame).not.toHaveBeenCalled()
 })
 
-test('playing, each frame its bars follow the voice’s level at the playhead and just before it', () => {
+test('playing, it shows, and each frame its bars follow the voice’s level at the playhead and just before it', () => {
   const { voice, meter, heights } = setup()
+  expect(meter()).toHaveAttribute('data-playing', 'true')
+  expect(meter()).toBeVisible()
   voice.ms = 260
   nextFrame()
   expect(meter()).toHaveAttribute('data-speaking', 'true')
@@ -84,15 +88,15 @@ test('playing, each frame its bars follow the voice’s level at the playhead an
   expect(heights()).toEqual([10.89, 14, 9.33, 12.44])
 })
 
-test('a quiet window still shows a 2 px bar, and the windows before the clip are quiet', () => {
+test('a quiet window shows a 2 px bar, and the windows before the clip are quiet', () => {
   const { voice, meter, heights } = setup()
   voice.ms = 10
   nextFrame()
   expect(meter()).toHaveAttribute('data-speaking', 'true')
-  expect(heights()).toEqual(FLAT)
+  expect(heights()).toEqual(QUIET)
 })
 
-test('past the clip (its after-actions, a wait) and before it starts, it lies flat', () => {
+test('past the clip (its after-actions, a wait) and between lines it stays shown, quiet, so it never flickers', () => {
   const { voice, meter, heights } = setup()
   voice.ms = 260
   nextFrame()
@@ -100,29 +104,54 @@ test('past the clip (its after-actions, a wait) and before it starts, it lies fl
   voice.ms = 500
   nextFrame()
   expect(meter()).toHaveAttribute('data-speaking', 'false')
-  expect(heights()).toEqual(FLAT)
-  // A stopped voice, between lines.
+  expect(meter()).toHaveAttribute('data-playing', 'true')
+  expect(heights()).toEqual(QUIET)
+  // A stopped voice, between lines or while the next screen settles.
   voice.ms = 0
   nextFrame()
   expect(meter()).toHaveAttribute('data-speaking', 'false')
-  expect(heights()).toEqual(FLAT)
+  expect(meter()).toBeVisible()
+  expect(heights()).toEqual(QUIET)
 })
 
-test('the loop runs only while playing: a pause stops it and lays the bars flat', () => {
+test('the loop runs only while playing: a pause stops it and hides the meter', () => {
   const { voice, meter, heights, rerender } = setup()
   voice.ms = 260
   nextFrame()
   expect(frames.size).toBe(1)
   rerender({ playing: false })
   expect(frames.size).toBe(0)
+  expect(meter()).toHaveAttribute('data-playing', 'false')
   expect(meter()).toHaveAttribute('data-speaking', 'false')
-  expect(heights()).toEqual(FLAT)
+  expect(heights()).toEqual(QUIET)
   // Played again: the loop picks up where the voice is.
   rerender({ playing: true })
   voice.ms = 460
   nextFrame()
   expect(meter()).toHaveAttribute('data-speaking', 'true')
   expect(heights()).toEqual([10.89, 14, 9.33, 12.44])
+})
+
+test('played again after a move to another line, it is right from the first frame, never stale', () => {
+  const { voice, meter, heights, rerender } = setup()
+  voice.ms = 260
+  nextFrame()
+  rerender({ playing: false })
+  // Paused, then Next: a new line, its clip not started (a stopped voice reads 0).
+  voice.ms = 0
+  rerender({ playing: false, levels: '9999999999' })
+  rerender({ playing: true, levels: '9999999999' })
+  expect(meter()).toHaveAttribute('data-speaking', 'false')
+  expect(heights()).toEqual(QUIET)
+})
+
+test('unmounting cancels its frame', () => {
+  const { voice, unmount } = setup()
+  voice.ms = 260
+  nextFrame()
+  expect(frames.size).toBe(1)
+  unmount()
+  expect(frames.size).toBe(0)
 })
 
 test('a new line’s levels are read from its own clip', () => {
@@ -139,6 +168,7 @@ describe('under reduced motion', () => {
     const { voice, meter, heights, rerender } = setup({ reducedMotion: true, playing: false })
     voice.ms = 260
     rerender({ playing: true })
+    expect(meter()).toBeVisible()
     expect(meter()).toHaveAttribute('data-speaking', 'true')
     expect(heights()).toEqual([6, 10, 8, 12])
     // The bar re-renders as the tour plays; the profile doesn't move with the voice.
@@ -148,16 +178,33 @@ describe('under reduced motion', () => {
     expect(window.requestAnimationFrame).not.toHaveBeenCalled()
   })
 
-  test('past the clip, or paused, it lies flat', () => {
+  test('past the clip it is quiet; paused, hidden', () => {
     const { voice, meter, heights, rerender } = setup({ reducedMotion: true })
     voice.ms = 500
     rerender({})
     expect(meter()).toHaveAttribute('data-speaking', 'false')
-    expect(heights()).toEqual(FLAT)
+    expect(meter()).toBeVisible()
+    expect(heights()).toEqual(QUIET)
     voice.ms = 260
     rerender({ playing: false })
     expect(meter()).toHaveAttribute('data-speaking', 'false')
-    expect(heights()).toEqual(FLAT)
+    expect(meter()).not.toBeVisible()
     expect(window.requestAnimationFrame).not.toHaveBeenCalled()
+  })
+
+  test('turned on while playing, the loop stops and the profile holds; turned off, the loop starts again', () => {
+    const { voice, meter, heights, rerender } = setup()
+    voice.ms = 260
+    nextFrame()
+    expect(frames.size).toBe(1)
+    rerender({ reducedMotion: true })
+    expect(frames.size).toBe(0)
+    expect(meter()).toHaveAttribute('data-speaking', 'true')
+    expect(heights()).toEqual([6, 10, 8, 12])
+    rerender({ reducedMotion: false })
+    expect(frames.size).toBe(1)
+    voice.ms = 460
+    nextFrame()
+    expect(heights()).toEqual([10.89, 14, 9.33, 12.44])
   })
 })

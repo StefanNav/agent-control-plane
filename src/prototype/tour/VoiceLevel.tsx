@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import { inClip, levelAt } from './levels'
 import styles from './VoiceLevel.module.css'
 
-/** A bar at its full height, and at rest (silence, or no line playing). */
+/** A bar at its full height, and at its least (a quiet moment). */
 const MAX_PX = 14
 const MIN_PX = 2
 
@@ -34,21 +34,24 @@ export interface VoiceLevelProps {
 }
 
 /**
- * The voice meter in the tour bar: four bars that move with the narrator's voice while a line plays,
- * so a visitor whose sound is low or off can see the tour is speaking. Indigo while a clip runs, grey
- * and flat otherwise (paused, driving, after a line, between lines). Each frame it reads the voice's
- * playhead against the clip's precomputed levels; there is no loop unless the tour is playing. Under
- * reduced motion there is none at all: the bars hold a still profile while a clip runs, checked each
- * time the bar renders (every tick while the tour plays). Hidden from assistive tech: the captions
- * carry the words.
+ * The voice meter in the tour bar: four indigo bars that move with the narrator's voice, so a visitor
+ * whose sound is low or off can see the tour is speaking. It shows only while the tour plays
+ * (`data-playing`), and is hidden otherwise, keeping its space. While a line's clip runs
+ * (`data-speaking`) each frame reads the voice's playhead against the clip's precomputed levels;
+ * every quiet moment (a pause between words, between lines, a line's after-actions, a screen
+ * settling) sits at the 2 px minimum. There is no loop unless the tour is playing. Under reduced
+ * motion there is none at all: the bars hold a still profile while a clip runs, checked each time
+ * the bar renders (every tick while the tour plays). Hidden from assistive tech: the captions carry
+ * the words.
  */
 export function VoiceLevel({ playing, levels, clipMs, currentMs, reducedMotion }: VoiceLevelProps) {
   const bars = useRef<(HTMLSpanElement | null)[]>([])
-  /** Was a clip running at the last frame? Only read while animated. */
+  /** Was a clip running at the last frame? Only read while animated, and set before its first paint. */
   const [running, setRunning] = useState(false)
   const animated = playing && !reducedMotion
 
-  // A layout effect, so a frame never draws over the flat bars a pause has just rendered.
+  // A layout effect: its first frame is drawn before the browser paints, so a meter shown again
+  // never shows what it showed before; and no frame draws over the bars a pause has just rendered.
   useLayoutEffect(() => {
     if (!animated) return
     let frame = 0
@@ -71,7 +74,7 @@ export function VoiceLevel({ playing, levels, clipMs, currentMs, reducedMotion }
       })
       frame = requestAnimationFrame(draw)
     }
-    frame = requestAnimationFrame(draw)
+    draw()
     return () => cancelAnimationFrame(frame)
   }, [animated, levels, clipMs, currentMs])
 
@@ -80,6 +83,7 @@ export function VoiceLevel({ playing, levels, clipMs, currentMs, reducedMotion }
     <span
       aria-hidden="true"
       data-tour="voice-level"
+      data-playing={playing}
       data-speaking={speaking}
       className={styles.meter}
     >
@@ -90,7 +94,7 @@ export function VoiceLevel({ playing, levels, clipMs, currentMs, reducedMotion }
             bars.current[i] = el
           }}
           className={styles.bar}
-          // While animated, the frames set the height; otherwise it is still or flat.
+          // While animated, the frames set the height; otherwise it is still, or quiet.
           style={animated ? undefined : { transform: scale(speaking ? STILL_PX[i]! : MIN_PX) }}
         />
       ))}

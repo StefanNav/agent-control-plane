@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button, Icon, Menu, VisuallyHidden } from '../../design-system'
 import { beatAt } from './engine'
 import type { TourControls, TourRate, TourStatus } from './player'
@@ -59,9 +59,9 @@ export interface TourBarProps {
 
 /**
  * The player bar (spec §4.2, R4): the sentence being spoken, then Play/Pause (the one indigo
- * control) with the voice meter beside it, the chapter menu, one progress segment per chapter, the
- * time, speed, captions and Exit. After a take-over it says the visitor is driving and offers Resume
- * tour instead of Play.
+ * control) with the voice meter beside it while the tour plays, the chapter menu, one progress
+ * segment per chapter, the time, speed, captions and Exit. After a take-over it says the visitor is
+ * driving and offers Resume tour instead of Play, with no meter.
  */
 export function TourBar({
   chapters,
@@ -85,8 +85,6 @@ export function TourBar({
   const n = pos.chapter + 1
   const nextRate = RATES[(RATES.indexOf(rate) + 1) % RATES.length]!
   const announced = useAnnounced(`Chapter ${n}: ${chapter.title}`)
-  // After Play/Pause or Resume tour, so it shows with captions off too.
-  const level = <VoiceLevel playing={status === 'playing'} {...meter} />
   return (
     <aside
       aria-label="Tour"
@@ -101,9 +99,8 @@ export function TourBar({
         <p className={styles.caption}>{typographic(beatAt(chapters, pos).text)}</p>
       ) : null}
       <div className={styles.controls}>
-        {/* Keyed, so Resume tour and Play/Pause are separate buttons, never one relabelled. */}
         {status === 'driving' ? (
-          <Fragment key="driving">
+          <>
             <Button
               variant="primary"
               onClick={() => {
@@ -113,11 +110,12 @@ export function TourBar({
             >
               Resume tour
             </Button>
-            {level}
             <span className={styles.driving}>Paused. You’re driving.</span>
-          </Fragment>
+          </>
         ) : (
-          <Fragment key="player">
+          // Play/Pause and the voice meter, close together. The meter keeps its space while
+          // hidden, so Play and Pause swap in place without moving the rest of the row.
+          <div className={styles.player}>
             {status === 'playing' ? (
               <Button variant="primary" className={styles.play} onClick={() => controls.pause()}>
                 Pause tour
@@ -138,8 +136,8 @@ export function TourBar({
                 Play tour
               </Button>
             )}
-            {level}
-          </Fragment>
+            <VoiceLevel playing={status === 'playing'} {...meter} />
+          </div>
         )}
         <Menu
           placement="above"
