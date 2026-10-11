@@ -240,7 +240,7 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
 - [x] **Step 3:** Encode `open`; add the two targets; run `pnpm tour:audio`; run tests — PASS.
 - [x] **Step 4: E2E** in `tour.spec.ts` (`?tourVoice=silent`, `page.emulateMedia({ reducedMotion: 'reduce' })`): `/?tour=open` → "Play tour" → expect `/operations/agents/med-rec` and `[data-story-target="agent-summary"]` visible; the bar's skipped count is `0`; no console errors (`collectErrors`). Also: while driving, open Controls, press "Resume tour" → no `dialog` visible and the tour is back on `/operations` (Review focus 3); with saved state where Med Rec was retired, `/?tour=open` still shows Med Rec live (Review focus 5); `?tour=nope` is stripped.
 - [x] **Step 5:** `pnpm check`, `pnpm e2e`. Commit: `feat: tour opening chapter`.
-- [ ] **Step 6: CHECKPOINT B.** Forbidden-terms check; push the branch; open a **draft** PR (Stefan approved, 2026-10-09) for the Vercel preview; Stefan watches the opening (placeholder voice) and comments on pacing, cursor, bar and captions. Apply feedback before 10.8.
+- [x] **Step 6: CHECKPOINT B.** Forbidden-terms check; push the branch; open a **draft** PR (Stefan approved, 2026-10-09) for the Vercel preview; Stefan watches the opening (placeholder voice) and comments on pacing, cursor, bar and captions. Apply feedback before 10.8.
 
 ### Task 10.8: Walkthrough I (`onboarding`, `earning-trust`)
 
@@ -363,9 +363,9 @@ Stefan records one Voice Memos file per chapter (Stefan, 2026-10-10), named `NN-
 
 ### Task 10.16: Phase checkpoint — **CHECKPOINT E**
 
-- [ ] **Step 1:** `pnpm check`, `pnpm e2e`, `pnpm tour:audio --check` green.
-- [ ] **Step 2:** Play the whole tour at 1440 × 900 in Chrome and Safari at 1×; note anything off; fix.
-- [ ] **Step 3:** `pnpm capture` to regenerate `public/og.png` and README screenshots with the Attune bar; add one screenshot of the tour bar to `docs/screenshots/tour.png`; README: a "Watch the tour" line linking `/?tour=open`.
-- [ ] **Step 4:** BUILD_PLAN: tick tasks, handoff notes, Start here, decision log (R1–R9 and anything new), session log.
-- [ ] **Step 5:** Forbidden-terms check (must print nothing). Push. Mark the PR ready ("Closes #20"), with the task list, preview URL and screenshots.
+- [x] **Step 1:** `pnpm check`, `pnpm e2e`, `pnpm tour:audio --check` green.
+- [ ] **Step 2:** Play the whole tour at 1440 × 900 in Chrome and Safari at 1×; note anything off; fix. *(2026-10-11: Chrome done, the real-time run measured 7:24 with no stalls or skips; Safari is Stefan's at Checkpoint E, Ruling 40.)*
+- [x] **Step 3:** `pnpm capture` to regenerate `public/og.png` and README screenshots with the Attune bar; add one screenshot of the tour bar to `docs/screenshots/tour.png`; README: a "Watch the tour" line linking `/?tour=open`.
+- [x] **Step 4:** BUILD_PLAN: tick tasks, handoff notes, Start here, decision log (R1–R9 and anything new), session log.
+- [x] **Step 5:** Forbidden-terms check (must print nothing). Push. Mark the PR ready ("Closes #20"), with the task list, preview URL and screenshots.
 - [ ] **Step 6: CHECKPOINT E. STOP.** Ask Stefan to review the preview URL. Merge only after approval.

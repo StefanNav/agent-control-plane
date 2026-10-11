@@ -3,6 +3,17 @@
 **Date:** 2026-10-09 · **Phase:** 10 (Guided tour) · **Branch:** `phase-10-guided-tour`
 **Builds on:** [`2026-10-08-agent-control-plane-prototype-design.md`](2026-10-08-agent-control-plane-prototype-design.md) (the prototype spec) and Phase 8's story engine.
 
+> **As built (2026-10-11).** These rulings from the build change the text below, which is kept as written:
+> - There are **eleven chapters** (§3 running order). The three decisions share one chapter, "Three key decisions", and each card is labelled "Decision n of 3". The chapter menu has no per-chapter "Decision n" label (§4.2).
+> - There is **no `ended` state** and no "Your turn" screen (§4.2, §4.7, §5.2). Finishing the tour is the same as Exit tour: the demo resets to Marcus at baseline, and the close chapter already plays on the landing page.
+> - The **manifest** lives at `src/prototype/tour/manifest.json`, because Vite can't import from `public/` (§5.5). The clips stay in `public/tour/audio/`.
+> - **Recordings** come from Voice Memos chapter files through `pnpm tour:import`. There is no recording page (§7.5, §8, §10 step 7; see T8).
+> - **Browser Back:** while the tour is open, Back or Forward counts as taking over. While it is closed, `?tour=` opens it only on a fresh load or an in-app link.
+> - **Explore freely** exits the tour.
+> - On the tour's own pages, a click **pauses** rather than taking over.
+>
+> The decision log in `docs/BUILD_PLAN.md` has the reasons.
+
 ---
 
 ## 1. Goal
