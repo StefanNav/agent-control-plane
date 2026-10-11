@@ -307,11 +307,11 @@ The tour is reviewed while it grows, not only at the end. Each **CHECKPOINT** is
 - Modify: `src/prototype/Landing/Landing.tsx`, `Landing.module.css`, `Landing.test.tsx`; `src/prototype/PrototypeBar/PrototypeBar.tsx`; `src/prototype/About/About.tsx` (brand words only; the rewrite is 10.15); `src/prototype/DesktopGate/DesktopGate.tsx`; `src/app/pageTitle.ts` (`PRODUCT = 'Attune Agent Control Plane'`, `HOME = 'Attune · Agent Control Plane'`); `src/app/routes.ts` (home title); `index.html` (title, `og:title`, `twitter:title` if present); `README.md`; `CLAUDE.md` (brand section: Attune, still a stand-in; forbidden-terms rule unchanged); the tests that assert the brand (`pageTitle.test.ts`, `meta.test.ts`, `usePageChrome.test.tsx`, `About.test.tsx`, `Landing.test.tsx`, `tests/e2e/keyboard.spec.ts`, `tests/e2e/focus.spec.ts`)
 - Add: `public/tour/stefan.jpg` (from `reference/tour-inbox/`, square, 160 px for 2× of 80 px, metadata stripped)
 
-- [ ] **Step 1: Update the tests first:** brand strings to Attune; `Landing.test.tsx`: the primary button is "Play the tour · 7 min" (the total from the timeline, rounded to whole minutes) and starts the tour at chapter 0 playing; "Narrated by Stefan" with the photo (`alt="Stefan"`); "Explore freely" is a secondary button; the story cards render under "Or explore on your own".
-- [ ] **Step 2:** Run — FAIL.
-- [ ] **Step 3:** Implement. `git grep -n -w Signal -- src tests index.html README.md CLAUDE.md` returns nothing.
-- [ ] **Step 4:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: Attune brand and tour on the landing page`.
-- [ ] **Step 5:** Decision-log row: brand renamed to Attune (Stefan, 2026-10-09); AIMS kept; earlier plans and specs left as records.
+- [x] **Step 1: Update the tests first:** brand strings to Attune; `Landing.test.tsx`: the primary button is "Play the tour · 7 min" (the total from the timeline, rounded to whole minutes) and starts the tour at chapter 0 playing; "Narrated by Stefan" with the photo (`alt="Stefan"`); "Explore freely" is a secondary button; the story cards render under "Or explore on your own".
+- [x] **Step 2:** Run — FAIL.
+- [x] **Step 3:** Implement. `git grep -n -w Signal -- src tests index.html README.md CLAUDE.md` returns nothing.
+- [x] **Step 4:** `pnpm check`, `pnpm e2e` — PASS. Commit: `feat: Attune brand and tour on the landing page`.
+- [x] **Step 5:** Decision-log row: brand renamed to Attune (Stefan, 2026-10-09); AIMS kept; earlier plans and specs left as records.
 
 **Blocked on:** Stefan's photo in `reference/tour-inbox/`. If it isn't there, ship the credit without a photo and add it later.
 
@@ -341,6 +341,13 @@ Stefan records one Voice Memos file per chapter (Stefan, 2026-10-10), named `NN-
 - [x] **Step 3:** Implement `tour-import.mjs`; `--dry-run` on `reference/tour-inbox/recordings/` prints `01-open` as imported-to-be and every other chapter as not encoded yet.
 - [x] **Step 4:** Run `pnpm tour:import` for real: `open-1`…`open-7` become recorded; `pnpm tour:audio --check` passes for `open`; `pnpm check` and `pnpm e2e` green (the e2e uses the silent voice).
 - [x] **Step 5:** Commit the split code, the script and the seven clips plus manifest: `feat: import chapter recordings`.
+
+### Task 10.14: Recording — **CHECKPOINT D**
+
+- [x] **Step 1:** Stefan records every chapter in Voice Memos, one file per chapter, into `reference/tour-inbox/recordings/` (done 2026-10-10; `onboarding-1` re-recorded on its own because the chapter file lacked it).
+- [x] **Step 2:** `pnpm tour:import` as each chapter is encoded, then `pnpm tour:audio --check`: 65 beats, 65 recorded, 0 placeholder, 0 out of date.
+- [ ] **Step 3:** Stefan listens on the preview, especially the lines the split was least sure of (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`), and for anything said that isn't in the script (the forbidden-terms check can't hear audio).
+- [ ] **Step 4: CHECKPOINT D.** Lines to redo are re-recorded as `<beatId>.m4a` files and imported with `pnpm tour:import`. Folded into Checkpoint E if Stefan has no re-takes.
 
 ### Task 10.15: Case study (About)
 

@@ -636,7 +636,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 - [x] 10.9 Walkthrough II (supervising, step-down)
 - [x] 10.10 Interludes (problem, process, validate) and the landing chapters (who it's for, close)
 - [x] 10.11 The decisions page and the explorations → **CHECKPOINT C** (whole tour, in Stefan's voice)
-- [ ] 10.12 Landing, credit and the Attune rename
+- [x] 10.12 Landing, credit and the Attune rename
 - [x] 10.13 Import recordings (`pnpm tour:import`; replaces the recording page)
 - [ ] 10.14 Recording → **CHECKPOINT D** (real voice; Stefan recorded all 11 chapters on 2026-10-10)
 - [ ] 10.15 Case study (About)
@@ -812,6 +812,7 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-10 | Tour rulings from 10.9: while the tour is open the shell sets `--docked-bottom: 88px` and `Modal` shortens by it, so dialog buttons stay clear of the bar; the bar's clock holds at a line's end during its after-actions; after Priya approves the resume, the header status is outlined and scrolled into view; `choose` skips a locked select; the pronoun check covers typed text | The pause dialog's confirm sat 49 px under the bar; the clock jumped back; the resumed status happened off screen |
 | 2026-10-10 | Tour rulings from 10.10–10.11: lines recorded on their own are trimmed of silence; the process page says "10 build phases, each one a reviewed pull request" (Phase 0 had none); interlude items carry `aria-current="step"`; the running-time check models each line as max(clip, actions) + after-actions; decision thumbnails are captured from the live product without the prototype bar; the decisions recording was imported with `--force` (one short line with a natural pause); the tour's Space/←/→ do nothing while a dialog is open | Reviews of 10.10 and 10.11; a public page must only state what the repo shows |
 | 2026-10-10 | Checkpoint C decisions: the design-exploration mockups keep "Attune" as the hospital/EHR name; the morning's "3 drafts held" banner stays after the resume (the held drafts still await a pharmacist) | Stefan's call |
+| 2026-10-10 | Landing: "Play the tour · 7 min" is the primary action (it primes audio in the click), with "Narrated by Stefan" and Stefan's photo (decorative `alt=""`, the name is beside it); "Explore freely" is secondary; the stories sit under "Or explore on your own". Brand renamed Signal → Attune across the prototype layer, README and CLAUDE.md; AIMS stays | Stefan's photo and the rename (10.12) |
 
 ## Session log
 
