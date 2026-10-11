@@ -1,43 +1,20 @@
 import { useId } from 'react'
 import { cx } from '../../../lib/cx'
 import type from '../../../design-system/type.module.css'
-import { CARDS, type CardContent } from '../cards'
+import {
+  CONFLICT,
+  DIRECTIONS,
+  JUDGED,
+  decision,
+  type Decision,
+  type ImageCard,
+} from '../decisionCards'
 import { DecisionContent } from '../DecisionContent'
 import { tourRuntime, useTour } from '../useTour'
 import { ZoomImage } from '../ZoomImage'
 import styles from './DecisionsPage.module.css'
 import interlude from './Interlude.module.css'
 import { itemProps, useReveal, type Reveal } from './useReveal'
-
-type Decision = Extract<CardContent, { kind: 'decision' }>
-type Image = Extract<CardContent, { kind: 'image' }>
-
-function decision(id: string): Decision {
-  const card = CARDS[id]
-  if (card?.kind !== 'decision') throw new Error(`No decision card ${id}`)
-  return card
-}
-
-function image(id: string): Image {
-  const card = CARDS[id]
-  if (card?.kind !== 'image') throw new Error(`No image card ${id}`)
-  return card
-}
-
-/** The five direction overviews, in the order they were explored. */
-const DIRECTIONS = [
-  'explore-ledger',
-  'explore-ward-round',
-  'explore-countersign',
-  'explore-linen',
-  'explore-handover',
-].map(image)
-/** The first direction on a crowded screen, where it broke. */
-const CONFLICT = image('explore-ledger-conflict')
-/** The stress test's two screens, then the final division view. */
-const JUDGED = ['explore-stress-division', 'explore-stress-signing', 'explore-final-division'].map(
-  image,
-)
 
 /** Opening an image while the tour plays pauses it first. */
 interface Zoom {
@@ -46,7 +23,15 @@ interface Zoom {
 }
 
 /** An exploration: its image, at a sheet's shape or a screen's, then its name and one line. */
-function Exploration({ card, shape, zoom }: { card: Image; shape: 'tall' | 'wide'; zoom: Zoom }) {
+function Exploration({
+  card,
+  shape,
+  zoom,
+}: {
+  card: ImageCard
+  shape: 'tall' | 'wide'
+  zoom: Zoom
+}) {
   return (
     <figure className={styles.figure}>
       <ZoomImage image={card} title={card.title} className={styles[shape]} {...zoom} />

@@ -6,6 +6,8 @@ export interface DecisionContentProps {
   content: Extract<CardContent, { kind: 'decision' }>
   /** An id for the title, so the region holding it can be named by it. */
   titleId?: string
+  /** The title's heading level: 2 on its own page, 3 under a chapter's heading. */
+  headingLevel?: 2 | 3
 }
 
 /**
@@ -13,13 +15,14 @@ export interface DecisionContentProps {
  * with the chosen one marked by a filled dot and the word "Chosen", and the trade-off. A floating
  * card and the decisions page both show it.
  */
-export function DecisionContent({ content, titleId }: DecisionContentProps) {
+export function DecisionContent({ content, titleId, headingLevel = 2 }: DecisionContentProps) {
+  const Heading = headingLevel === 2 ? 'h2' : 'h3'
   return (
     <>
       <span className={styles.label}>Decision {content.n} of 3</span>
-      <h2 id={titleId} className={styles.title}>
+      <Heading id={titleId} className={styles.title}>
         {content.title}
-      </h2>
+      </Heading>
       <ul className={styles.options}>
         {content.options.map((option) => (
           <li key={option.label} className={cx(styles.option, option.chosen && styles.chosen)}>

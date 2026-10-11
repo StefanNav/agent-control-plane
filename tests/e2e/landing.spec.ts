@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { CHAPTERS } from '../../src/prototype/tour/script'
 import { collectErrors } from './console'
 
 test('the landing page offers the tour, seven stories and free explore', async ({ page }) => {
@@ -38,12 +39,11 @@ test('a card starts its story on the first screen', async ({ page }) => {
 test('About tells the case study and links to the components', async ({ page }) => {
   const errors = collectErrors(page)
   await page.goto('/about')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('About this work')
   await expect(page.getByRole('heading', { level: 2 })).toHaveText([
-    'What it is',
-    'The problem',
+    ...CHAPTERS.filter((chapter) => chapter.id !== 'close').map((chapter) => chapter.title),
     'Principles',
     'Countersign, the design system',
-    'How to use it',
     'How it’s built',
   ])
   await page.getByRole('link', { name: 'See the components' }).click()
