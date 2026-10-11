@@ -51,7 +51,7 @@
 - **The mock hospital** is one versioned Zustand store with named scenarios (moments in time such as "resume requested" or "nine days later"). Every change goes through `can()` for permissions and writes the audit log, so any action can be traced back.
 - **The story engine** (`src/prototype/stories`) keeps `?story=&step=` in the URL, loads the moment each step needs, and keeps what the visitor did between steps.
 - **The guided tour** (`src/prototype/tour`) is data: eleven chapters of narration, each line with the clicks and outlines that play under it. A player runs one line at a time, clip and actions together, over the same router and store as everything else. Its recorded clips live in `public/tour/audio`, with their lengths and loudness in a manifest.
-- **Tests:** 1238 unit tests (Vitest and Testing Library) and 298 end-to-end tests (Playwright), including every route, every story from a shared link, every chapter of the tour, keyboard paths, and an axe accessibility check (WCAG 2.1 AA) on every screen. A further run, opt-in because it takes 7½ minutes, plays the whole tour in real time in its recorded voice. `pnpm capture` screenshots each frame beside its design for visual QA.
+- **Tests:** 1241 unit tests (Vitest and Testing Library) and 298 end-to-end tests (Playwright), including every route, every story from a shared link, every chapter of the tour, keyboard paths, and an axe accessibility check (WCAG 2.1 AA) on every screen. A further run, opt-in because it takes 7½ minutes, plays the whole tour in real time in its recorded voice. `pnpm capture` screenshots each frame beside its design for visual QA.
 
 ## Run it locally
 
@@ -66,6 +66,7 @@ pnpm designs      # the design frames on http://localhost:4599
 pnpm capture      # README screenshots and the social image (QA=1 also writes frame pairs)
 pnpm tour:script  # print each line of the narration with its actions in brackets beside it
 pnpm tour:audio   # placeholder clips for new lines (macOS say + ffmpeg), all clips measured (length and voice levels) into the manifest; --check needs only ffprobe
+pnpm tour:audio --levels  # measure every clip's voice levels again; --check can't tell a clip swapped by hand for one the same length, so run this after any swap
 pnpm tour:import  # cut recorded narration into one clip per line (needs the local recordings)
 TOUR_REALTIME=1 pnpm e2e tests/e2e/tour-realtime.spec.ts   # play the whole tour in real time (7½ min)
 ```
