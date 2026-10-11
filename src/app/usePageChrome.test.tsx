@@ -46,7 +46,7 @@ afterEach(() => vi.restoreAllMocks())
 test('a fresh load leaves focus where the browser puts it, in dev’s StrictMode too (R2, R4)', () => {
   setup()
   expect(document.activeElement).toBe(document.body)
-  expect(document.title).toBe('Page A · Signal Agent Control Plane')
+  expect(document.title).toBe('Page A · Attune Agent Control Plane')
 })
 
 test('a navigation that took focus with it lands on the new page’s heading, without scrolling it (R4, R8)', async () => {

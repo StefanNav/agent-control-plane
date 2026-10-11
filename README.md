@@ -1,8 +1,8 @@
-# Signal Agent Control Plane: clickable prototype
+# Attune Agent Control Plane: clickable prototype
 
 > A hospital should bring on an AI agent the way it brings on a clinician: a written job, named people accountable, privileges earned on evidence, and supervision that spends human attention only where it matters.
 
-**Agent Control Plane** is the operations console of Signal's AI management system (AIMS) for hospitals. Named people onboard an agent, grant it staged privileges (Shadow → Draft → Supervised → Autonomous), supervise it by exception, stop it in one action and reconstruct anything it did for an auditor. This is a high-fidelity, front-end-only prototype built from the **Countersign** design system, running on mock data for a fictional hospital, Lakeshore Health.
+**Agent Control Plane** is the operations console of Attune's AI management system (AIMS) for hospitals. Named people onboard an agent, grant it staged privileges (Shadow → Draft → Supervised → Autonomous), supervise it by exception, stop it in one action and reconstruct anything it did for an auditor. This is a high-fidelity, front-end-only prototype built from the **Countersign** design system, running on mock data for a fictional hospital, Lakeshore Health.
 
 **Try it: [agent-control-plane-mocha.vercel.app](https://agent-control-plane-mocha.vercel.app)** (desktop browser, 1024 px or wider)
 
@@ -69,7 +69,7 @@ pnpm capture      # README screenshots and the social image (QA=1 also writes fr
 
 ## About the names
 
-Signal, Lakeshore Health and every person here are fictional, and all data is mock. The Epic screens are a neutral stand-in, not Epic's interface; only the panel on the right belongs to the product.
+Attune, Lakeshore Health and every person here are fictional, and all data is mock. The Epic screens are a neutral stand-in, not Epic's interface; only the panel on the right belongs to the product.
 
 Built phase by phase from a written spec with Claude Code; every phase was a reviewed pull request.
 

@@ -38,6 +38,6 @@ test('links to the component gallery and the source', () => {
 
 test('says the hospital and the brand are fictional, and uses no gendered pronouns', () => {
   const { container } = show()
-  expect(container).toHaveTextContent('Signal, Lakeshore Health and everyone in it are fictional')
+  expect(container).toHaveTextContent('Attune, Lakeshore Health and everyone in it are fictional')
   expect(container.textContent).not.toMatch(/\b(he|she|him|her|his|hers)\b/i)
 })

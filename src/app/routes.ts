@@ -47,7 +47,7 @@ function outside(shell: ShellKind, defs: Def[]): RouteDef[] {
 
 export const routeTable: RouteDef[] = [
   ...outside('prototype', [
-    ['/', 'Signal · Agent Control Plane', [], 8],
+    ['/', 'Attune · Agent Control Plane', [], 8],
     ['/about', 'About this prototype', [], 8],
     ['/about/components', 'Countersign components', ['C'], 1],
     ['/epic', 'Epic stand-in', ['10a', '10b'], 6],

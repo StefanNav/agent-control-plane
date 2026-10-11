@@ -1,6 +1,6 @@
 # Agent Control Plane prototype
 
-A clickable, front-end-only prototype of **Signal Agent Control Plane**: the operations console of Signal's AI management system (AIMS) for hospitals, where named humans onboard AI agents, grant staged privileges, supervise them live, stop them and produce audit evidence. Built from the **Countersign** designs in `designs/`. Mock data only (fictional hospital: Lakeshore Health). It's a public portfolio piece.
+A clickable, front-end-only prototype of **Attune Agent Control Plane**: the operations console of Attune's AI management system (AIMS) for hospitals, where named humans onboard AI agents, grant staged privileges, supervise them live, stop them and produce audit evidence. Built from the **Countersign** designs in `designs/`. Mock data only (fictional hospital: Lakeshore Health). It's a public portfolio piece.
 
 ## Start every session here
 
@@ -26,7 +26,7 @@ View the designs: `pnpm designs` (after Phase 1) or `cd designs && python3 -m ht
 
 ## Brand and the real company name
 
-- The brand is **Signal**, a stand-in for the real company in the source docs. Use it in the prototype layer (prototype bar, landing, About, page title, README). The product's top-nav wordmark stays "AIMS" as designed.
+- The brand is **Attune**, a stand-in for the real company in the source docs. It replaced the first stand-in name on 2026-10-10; earlier specs and phase plans in `docs/` still use that old name and are left as records (the decision log in `docs/BUILD_PLAN.md` names it). Use Attune in the prototype layer (prototype bar, landing, About, desktop gate, page titles, `index.html`, README). The product's top-nav wordmark stays "AIMS" as designed.
 - The real company name must never appear in the repo or on the site. Before every push run this (it checks tracked files and unpushed commit messages; it must print nothing):
 
   ```bash

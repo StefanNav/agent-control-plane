@@ -18,7 +18,7 @@ test('the focus ring is visible on the dark prototype bar', async ({ page }) => 
   // The skip link comes first (Phase 9 R2); the bar's link is the second stop.
   await page.keyboard.press('Tab')
   await page.keyboard.press('Tab')
-  const link = page.getByRole('link', { name: /Signal · Agent Control Plane/ })
+  const link = page.getByRole('link', { name: /Attune · Agent Control Plane/ })
   await expect(link).toBeFocused()
   const { outline, background } = await link.evaluate((el) => ({
     outline: getComputedStyle(el).outlineColor,

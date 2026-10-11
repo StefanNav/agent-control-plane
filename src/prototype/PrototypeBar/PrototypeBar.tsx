@@ -18,7 +18,7 @@ export function PrototypeBar({ stories = STORIES }: { stories?: readonly Story[]
   return (
     <div className={styles.bar} role="region" aria-label="Prototype controls">
       <Link to="/" className={styles.brand}>
-        Signal · Agent Control Plane · <span className={styles.tag}>Prototype</span>
+        Attune · Agent Control Plane · <span className={styles.tag}>Prototype</span>
       </Link>
       <div className={styles.controls}>
         <PersonaSwitcher />

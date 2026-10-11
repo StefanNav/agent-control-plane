@@ -7,14 +7,30 @@ import { personaById } from '../personas'
 import { STORIES } from '../stories'
 import { useStory } from '../stories/progress'
 import { useStoryActions } from '../stories/useStory'
+import { tourRuntime, unlockVoice } from '../tour/useTour'
+import { Credit } from './Credit'
 import styles from './Landing.module.css'
 
-/** The start page (spec §4.2): what this is, seven stories, and free explore. */
+const MS_PER_MINUTE = 60_000
+
+/**
+ * The start page (guided-tour spec §4.1): what this is, the narrated tour as its main action, then
+ * seven stories and free explore.
+ */
 export function Landing() {
   const navigate = useNavigate()
   const setPersona = useDemo((s) => s.setPersona)
   const { start } = useStoryActions()
   const marcus = personaById('marcus')
+
+  const { timeline, player } = tourRuntime()
+  const minutes = Math.round(timeline.total / MS_PER_MINUTE)
+
+  // The click is the gesture that lets the browser play audio, so the voice is primed inside it.
+  const playTour = () => {
+    unlockVoice()
+    player.getState().open(0, true)
+  }
 
   const exploreFreely = () => {
     useStory.getState().exit()
@@ -29,23 +45,31 @@ export function Landing() {
         <h1 className={type.pageTitle}>Agent Control Plane</h1>
         <p className={styles.lead}>{PITCH}</p>
         <p className={styles.text}>
-          Agent Control Plane is the operations console of Signal’s AI management system (AIMS).
+          Agent Control Plane is the operations console of Attune’s AI management system (AIMS).
           This clickable prototype runs on mock data for Lakeshore Health, a fictional hospital with
           41 agents in 5 divisions. The clock is frozen at Tue 08 Dec 2026, 09:52.
         </p>
         <div className={styles.actions}>
-          <Button variant="primary" onClick={exploreFreely}>
+          <Button variant="primary" onClick={playTour}>
+            Play the tour · {minutes} min
+          </Button>
+          <Button variant="secondary" onClick={exploreFreely}>
             Explore freely
           </Button>
           <LinkButton to="/about">About this prototype</LinkButton>
-          <span className={type.meta}>Explore freely starts as Marcus, the agent owner.</span>
         </div>
+        <p className={styles.text}>
+          A narrated walkthrough of one agent’s life: the problem, the product, three key decisions
+          and how I’d validate it.
+        </p>
+        <Credit name="Stefan" />
+        <span className={type.meta}>Explore freely starts as Marcus, the agent owner.</span>
       </section>
 
       <section className={styles.stories} aria-labelledby="stories-title">
         <div className={styles.storiesHead}>
           <h2 id="stories-title" className={type.label}>
-            Follow one person’s story
+            Or explore on your own
           </h2>
           <p className={styles.text}>
             Each story walks through the real screens in a few steps. Click around on the way; Next

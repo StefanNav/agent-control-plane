@@ -1,14 +1,27 @@
 import { expect, test } from '@playwright/test'
 import { collectErrors } from './console'
 
-test('the landing page offers seven stories and free explore', async ({ page }) => {
+test('the landing page offers the tour, seven stories and free explore', async ({ page }) => {
   const errors = collectErrors(page)
   await page.goto('/')
   await expect(page.getByRole('heading', { level: 1, name: 'Agent Control Plane' })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^Play the tour · \d+ min$/ })).toBeVisible()
+  await expect(page.getByText('Narrated by Stefan')).toBeVisible()
+  await expect(page.getByRole('heading', { level: 2, name: 'Or explore on your own' })).toBeVisible()
   await expect(page.getByRole('article')).toHaveCount(7)
   await page.getByRole('button', { name: 'Explore freely' }).click()
   await expect(page).toHaveURL(/\/operations\/divisions\/medications$/)
   await expect(page.getByRole('button', { name: /^Viewing as Marcus/ })).toBeVisible()
+  expect(errors).toEqual([])
+})
+
+test('Play the tour opens the tour on its first chapter, playing', async ({ page }) => {
+  const errors = collectErrors(page)
+  await page.goto('/?tourVoice=silent')
+  await page.getByRole('button', { name: /^Play the tour · \d+ min$/ }).click()
+  await expect(page).toHaveURL(/\/operations\?tour=open$/)
+  const bar = page.getByRole('complementary', { name: 'Tour' })
+  await expect(bar.getByRole('button', { name: 'Pause tour' })).toBeVisible()
   expect(errors).toEqual([])
 })
 

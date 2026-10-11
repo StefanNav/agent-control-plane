@@ -23,21 +23,21 @@ const HOW_TO = [
   'It is built for desktop screens, 1280 px and wider.',
 ]
 
-/** Case-study context (spec §4.6), written from the Vision and PRD with Signal as the brand. */
+/** Case-study context (spec §4.6), written from the Vision and PRD with Attune as the brand. */
 export function About() {
   return (
     <article className={styles.page}>
       <header className={styles.head}>
         <h1 className={type.pageTitle}>About this prototype</h1>
-        <span className={type.mono}>Signal · Agent Control Plane</span>
+        <span className={type.mono}>Attune · Agent Control Plane</span>
       </header>
 
       <section className={styles.section}>
         <h2 className={type.sectionTitle}>What it is</h2>
         <p>
-          A front-end prototype of Agent Control Plane, the operations side of Signal’s AI
+          A front-end prototype of Agent Control Plane, the operations side of Attune’s AI
           management system (AIMS) for hospitals. Named people bring AI agents on, grant them staged
-          privileges, supervise them live, stop them and produce the audit evidence. Signal,
+          privileges, supervise them live, stop them and produce the audit evidence. Attune,
           Lakeshore Health and everyone in it are fictional, and nothing you do leaves your browser.
         </p>
       </section>
