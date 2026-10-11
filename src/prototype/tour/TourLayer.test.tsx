@@ -53,12 +53,13 @@ function Page() {
 
 let runtime: TourRuntime
 
-function setup(at: string) {
+/** Load the app at `at`; a list is the tab's history, loaded at its entry `index` (a refresh there). */
+function setup(at: string | string[], index?: number) {
   runtime = createTourRuntime(FIXTURE_CHAPTERS, {}, { voice: 'silent', cards: CARDS })
   setTourRuntime(runtime)
   const router = createMemoryRouter(
     [{ element: <AppShell shell="app" />, children: [{ path: '*', element: <Page /> }] }],
-    { initialEntries: [at] },
+    { initialEntries: typeof at === 'string' ? [at] : at, initialIndex: index },
   )
   const view = render(<RouterProvider router={router} />)
   const where = () => router.state.location.pathname + router.state.location.search
@@ -181,6 +182,62 @@ describe('URL sync', () => {
       await wait(50)
       expect(t.where()).toBe('/')
     })
+  })
+})
+
+describe('Back and Forward (Ruling 38)', () => {
+  test('the location the page loads on opens its chapter, even at a later entry (a refresh)', async () => {
+    const t = setup(['/inventory', '/?tour=decisions'], 1)
+    await waitFor(() => expect(t.where()).toBe('/operations?tour=decisions'))
+    expect(t.state()).toMatchObject({ status: 'paused', pos: { chapter: 1, step: 0, beat: 0 } })
+  })
+
+  test('closed, a link to a chapter (a push) still opens it', async () => {
+    const t = setup('/inventory')
+    await act(() => t.router.navigate('/?tour=decisions'))
+    await waitFor(() => expect(t.where()).toBe('/operations?tour=decisions'))
+    expect(t.state()).toMatchObject({ status: 'paused', pos: { chapter: 1, step: 0, beat: 0 } })
+  })
+
+  test('closed, Back onto a chapter’s link leaves the tour closed, and the URL drops ?tour', async () => {
+    const t = setup(['/?tour=decisions', '/inventory'], 1)
+    await act(() => t.router.navigate(-1))
+    await waitFor(() => expect(t.where()).toBe('/'))
+    expect(t.state().status).toBe('idle')
+    expect(bar()).not.toBeInTheDocument()
+  })
+
+  test('after Exit, Back through the tour’s pages never opens it again', async () => {
+    const t = setup('/?tour=problem')
+    await waitFor(() => expect(t.where()).toBe('/tour/problem?tour=problem'))
+    await userEvent.click(screen.getByRole('button', { name: 'Exit tour' }))
+    await waitFor(() => expect(t.where()).toBe('/'))
+    await act(() => t.router.navigate(-1))
+    await waitFor(() => expect(t.where()).toBe('/tour/problem'))
+    expect(t.state().status).toBe('idle')
+    // Back to the link the page loaded on: it was left since, so it is a Back like any other.
+    await act(() => t.router.navigate(-1))
+    await waitFor(() => expect(t.where()).toBe('/'))
+    expect(t.state().status).toBe('idle')
+    expect(bar()).not.toBeInTheDocument()
+  })
+
+  test('open, Back is a take-over where the tour is, never a jump; Forward still leads on', async () => {
+    const t = setup('/?tour=problem')
+    await waitFor(() => expect(t.where()).toBe('/tour/problem?tour=problem'))
+    act(() => t.state().jump(1))
+    await waitFor(() => expect(t.where()).toBe('/operations?tour=decisions'))
+    act(() => t.state().play())
+    const at = t.state().pos
+    // Back to the problem chapter's page: the tour stays in its own chapter, the visitor driving.
+    await act(() => t.router.navigate(-1))
+    await waitFor(() => expect(t.state().status).toBe('driving'))
+    expect(t.state().pos).toEqual(at)
+    await waitFor(() => expect(t.where()).toBe('/tour/problem?tour=decisions'))
+    // Nothing was pushed: Forward still goes to the entry Back left.
+    await act(() => t.router.navigate(1))
+    await waitFor(() => expect(t.where()).toBe('/operations?tour=decisions'))
+    expect(t.state()).toMatchObject({ status: 'driving', pos: at })
   })
 })
 

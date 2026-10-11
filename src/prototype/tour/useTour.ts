@@ -33,6 +33,12 @@ export interface TourRuntime {
   expectNavigation(): void
   /** TourLayer: the router has landed somewhere new. */
   navigationLanded(): void
+  /**
+   * Is this the location the page loaded on (initial load, refresh, a shared link)? True for the first
+   * location URL sync sees in this page load until it sees another, so Back to it later reads as a
+   * Back (Ruling 38). Kept here, not in TourLayer, because the layer remounts with each shell.
+   */
+  isFirstLocation(key: string): boolean
 }
 
 export interface TourRuntimeOptions {
@@ -57,6 +63,8 @@ export function createTourRuntime(
     options.voice === 'silent' ? createSilentVoice(msFor) : createAudioVoice(msFor, clipUrl)
   let navigateTo: ((to: string) => void) | null = null
   let navigating = false
+  let firstKey: string | null = null
+  let leftFirst = false
   const player: TourPlayer = createTourPlayer({
     chapters,
     timeline,
@@ -98,6 +106,11 @@ export function createTourRuntime(
     },
     navigationLanded: () => {
       navigating = false
+    },
+    isFirstLocation(key) {
+      firstKey ??= key
+      if (key !== firstKey) leftFirst = true
+      return !leftFirst
     },
   }
 }

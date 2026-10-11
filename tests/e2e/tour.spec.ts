@@ -962,6 +962,81 @@ test('the close points at the story cards, then the tour ends on the landing pag
   expect(errors).toEqual([])
 })
 
+/** From now on, note on the page whether the tour bar ever shows, however briefly. */
+async function watchForBar(page: Page) {
+  await page.evaluate(() => {
+    const look = () => {
+      if (document.querySelector('[data-tour="bar"]'))
+        document.documentElement.setAttribute('data-tour-bar-seen', '')
+    }
+    new MutationObserver(look).observe(document, { subtree: true, childList: true })
+    look()
+  })
+  return async () => {
+    // Long enough for a re-opened tour to have landed on its chapter's screen.
+    await page.waitForTimeout(1000)
+    await expect(page.locator('html')).not.toHaveAttribute('data-tour-bar-seen', '')
+    await expect(bar(page)).toHaveCount(0)
+  }
+}
+
+test('once the tour has ended, Back never brings it back (Ruling 38)', async ({ page }) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'close', /\/\?tour=close$/)
+  await play(page)
+  await expect(bar(page)).toHaveCount(0, { timeout: CHAPTER_MS })
+  await expect(page).toHaveURL(/\/$/)
+  const stayedClosed = await watchForBar(page)
+  // Back to the link the page loaded on: left since, so it is a Back like any other.
+  await page.goBack()
+  await expect(page).toHaveURL(/\/\?tourVoice=silent$/)
+  await stayedClosed()
+  expect(errors).toEqual([])
+})
+
+test('after Exit tour on an interlude, Back through the tour’s pages leaves it closed (Ruling 38)', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await openChapter(page, 'validate', /\/tour\/validate\?tour=validate$/)
+  await bar(page).getByRole('button', { name: 'Exit tour' }).click()
+  await expect(page).toHaveURL(/\/$/)
+  // On the landing page, as a visitor sees it before pressing Back.
+  await expect(page.getByRole('heading', { level: 1, name: 'Agent Control Plane' })).toBeVisible()
+  const stayedClosed = await watchForBar(page)
+  await page.goBack()
+  await expect(page).toHaveURL(/\/tour\/validate$/)
+  await page.goBack()
+  await expect(page).toHaveURL(/\/\?tourVoice=silent$/)
+  await stayedClosed()
+  expect(errors).toEqual([])
+})
+
+test('Back while a product step plays is a take-over: the tour stops where it was (Ruling 38)', async ({
+  page,
+}) => {
+  const errors = collectErrors(page)
+  await playOpening(page)
+  await expect(page).toHaveURL(AT_MED_REC, { timeout: CHAPTER_MS })
+  await page.goBack()
+  // The division, with the row the tour selected there.
+  const division = /\/operations\/divisions\/medications\?tour=open&agent=med-rec$/
+  await expect(page).toHaveURL(division)
+  await expect(bar(page)).toContainText('Paused. You’re driving.')
+  const held = await glance(page)
+  // Playing on, the opening would finish its lines over this screen and load the problem chapter
+  // well within this wait.
+  await page.waitForTimeout(3000)
+  await expect(page).toHaveURL(division)
+  await expect(bar(page)).toContainText('Paused. You’re driving.')
+  expect(await glance(page)).toMatchObject({
+    chapter: 'open',
+    caption: held.caption,
+    skipped: '0',
+  })
+  expect(errors).toEqual([])
+})
+
 test('an unknown chapter is stripped from the URL', async ({ page }) => {
   const errors = collectErrors(page)
   await page.goto('/operations?tour=nope')

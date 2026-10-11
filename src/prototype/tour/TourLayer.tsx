@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useReducer, useRef, type ReactNode } from 'react'
-import { useLocation, useNavigate, useSearchParams } from 'react-router'
+import { useLocation, useNavigate, useNavigationType, useSearchParams } from 'react-router'
 import { useShallow } from 'zustand/react/shallow'
 import { elapsedMs, tourUrlAction } from './engine'
 import { markScreen } from './screen'
@@ -74,18 +74,23 @@ function isControl(el: Element | null): boolean {
 /**
  * Keep `?tour=` and the player in step (spec §4.1, R2): a link opens its chapter paused, an unknown
  * chapter is stripped, the URL names the chapter while the tour is open (a product link that drops it
- * gets it back), and closing drops it. A navigation on its way (the player's, or a story's that closed
- * the tour) is left to land first, so a URL write never races one and undoes it.
+ * gets it back), and closing drops it. Back and Forward never open the tour or move it (Ruling 38):
+ * closed, a chapter reached that way is dropped from the URL; open, it is a take-over where the tour
+ * is. A navigation on its way (the player's, or a story's that closed the tour) is left to land
+ * first, so a URL write never races one and undoes it.
  */
 function useTourUrl(runtime: TourRuntime) {
   const { player, chapters, bindNavigate } = runtime
   const navigate = useNavigate()
   const location = useLocation()
+  const navigationType = useNavigationType()
   const [params, setParams] = useSearchParams()
   const status = player((s) => s.status)
   const chapter = player((s) => s.pos.chapter)
   /** Was the tour open at the last sync? */
   const wasOpen = useRef(false)
+  /** The location the last sync saw, so a sync for a status change isn't taken for an arrival. */
+  const lastKey = useRef<string | null>(null)
 
   useEffect(() => bindNavigate((to) => navigate(to)), [bindNavigate, navigate])
 
@@ -95,6 +100,13 @@ function useTourUrl(runtime: TourRuntime) {
   }, [runtime, location.key])
 
   const sync = useEffectEvent(() => {
+    const arrived = lastKey.current !== location.key
+    lastKey.current = location.key
+    // Asked of every location, so the runtime knows when the page has left the one it loaded on.
+    const first = runtime.isFirstLocation(location.key)
+    // Reached by Back or Forward: a POP, and not the location the page loaded on (that reports POP
+    // too). It stays so for every sync here, until the next navigation lands.
+    const popped = navigationType === 'POP' && !first
     if (runtime.isNavigating()) return
     // The player's state now, not this render's: a sibling's effect may have just closed the tour.
     const now = player.getState()
@@ -113,20 +125,26 @@ function useTourUrl(runtime: TourRuntime) {
         { replace: true },
       )
     if (open) {
+      // Back or Forward is the visitor driving: a take-over where the tour is, never a jump. Once,
+      // on arrival: a later sync here is for a status change (Resume, say).
+      if (popped && arrived) now.takeOver()
       const id = chapters[now.pos.chapter]?.id
       if (id === undefined || current === id) return
-      // A navigation the tour didn't make that names another chapter: go there (Ruling 16). The
+      // A link the visitor followed that names another chapter: go there (Ruling 16). The
       // chapter's own navigation then lands, and the next sync names it.
-      const asked = current === null ? -1 : chapters.findIndex((c) => c.id === current)
+      const asked = popped || current === null ? -1 : chapters.findIndex((c) => c.id === current)
       if (asked >= 0) player.getState().jump(asked)
-      // Dropped by a product link, or unknown: name the current chapter again.
+      // Dropped by a product link, unknown, or another chapter's reached by Back: name the current
+      // chapter again.
       else write(id)
     } else if (closed) {
       if (current !== null) write(null)
     } else {
       const action = tourUrlAction(params, chapters)
-      if (action.kind === 'strip') write(null)
-      if (action.kind === 'open') player.getState().open(action.chapter, false)
+      // Back or Forward onto a chapter's link leaves the tour closed, and drops it from the URL, so
+      // nothing that keeps the query (a tab, a dialog) carries it on.
+      if (action.kind === 'strip' || (action.kind === 'open' && popped)) write(null)
+      else if (action.kind === 'open') player.getState().open(action.chapter, false)
     }
   })
   useEffect(() => {
