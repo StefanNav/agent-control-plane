@@ -1030,6 +1030,67 @@ test('the close points at the story cards, then the tour ends on the landing pag
   expect(errors).toEqual([])
 })
 
+test('the bar’s own jumps cut a beat off mid-action cleanly, and Exit tour resets the demo (spec §10)', async ({
+  page,
+}) => {
+  // Typing at its real pace, so there is a moment mid-action to jump from.
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  const errors = collectErrors(page)
+  const reason = typedInto('packet-reason')
+  /** The saved demo's data. */
+  const saved = () =>
+    page.evaluate(
+      () => (JSON.parse(localStorage.getItem('acp-demo') ?? 'null') as { state: unknown }).state,
+    )
+  await openChapter(
+    page,
+    'onboarding',
+    /\/inventory\/agents\/med-rec\/onboarding\/intake\?tour=onboarding$/,
+  )
+  await play(page)
+  // Dr. Lee's board, part way through its reason.
+  await expect
+    .poll(
+      () =>
+        page.evaluate((full) => {
+          const field = document.querySelector<HTMLTextAreaElement>(
+            '[data-story-target="packet-reason"]',
+          )
+          const typed = field?.value.length ?? 0
+          return typed > 0 && typed < full.length ? 'typing' : `${typed} of ${full.length}`
+        }, reason),
+      { timeout: 2 * CHAPTER_MS, intervals: [25] },
+    )
+    .toBe('typing')
+
+  // A progress segment: on into the step-down, still playing.
+  await bar(page).getByRole('button', { name: 'Go to chapter 7: Trust drops' }).click()
+  await expect(page).toHaveURL(/\/operations\/agents\/med-rec\?tour=step-down$/)
+  await expect(bar(page).getByRole('button', { name: 'Pause tour' })).toBeVisible()
+  // The chapter menu: on into supervising.
+  await bar(page).getByRole('button', { name: '7 · Trust drops' }).click()
+  await page.getByRole('menuitem', { name: /^Supervise/ }).click()
+  await expect(page).toHaveURL(/\/epic\?tour=supervising$/)
+  // Well into the chapter, so anything the cut-off beats still had to do would have run by now.
+  await expectUnder(
+    page,
+    { chapter: 'supervising', line: 'Ana reviews' },
+    (s) => `${s.pathname} · skipped ${s.skipped}`,
+    `${EPIC} · skipped 0`,
+  )
+
+  await bar(page).getByRole('button', { name: 'Exit tour' }).click()
+  await expect(bar(page)).toHaveCount(0)
+  await expect(page).toHaveURL(/\/epic$/)
+  // The demo is reset: Marcus, on the seed's data, as Reset demo leaves it.
+  const exited = await saved()
+  expect(exited).toMatchObject({ personaId: 'marcus' })
+  await page.getByRole('button', { name: 'Reset demo' }).click()
+  await expect(page).toHaveURL(/\/operations\/divisions\/medications$/)
+  expect(exited).toEqual(await saved())
+  expect(errors).toEqual([])
+})
+
 /** From now on, note on the page whether the tour bar ever shows, however briefly. */
 async function watchForBar(page: Page) {
   await page.evaluate(() => {
