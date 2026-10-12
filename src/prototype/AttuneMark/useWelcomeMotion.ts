@@ -17,9 +17,9 @@ const REST = [0, 1, 2, 3].map(restPose)
 
 /**
  * Runs the welcome on four rendered paths. It decides once, at mount, whether to dance: not under
- * reduced motion, not while `hold` (the tour is open), not twice in a session. Each frame writes the
- * paths' `d` and `transform` straight to the DOM, so React renders nothing per frame; the paths'
- * props stay at rest, which is also the first and the last frame. Time is the frames' own timestamps,
+ * reduced motion, not while `hold` (the tour is open), not after any earlier view in the session.
+ * Each frame writes the paths' `d` and `transform` straight to the DOM, so React renders nothing per
+ * frame; the paths' props stay at rest, which is also the first and the last frame. Time is the frames' own timestamps,
  * a step at most `MAX_STEP_S`, so a hidden tab (no frames) never skips the dance. Once still, it
  * stays still: holding or reducing motion mid-dance jumps to rest, and letting go doesn't restart it.
  */
@@ -28,16 +28,19 @@ export function useWelcomeMotion(
   hold: boolean,
 ): WelcomeState {
   const reduced = usePrefersReducedMotion()
-  // Pure: React calls an initializer twice under StrictMode. The session is marked when the dance starts.
+  // Pure: React calls an initializer twice under StrictMode. The session is marked once mounted, below.
   const [state, setState] = useState<WelcomeState>(() =>
     !hold && !reduced && !hasWelcomed() ? 'dancing' : 'still',
   )
   // Adjusting state while rendering, for a prop that changed: it stops before anything paints.
   if (state === 'dancing' && (hold || reduced)) setState('still')
 
+  // Any view of the page uses up the welcome, held or still: seen again later in the session (the
+  // tour closing on this page, a return visit), it stays still.
+  useLayoutEffect(() => markWelcomed(), [])
+
   useLayoutEffect(() => {
     if (state !== 'dancing') return
-    markWelcomed()
     // The elements as they are now: React detaches the paths' refs before this effect's cleanup runs,
     // and the cleanup must still put them back at rest.
     const nodes = [...paths.current]

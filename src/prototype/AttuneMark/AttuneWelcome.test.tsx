@@ -138,6 +138,14 @@ test('reduced motion turning on mid-dance jumps to rest', () => {
   expect(frames.size).toBe(0)
 })
 
+test('a held visit uses up the welcome: the page seen again later in the session is still', () => {
+  show({ hold: true }).unmount()
+  requested = 0
+  const again = show()
+  expect(again.svg()).toHaveAttribute('data-state', 'still')
+  expect(requested).toBe(0)
+})
+
 test('leaving mid-dance cancels the frame', () => {
   const view = show()
   framesUntil(1000)

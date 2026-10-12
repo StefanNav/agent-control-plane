@@ -10,8 +10,12 @@ test('the landing page offers the tour, seven stories and free explore', async (
   await expect(page.getByText('Narrated by Stefan')).toBeVisible()
   const photo = page.locator('img[src="/tour/stefan.jpg"]')
   await expect(photo).toBeVisible()
-  expect(await photo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth)).toBe(144)
-  await expect(page.getByRole('heading', { level: 2, name: 'Or explore on your own' })).toBeVisible()
+  expect(await photo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth)).toBe(
+    144,
+  )
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'Or explore on your own' }),
+  ).toBeVisible()
   await expect(page.getByRole('article')).toHaveCount(7)
   await page.getByRole('button', { name: 'Explore freely' }).click()
   await expect(page).toHaveURL(/\/operations\/divisions\/medications$/)
@@ -65,19 +69,42 @@ test('below 1024 px the gate shows and nothing of the app runs', async ({ page }
 })
 
 test.describe('the Attune mark (Phase 11)', () => {
-  test('welcomes once a session, then rests', async ({ page }) => {
+  // The dance lasts about 2.8 s of frames. "Still at once" is checked inside 1 s, so a mark that
+  // danced and then settled can't pass it; the first rest gets a generous budget for slow machines.
+  test('welcomes once a session: dances, rests, and stays still after a reload', async ({
+    page,
+  }) => {
     await page.goto('/')
     const mark = page.locator('[data-attune="welcome"]')
     await expect(mark).toHaveAttribute('aria-hidden', 'true')
-    await expect(mark).toHaveAttribute('data-state', 'still', { timeout: 4000 })
+    await expect(mark).toHaveAttribute('data-state', 'dancing')
+    await expect(mark).toHaveAttribute('data-state', 'still', { timeout: 8000 })
     await page.reload()
-    await expect(mark).toHaveAttribute('data-state', 'still')
+    await expect(mark).toHaveAttribute('data-state', 'still', { timeout: 1000 })
+  })
+
+  test('a reload mid-dance doesn’t dance again', async ({ page }) => {
+    await page.goto('/')
+    const mark = page.locator('[data-attune="welcome"]')
+    await expect(mark).toHaveAttribute('data-state', 'dancing')
+    await page.reload()
+    await expect(mark).toHaveAttribute('data-state', 'still', { timeout: 1000 })
   })
 
   test('under reduced motion the welcome is still from the start', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/')
-    await expect(page.locator('[data-attune="welcome"]')).toHaveAttribute('data-state', 'still')
+    await expect(page.locator('[data-attune="welcome"]')).toHaveAttribute('data-state', 'still', {
+      timeout: 1000,
+    })
+  })
+
+  test('at 1024 px the welcome sits in view, not cut at the window edge', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 })
+    await page.goto('/')
+    const box = await page.locator('[data-attune="welcome"]').boundingBox()
+    expect(box).not.toBeNull()
+    expect(box!.x + box!.width).toBeLessThanOrEqual(1024)
   })
 
   test('the prototype bar carries the still mark', async ({ page }) => {

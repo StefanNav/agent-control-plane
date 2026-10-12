@@ -20,6 +20,16 @@
   display: flex;
 }
 
+/*
+ * The app shell is at least 1280 px wide, so a narrower window scrolls sideways and would cut the
+ * mark at its right edge. There the mark sits beside the intro instead, in view from 1024 px.
+ */
+@media (max-width: 1199px) {
+  .hero {
+    justify-content: start;
+  }
+}
+
 .intro {
   display: flex;
   flex-direction: column;
