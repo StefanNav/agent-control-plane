@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 11: Brand motion (⏸ at checkpoint) |
-| **Branch** | `phase-11-brand-motion` (worked in `.worktrees/phase-11-brand-motion`, locally excluded) |
-| **Last completed** | 11.0–11.4 built test-first; whole-branch review and one fix pass; then Stefan's preview notes: the voice meter leads the caption, and a tour link opens behind Attune's full-page welcome. 1306 unit and 314 e2e tests green |
-| **Next task** | **CHECKPOINT:** Stefan reviews the PR preview (a tour link in a fresh tab: the full-page welcome, then the card; the voice meter leading the caption; the landing in Chrome and Safari, a reload, reduced motion on, the bar, About, the gate below 1024 px, the tab icon). Merge only after approval. Also pending from `main`: Stefan opens `/?notrack` once in each browser he uses (visitor analytics, PR #24, live); Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`) |
+| **Current phase** | All phases merged: Attune's brand motion is live (Phase 11 ☑) |
+| **Branch** | `main` |
+| **Last completed** | Phase 11 approved and squash-merged (PR #25, 2026-10-12): the landing's First hello, the full-page welcome before every tour link, the still mark (bar, About, gate, tab icon), the voice meter leading the caption. Production verified: 314 e2e pass against the live URL |
+| **Next task** | None planned for Phase 11. Still pending from earlier: Stefan opens `/?notrack` once in each browser he uses; Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`). Separately, PR #26 (links made for one recipient) is open from another session |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | PR [#25](https://github.com/StefanNav/agent-control-plane/pull/25): https://agent-control-plane-git-phase-11-bra-9b2ef1-stefannavs-projects.vercel.app (the branch's stable link; Vercel's Git builds resumed after a gap of two pushes) |
+| **Latest preview** | none from Phase 11 (PR #26 has its own) |
 
 ### How to resume in a new session
 
@@ -99,7 +99,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 8 | Stories and portfolio layer | ☑ Merged | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | [#18](https://github.com/StefanNav/agent-control-plane/pull/18) | [phase-8-stories.md](plans/phase-8-stories.md) |
 | 9 | Polish and launch | ☑ Merged | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | [#19](https://github.com/StefanNav/agent-control-plane/pull/19) | [phase-9-polish.md](plans/phase-9-polish.md) |
 | 10 | Guided tour | ☑ Merged | `phase-10-guided-tour` | [#20](https://github.com/StefanNav/agent-control-plane/issues/20) | [#21](https://github.com/StefanNav/agent-control-plane/pull/21) | [phase-10-guided-tour.md](plans/phase-10-guided-tour.md) |
-| 11 | Brand motion | ⏸ At checkpoint | `phase-11-brand-motion` | [#23](https://github.com/StefanNav/agent-control-plane/issues/23) | [#25](https://github.com/StefanNav/agent-control-plane/pull/25) | [phase-11-brand-motion.md](plans/phase-11-brand-motion.md) |
+| 11 | Brand motion | ☑ Merged | `phase-11-brand-motion` | [#23](https://github.com/StefanNav/agent-control-plane/issues/23) | [#25](https://github.com/StefanNav/agent-control-plane/pull/25) | [phase-11-brand-motion.md](plans/phase-11-brand-motion.md) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11 is #23 (#22 was the voice meter PR). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
@@ -703,11 +703,11 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11
 - [x] 11.2 Tokens, the still mark and the tab icon
 - [x] 11.3 The welcome
 - [x] 11.4 Placements
-- [ ] 11.5 Phase checkpoint → **CHECKPOINT** (review and fixes done; Stefan reviews the preview)
+- [x] 11.5 Phase checkpoint → **CHECKPOINT** (Stefan approved and merged 2026-10-12)
 
 **Done when:** the landing welcomes once a session and rests; reduced motion and the open tour keep it still; the still mark shows in the bar, About, the gate and the tab; `pnpm check` and `pnpm e2e` are green; Stefan approves the PR.
 
-**Handoff notes (Phase 11 → after merge)**
+**Handoff notes (Phase 11, merged 2026-10-12)**
 
 - **What exists:** `src/prototype/AttuneMark/`:
   - `geometry.ts`: the kit's pebble path and its rest, quiet, welcome and settle poses, plus `welcomeFrame(elapsed)`. The still mark matches the kit's symbol to 9 places.
@@ -963,3 +963,4 @@ One row per working session. Newest last.
 | 2026-10-12 | 11 | Explored the Attune motion kit and proposed placements; Stefan chose the landing plus a still mark, in product indigo, and approved the spec. Kit kept in `reference/attune-motion-kit/`; plan written; issue #23 | 11.1 |
 | 2026-10-12 | 11 | Built 11.1–11.4 test-first in a worktree (geometry, session flag, still mark, tokens, favicon, the welcome, placements); visual pass at 1440, 1024 and 800 px. Whole-branch review: 0 Critical, 2 Important, 6 Minor; one fix pass (any landing view uses up the welcome; in view at 1024 px; e2e checks that can fail). 1280 unit and 303 e2e tests green | CHECKPOINT: Stefan reviews the preview |
 | 2026-10-12 | 11 | Stefan's preview notes, built test-first: the voice meter leads the caption (fits at 1024 px; beside Play with captions off); a tour link opens behind Attune's full-page welcome (fresh session, skippable, never under reduced motion), then the welcome card. Merged main twice (visitor analytics); Vercel skipped two merge pushes. 1306 unit and 314 e2e tests green | CHECKPOINT: Stefan reviews the preview |
+| 2026-10-12 | 11 | Stefan: the full-page welcome replays on refresh (built test-first), then approved. PR #25 squash-merged; #23 and the milestone closed. Production verified: 314 e2e pass against the live URL; the new tab icon is live | None planned |

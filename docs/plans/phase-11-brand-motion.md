@@ -285,8 +285,8 @@ export function forgetWelcomed(): void                   // tests only: clears s
   - write the Phase 11 handoff notes;
   - add decision-log rows (the four listed in spec §6) and a session-log row;
   - set "Start here" to "Phase 11 at checkpoint".
-- [ ] **Step 3: Push and open the PR.**
+- [x] **Step 3: Push and open the PR.**
   - The forbidden-terms check prints nothing.
   - `git push -u origin phase-11-brand-motion`.
   - Open the PR "Phase 11: Brand motion" (closes the issue), with the task checklist, the Vercel preview URL and screenshots.
-- [ ] **Step 4: STOP.** Ask Stefan to review the preview: the landing in Chrome and Safari, a reload, reduced motion on, the bar, About, the gate and the tab icon. Merge only after he approves.
+- [x] **Step 4: STOP.** Ask Stefan to review the preview: the landing in Chrome and Safari, a reload, reduced motion on, the bar, About, the gate and the tab icon. Merge only after he approves.
