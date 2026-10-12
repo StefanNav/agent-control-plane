@@ -1,3 +1,4 @@
+import type { BeforeSend } from '@vercel/analytics/react'
 import type { StateStorage } from 'zustand/middleware'
 
 const OPT_OUT_KEY = 'acp-notrack'
@@ -25,4 +26,18 @@ export function countsThisVisit({
     console.info('Visits from this browser are counted again.')
   }
   return !automated && storage.getItem(OPT_OUT_KEY) !== '1'
+}
+
+/**
+ * Reports the visit's first page view at the address the visitor opened. A tour link has moved on
+ * to its first screen by the time the script loads, so a link made for one recipient
+ * (`/for/<name>?tour=open`) would otherwise be recorded as that screen.
+ */
+export function reportArrivalAt(entryUrl: string): BeforeSend {
+  let arrived = false
+  return (event) => {
+    if (arrived || event.type !== 'pageview') return event
+    arrived = true
+    return { ...event, url: entryUrl }
+  }
 }

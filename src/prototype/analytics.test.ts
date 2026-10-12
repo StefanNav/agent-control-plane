@@ -1,5 +1,5 @@
 import { createMemoryStorage } from '../store/storage'
-import { countsThisVisit } from './analytics'
+import { countsThisVisit, reportArrivalAt } from './analytics'
 
 const visit = (search: string, storage = createMemoryStorage(), automated = false) =>
   countsThisVisit({ search, storage, automated })
@@ -41,4 +41,23 @@ test('opting out or back in says so in the console', () => {
   visit('?track', storage)
   expect(info).toHaveBeenLastCalledWith('Visits from this browser are counted again.')
   info.mockRestore()
+})
+
+test('the first page view is reported at the address the visitor opened', () => {
+  const beforeSend = reportArrivalAt('https://example.app/for/polly?tour=open')
+  // A tour link has moved on to its first screen by the time the script loads.
+  expect(beforeSend({ type: 'pageview', url: 'https://example.app/operations?tour=open' })).toEqual({
+    type: 'pageview',
+    url: 'https://example.app/for/polly?tour=open',
+  })
+  expect(beforeSend({ type: 'pageview', url: 'https://example.app/about' })).toEqual({
+    type: 'pageview',
+    url: 'https://example.app/about',
+  })
+})
+
+test('a custom event passes unchanged and leaves the arrival to the first page view', () => {
+  const beforeSend = reportArrivalAt('https://example.app/for/polly')
+  expect(beforeSend({ type: 'event', url: 'https://example.app/' })).toEqual({ type: 'event', url: 'https://example.app/' })
+  expect(beforeSend({ type: 'pageview', url: 'https://example.app/' })?.url).toBe('https://example.app/for/polly')
 })
