@@ -25,7 +25,7 @@ Update this block every time a session stops, even mid-phase.
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none open |
+| **Latest preview** | PR [#24](https://github.com/StefanNav/agent-control-plane/pull/24) (visitor analytics) |
 
 ### How to resume in a new session
 
