@@ -48,6 +48,8 @@ function outside(shell: ShellKind, defs: Def[]): RouteDef[] {
 export const routeTable: RouteDef[] = [
   ...outside('prototype', [
     ['/', 'Attune · Agent Control Plane', [], 8],
+    // The landing page under a link made for one recipient: the analytics record the visit by its address.
+    ['/for/:name', 'Attune · Agent Control Plane', [], 8, '/for/acme'],
     ['/about', 'About this work', [], 8],
     ['/about/components', 'Countersign components', ['C'], 1],
     ['/epic', 'Epic stand-in', ['10a', '10b'], 6],

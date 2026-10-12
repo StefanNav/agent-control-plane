@@ -35,6 +35,38 @@ test('?notrack keeps this browser out of the analytics until ?track', async ({ p
   await expect(analyticsScript(page)).toHaveCount(1)
 })
 
+test('a link made for one recipient opens the landing page under its own address', async ({ page }) => {
+  await asVisitor(page)
+  await open(page, '/for/acme?tourVoice=silent')
+  // The address stays put, so the analytics record the visit as /for/acme.
+  expect(new URL(page.url()).pathname).toBe('/for/acme')
+  await expect(analyticsScript(page)).toHaveCount(1)
+  await page.getByRole('button', { name: /^Play the tour · \d+ min$/ }).click()
+  await expect(page).toHaveURL(/\/operations\?tour=open$/)
+})
+
+test('a tour link made for one recipient opens the walkthrough and is recorded at its own address', async ({
+  page,
+}) => {
+  await page.addInitScript(() => Object.defineProperty(navigator, 'webdriver', { get: () => false }))
+  // A stand-in for Vercel's script: it reports its first page view through the page's beforeSend.
+  await page.route(/\/script\.js$/, (route) =>
+    route.fulfill({
+      contentType: 'application/javascript',
+      body: `const hook = (window.vaq || []).find(([name]) => name === 'beforeSend')?.[1] ?? ((e) => e)
+        window.__reported = hook({ type: 'pageview', url: location.href })?.url`,
+    }),
+  )
+  await page.goto('/for/polly?tour=open')
+  await expect(page.locator('[data-tour="welcome"]')).toBeVisible({ timeout: 10_000 })
+  // The tour has moved on to its first screen...
+  await expect(page).toHaveURL(/\/operations\?tour=open$/)
+  // ...but the visit is recorded at the link that was opened.
+  await expect.poll(() => page.evaluate(() => (window as { __reported?: string }).__reported)).toMatch(
+    /\/for\/polly\?tour=open$/,
+  )
+})
+
 test('an automated browser loads no analytics', async ({ page }) => {
   await open(page, '/')
   expect(await analyticsScript(page).count()).toBe(0)

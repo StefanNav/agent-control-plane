@@ -20,12 +20,12 @@ Update this block every time a session stops, even mid-phase.
 |---|---|
 | **Current phase** | All phases merged: Attune's brand motion is live (Phase 11 ☑) |
 | **Branch** | `main` |
-| **Last completed** | Phase 11 approved and squash-merged (PR #25, 2026-10-12): the landing's First hello, the full-page welcome before every tour link, the still mark (bar, About, gate, tab icon), the voice meter leading the caption. Production verified: 314 e2e pass against the live URL |
-| **Next task** | None planned for Phase 11. Still pending from earlier: Stefan opens `/?notrack` once in each browser he uses; Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`). Separately, PR #26 (links made for one recipient) is open from another session |
+| **Last completed** | Links for one recipient squash-merged (PR #26, 2026-10-12): `/for/<name>` is the landing page under its own address, and a visit is recorded at the address opened, so `/for/polly?tour=open` (the walkthrough's start) is recorded as `/for/polly`. Before that, Phase 11 (PR #25) and visitor analytics (PR #24) |
+| **Next task** | Stefan opens Polly's link (`/for/polly?tour=open`) once in Chrome incognito, checks Vercel → Analytics → Pages shows `/for/polly` with 1 visitor (himself), then emails it to Polly. Still pending from earlier: Stefan opens `/?notrack` once in each browser he uses; Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`). Separately, PR #26 (links made for one recipient) is open from another session |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none from Phase 11 (PR #26 has its own) |
+| **Latest preview** | none open |
 
 ### How to resume in a new session
 
@@ -919,6 +919,8 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-12 | The voice meter leads the caption line (8 px before the sentence it voices, keeping its space while hidden so the sentence never moves); with captions off it goes back beside Play/Pause. All 65 lines still fit at 1024 px | Stefan, on the preview (supersedes the 2026-10-11 placement after Play/Pause) |
 | 2026-10-12 | A tour link opens behind Attune's full-page welcome: the mark's First hello over its name, then a fade to the tour's welcome card. Never under reduced motion, a click or key skips it; the landing's hero welcome stays as built | Stefan, on the preview: "it loads first before the tour" |
 | 2026-10-12 | The full-page welcome plays on every load of a tour link, a refresh included (not once a session); the landing's own welcome stays once a session | Stefan, on the preview |
+| 2026-10-12 | Links for one recipient: `/for/<name>` (any name) renders the landing page and keeps its address, so Vercel's Pages panel records the visit as `/for/<name>`; a path rather than a `?ref=` tag, which the Hobby plan may not report. Stefan tests each link in an incognito window himself, so its first visit is his | Stefan wants to know whether a hiring manager opened the link he sent |
+| 2026-10-12 | A visit's first page view is reported at the address the visitor opened (`reportArrivalAt`, a `beforeSend`): a tour link moves to its first screen before the script loads, so `/for/polly?tour=open` was recorded as `/operations`. Later page views are reported as they happen | Found probing Polly's link before sending it; Stefan wants her to land on the walkthrough's start |
 
 ## Session log
 
@@ -964,3 +966,4 @@ One row per working session. Newest last.
 | 2026-10-12 | 11 | Built 11.1–11.4 test-first in a worktree (geometry, session flag, still mark, tokens, favicon, the welcome, placements); visual pass at 1440, 1024 and 800 px. Whole-branch review: 0 Critical, 2 Important, 6 Minor; one fix pass (any landing view uses up the welcome; in view at 1024 px; e2e checks that can fail). 1280 unit and 303 e2e tests green | CHECKPOINT: Stefan reviews the preview |
 | 2026-10-12 | 11 | Stefan's preview notes, built test-first: the voice meter leads the caption (fits at 1024 px; beside Play with captions off); a tour link opens behind Attune's full-page welcome (fresh session, skippable, never under reduced motion), then the welcome card. Merged main twice (visitor analytics); Vercel skipped two merge pushes. 1306 unit and 314 e2e tests green | CHECKPOINT: Stefan reviews the preview |
 | 2026-10-12 | 11 | Stefan: the full-page welcome replays on refresh (built test-first), then approved. PR #25 squash-merged; #23 and the milestone closed. Production verified: 314 e2e pass against the live URL; the new tab icon is live | None planned |
+| 2026-10-12 | – | Merged visitor analytics (PR #24); verified live (the bundle carries Vercel's script path and the site serves the script). Built links for one recipient (`/for/<name>`), merged main's Phase 11 into the branch, and made the first page view report the address opened, so Polly's tour link (`/for/polly?tour=open`) is recorded as `/for/polly`. 1307 unit and 318 e2e tests green | Stefan tests Polly's link in incognito, then sends it |

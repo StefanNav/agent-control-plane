@@ -47,6 +47,7 @@ import { redirects, routeTable } from './routes'
 /** Real screens by route path. Routes not listed here render their Placeholder. */
 const PAGES: Record<string, ReactNode> = {
   '/': <Landing />,
+  '/for/:name': <Landing />,
   '/about': <About />,
   '/about/components': <ComponentGallery />,
   '/operations': <HospitalBoard />,

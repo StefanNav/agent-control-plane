@@ -11,7 +11,7 @@ import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router'
 import { router } from './app/router'
 import { installKeyboardFocusMode } from './design-system/focus'
-import { countsThisVisit } from './prototype/analytics'
+import { countsThisVisit, reportArrivalAt } from './prototype/analytics'
 import { DesktopGate } from './prototype/DesktopGate/DesktopGate'
 import { safeStorage } from './store/storage'
 
@@ -20,6 +20,8 @@ installKeyboardFocusMode()
 const counted =
   import.meta.env.PROD &&
   countsThisVisit({ search: location.search, storage: safeStorage, automated: navigator.webdriver })
+// Read before the router can move on (a tour link goes straight to its first screen).
+const beforeSend = reportArrivalAt(location.href)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -30,6 +32,7 @@ createRoot(document.getElementById('root')!).render(
     {counted && (
       <Analytics
         mode="production"
+        beforeSend={beforeSend}
         configString={import.meta.env.VITE_VERCEL_OBSERVABILITY_CLIENT_CONFIG}
         basePath={import.meta.env.VITE_VERCEL_OBSERVABILITY_BASEPATH}
       />
