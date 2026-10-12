@@ -19,13 +19,13 @@ Update this block every time a session stops, even mid-phase.
 | | |
 |---|---|
 | **Current phase** | All phases merged: the guided tour is live (Phase 10 ☑) |
-| **Branch** | `main` |
+| **Branch** | `visitor-analytics` |
 | **Last completed** | Phase 10 approved and squash-merged (PR #21, 2026-10-11); production verified: routes, stories, the tour and axe pass against the live URL (296 e2e; the caption-fit test now waits for the fonts), and the whole tour plays there in real time in 7:23 with all 65 clips and no stalls; clips are cached for an hour |
-| **Next task** | None planned. Safari confirmed by Stefan (2026-10-11). Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`); a line to redo is re-recorded as `<beatId>.m4a` and imported with `pnpm tour:import` on a new branch |
+| **Next task** | Visitor analytics PR: Stefan enables Web Analytics on the Vercel project (Analytics tab → Enable), checks the preview, then merges; after the deploy he opens `/?notrack` once in each browser he uses. Then: Safari confirmed by Stefan (2026-10-11). Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`); a line to redo is re-recorded as `<beatId>.m4a` and imported with `pnpm tour:import` on a new branch |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none open |
+| **Latest preview** | PR [#24](https://github.com/StefanNav/agent-control-plane/pull/24) (visitor analytics) |
 
 ### How to resume in a new session
 
@@ -864,6 +864,7 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-11 | Checkpoint E: a link-opened tour gets a welcome. The product dims and blurs except the tour bar, and a card ("Welcome to Agent Control Plane", Stefan's photo, the tour in one paragraph, a partway line for later chapters) points at the bar's Play tour, which is ringed and focused. The card has no Play button of its own, and it is a labelled region rather than a dialog, so the tour's keys still work | Stefan: on a fresh link the bar's Play was easy to miss on the busy board; Ruling 45 |
 | 2026-10-11 | After launch: a voice meter beside Play/Pause shows the tour is speaking, so a visitor with the volume low notices. Its bars follow loudness measured from each clip ahead of time (no Web Audio, which risks silencing Safari). It sits after the button rather than before the caption (no width to spare at 1024 px; visible with captions off), and shows only while playing (flat grey bars at rest read as a dashed rule, reserved for stale data) | Stefan: a page can't read the volume; option A approved |
 | 2026-10-11 | Final review fixes: Back and Forward while the tour is open count as taking over, and a closed tour opens from `?tour=` only on a fresh load or an in-app link; Explore freely exits the tour; on the tour's own pages a click pauses instead of taking over; captions fit at 1024 px; the first chapter is announced; the manifest's freshness is a unit test; the unused per-chapter "Decision n" label is gone. Stefan checks Safari at Checkpoint E | Final whole-branch review, Rulings 38–42 |
+| 2026-10-12 | Visitor analytics: Vercel Web Analytics (`@vercel/analytics`, cookieless; Hobby keeps a month of data and has no custom events), mounted only in production builds. `?notrack` opts a browser out for good (Stefan's own visits), `?track` opts it back in; an automated browser (`navigator.webdriver`, so every e2e run, also against the live URL) never loads it. The script reads Vercel's build-time `VITE_VERCEL_OBSERVABILITY_*` config so it loads from the project's own path, past ad blockers' default lists | Stefan wants to see who visits without counting himself; aggregate traffic (pages, sources, countries) is enough for now |
 
 ## Session log
 
@@ -904,3 +905,4 @@ One row per working session. Newest last.
 | 2026-10-11 | 10 | Checkpoint E feedback ("really good"; the Play button is hard to find from a link): built the tour welcome (dimmed product, a card pointing at Play tour) to the approved mockup; reviewed, one small fix round. 1208 unit and 296 e2e tests green. Then "Best with sound on" under the landing page's Play and in the welcome (a page can't read the visitor's volume) | CHECKPOINT E: Stefan reviews the welcome on the preview, then Safari and merge |
 | 2026-10-11 | 10 | Stefan approved; PR #21 squash-merged; #20 closed. Production verified: routes, stories, the tour and axe pass against the live URL (296 e2e; the caption-fit test now waits for the fonts), and the whole tour plays there in real time in 7:23 with all 65 clips and no stalls; clips are cached for an hour | Stefan: Safari and the listen list on the live URL |
 | 2026-10-11 | 10 | Stefan confirmed Safari plays with sound. Built the voice meter (levels pipeline, `VoiceLevel`, `tour:audio --levels`); reviewed, one fix round (visible only while playing, grouped with the button, a livelier level range). 1241 unit and 298 e2e tests green | Stefan: the listen list on the live URL |
+| 2026-10-12 | – | Visitor analytics: Vercel Web Analytics in production builds, `?notrack`/`?track` opt-out remembered per browser, automated browsers never counted (`countsThisVisit`). 1247 unit and 301 e2e tests green | Stefan enables Web Analytics on Vercel, reviews the preview, merges |
