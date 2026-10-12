@@ -61,4 +61,28 @@ test('below 1024 px the gate shows and nothing of the app runs', async ({ page }
   ).toBeVisible()
   await expect(page.getByRole('dialog')).toHaveCount(0)
   await expect(page.getByRole('navigation', { name: 'Main' })).toHaveCount(0)
+  await expect(page.locator('[data-attune="mark"]')).toBeVisible()
+})
+
+test.describe('the Attune mark (Phase 11)', () => {
+  test('welcomes once a session, then rests', async ({ page }) => {
+    await page.goto('/')
+    const mark = page.locator('[data-attune="welcome"]')
+    await expect(mark).toHaveAttribute('aria-hidden', 'true')
+    await expect(mark).toHaveAttribute('data-state', 'still', { timeout: 4000 })
+    await page.reload()
+    await expect(mark).toHaveAttribute('data-state', 'still')
+  })
+
+  test('under reduced motion the welcome is still from the start', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto('/')
+    await expect(page.locator('[data-attune="welcome"]')).toHaveAttribute('data-state', 'still')
+  })
+
+  test('the prototype bar carries the still mark', async ({ page }) => {
+    await page.goto('/operations')
+    const bar = page.getByRole('region', { name: 'Prototype controls' })
+    await expect(bar.locator('[data-attune="mark"]')).toBeVisible()
+  })
 })

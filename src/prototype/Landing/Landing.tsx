@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { Button, Card, LinkButton } from '../../design-system'
 import type from '../../design-system/type.module.css'
 import { useDemo } from '../../store'
+import { AttuneWelcome } from '../AttuneMark'
 import { PITCH } from '../copy'
 import { personaById } from '../personas'
 import { STORIES } from '../stories'
@@ -10,7 +11,7 @@ import { useStory } from '../stories/progress'
 import { useStoryActions } from '../stories/useStory'
 import { NARRATOR_PHOTO } from '../tour/narrator'
 import { tourMinutes } from '../tour/tourMinutes'
-import { exitTourIfOpen, tourRuntime, unlockVoice } from '../tour/useTour'
+import { exitTourIfOpen, tourRuntime, unlockVoice, useTourOpen } from '../tour/useTour'
 import { Credit } from './Credit'
 import styles from './Landing.module.css'
 
@@ -26,6 +27,8 @@ export function Landing() {
 
   const { timeline, player } = tourRuntime()
   const minutes = tourMinutes(timeline.total)
+  // The tour shows this page too (Who it’s for, the close): its own welcome stays the one focal point.
+  const tourOpen = useTourOpen()
   const exploreHintId = useId()
   const soundHintId = useId()
 
@@ -46,42 +49,51 @@ export function Landing() {
 
   return (
     <div className={styles.page}>
-      <section className={styles.intro}>
-        <span className={type.label}>Prototype · mock data</span>
-        <h1 className={type.pageTitle}>Agent Control Plane</h1>
-        <p className={styles.lead}>{PITCH}</p>
-        <p className={styles.text}>
-          Agent Control Plane is the operations console of Attune’s AI management system (AIMS).
-          This clickable prototype runs on mock data for Lakeshore Health, a fictional hospital with
-          41 agents in 5 divisions. The clock is frozen at Tue 08 Dec 2026, 09:52.
-        </p>
-        <div className={styles.actions}>
-          <div className={styles.play}>
-            <Button variant="primary" aria-describedby={soundHintId} onClick={playTour}>
-              Play the tour · {minutes} min
-            </Button>
-            <span id={soundHintId} className={type.meta}>
-              Best with sound on
-            </span>
-          </div>
-          <div className={styles.more}>
-            <div className={styles.moreButtons}>
-              <Button variant="secondary" aria-describedby={exploreHintId} onClick={exploreFreely}>
-                Explore freely
+      <div className={styles.hero}>
+        <section className={styles.intro}>
+          <span className={type.label}>Prototype · mock data</span>
+          <h1 className={type.pageTitle}>Agent Control Plane</h1>
+          <p className={styles.lead}>{PITCH}</p>
+          <p className={styles.text}>
+            Agent Control Plane is the operations console of Attune’s AI management system (AIMS).
+            This clickable prototype runs on mock data for Lakeshore Health, a fictional hospital
+            with 41 agents in 5 divisions. The clock is frozen at Tue 08 Dec 2026, 09:52.
+          </p>
+          <div className={styles.actions}>
+            <div className={styles.play}>
+              <Button variant="primary" aria-describedby={soundHintId} onClick={playTour}>
+                Play the tour · {minutes} min
               </Button>
-              <LinkButton to="/about">About this work</LinkButton>
+              <span id={soundHintId} className={type.meta}>
+                Best with sound on
+              </span>
             </div>
-            <span id={exploreHintId} className={type.meta}>
-              Explore freely starts as Marcus, the agent owner.
-            </span>
+            <div className={styles.more}>
+              <div className={styles.moreButtons}>
+                <Button
+                  variant="secondary"
+                  aria-describedby={exploreHintId}
+                  onClick={exploreFreely}
+                >
+                  Explore freely
+                </Button>
+                <LinkButton to="/about">About this work</LinkButton>
+              </div>
+              <span id={exploreHintId} className={type.meta}>
+                Explore freely starts as Marcus, the agent owner.
+              </span>
+            </div>
           </div>
+          <p className={styles.text}>
+            A narrated walkthrough of one agent’s life: the problem, the product, three key
+            decisions and how I’d validate it.
+          </p>
+          <Credit name="Stefan" src={NARRATOR_PHOTO} />
+        </section>
+        <div className={styles.welcome}>
+          <AttuneWelcome hold={tourOpen} />
         </div>
-        <p className={styles.text}>
-          A narrated walkthrough of one agent’s life: the problem, the product, three key decisions
-          and how I’d validate it.
-        </p>
-        <Credit name="Stefan" src={NARRATOR_PHOTO} />
-      </section>
+      </div>
 
       <section className={styles.stories} aria-labelledby="stories-title">
         <div className={styles.storiesHead}>

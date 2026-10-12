@@ -7,6 +7,19 @@
   padding: 48px 24px 64px;
 }
 
+/* The intro and Attune's mark beside it. The mark's column is fixed, so nothing moves while it dances. */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 720px) 140px;
+  justify-content: space-between;
+  align-items: start;
+  gap: 24px;
+}
+
+.welcome {
+  display: flex;
+}
+
 .intro {
   display: flex;
   flex-direction: column;

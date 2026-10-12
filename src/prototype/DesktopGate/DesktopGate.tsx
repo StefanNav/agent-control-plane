@@ -3,6 +3,7 @@ import type from '../../design-system/type.module.css'
 import { PITCH, REPO_URL } from '../copy'
 import { PERSONAS } from '../personas'
 import { storyById } from '../stories'
+import { AttuneMark } from '../AttuneMark'
 import styles from './DesktopGate.module.css'
 
 const WIDE = '(min-width: 1024px)'
@@ -33,6 +34,7 @@ export function DesktopGate({ children }: { children: ReactNode }) {
   if (useWideEnough()) return children
   return (
     <main className={styles.page}>
+      <AttuneMark size={32} />
       <span className={type.mono}>Attune · Agent Control Plane · Prototype</span>
       <h1 className={type.pageTitle}>Best viewed on a desktop</h1>
       <p className={styles.strong}>

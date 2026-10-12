@@ -233,7 +233,7 @@ export function forgetWelcomed(): void                   // tests only: clears s
 **Interfaces:**
 - **Consumes:** `AttuneMark` (11.2), `AttuneWelcome` (11.3), and `useTourOpen` (`src/prototype/tour/useTour.ts`).
 
-- [ ] **Step 1: Write the failing unit tests.**
+- [x] **Step 1: Write the failing unit tests.**
   - `Landing`:
     - `the hero carries the Attune welcome`: `[data-attune="welcome"]` exists.
     - `with the tour open the welcome holds still`: open the tour first with `runtime.player.getState().open(0, false)`; the welcome then has `data-state="still"`.
@@ -241,7 +241,7 @@ export function forgetWelcomed(): void                   // tests only: clears s
   - `PrototypeBar`: the link is still named `Attune · Agent Control Plane · Prototype`, and contains `[data-attune="mark"][data-tone="ink"]`.
   - `About`: `[data-attune="mark"]` is in the header.
   - `DesktopGate`: when narrow, `[data-attune="mark"]` is shown.
-- [ ] **Step 2: Write the failing e2e tests** in `landing.spec.ts`:
+- [x] **Step 2: Write the failing e2e tests** in `landing.spec.ts`:
 
   ```ts
   test('the Attune mark welcomes once a session, then rests', async ({ page }) => {
@@ -260,22 +260,22 @@ export function forgetWelcomed(): void                   // tests only: clears s
   ```
 
   The existing gate test also asserts `page.locator('[data-attune="mark"]')` is visible at 800 px. A new test asserts the bar's mark on `/operations`.
-- [ ] **Step 3: Implement.**
+- [x] **Step 3: Implement.**
   - **Landing:** wrap the intro `section` and `<div className={styles.mark}><AttuneWelcome hold={useTourOpen()} /></div>` in `<div className={styles.hero}>`. Lay out `.hero` as `display: grid; grid-template-columns: minmax(0, 720px) 140px; justify-content: space-between; align-items: start; gap: 24px`.
   - **PrototypeBar:** `<AttuneMark size={14} tone="ink" className={styles.mark} />` as the link's first child, with `.mark { vertical-align: -2px; margin-right: 8px }`. **Keep `.brand` inline:** as a flex container it would trim the space before "Prototype".
   - **About:** wrap the mono line as `<span className={styles.brand}><AttuneMark size={16} /><span className={type.mono}>…</span></span>`, with `.brand { display: flex; align-items: center; gap: 8px }`.
   - **DesktopGate:** put `<AttuneMark size={32} />` above the mono line.
-- [ ] **Step 4: Watch them pass.**
+- [x] **Step 4: Watch them pass.**
   - `pnpm check` is green.
   - `pnpm e2e` is green: the whole suite, including the tour specs and `a11y.spec`.
-- [ ] **Step 5: Do a visual pass.** Start `pnpm dev` and screenshot at 1440 and 1024 px:
+- [x] **Step 5: Do a visual pass.** Start `pnpm dev` and screenshot at 1440 and 1024 px:
   - the landing mid-dance (about 1 s) and settled;
   - the bar on `/operations`;
   - About;
   - the gate at 800 px.
 
   Then tune `.mark`'s top offset so the resting mark lines up with the H1.
-- [ ] **Step 6: Commit:** `feat(brand): the welcome on the landing, the still mark in the bar, About and the gate`.
+- [x] **Step 6: Commit:** `feat(brand): the welcome on the landing, the still mark in the bar, About and the gate`.
 
 ## Task 11.5: Phase checkpoint
 
