@@ -73,9 +73,10 @@ const bar = () => screen.queryByRole('complementary', { name: 'Tour' })
 
 beforeEach(() => {
   mounts = 0
-  // A visitor this session has already welcomed: these tests are the tour's, not Attune's full-page
-  // welcome before a link's first screen (its own describe, at the end, starts a fresh session).
+  // These tests are the tour's, not Attune's full-page welcome before a link's first screen: it's
+  // switched off here (its own describe, at the end, switches it back on).
   sessionStorage.setItem('attune-welcomed', '1')
+  sessionStorage.setItem('attune-splash', 'off')
   vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
   vi.spyOn(window, 'scrollBy').mockImplementation(() => {})
 })
@@ -87,6 +88,7 @@ afterEach(() => {
   useDemo.getState().reset()
   vi.restoreAllMocks()
   forgetWelcomed()
+  sessionStorage.removeItem('attune-splash')
 })
 
 describe('URL sync', () => {
@@ -945,7 +947,7 @@ describe('Attune’s full-page welcome before a link’s first screen', () => {
   const welcome = () => screen.queryByRole('region', { name: 'Welcome to Agent Control Plane' })
 
   test('in a fresh session it covers the welcome; a key skips it and plays nothing', async () => {
-    forgetWelcomed()
+    sessionStorage.removeItem('attune-splash')
     const t = setup('/?tour=decisions')
     await waitFor(() => expect(t.state().status).toBe('paused'))
     expect(splash()).toHaveAttribute('aria-hidden', 'true')
@@ -956,7 +958,7 @@ describe('Attune’s full-page welcome before a link’s first screen', () => {
   })
 
   test('a click on it skips it, and the welcome stays', async () => {
-    forgetWelcomed()
+    sessionStorage.removeItem('attune-splash')
     const t = setup('/?tour=decisions')
     await waitFor(() => expect(t.state().status).toBe('paused'))
     fireEvent.pointerDown(splash()!)
@@ -965,7 +967,15 @@ describe('Attune’s full-page welcome before a link’s first screen', () => {
     expect(welcome()).toBeInTheDocument()
   })
 
-  test('not once the session has been welcomed: the link opens on the welcome', async () => {
+  test('a refresh plays it again, in a session already welcomed', async () => {
+    sessionStorage.removeItem('attune-splash')
+    const t = setup('/?tour=decisions')
+    await waitFor(() => expect(t.state().status).toBe('paused'))
+    expect(welcome()).toBeInTheDocument()
+    expect(splash()).not.toBeNull()
+  })
+
+  test('switched off, the link opens on the welcome', async () => {
     const t = setup('/?tour=decisions')
     await waitFor(() => expect(t.state().status).toBe('paused'))
     expect(welcome()).toBeInTheDocument()

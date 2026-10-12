@@ -50,14 +50,15 @@ test.describe('Attune’s full-page welcome before a tour link’s first screen'
     await expect(play(page)).toBeVisible()
   })
 
-  test('once a session: a reload opens straight on the card', async ({ page }) => {
+  test('a refresh plays it again', async ({ page }) => {
     await page.goto(LINK)
     await expect(splash(page)).toBeVisible()
     await page.keyboard.press('Escape')
     await expect(splash(page)).toHaveCount(0, { timeout: 1500 })
     await page.reload()
+    await expect(splash(page)).toBeVisible()
+    await expect(splash(page)).toHaveCount(0, { timeout: 8000 })
     await expect(card(page)).toBeVisible()
-    await expect(splash(page)).toHaveCount(0)
   })
 
   test('under reduced motion it never shows', async ({ page }) => {

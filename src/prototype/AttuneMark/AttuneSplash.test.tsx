@@ -115,10 +115,17 @@ test('a key skips it and goes no further: it never presses what has focus', () =
   document.removeEventListener('keydown', onDocument, true)
 })
 
-test('not for a session welcomed before this page', () => {
+test('every time the welcome shows: a refresh plays it again, in a session already welcomed', () => {
   sessionStorage.setItem('attune-welcomed', '1')
   show()
+  expect(splash()).not.toBeNull()
+})
+
+test('switched off for tests about the tour itself (attune-splash=off)', () => {
+  sessionStorage.setItem('attune-splash', 'off')
+  show()
   expect(splash()).toBeNull()
+  sessionStorage.removeItem('attune-splash')
 })
 
 test('not under reduced motion: the page opens straight away', () => {

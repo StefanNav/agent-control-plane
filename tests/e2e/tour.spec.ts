@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 import { CHAPTERS } from '../../src/prototype/tour/script'
 import { typographic } from '../../src/prototype/tour/typographic'
 import { collectErrors } from './console'
-import { alreadyWelcomed } from './welcomed'
+import { skipWelcomeScreen } from './welcomed'
 
 // The silent voice makes each beat a tenth of its clip; reduced motion makes the cursor jump.
 const AT_MED_REC = /\/operations\/agents\/med-rec\?tour=open$/
@@ -289,7 +289,7 @@ async function expectAtMedRec(page: Page) {
 
 test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await alreadyWelcomed(page)
+  await skipWelcomeScreen(page)
 })
 
 test('the opening clicks from the board to the Med Rec Agent, then runs on into the problem', async ({

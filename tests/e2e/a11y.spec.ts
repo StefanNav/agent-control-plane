@@ -1,11 +1,11 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { routeTable } from '../../src/app/routes'
-import { alreadyWelcomed } from './welcomed'
+import { skipWelcomeScreen } from './welcomed'
 
 // Tour links open straight on the tour's welcome card here; Attune's full-page welcome has its own spec.
 test.beforeEach(async ({ page }) => {
-  await alreadyWelcomed(page)
+  await skipWelcomeScreen(page)
 })
 
 /** WCAG 2.1 A and AA plus axe's best practices; any violation fails (Phase 9 R1). */
