@@ -21,11 +21,11 @@ Update this block every time a session stops, even mid-phase.
 | **Current phase** | All phases merged: the guided tour is live (Phase 10 ☑) |
 | **Branch** | `recipient-links` |
 | **Last completed** | Visitor analytics squash-merged (PR #24, 2026-10-12): Vercel Web Analytics, enabled on the project by Stefan; `?notrack` keeps a browser out. Before that, Phase 10 (PR #21) and the voice meter (PR #22) |
-| **Next task** | None planned. Stefan opens `/?notrack` once in each browser he uses. Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`); a line to redo is re-recorded as `<beatId>.m4a` and imported with `pnpm tour:import` on a new branch |
+| **Next task** | PR #26 (links for one recipient): Stefan reviews and merges; then he opens each `/for/<name>` link once in incognito before sending it. Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`); a line to redo is re-recorded as `<beatId>.m4a` and imported with `pnpm tour:import` on a new branch |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none open |
+| **Latest preview** | PR [#26](https://github.com/StefanNav/agent-control-plane/pull/26) (links for one recipient) |
 
 ### How to resume in a new session
 
