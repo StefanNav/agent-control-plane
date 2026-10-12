@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router'
 import { AppShell } from '../../app/AppShell'
 import { useDemo } from '../../store'
+import { forgetWelcomed } from '../AttuneMark/session'
 import { Landing } from '../Landing/Landing'
 import { useStory } from '../stories/progress'
 import type { CardContent } from './cards'
@@ -72,6 +73,9 @@ const bar = () => screen.queryByRole('complementary', { name: 'Tour' })
 
 beforeEach(() => {
   mounts = 0
+  // A visitor this session has already welcomed: these tests are the tour's, not Attune's full-page
+  // welcome before a link's first screen (its own describe, at the end, starts a fresh session).
+  sessionStorage.setItem('attune-welcomed', '1')
   vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
   vi.spyOn(window, 'scrollBy').mockImplementation(() => {})
 })
@@ -82,6 +86,7 @@ afterEach(() => {
   useStory.setState({ progress: null, exited: false, focusPanel: false })
   useDemo.getState().reset()
   vi.restoreAllMocks()
+  forgetWelcomed()
 })
 
 describe('URL sync', () => {
@@ -932,5 +937,38 @@ describe('the welcome (Checkpoint E)', () => {
     await act(() => t.router.navigate('/?tour=problem'))
     await waitFor(() => expect(t.where()).toBe('/tour/problem?tour=problem'))
     expect(welcome()).not.toBeInTheDocument()
+  })
+})
+
+describe('Attune’s full-page welcome before a link’s first screen', () => {
+  const splash = () => document.querySelector('[data-tour="splash"]')
+  const welcome = () => screen.queryByRole('region', { name: 'Welcome to Agent Control Plane' })
+
+  test('in a fresh session it covers the welcome; a key skips it and plays nothing', async () => {
+    forgetWelcomed()
+    const t = setup('/?tour=decisions')
+    await waitFor(() => expect(t.state().status).toBe('paused'))
+    expect(splash()).toHaveAttribute('aria-hidden', 'true')
+    expect(welcome()).toBeInTheDocument()
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: ' ' })
+    expect(splash()).toHaveAttribute('data-leaving', 'true')
+    expect(t.state()).toMatchObject({ status: 'paused', welcome: true })
+  })
+
+  test('a click on it skips it, and the welcome stays', async () => {
+    forgetWelcomed()
+    const t = setup('/?tour=decisions')
+    await waitFor(() => expect(t.state().status).toBe('paused'))
+    fireEvent.pointerDown(splash()!)
+    expect(splash()).toHaveAttribute('data-leaving', 'true')
+    expect(t.state()).toMatchObject({ status: 'paused', welcome: true })
+    expect(welcome()).toBeInTheDocument()
+  })
+
+  test('not once the session has been welcomed: the link opens on the welcome', async () => {
+    const t = setup('/?tour=decisions')
+    await waitFor(() => expect(t.state().status).toBe('paused'))
+    expect(welcome()).toBeInTheDocument()
+    expect(splash()).toBeNull()
   })
 })

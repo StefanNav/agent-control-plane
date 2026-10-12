@@ -1,8 +1,8 @@
 import { act, render } from '@testing-library/react'
 import { StrictMode } from 'react'
-import { AttuneWelcome } from './AttuneWelcome'
+import { AttuneWelcome, type AttuneWelcomeProps } from './AttuneWelcome'
 import { restPose, transformOf } from './geometry'
-import { forgetWelcomed } from './session'
+import { forgetWelcomed, markWelcomed } from './session'
 
 /** Frames asked for and not yet run or cancelled, by id. */
 let frames = new Map<number, FrameRequestCallback>()
@@ -56,12 +56,13 @@ function framesUntil(to: number, from = 0) {
   for (let at = from; at <= to; at += 16) frameAt(at)
 }
 
-function show(props: { hold?: boolean } = {}, wrap = false) {
+function show(props: AttuneWelcomeProps = {}, wrap = false) {
   const element = <AttuneWelcome {...props} />
   const view = render(wrap ? <StrictMode>{element}</StrictMode> : element)
   const svg = () => view.container.querySelector('svg')!
   const paths = () => [...svg().querySelectorAll('path')]
-  const atRest = () => paths().every((path, i) => path.getAttribute('transform') === transformOf(restPose(i)))
+  const atRest = () =>
+    paths().every((path, i) => path.getAttribute('transform') === transformOf(restPose(i)))
   return { ...view, svg, paths, atRest }
 }
 
@@ -176,4 +177,27 @@ test('decorative, with a 140 px footprint by default', () => {
   expect(svg).toHaveAttribute('width', '140')
   expect(svg).toHaveAttribute('height', '140')
   expect(svg.querySelectorAll('path')).toHaveLength(4)
+})
+
+test('with once off, it dances in a session already welcomed (its caller decided)', () => {
+  markWelcomed()
+  const view = show({ once: false })
+  expect(view.svg()).toHaveAttribute('data-state', 'dancing')
+})
+
+test('says when it comes to rest, once', () => {
+  const onSettled = vi.fn()
+  show({ onSettled })
+  framesUntil(1000)
+  expect(onSettled).not.toHaveBeenCalled()
+  framesUntil(2800, 1016)
+  expect(onSettled).toHaveBeenCalledTimes(1)
+})
+
+test('says so when held mid-dance too', () => {
+  const onSettled = vi.fn()
+  const view = show({ onSettled })
+  framesUntil(1000)
+  view.rerender(<AttuneWelcome hold onSettled={onSettled} />)
+  expect(onSettled).toHaveBeenCalledTimes(1)
 })

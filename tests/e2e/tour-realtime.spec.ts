@@ -5,6 +5,12 @@ import { beatRunningMs, runningMs } from '../../src/prototype/tour/runningTime'
 import { CHAPTERS } from '../../src/prototype/tour/script'
 import type { Manifest } from '../../src/prototype/tour/types'
 import { collectErrors } from './console'
+import { alreadyWelcomed } from './welcomed'
+
+// Tour links open straight on the tour's welcome card here; Attune's full-page welcome has its own spec.
+test.beforeEach(async ({ page }) => {
+  await alreadyWelcomed(page)
+})
 
 /**
  * Checkpoint E: the whole tour, played at 1× in its recorded voice. It takes about seven and a half

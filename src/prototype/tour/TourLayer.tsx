@@ -16,6 +16,7 @@ import { TourCard } from './TourCard'
 import { TourCursor } from './TourCursor'
 import { tourMinutes } from './tourMinutes'
 import { TourWelcome } from './TourWelcome'
+import { AttuneSplash } from '../AttuneMark'
 import type { TourStatus } from './player'
 import type { Chapter, Position } from './types'
 import { tourRuntime, type TourRuntime } from './useTour'
@@ -319,6 +320,8 @@ export function TourLayer() {
         minutes={tourMinutes(timeline.total)}
         onDismiss={controls.dismissWelcome}
       />
+      {/* A link's first screen opens behind Attune's full-page welcome, in a fresh session. */}
+      <AttuneSplash show={welcoming} />
       <TourBar
         chapters={chapters}
         timeline={timeline}

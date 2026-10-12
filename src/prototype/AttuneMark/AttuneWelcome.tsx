@@ -8,6 +8,10 @@ export interface AttuneWelcomeProps {
   size?: number
   /** Keep still (the tour is open, and its own welcome is the one focal point). */
   hold?: boolean
+  /** Dance only on the session's first view (default); off when the caller has decided already. */
+  once?: boolean
+  /** Called when the dance comes to rest. */
+  onSettled?: () => void
 }
 
 /**
@@ -15,9 +19,9 @@ export interface AttuneWelcomeProps {
  * 2.25 s, then settle into the still mark and stop. Still from the start under reduced motion, while
  * `hold`, or later in the session. Decorative, and nothing waits for it.
  */
-export function AttuneWelcome({ size = 140, hold = false }: AttuneWelcomeProps) {
+export function AttuneWelcome({ size = 140, hold = false, once, onSettled }: AttuneWelcomeProps) {
   const paths = useRef<(SVGPathElement | null)[]>([])
-  const state = useWelcomeMotion(paths, hold)
+  const state = useWelcomeMotion(paths, hold, { once, onSettled })
   return (
     <svg
       viewBox="-100 -100 200 200"

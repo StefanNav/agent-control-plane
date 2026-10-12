@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState, type RefObject } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react'
 import {
   MAX_STEP_S,
   WELCOME_TOTAL_S,
@@ -23,14 +23,22 @@ const REST = [0, 1, 2, 3].map(restPose)
  * a step at most `MAX_STEP_S`, so a hidden tab (no frames) never skips the dance. Once still, it
  * stays still: holding or reducing motion mid-dance jumps to rest, and letting go doesn't restart it.
  */
+export interface WelcomeMotionOptions {
+  /** Dance only on the session's first view (default). Off when the caller has decided already. */
+  once?: boolean
+  /** Called when a dance comes to rest: it ended, or it was held or reduced mid-way. */
+  onSettled?: () => void
+}
+
 export function useWelcomeMotion(
   paths: RefObject<(SVGPathElement | null)[]>,
   hold: boolean,
+  { once = true, onSettled }: WelcomeMotionOptions = {},
 ): WelcomeState {
   const reduced = usePrefersReducedMotion()
   // Pure: React calls an initializer twice under StrictMode. The session is marked once mounted, below.
   const [state, setState] = useState<WelcomeState>(() =>
-    !hold && !reduced && !hasWelcomed() ? 'dancing' : 'still',
+    !hold && !reduced && (!once || !hasWelcomed()) ? 'dancing' : 'still',
   )
   // Adjusting state while rendering, for a prop that changed: it stops before anything paints.
   if (state === 'dancing' && (hold || reduced)) setState('still')
@@ -71,6 +79,20 @@ export function useWelcomeMotion(
       draw(REST)
     }
   }, [state, paths])
+
+  // A dance that comes to rest says so, once; one that never started says nothing.
+  const settled = useRef(onSettled)
+  const danced = useRef(false)
+  useLayoutEffect(() => {
+    settled.current = onSettled
+  })
+  useEffect(() => {
+    if (state === 'dancing') danced.current = true
+    else if (danced.current) {
+      danced.current = false
+      settled.current?.()
+    }
+  }, [state])
 
   return state
 }
