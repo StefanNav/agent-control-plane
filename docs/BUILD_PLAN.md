@@ -724,10 +724,10 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11
   - The tour holds it still.
   - Below 1200 px the welcome sits beside the intro, because the 1280 px shell scrolls sideways there.
   - **A tour link** (`?tour=…` on a page's first location, which shows the tour's welcome card) opens behind `AttuneSplash`: the page covered, the mark dancing over "Attune / Agent Control Plane", a 300 ms beat at rest, a 300 ms fade, then the card.
-    - It shows only in a session that wasn't welcomed before this page loaded (`welcomedBeforeThisPage()`, read the first time anything touches the flag).
+    - It shows every time a page opens on that card (a tour link, a refresh of one).
     - Never under reduced motion.
     - A click or any key skips it; the key is spent and presses nothing beneath.
-    - E2e files about the tour start pre-welcomed (`tests/e2e/welcomed.ts`); `welcome.spec.ts` tests the screen itself.
+    - Tests about the tour itself switch it off (`sessionStorage['attune-splash'] = 'off'`, via `tests/e2e/welcomed.ts` and TourLayer's tests); `welcome.spec.ts` tests the screen itself.
   - **The voice meter** leads the caption line, keeping its space while hidden; with captions off it sits beside Play/Pause.
 - **Deferred minors (from the final review):**
   - The kit's 0.38 s blend-in on start isn't ported, so the start is a little brisker.
@@ -917,7 +917,8 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-12 | The kit is ported, not loaded: only welcome, quiet and settle, in TypeScript (`src/prototype/AttuneMark/`); the kit stays in `reference/` as the source | Spec §4; no outside scripts |
 | 2026-10-12 | Any landing view uses up the welcome (held by the tour or still under reduced motion too), and below 1200 px the welcome sits beside the intro rather than at the far right | Final whole-branch review |
 | 2026-10-12 | The voice meter leads the caption line (8 px before the sentence it voices, keeping its space while hidden so the sentence never moves); with captions off it goes back beside Play/Pause. All 65 lines still fit at 1024 px | Stefan, on the preview (supersedes the 2026-10-11 placement after Play/Pause) |
-| 2026-10-12 | A tour link opens behind Attune's full-page welcome: the mark's First hello over its name, then a fade to the tour's welcome card. Fresh session only, never under reduced motion, a click or key skips it; the landing's hero welcome stays as built | Stefan, on the preview: "it loads first before the tour" |
+| 2026-10-12 | A tour link opens behind Attune's full-page welcome: the mark's First hello over its name, then a fade to the tour's welcome card. Never under reduced motion, a click or key skips it; the landing's hero welcome stays as built | Stefan, on the preview: "it loads first before the tour" |
+| 2026-10-12 | The full-page welcome plays on every load of a tour link, a refresh included (not once a session); the landing's own welcome stays once a session | Stefan, on the preview |
 
 ## Session log
 
