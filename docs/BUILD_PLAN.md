@@ -21,11 +21,11 @@ Update this block every time a session stops, even mid-phase.
 | **Current phase** | Phase 11: Brand motion (⏸ at checkpoint) |
 | **Branch** | `phase-11-brand-motion` (worked in `.worktrees/phase-11-brand-motion`, locally excluded) |
 | **Last completed** | 11.0–11.4 built test-first; whole-branch review (0 Critical, 2 Important, 6 Minor) and one fix pass; merged main (visitor analytics); 1286 unit and 306 e2e tests green |
-| **Next task** | **CHECKPOINT:** Stefan reviews the PR preview (landing in Chrome and Safari, a reload, reduced motion on, the bar, About, the gate below 1024 px, the tab icon). Merge only after approval. Also, from visitor analytics (PR #24, merged 2026-10-12): Stefan opens `/?notrack` once in each browser he uses |
+| **Next task** | **CHECKPOINT:** Stefan reviews the PR preview (landing in Chrome and Safari, a reload, reduced motion on, the bar, About, the gate below 1024 px, the tab icon). Merge only after approval. Also pending from `main`: Stefan opens `/?notrack` once in each browser he uses (visitor analytics, PR #24, live); Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | PR [#25](https://github.com/StefanNav/agent-control-plane/pull/25) (Vercel posts the URL on the PR) |
+| **Latest preview** | PR [#25](https://github.com/StefanNav/agent-control-plane/pull/25): https://agent-control-plane-git-phase-11-bra-9b2ef1-stefannavs-projects.vercel.app (branch alias; Vercel didn't post it on the PR) |
 
 ### How to resume in a new session
 
