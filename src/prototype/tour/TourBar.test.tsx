@@ -88,12 +88,23 @@ describe('the voice meter', () => {
   test.each<[TourBarProps['status'], string]>([
     ['paused', 'Play tour'],
     ['playing', 'Pause tour'],
-  ])('%s, it sits right after %s, with it in one group', (status, name) => {
+  ])('%s, with captions on, it leads the caption line; %s stands alone', (status, name) => {
     setup({ status })
+    const caption = document.querySelector('[data-tour="bar"] p')!
+    expect(meter()?.nextElementSibling).toBe(caption)
+    expect(caption.parentElement?.children).toHaveLength(2)
+    expect(screen.getByRole('button', { name }).nextElementSibling).toBeNull()
+    expect(meter()).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  test.each<[TourBarProps['status'], string]>([
+    ['paused', 'Play tour'],
+    ['playing', 'Pause tour'],
+  ])('%s, with captions off, it sits right after %s, in one group', (status, name) => {
+    setup({ status, captions: false })
     const button = screen.getByRole('button', { name })
     expect(button.nextElementSibling).toBe(meter())
     expect(button.parentElement?.children).toHaveLength(2)
-    expect(meter()).toHaveAttribute('aria-hidden', 'true')
   })
 
   test('shown while playing; paused, hidden but still there, so Play and Pause swap in place', () => {
@@ -109,9 +120,12 @@ describe('the voice meter', () => {
     expect(meter()).toHaveAttribute('data-speaking', 'false')
   })
 
-  test('driving, there is none: Resume tour stands alone', () => {
+  test('driving, none shows: Resume tour stands alone, and the caption keeps its place', () => {
     setup({ status: 'driving' })
-    expect(meter()).not.toBeInTheDocument()
+    expect(meter()).not.toBeVisible()
+    expect(screen.getByRole('button', { name: 'Resume tour' }).parentElement).not.toContainElement(
+      meter() as HTMLElement,
+    )
     expect(
       screen.getByRole('button', { name: 'Resume tour' }).nextElementSibling,
     ).toHaveTextContent('Paused. You’re driving.')

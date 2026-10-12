@@ -1,0 +1,22 @@
+/* Attune's mark: product indigo on light pages, its lighter pair on the ink prototype bar. */
+.mark {
+  display: inline-block;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.deep {
+  fill: var(--cs-mark-deep);
+}
+
+.soft {
+  fill: var(--cs-mark-soft);
+}
+
+.mark[data-tone='ink'] .deep {
+  fill: var(--cs-mark-deep-on-ink);
+}
+
+.mark[data-tone='ink'] .soft {
+  fill: var(--cs-mark-soft-on-ink);
+}

@@ -7,6 +7,7 @@ import { STORIES } from '../stories/index'
 import { useStory } from '../stories/progress'
 import type { Story } from '../stories/types'
 import { useActiveStory, useStoryActions } from '../stories/useStory'
+import { AttuneMark } from '../AttuneMark'
 import styles from './PrototypeBar.module.css'
 
 /** Demo controls above the product UI: who you are, the stories, reset, About. */
@@ -18,6 +19,7 @@ export function PrototypeBar({ stories = STORIES }: { stories?: readonly Story[]
   return (
     <div className={styles.bar} role="region" aria-label="Prototype controls">
       <Link to="/" className={styles.brand}>
+        <AttuneMark size={14} tone="ink" className={styles.mark} />
         Attune · Agent Control Plane · <span className={styles.tag}>Prototype</span>
       </Link>
       <div className={styles.controls}>

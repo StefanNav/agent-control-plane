@@ -1,13 +1,21 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { routeTable } from '../../src/app/routes'
+import { skipWelcomeScreen } from './welcomed'
+
+// Tour links open straight on the tour's welcome card here; Attune's full-page welcome has its own spec.
+test.beforeEach(async ({ page }) => {
+  await skipWelcomeScreen(page)
+})
 
 /** WCAG 2.1 A and AA plus axe's best practices; any violation fails (Phase 9 R1). */
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']
 
 async function violations(page: Page): Promise<string[]> {
   const result = await new AxeBuilder({ page }).withTags(TAGS).analyze()
-  return result.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)
+  return result.violations.map(
+    (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
+  )
 }
 
 async function viewAs(page: Page, name: string) {
@@ -24,7 +32,9 @@ const VARIANTS = [
   '/operations/agents/med-rec?tab=changes',
   '/operations/agents/med-rec?control=pause-agent',
   '/operations/agents/med-rec?scenario=change-detected-v150&tab=changes',
-  ...['intake', 'systems', 'tools', 'approval', 'review'].map((step) => `/inventory/agents/med-rec/onboarding/${step}`),
+  ...['intake', 'systems', 'tools', 'approval', 'review'].map(
+    (step) => `/inventory/agents/med-rec/onboarding/${step}`,
+  ),
   '/inventory?tab=drafts',
   '/epic?day=later',
   '/operations/divisions/medications?story=marcus&step=2',
@@ -141,6 +151,8 @@ test('axe: the agent view with its control menu open', async ({ page }) => {
 test('axe: the desktop gate', async ({ page }) => {
   await page.setViewportSize({ width: 800, height: 900 })
   await page.goto('/operations')
-  await expect(page.getByRole('heading', { level: 1, name: 'Best viewed on a desktop' })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Best viewed on a desktop' }),
+  ).toBeVisible()
   expect(await violations(page)).toEqual([])
 })

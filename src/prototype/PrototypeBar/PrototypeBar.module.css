@@ -18,6 +18,12 @@
   text-decoration: none;
 }
 
+/* Inline, not flex: a flex link would trim the space before "Prototype". */
+.mark {
+  margin-right: 8px;
+  vertical-align: -2px;
+}
+
 .tag {
   font-family: var(--cs-font-mono);
   font-size: 12px;

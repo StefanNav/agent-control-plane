@@ -22,7 +22,17 @@
  * The sentence being spoken: one line. Captions carry the tour with the sound off (WCAG 1.2.2), so
  * every line must show in full; the ellipsis is only a last resort.
  */
+/* The caption line: the voice meter, then the sentence. */
+.line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .caption {
+  flex: 1;
+  min-width: 0;
   margin: 0;
   overflow: hidden;
   font-size: 14px;
@@ -50,7 +60,7 @@
   min-width: 0;
 }
 
-/* Play/Pause and the voice meter: 6 px apart, so the meter reads as the button's; 12 px to the menu. */
+/* Play/Pause, and the voice meter when captions are off: 6 px apart, so the meter reads as the button's. */
 .player {
   display: flex;
   flex-shrink: 0;

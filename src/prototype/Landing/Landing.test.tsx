@@ -1,7 +1,8 @@
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { useDemo } from '../../store'
+import { forgetWelcomed } from '../AttuneMark/session'
 import { PERSONAS } from '../personas'
 import { STORIES, stepHref, storyById } from '../stories'
 import { useStory } from '../stories/progress'
@@ -38,6 +39,7 @@ afterEach(() => {
   setTourRuntime(null)
   useStory.setState({ progress: null, exited: false })
   useDemo.getState().reset()
+  forgetWelcomed()
 })
 
 /** The tour's length as the button says it: whole minutes. */
@@ -193,4 +195,17 @@ test('the story cards sit under “Or explore on your own”, still the targets 
   expect(container.querySelector('[data-story-target="people-cards"]')).not.toBeNull()
   for (const persona of PERSONAS)
     expect(container.querySelector(`[data-story-target="people-${persona.id}"]`)).not.toBeNull()
+})
+
+test('the hero carries the Attune welcome, decorative', () => {
+  const { container } = show()
+  const welcome = container.querySelector('[data-attune="welcome"]')
+  expect(welcome).toHaveAttribute('aria-hidden', 'true')
+  expect(welcome).toHaveAttribute('data-state', 'dancing')
+})
+
+test('with the tour open the welcome holds still', () => {
+  act(() => runtime.player.getState().open(0, false))
+  const { container } = show()
+  expect(container.querySelector('[data-attune="welcome"]')).toHaveAttribute('data-state', 'still')
 })

@@ -13,6 +13,12 @@
   gap: 4px;
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .head h1 {
   margin: 0;
   color: var(--cs-ink);

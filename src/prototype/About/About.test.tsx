@@ -216,3 +216,10 @@ test('says the hospital and the brand are fictional, and uses no gendered pronou
   expect(container).toHaveTextContent('Attune, Lakeshore Health and everyone in it are fictional')
   expect(container.textContent).not.toMatch(/\b(he|she|him|her|his|hers)\b/i)
 })
+
+test('the header carries the still Attune mark beside the product line', () => {
+  const { container } = show()
+  const mark = container.querySelector('header [data-attune="mark"]')
+  expect(mark).toHaveAttribute('aria-hidden', 'true')
+  expect(mark?.parentElement).toHaveTextContent('Attune · Agent Control Plane')
+})

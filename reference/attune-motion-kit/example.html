@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Attune — minimal integration</title>
+<style>body{font:16px/1.5 system-ui;margin:40px;max-width:600px;color:#142747}button{font:inherit;padding:10px;margin:4px}#row{display:flex;align-items:center;gap:12px;min-height:100px}p{color:#52627a}</style></head><body>
+<h1>Attune integration example</h1><p>These buttons simulate application events. Connect the handlers to your real work lifecycle.</p>
+<div id="row"><span id="mark" aria-hidden="true"></span><span id="label" role="status" aria-live="polite">Gathering evidence…</span></div>
+<button id="process">Processing started</button><button id="ready">Result received</button><button id="lost">Connection lost</button><button id="retry">Retry started</button><button id="pause">Pause motion</button>
+<script src="attune-motion.js"></script><script>
+const motion=AttuneMotion.create('#mark',{mode:'search',size:80});
+const label=document.querySelector('#label');
+document.querySelector('#process').onclick=()=>{motion.setState('processing');label.textContent='Preparing the summary…'};
+document.querySelector('#ready').onclick=()=>{motion.setState('complete');label.textContent='Ready for your review'};
+document.querySelector('#lost').onclick=()=>{motion.setState('blocked');label.textContent='Connection lost. Work has paused.'};
+document.querySelector('#retry').onclick=()=>{motion.setMode('reconnect');motion.restart();label.textContent='Reconnecting…'};
+document.querySelector('#pause').onclick=e=>{const paused=motion.getState().paused;motion[paused?'resume':'pause']();e.target.textContent=paused?'Pause motion':'Resume motion';e.target.setAttribute('aria-pressed',!paused)};
+addEventListener('pagehide',()=>motion.destroy(),{once:true});
+</script></body></html>

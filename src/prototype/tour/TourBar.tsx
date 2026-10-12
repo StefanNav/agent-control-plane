@@ -58,10 +58,10 @@ export interface TourBarProps {
 }
 
 /**
- * The player bar (spec §4.2, R4): the sentence being spoken, then Play/Pause (the one indigo
- * control) with the voice meter beside it while the tour plays, the chapter menu, one progress
- * segment per chapter, the time, speed, captions and Exit. After a take-over it says the visitor is
- * driving and offers Resume tour instead of Play, with no meter.
+ * The player bar (spec §4.2, R4): the sentence being spoken, led by the voice meter while the tour
+ * plays, then Play/Pause (the one indigo control; the meter sits beside it when captions are off),
+ * the chapter menu, one progress segment per chapter, the time, speed, captions and Exit. After a
+ * take-over it says the visitor is driving and offers Resume tour instead of Play, with no meter.
  */
 export function TourBar({
   chapters,
@@ -85,6 +85,7 @@ export function TourBar({
   const n = pos.chapter + 1
   const nextRate = RATES[(RATES.indexOf(rate) + 1) % RATES.length]!
   const announced = useAnnounced(`Chapter ${n}: ${chapter.title}`)
+  const voice = <VoiceLevel playing={status === 'playing'} {...meter} />
   return (
     <aside
       aria-label="Tour"
@@ -96,7 +97,12 @@ export function TourBar({
     >
       <VisuallyHidden role="status">{announced}</VisuallyHidden>
       {captions ? (
-        <p className={styles.caption}>{typographic(beatAt(chapters, pos).text)}</p>
+        // The meter leads the line it voices. It keeps its space while hidden, so the sentence never
+        // moves when the tour pauses or the visitor drives.
+        <div className={styles.line}>
+          {voice}
+          <p className={styles.caption}>{typographic(beatAt(chapters, pos).text)}</p>
+        </div>
       ) : null}
       <div className={styles.controls}>
         {status === 'driving' ? (
@@ -113,8 +119,8 @@ export function TourBar({
             <span className={styles.driving}>Paused. You’re driving.</span>
           </>
         ) : (
-          // Play/Pause and the voice meter, close together. The meter keeps its space while
-          // hidden, so Play and Pause swap in place without moving the rest of the row.
+          // Play/Pause, with the voice meter beside it when captions are off (it leads the caption
+          // otherwise). The meter keeps its space while hidden, so Play and Pause swap in place.
           <div className={styles.player}>
             {status === 'playing' ? (
               <Button variant="primary" className={styles.play} onClick={() => controls.pause()}>
@@ -136,7 +142,7 @@ export function TourBar({
                 Play tour
               </Button>
             )}
-            <VoiceLevel playing={status === 'playing'} {...meter} />
+            {captions ? null : voice}
           </div>
         )}
         <Menu
