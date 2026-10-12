@@ -25,7 +25,7 @@ Update this block every time a session stops, even mid-phase.
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | PR [#25](https://github.com/StefanNav/agent-control-plane/pull/25): https://agent-control-plane-git-phase-11-bra-9b2ef1-stefannavs-projects.vercel.app (branch alias; Vercel didn't post it on the PR) |
+| **Latest preview** | PR [#25](https://github.com/StefanNav/agent-control-plane/pull/25): https://agent-control-plane-c472baryz-stefannavs-projects.vercel.app (75e598e, deployed with the Vercel CLI from the worktree: Vercel's Git builds stopped for this branch after its first merge push errored) |
 
 ### How to resume in a new session
 
