@@ -51,7 +51,8 @@
 - **The mock hospital** is one versioned Zustand store with named scenarios (moments in time such as "resume requested" or "nine days later"). Every change goes through `can()` for permissions and writes the audit log, so any action can be traced back.
 - **The story engine** (`src/prototype/stories`) keeps `?story=&step=` in the URL, loads the moment each step needs, and keeps what the visitor did between steps.
 - **The guided tour** (`src/prototype/tour`) is data: eleven chapters of narration, each line with the clicks and outlines that play under it. A player runs one line at a time, clip and actions together, over the same router and store as everything else. Its recorded clips live in `public/tour/audio`, with their lengths and loudness in a manifest.
-- **Tests:** 1241 unit tests (Vitest and Testing Library) and 298 end-to-end tests (Playwright), including every route, every story from a shared link, every chapter of the tour, keyboard paths, and an axe accessibility check (WCAG 2.1 AA) on every screen. A further run, opt-in because it takes 7½ minutes, plays the whole tour in real time in its recorded voice. `pnpm capture` screenshots each frame beside its design for visual QA.
+- **Visitor analytics:** Vercel Web Analytics (no cookies), in production builds only. Automated browsers such as the test suite aren't counted, and opening the site once with `?notrack` keeps that browser out for good (`?track` undoes it).
+- **Tests:** 1247 unit tests (Vitest and Testing Library) and 301 end-to-end tests (Playwright), including every route, every story from a shared link, every chapter of the tour, keyboard paths, and an axe accessibility check (WCAG 2.1 AA) on every screen. A further run, opt-in because it takes 7½ minutes, plays the whole tour in real time in its recorded voice. `pnpm capture` screenshots each frame beside its design for visual QA.
 
 ## Run it locally
 
