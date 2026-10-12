@@ -147,7 +147,7 @@ export function forgetWelcomed(): void                   // tests only: clears s
   // index.ts re-exports AttuneMark and AttuneWelcome (after 11.3)
   ```
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `tokens.test.ts`:
     - extend `LIGHT` with the four `:root` values from R2;
     - extend `DARK` with `--cs-mark-deep` and `--cs-mark-soft`.
@@ -158,14 +158,14 @@ export function forgetWelcomed(): void                   // tests only: clears s
     - `renders four decorative pebbles`: the `svg` has `aria-hidden="true"`, `focusable="false"`, `data-attune="mark"` and 4 `path`s; `width="14"` and `height="13"` for `size={14}`.
     - `deep and soft pebbles`: paths 0 and 3 carry the deep class and 1 and 2 the soft class (read `className`).
     - `tone`: the default is `data-tone="surface"`, and `tone="ink"` gives `data-tone="ink"`.
-- [ ] **Step 2: Watch them fail.**
-- [ ] **Step 3: Implement.**
+- [x] **Step 2: Watch them fail.**
+- [x] **Step 3: Implement.**
   - Add the tokens to `tokens.css` under a comment: "The Attune mark (prototype layer): product indigo, and a pair for the ink prototype bar."
   - In `AttuneMark`, each path gets `d={pebblePath(i, 0, 1)}` and `transform={transformOf(restPose(i))}`.
   - The CSS module fills paths from the tokens, switching pairs on `[data-tone='ink']`. `display: inline-block`, `flex-shrink: 0`; no layout margins (callers place it with `className`).
   - Redraw `public/favicon.svg` to R3. Wrap the four paths in `<g transform="translate(16 16) scale(0.17)">`, then tune the scale so the mark is about 24 px wide inside the square.
-- [ ] **Step 4: Watch them pass.** `pnpm check` should be green.
-- [ ] **Step 5: Commit:** `feat(brand): the still Attune mark, its indigo tokens and the tab icon`.
+- [x] **Step 4: Watch them pass.** `pnpm check` should be green.
+- [x] **Step 5: Commit:** `feat(brand): the still Attune mark, its indigo tokens and the tab icon`.
 
 ## Task 11.3: The welcome
 

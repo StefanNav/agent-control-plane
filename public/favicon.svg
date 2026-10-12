@@ -1,7 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- The countersign check (Countersign "check" icon) in white on the ink of the prototype bar. -->
+  <!-- The Attune mark (four pebbles, product indigo on ink) on the ink of the prototype bar. -->
   <rect width="32" height="32" rx="6" fill="#1c1b18"/>
-  <g transform="translate(5.2 5.2) scale(1.8)">
-    <path d="M2.5 6.2l2.3 2.3 4.7-5" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="translate(16 16) scale(0.19)">
+    <path fill="#8aa8f7" transform="translate(-27.6 -25.35)" d="M0 -30.6C23.87 -30.6 35.1 -20.81 35.1 0C35.1 20.81 23.87 30.6 0 30.6C-23.87 30.6 -35.1 20.81 -35.1 0C-35.1 -20.81 -23.87 -30.6 0 -30.6Z"/>
+    <path fill="#c0d0f9" transform="translate(35.55 -31.05)" d="M0 -21.3C17.24 -21.3 25.35 -14.48 25.35 0C25.35 14.48 17.24 21.3 0 21.3C-17.24 21.3 -25.35 14.48 -25.35 0C-25.35 -14.48 -17.24 -21.3 0 -21.3Z"/>
+    <path fill="#c0d0f9" transform="translate(-36.75 30.45)" d="M0 -22.2C17.24 -22.2 25.35 -15.1 25.35 0C25.35 15.1 17.24 22.2 0 22.2C-17.24 22.2 -25.35 15.1 -25.35 0C-25.35 -15.1 -17.24 -22.2 0 -22.2Z"/>
+    <path fill="#8aa8f7" transform="translate(27.75 24.75)" d="M0 -31.2C23.77 -31.2 34.95 -21.22 34.95 0C34.95 21.22 23.77 31.2 0 31.2C-23.77 31.2 -34.95 21.22 -34.95 0C-34.95 -21.22 -23.77 -31.2 0 -31.2Z"/>
   </g>
 </svg>
