@@ -18,10 +18,10 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 11: Brand motion (◐ in progress) |
+| **Current phase** | Phase 11: Brand motion (⏸ at checkpoint) |
 | **Branch** | `phase-11-brand-motion` (worked in `.worktrees/phase-11-brand-motion`, locally excluded) |
-| **Last completed** | 11.0 Plan and tracking: spec approved by Stefan 2026-10-12, plan written, issue #23 |
-| **Next task** | 11.1 Geometry and the session flag ([plan](plans/phase-11-brand-motion.md)) |
+| **Last completed** | 11.0–11.4 built test-first; whole-branch review (0 Critical, 2 Important, 6 Minor) and one fix pass; 1280 unit and 303 e2e tests green |
+| **Next task** | **CHECKPOINT:** Stefan reviews the PR preview (landing in Chrome and Safari, a reload, reduced motion on, the bar, About, the gate below 1024 px, the tab icon). Merge only after approval |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -99,7 +99,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 8 | Stories and portfolio layer | ☑ Merged | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | [#18](https://github.com/StefanNav/agent-control-plane/pull/18) | [phase-8-stories.md](plans/phase-8-stories.md) |
 | 9 | Polish and launch | ☑ Merged | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | [#19](https://github.com/StefanNav/agent-control-plane/pull/19) | [phase-9-polish.md](plans/phase-9-polish.md) |
 | 10 | Guided tour | ☑ Merged | `phase-10-guided-tour` | [#20](https://github.com/StefanNav/agent-control-plane/issues/20) | [#21](https://github.com/StefanNav/agent-control-plane/pull/21) | [phase-10-guided-tour.md](plans/phase-10-guided-tour.md) |
-| 11 | Brand motion | ◐ In progress | `phase-11-brand-motion` | [#23](https://github.com/StefanNav/agent-control-plane/issues/23) | not yet | [phase-11-brand-motion.md](plans/phase-11-brand-motion.md) |
+| 11 | Brand motion | ⏸ At checkpoint | `phase-11-brand-motion` | [#23](https://github.com/StefanNav/agent-control-plane/issues/23) | not yet | [phase-11-brand-motion.md](plans/phase-11-brand-motion.md) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11 is #23 (#22 was the voice meter PR). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
@@ -699,13 +699,37 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11
 **Spec:** [`specs/2026-10-12-attune-brand-motion-design.md`](specs/2026-10-12-attune-brand-motion-design.md) · **Detailed steps:** [`plans/phase-11-brand-motion.md`](plans/phase-11-brand-motion.md)
 
 - [x] 11.0 Plan and tracking
-- [ ] 11.1 Geometry and the session flag
-- [ ] 11.2 Tokens, the still mark and the tab icon
-- [ ] 11.3 The welcome
-- [ ] 11.4 Placements
-- [ ] 11.5 Phase checkpoint → **CHECKPOINT** (Stefan reviews the preview)
+- [x] 11.1 Geometry and the session flag
+- [x] 11.2 Tokens, the still mark and the tab icon
+- [x] 11.3 The welcome
+- [x] 11.4 Placements
+- [ ] 11.5 Phase checkpoint → **CHECKPOINT** (review and fixes done; Stefan reviews the preview)
 
 **Done when:** the landing welcomes once a session and rests; reduced motion and the open tour keep it still; the still mark shows in the bar, About, the gate and the tab; `pnpm check` and `pnpm e2e` are green; Stefan approves the PR.
+
+**Handoff notes (Phase 11 → after merge)**
+
+- **What exists:** `src/prototype/AttuneMark/`:
+  - `geometry.ts`: the kit's pebble path and its rest, quiet, welcome and settle poses, plus `welcomeFrame(elapsed)`. The still mark matches the kit's symbol to 9 places.
+  - `session.ts`: the `attune-welcomed` flag in sessionStorage, with a page-level fallback.
+  - `AttuneMark`: the still mark, with a `surface` or `ink` tone.
+  - `AttuneWelcome` and `useWelcomeMotion`: the requestAnimationFrame loop writes the paths directly.
+  - `usePrefersReducedMotion`.
+  - Tokens: `--cs-mark-deep`, `--cs-mark-soft`, `--cs-mark-deep-on-ink`, `--cs-mark-soft-on-ink`.
+  - `public/favicon.svg` is the mark on ink.
+  - The kit is kept as-is in `reference/attune-motion-kit/`.
+- **Behaviour:**
+  - The welcome dances on the first landing view of a browser session (2.25 s), then settles (0.52 s) and stops.
+  - Any landing view uses up the welcome, whether it danced, was held by the open tour or was still under reduced motion.
+  - The tour holds it still.
+  - Below 1200 px the welcome sits beside the intro, because the 1280 px shell scrolls sideways there.
+- **Deferred minors (from the final review):**
+  - The kit's 0.38 s blend-in on start isn't ported, so the start is a little brisker.
+  - `usePrefersReducedMotion` duplicates the matchMedia subscription in `DesktopGate` and `tour/screen.ts`.
+  - There's no unit test for leaving mid-dance and returning; the mid-dance reload e2e test covers it.
+- **Gotchas:**
+  - An inline ref callback is detached before a layout effect's cleanup. The loop copies the path elements when it starts, so its cleanup can put them back at rest.
+  - The preview tool runs `pnpm dev` from the main checkout, not a worktree. To preview a worktree, add a local launch entry with `pnpm --dir <worktree> dev`, and don't commit it.
 
 ---
 
@@ -881,6 +905,10 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-11 | Checkpoint E: a link-opened tour gets a welcome. The product dims and blurs except the tour bar, and a card ("Welcome to Agent Control Plane", Stefan's photo, the tour in one paragraph, a partway line for later chapters) points at the bar's Play tour, which is ringed and focused. The card has no Play button of its own, and it is a labelled region rather than a dialog, so the tour's keys still work | Stefan: on a fresh link the bar's Play was easy to miss on the busy board; Ruling 45 |
 | 2026-10-11 | After launch: a voice meter beside Play/Pause shows the tour is speaking, so a visitor with the volume low notices. Its bars follow loudness measured from each clip ahead of time (no Web Audio, which risks silencing Safari). It sits after the button rather than before the caption (no width to spare at 1024 px; visible with captions off), and shows only while playing (flat grey bars at rest read as a dashed rule, reserved for stale data) | Stefan: a page can't read the volume; option A approved |
 | 2026-10-11 | Final review fixes: Back and Forward while the tour is open count as taking over, and a closed tour opens from `?tour=` only on a fresh load or an in-app link; Explore freely exits the tour; on the tour's own pages a click pauses instead of taking over; captions fit at 1024 px; the first chapter is announced; the manifest's freshness is a unit test; the unused per-chapter "Decision n" label is gone. Stefan checks Safari at Checkpoint E | Final whole-branch review, Rulings 38–42 |
+| 2026-10-12 | Brand motion: the Attune motion kit is used only for the landing's "First hello" (once a browser session, then still) and a still mark in the prototype bar, About, the narrow-screen page and the tab icon. Product screens, the tour and the AIMS wordmark are unchanged | Stefan chose "Landing + still logo" from the proposed placements |
+| 2026-10-12 | The Attune mark is product indigo: `--cs-mark-deep` (= `--cs-acc`) and `--cs-mark-soft`, plus an on-ink pair for the bar, so the landing has one blue | Stefan, from the colourway comparison |
+| 2026-10-12 | The kit is ported, not loaded: only welcome, quiet and settle, in TypeScript (`src/prototype/AttuneMark/`); the kit stays in `reference/` as the source | Spec §4; no outside scripts |
+| 2026-10-12 | Any landing view uses up the welcome (held by the tour or still under reduced motion too), and below 1200 px the welcome sits beside the intro rather than at the far right | Final whole-branch review |
 
 ## Session log
 
@@ -922,3 +950,4 @@ One row per working session. Newest last.
 | 2026-10-11 | 10 | Stefan approved; PR #21 squash-merged; #20 closed. Production verified: routes, stories, the tour and axe pass against the live URL (296 e2e; the caption-fit test now waits for the fonts), and the whole tour plays there in real time in 7:23 with all 65 clips and no stalls; clips are cached for an hour | Stefan: Safari and the listen list on the live URL |
 | 2026-10-11 | 10 | Stefan confirmed Safari plays with sound. Built the voice meter (levels pipeline, `VoiceLevel`, `tour:audio --levels`); reviewed, one fix round (visible only while playing, grouped with the button, a livelier level range). 1241 unit and 298 e2e tests green | Stefan: the listen list on the live URL |
 | 2026-10-12 | 11 | Explored the Attune motion kit and proposed placements; Stefan chose the landing plus a still mark, in product indigo, and approved the spec. Kit kept in `reference/attune-motion-kit/`; plan written; issue #23 | 11.1 |
+| 2026-10-12 | 11 | Built 11.1–11.4 test-first in a worktree (geometry, session flag, still mark, tokens, favicon, the welcome, placements); visual pass at 1440, 1024 and 800 px. Whole-branch review: 0 Critical, 2 Important, 6 Minor; one fix pass (any landing view uses up the welcome; in view at 1024 px; e2e checks that can fail). 1280 unit and 303 e2e tests green | CHECKPOINT: Stefan reviews the preview |

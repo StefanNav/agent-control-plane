@@ -4,6 +4,11 @@
 **Builds on:** [`2026-10-08-agent-control-plane-prototype-design.md`](2026-10-08-agent-control-plane-prototype-design.md) and [`2026-10-09-guided-tour-design.md`](2026-10-09-guided-tour-design.md).
 **Source:** the Attune motion kit v1.0, kept as handed over in `reference/attune-motion-kit/`.
 
+> **As built (2026-10-12).** These changes from the build differ from the text below, which is kept as written:
+> - **Any landing view uses up the welcome**, including one held by the open tour or kept still by reduced motion. Otherwise a session that started mid-tour could get the dance when the tour closed on the landing page.
+> - **Below 1200 px the welcome sits beside the intro.** The app shell is at least 1280 px wide, so narrower windows scroll sideways, and at the far right the mark would be cut off.
+> - **The kit's 0.38 s blend-in on start isn't ported**, so the dance starts a little more briskly.
+
 ---
 
 ## 1. Goal

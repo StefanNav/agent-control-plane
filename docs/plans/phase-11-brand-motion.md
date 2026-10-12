@@ -279,8 +279,8 @@ export function forgetWelcomed(): void                   // tests only: clears s
 
 ## Task 11.5: Phase checkpoint
 
-- [ ] **Step 1: Review.** Request a whole-branch code review (superpowers:requesting-code-review) against the spec and this plan. Fix anything Critical or Important, test-first.
-- [ ] **Step 2: Update `docs/BUILD_PLAN.md`:**
+- [x] **Step 1: Review.** Request a whole-branch code review (superpowers:requesting-code-review) against the spec and this plan. Fix anything Critical or Important, test-first.
+- [x] **Step 2: Update `docs/BUILD_PLAN.md`:**
   - tick 11.0–11.5;
   - write the Phase 11 handoff notes;
   - add decision-log rows (the four listed in spec §6) and a session-log row;
