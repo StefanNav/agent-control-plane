@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 import { CHAPTERS } from '../../src/prototype/tour/script'
 import { typographic } from '../../src/prototype/tour/typographic'
 import { collectErrors } from './console'
+import { skipWelcomeScreen } from './welcomed'
 
 // The silent voice makes each beat a tenth of its clip; reduced motion makes the cursor jump.
 const AT_MED_REC = /\/operations\/agents\/med-rec\?tour=open$/
@@ -288,6 +289,7 @@ async function expectAtMedRec(page: Page) {
 
 test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
+  await skipWelcomeScreen(page)
 })
 
 test('the opening clicks from the board to the Med Rec Agent, then runs on into the problem', async ({
@@ -1173,7 +1175,7 @@ test('Back while a product step plays is a take-over: the tour stops where it wa
   expect(errors).toEqual([])
 })
 
-test.describe('the voice meter, beside Play/Pause', () => {
+test.describe('the voice meter, leading the caption', () => {
   const meter = (page: Page) => bar(page).locator('[data-tour="voice-level"]')
   /** Bars' inline transforms (`scaleY` of the 14 px bar) as heights in whole pixels. */
   const heights = (transforms: string[]) =>
@@ -1207,20 +1209,24 @@ test.describe('the voice meter, beside Play/Pause', () => {
     )
   }
 
-  /** Pause tour or Play tour, the meter and the chapter menu, left to right: where each starts and ends. */
+  /** The meter and the caption after it, and Play/Pause below: where each starts and ends. */
   async function row(page: Page) {
     return page.evaluate(() => {
       const meter = document.querySelector('[data-tour="voice-level"]')!
-      const button = meter.previousElementSibling!.getBoundingClientRect()
       const box = meter.getBoundingClientRect()
-      const menu = document.querySelector('[data-tour="bar"] [aria-haspopup="menu"]')!
+      const caption = document.querySelector('[data-tour="bar"] p')!.getBoundingClientRect()
+      const button = [...document.querySelectorAll('[data-tour="bar"] button')]
+        .find((b) => /^(Play|Pause) tour$/.test(b.textContent ?? ''))!
+        .getBoundingClientRect()
       return {
-        buttonRight: button.right,
-        buttonMiddle: (button.top + button.bottom) / 2,
         meterLeft: box.left,
         meterRight: box.right,
         meterMiddle: (box.top + box.bottom) / 2,
-        menuLeft: menu.getBoundingClientRect().left,
+        captionLeft: caption.left,
+        captionMiddle: (caption.top + caption.bottom) / 2,
+        buttonLeft: button.left,
+        buttonRight: button.right,
+        buttonMiddle: (button.top + button.bottom) / 2,
       }
     })
   }
@@ -1238,15 +1244,38 @@ test.describe('the voice meter, beside Play/Pause', () => {
     // 6 px after its button, on its middle, and 12 px before the chapter menu; Play and Pause swap
     // in place, so the menu hasn't moved.
     const playing = await row(page)
-    expect(playing.meterLeft - playing.buttonRight).toBe(6)
-    expect(playing.menuLeft - playing.meterRight).toBe(12)
-    expect(playing.meterMiddle).toBe(playing.buttonMiddle)
-    expect(playing.menuLeft).toBe(paused.menuLeft)
+    // At the start of the caption line, lined up with the bar's edge and Play/Pause below, 8 px
+    // before the sentence, on its middle; it keeps its space while hidden, so the sentence never moves.
+    expect(playing.meterLeft).toBe(playing.buttonLeft)
+    expect(playing.captionLeft - playing.meterRight).toBe(8)
+    expect(Math.abs(playing.meterMiddle - playing.captionMiddle)).toBeLessThanOrEqual(1)
+    expect(playing.captionLeft).toBe(paused.captionLeft)
 
     expect(heights(await pauseWhileSpeaking(page))).toEqual([6, 10, 8, 12])
     await expect(bar(page).getByRole('button', { name: 'Play tour' })).toBeVisible()
     await expect(meter(page)).toBeHidden()
     await expect(meter(page)).toHaveAttribute('data-speaking', 'false')
+    expect(errors).toEqual([])
+  })
+
+  test('with captions off, it sits 6 px after Play/Pause, on its middle', async ({ page }) => {
+    const errors = collectErrors(page)
+    await openChapter(page, 'open', /\/operations\?tour=open$/)
+    await bar(page).getByRole('button', { name: 'Captions' }).click()
+    await play(page)
+    await expect(meter(page)).toBeVisible()
+    const box = await page.evaluate(() => {
+      const meter = document.querySelector('[data-tour="voice-level"]')!.getBoundingClientRect()
+      const button = [...document.querySelectorAll('[data-tour="bar"] button')]
+        .find((b) => b.textContent === 'Pause tour')!
+        .getBoundingClientRect()
+      return {
+        gap: meter.left - button.right,
+        offset: Math.abs((meter.top + meter.bottom) / 2 - (button.top + button.bottom) / 2),
+      }
+    })
+    expect(box.gap).toBe(6)
+    expect(box.offset).toBeLessThanOrEqual(1)
     expect(errors).toEqual([])
   })
 

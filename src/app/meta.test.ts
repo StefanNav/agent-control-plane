@@ -1,5 +1,6 @@
 import indexHtml from '../../index.html?raw'
 import readme from '../../README.md?raw'
+import favicon from '../../public/favicon.svg?raw'
 import ogImage from '../../public/og.png?inline'
 import { PITCH } from '../prototype/copy'
 
@@ -48,4 +49,11 @@ test('the README presents the project: pitch, live link, no gendered pronouns, e
   const targets = [...readme.matchAll(/\]\(([^)\s]+)\)/g)].map((m) => m[1]!).filter((t) => !/^(https?:|mailto:|#)/.test(t))
   expect(targets.length).toBeGreaterThan(5)
   for (const target of targets) expect(exists(target.split('#')[0]!), target).toBe(true)
+})
+
+test('the tab icon is the Attune mark on ink (Phase 11)', () => {
+  const icon = new DOMParser().parseFromString(favicon, 'image/svg+xml')
+  expect(icon.querySelector('rect')?.getAttribute('fill')).toBe('#1c1b18')
+  const fills = [...icon.querySelectorAll('path')].map((path) => path.getAttribute('fill'))
+  expect(fills).toEqual(['#8aa8f7', '#c0d0f9', '#c0d0f9', '#8aa8f7'])
 })

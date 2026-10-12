@@ -56,3 +56,11 @@ test('Reset demo also ends the story', async () => {
     /^\/operations\/divisions\/medications$/,
   )
 })
+
+test('the brand link carries the still Attune mark, in the ink bar’s tone', () => {
+  renderBar()
+  const link = screen.getByRole('link', { name: 'Attune · Agent Control Plane · Prototype' })
+  const mark = link.querySelector('[data-attune="mark"]')
+  expect(mark).toHaveAttribute('data-tone', 'ink')
+  expect(mark).toHaveAttribute('aria-hidden', 'true')
+})

@@ -88,3 +88,13 @@ test('older Safari (addListener only) still swaps them', () => {
   })
   expect(screen.getByRole('heading', { name: 'Best viewed on a desktop' })).toBeInTheDocument()
 })
+
+test('the gate shows the still Attune mark; the app never does', () => {
+  stubMatchMedia(false)
+  const narrow = show()
+  expect(narrow.container.querySelector('[data-attune="mark"]')).toHaveAttribute('aria-hidden', 'true')
+  narrow.unmount()
+  stubMatchMedia(true)
+  const wide = show()
+  expect(wide.container.querySelector('[data-attune="mark"]')).toBeNull()
+})

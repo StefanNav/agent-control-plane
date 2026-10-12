@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Attune — Motion collection</title>
+<link rel="stylesheet" href="preview.css">
+<script src="attune-motion.js" defer></script><script src="preview.js" defer></script>
+</head>
+<body>
+<main id="attune-kit">
+  <header><a class="brand" href="#"><img src="assets/attune-symbol.svg" width="32" height="32" alt="">Attune</a><span class="edition">Motion collection · 01</span><button id="theme" aria-pressed="false">Dark view</button></header>
+  <section class="intro"><div><span class="eyebrow">A little life. A clear purpose.</span><h1>Motion that listens.</h1><p>Four pebbles. One shared rhythm. A collection for the moments between asking, understanding, and moving forward.</p></div><div class="signature" id="signature" aria-hidden="true"></div></section>
+  <div class="collection-heading"><h2>The collection</h2><button id="pause" aria-pressed="false">Pause motion</button></div>
+  <section class="collection" aria-label="Animation collection">
+    <button class="recipe selected" data-mode="quiet" aria-pressed="true"><span class="mini" data-mini="quiet"></span><span><strong>Quiet pulse</strong><small>Everyday loading</small></span><span class="number">01</span></button>
+    <button class="recipe" data-mode="search" aria-pressed="false"><span class="mini" data-mini="search"></span><span><strong>Signal search</strong><small>Gathering evidence</small></span><span class="number">02</span></button>
+    <button class="recipe" data-mode="process" aria-pressed="false"><span class="mini" data-mini="process"></span><span><strong>Common rhythm</strong><small>Processing</small></span><span class="number">03</span></button>
+    <button class="recipe" data-mode="welcome" aria-pressed="false"><span class="mini" data-mini="welcome"></span><span><strong>First hello</strong><small>Welcome · plays once</small></span><span class="number">04</span></button>
+    <button class="recipe" data-mode="handoff" aria-pressed="false"><span class="mini" data-mini="handoff"></span><span><strong>Passing insight</strong><small>Delegation & handoff</small></span><span class="number">05</span></button>
+    <button class="recipe" data-mode="reconnect" aria-pressed="false"><span class="mini" data-mini="reconnect"></span><span><strong>Find our way</strong><small>Reconnecting</small></span><span class="number">06</span></button>
+  </section>
+  <section class="stage-section">
+    <div class="stage-info"><span class="eyebrow">In the product</span><h2 id="recipe-title">Quiet pulse</h2><p id="recipe-description"></p><dl><div><dt>Placement</dt><dd id="placement"></dd></div><div><dt>Footprint</dt><dd id="footprint"></dd></div></dl><p class="note">Interactive demo. The controls below simulate application events.</p></div>
+    <div class="stage"><div class="window-top"><span class="window-dot"></span><span>Attune workspace</span><span class="demo-tag">Preview</span></div><div id="context" class="context quiet"><div id="hero-mark"></div><div class="context-copy"><h3 id="context-title"></h3><p id="context-detail"></p></div><span id="context-extra"></span></div><div class="state-line"><span id="state-dot"></span><span id="status" role="status" aria-live="polite">Loading</span><span id="motion-setting"></span></div></div>
+  </section>
+  <div class="event-controls" aria-label="Simulate application events"><span>Try the transitions</span><button data-event="loading">Start again</button><button data-event="processing">Processing</button><button data-event="complete">Work ready</button><button data-event="blocked">Connection lost</button><button data-event="retry">Retry</button></div>
+  <section class="principles"><div><span class="rule-number">01 / Settle</span><h3>A result brings us home.</h3><p>The pebbles return to the mark when the application reports completion. They never pretend to finish on a timer.</p></div><div><span class="rule-number">02 / Be honest</span><h3>A pause has a reason.</h3><p>Blocked work freezes the motion and shows what happened. Retrying starts only when a new attempt begins.</p></div><div><span class="rule-number">03 / Make room</span><h3>Care stays in focus.</h3><p>Small, quiet motion beside clinical content. Expressive motion at entry. Reduced motion keeps every status readable.</p></div></section>
+  <footer><span>Attune / Brand motion kit v1.0</span><a href="README.md">Integration & motion guide ↗</a></footer>
+</main>
+</body></html>

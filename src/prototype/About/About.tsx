@@ -16,6 +16,7 @@ import { DecisionContent } from '../tour/DecisionContent'
 import type { Chapter } from '../tour/types'
 import { typographic } from '../tour/typographic'
 import { ZoomImage } from '../tour/ZoomImage'
+import { AttuneMark } from '../AttuneMark'
 import styles from './About.module.css'
 import { CASE_CHAPTERS, cardIds, liveLink, paragraphs, playLink } from './caseStudy'
 
@@ -212,7 +213,10 @@ export function About() {
     <article className={styles.page}>
       <header className={styles.head}>
         <h1 className={type.pageTitle}>About this work</h1>
-        <span className={type.mono}>Attune · Agent Control Plane</span>
+        <span className={styles.brand}>
+          <AttuneMark size={16} />
+          <span className={type.mono}>Attune · Agent Control Plane</span>
+        </span>
         <p className={styles.lead}>
           This is the guided tour in reading form: the same story in the same order, with its cards,
           and images that open full size.{' '}

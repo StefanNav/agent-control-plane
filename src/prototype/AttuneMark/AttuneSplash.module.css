@@ -1,0 +1,48 @@
+/*
+ * The full-page welcome before a tour link's first screen: the page's own ground, above everything
+ * the tour draws (its bar and cards at 60, the cursor at 70), the mark over its name in the middle.
+ */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--cs-bg);
+  cursor: default;
+}
+
+.splash[data-leaving='true'] {
+  opacity: 0;
+  /* SPLASH_FADE_MS. */
+  transition: opacity 300ms ease-in;
+}
+
+/* The name comes in as the pebbles start to dance. */
+.name,
+.product {
+  animation: arrive 400ms ease-out 600ms both;
+}
+
+.name {
+  margin-top: 4px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  color: var(--cs-ink);
+}
+
+.product {
+  font-family: var(--cs-font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-meta);
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+  }
+}
