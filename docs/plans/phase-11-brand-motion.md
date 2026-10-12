@@ -196,7 +196,7 @@ export function forgetWelcomed(): void                   // tests only: clears s
 - **Cleanup** cancels the frame and writes the rest pose to every path. It runs when the dance ends, holds or unmounts. The rest pose has to be written directly because React's props never changed, so React won't rewrite the attributes.
 - **Rendering:** the paths render the rest pose as React props. Only the loop moves them.
 
-- [ ] **Step 1: Write the failing tests** in `AttuneWelcome.test.tsx`.
+- [x] **Step 1: Write the failing tests** in `AttuneWelcome.test.tsx`.
   - Fake `requestAnimationFrame` and `cancelAnimationFrame` as in `src/prototype/tour/VoiceLevel.test.tsx`, but `nextFrame(at: number)` passes an explicit timestamp in ms.
   - Stub `matchMedia` as in `DesktopGate.test.tsx`.
   - `afterEach(forgetWelcomed)`.
@@ -213,10 +213,10 @@ export function forgetWelcomed(): void                   // tests only: clears s
     - `leaving mid-dance cancels the frame`: unmount at 1000 ms and no frames are pending.
     - `a long gap never skips the dance`: frames at 0, 16 and 5016 ms and it is still `dancing`.
     - `decorative`: the svg has `aria-hidden="true"` and `data-attune="welcome"`; `width` and `height` are `140` by default.
-- [ ] **Step 2: Watch them fail.**
-- [ ] **Step 3: Implement** the three files to the interfaces and behaviour above, and export `AttuneWelcome` from `index.ts`.
-- [ ] **Step 4: Watch them pass.** `pnpm check` should be green.
-- [ ] **Step 5: Commit:** `feat(brand): First hello, once a session, still under reduced motion or the tour`.
+- [x] **Step 2: Watch them fail.**
+- [x] **Step 3: Implement** the three files to the interfaces and behaviour above, and export `AttuneWelcome` from `index.ts`.
+- [x] **Step 4: Watch them pass.** `pnpm check` should be green.
+- [x] **Step 5: Commit:** `feat(brand): First hello, once a session, still under reduced motion or the tour`.
 
 ## Task 11.4: Placements
 
