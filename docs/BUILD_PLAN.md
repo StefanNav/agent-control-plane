@@ -20,8 +20,8 @@ Update this block every time a session stops, even mid-phase.
 |---|---|
 | **Current phase** | Phase 11: Brand motion (⏸ at checkpoint) |
 | **Branch** | `phase-11-brand-motion` (worked in `.worktrees/phase-11-brand-motion`, locally excluded) |
-| **Last completed** | 11.0–11.4 built test-first; whole-branch review (0 Critical, 2 Important, 6 Minor) and one fix pass; merged main (visitor analytics); 1286 unit and 306 e2e tests green |
-| **Next task** | **CHECKPOINT:** Stefan reviews the PR preview (landing in Chrome and Safari, a reload, reduced motion on, the bar, About, the gate below 1024 px, the tab icon). Merge only after approval. Also pending from `main`: Stefan opens `/?notrack` once in each browser he uses (visitor analytics, PR #24, live); Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`) |
+| **Last completed** | 11.0–11.4 built test-first; whole-branch review and one fix pass; then Stefan's preview notes: the voice meter leads the caption, and a tour link opens behind Attune's full-page welcome. 1306 unit and 314 e2e tests green |
+| **Next task** | **CHECKPOINT:** Stefan reviews the PR preview (a tour link in a fresh tab: the full-page welcome, then the card; the voice meter leading the caption; the landing in Chrome and Safari, a reload, reduced motion on, the bar, About, the gate below 1024 px, the tab icon). Merge only after approval. Also pending from `main`: Stefan opens `/?notrack` once in each browser he uses (visitor analytics, PR #24, live); Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -723,6 +723,12 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11
   - Any landing view uses up the welcome, whether it danced, was held by the open tour or was still under reduced motion.
   - The tour holds it still.
   - Below 1200 px the welcome sits beside the intro, because the 1280 px shell scrolls sideways there.
+  - **A tour link** (`?tour=…` on a page's first location, which shows the tour's welcome card) opens behind `AttuneSplash`: the page covered, the mark dancing over "Attune / Agent Control Plane", a 300 ms beat at rest, a 300 ms fade, then the card.
+    - It shows only in a session that wasn't welcomed before this page loaded (`welcomedBeforeThisPage()`, read the first time anything touches the flag).
+    - Never under reduced motion.
+    - A click or any key skips it; the key is spent and presses nothing beneath.
+    - E2e files about the tour start pre-welcomed (`tests/e2e/welcomed.ts`); `welcome.spec.ts` tests the screen itself.
+  - **The voice meter** leads the caption line, keeping its space while hidden; with captions off it sits beside Play/Pause.
 - **Deferred minors (from the final review):**
   - The kit's 0.38 s blend-in on start isn't ported, so the start is a little brisker.
   - `usePrefersReducedMotion` duplicates the matchMedia subscription in `DesktopGate` and `tour/screen.ts`.
@@ -910,6 +916,8 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-12 | The Attune mark is product indigo: `--cs-mark-deep` (= `--cs-acc`) and `--cs-mark-soft`, plus an on-ink pair for the bar, so the landing has one blue | Stefan, from the colourway comparison |
 | 2026-10-12 | The kit is ported, not loaded: only welcome, quiet and settle, in TypeScript (`src/prototype/AttuneMark/`); the kit stays in `reference/` as the source | Spec §4; no outside scripts |
 | 2026-10-12 | Any landing view uses up the welcome (held by the tour or still under reduced motion too), and below 1200 px the welcome sits beside the intro rather than at the far right | Final whole-branch review |
+| 2026-10-12 | The voice meter leads the caption line (8 px before the sentence it voices, keeping its space while hidden so the sentence never moves); with captions off it goes back beside Play/Pause. All 65 lines still fit at 1024 px | Stefan, on the preview (supersedes the 2026-10-11 placement after Play/Pause) |
+| 2026-10-12 | A tour link opens behind Attune's full-page welcome: the mark's First hello over its name, then a fade to the tour's welcome card. Fresh session only, never under reduced motion, a click or key skips it; the landing's hero welcome stays as built | Stefan, on the preview: "it loads first before the tour" |
 
 ## Session log
 
@@ -953,3 +961,4 @@ One row per working session. Newest last.
 | 2026-10-12 | – | Visitor analytics: Vercel Web Analytics in production builds, `?notrack`/`?track` opt-out remembered per browser, automated browsers never counted (`countsThisVisit`). 1247 unit and 301 e2e tests green | Stefan enables Web Analytics on Vercel, reviews the preview, merges |
 | 2026-10-12 | 11 | Explored the Attune motion kit and proposed placements; Stefan chose the landing plus a still mark, in product indigo, and approved the spec. Kit kept in `reference/attune-motion-kit/`; plan written; issue #23 | 11.1 |
 | 2026-10-12 | 11 | Built 11.1–11.4 test-first in a worktree (geometry, session flag, still mark, tokens, favicon, the welcome, placements); visual pass at 1440, 1024 and 800 px. Whole-branch review: 0 Critical, 2 Important, 6 Minor; one fix pass (any landing view uses up the welcome; in view at 1024 px; e2e checks that can fail). 1280 unit and 303 e2e tests green | CHECKPOINT: Stefan reviews the preview |
+| 2026-10-12 | 11 | Stefan's preview notes, built test-first: the voice meter leads the caption (fits at 1024 px; beside Play with captions off); a tour link opens behind Attune's full-page welcome (fresh session, skippable, never under reduced motion), then the welcome card. Merged main twice (visitor analytics); Vercel skipped two merge pushes. 1306 unit and 314 e2e tests green | CHECKPOINT: Stefan reviews the preview |

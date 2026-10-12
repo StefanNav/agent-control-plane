@@ -8,6 +8,8 @@
 > - **Any landing view uses up the welcome**, including one held by the open tour or kept still by reduced motion. Otherwise a session that started mid-tour could get the dance when the tour closed on the landing page.
 > - **Below 1200 px the welcome sits beside the intro.** The app shell is at least 1280 px wide, so narrower windows scroll sideways, and at the far right the mark would be cut off.
 > - **The kit's 0.38 s blend-in on start isn't ported**, so the dance starts a little more briskly.
+> - **Added after Stefan's preview review: a full-page welcome before a tour link's first screen.** In a fresh session the page is covered by the mark's First hello over "Attune / Agent Control Plane". After a beat at rest it fades to the tour's welcome card. It never shows under reduced motion, and a click or a key skips it.
+> - **Also after the preview review, the tour's voice meter leads the caption line.** This is a tour change, outside §2's "out of scope" list, made at Stefan's request.
 
 ---
 
