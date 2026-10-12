@@ -35,6 +35,16 @@ test('?notrack keeps this browser out of the analytics until ?track', async ({ p
   await expect(analyticsScript(page)).toHaveCount(1)
 })
 
+test('a link made for one recipient opens the landing page under its own address', async ({ page }) => {
+  await asVisitor(page)
+  await open(page, '/for/acme?tourVoice=silent')
+  // The address stays put, so the analytics record the visit as /for/acme.
+  expect(new URL(page.url()).pathname).toBe('/for/acme')
+  await expect(analyticsScript(page)).toHaveCount(1)
+  await page.getByRole('button', { name: /^Play the tour · \d+ min$/ }).click()
+  await expect(page).toHaveURL(/\/operations\?tour=open$/)
+})
+
 test('an automated browser loads no analytics', async ({ page }) => {
   await open(page, '/')
   expect(await analyticsScript(page).count()).toBe(0)

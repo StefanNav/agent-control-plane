@@ -2,7 +2,7 @@ import { matchPath } from 'react-router'
 import { redirects, routeTable } from './routes'
 
 const EXPECTED = [
-  '/', '/about', '/about/components',
+  '/', '/for/:name', '/about', '/about/components',
   '/operations', '/operations/divisions/:divisionId', '/operations/agents/:agentId',
   '/operations/agents/:agentId/cases/:caseId', '/operations/inbox', '/operations/inbox/:exceptionId',
   '/operations/actions', '/operations/actions/:actionId', '/operations/incidents',
@@ -33,7 +33,7 @@ test('redirect targets exist', () => {
   }
 })
 
-const PROTOTYPE = ['/', '/about', '/about/components', '/epic', '/tour/problem', '/tour/decisions', '/tour/process', '/tour/validate']
+const PROTOTYPE = ['/', '/for/:name', '/about', '/about/components', '/epic', '/tour/problem', '/tour/decisions', '/tour/process', '/tour/validate']
 
 test('wall is kiosk; landing, about, gallery, epic and the tour’s interludes are prototype; the rest are app', () => {
   const shellOf = (path: string) => routeTable.find((r) => r.path === path)?.shell
@@ -42,6 +42,16 @@ test('wall is kiosk; landing, about, gallery, epic and the tour’s interludes a
   for (const r of routeTable.filter((r) => r.path !== '/wall' && !PROTOTYPE.includes(r.path))) {
     expect(r.shell, r.path).toBe('app')
   }
+})
+
+test('a link made for one recipient is the landing page under its own address', () => {
+  const landing = routeTable.find((r) => r.path === '/')
+  expect(routeTable.find((r) => r.path === '/for/:name')).toMatchObject({
+    shell: 'prototype',
+    nav: null,
+    title: landing?.title,
+    samplePath: '/for/acme',
+  })
 })
 
 test('the tour’s interludes are Phase 10 pages with no frames', () => {
