@@ -19,13 +19,13 @@ Update this block every time a session stops, even mid-phase.
 | | |
 |---|---|
 | **Current phase** | All phases merged: the guided tour is live (Phase 10 ☑) |
-| **Branch** | `visitor-analytics` |
-| **Last completed** | Phase 10 approved and squash-merged (PR #21, 2026-10-11); production verified: routes, stories, the tour and axe pass against the live URL (296 e2e; the caption-fit test now waits for the fonts), and the whole tour plays there in real time in 7:23 with all 65 clips and no stalls; clips are cached for an hour |
-| **Next task** | Visitor analytics PR: Stefan enables Web Analytics on the Vercel project (Analytics tab → Enable), checks the preview, then merges; after the deploy he opens `/?notrack` once in each browser he uses. Then: Safari confirmed by Stefan (2026-10-11). Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`); a line to redo is re-recorded as `<beatId>.m4a` and imported with `pnpm tour:import` on a new branch |
+| **Branch** | `main` |
+| **Last completed** | Visitor analytics squash-merged (PR #24, 2026-10-12): Vercel Web Analytics, enabled on the project by Stefan; `?notrack` keeps a browser out. Before that, Phase 10 (PR #21) and the voice meter (PR #22) |
+| **Next task** | None planned. Stefan opens `/?notrack` once in each browser he uses. Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`); a line to redo is re-recorded as `<beatId>.m4a` and imported with `pnpm tour:import` on a new branch |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | PR [#24](https://github.com/StefanNav/agent-control-plane/pull/24) (visitor analytics) |
+| **Latest preview** | none open |
 
 ### How to resume in a new session
 
