@@ -109,7 +109,7 @@ export function forgetWelcomed(): void                   // tests only: clears s
 - `HOME`, `RADII`, `clamp`, `ease`, `mix`, `path`, `quiet` and the `welcome` branch of `pose` are ported verbatim from the kit, with the same expression order so the numbers match.
 - `settlePose` is the kit's `complete` blend: `mix(from, rest(i), ease((t - i * 0.025) / 0.42))`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - In `geometry.test.ts`:
     - `the still mark matches the kit's symbol`:
       - import `reference/attune-motion-kit/assets/attune-symbol.svg?raw`;
@@ -125,10 +125,10 @@ export function forgetWelcomed(): void                   // tests only: clears s
     - the flag lives in `sessionStorage['attune-welcomed'] === '1'`;
     - when `sessionStorage.getItem` and `setItem` throw (`vi.spyOn(Storage.prototype, …)`), `markWelcomed()` doesn't throw and `hasWelcomed()` is true.
     - `afterEach(forgetWelcomed)`.
-- [ ] **Step 2: Watch them fail.** Run `pnpm vitest run src/prototype/AttuneMark`. It should fail because the modules don't exist.
-- [ ] **Step 3: Implement** `geometry.ts` and `session.ts` to the interfaces above.
-- [ ] **Step 4: Watch them pass.** Run `pnpm vitest run src/prototype/AttuneMark`; it should pass. Then run `pnpm check`; it should be green.
-- [ ] **Step 5: Commit:** `feat(brand): the Attune mark's geometry and once-a-session flag`.
+- [x] **Step 2: Watch them fail.** Run `pnpm vitest run src/prototype/AttuneMark`. It should fail because the modules don't exist.
+- [x] **Step 3: Implement** `geometry.ts` and `session.ts` to the interfaces above.
+- [x] **Step 4: Watch them pass.** Run `pnpm vitest run src/prototype/AttuneMark`; it should pass. Then run `pnpm check`; it should be green.
+- [x] **Step 5: Commit:** `feat(brand): the Attune mark's geometry and once-a-session flag`.
 
 ## Task 11.2: Tokens, the still mark and the tab icon
 
