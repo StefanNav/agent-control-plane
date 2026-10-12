@@ -18,10 +18,10 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | All phases merged: the guided tour is live (Phase 10 ☑) |
-| **Branch** | `main` |
-| **Last completed** | Phase 10 approved and squash-merged (PR #21, 2026-10-11); production verified: routes, stories, the tour and axe pass against the live URL (296 e2e; the caption-fit test now waits for the fonts), and the whole tour plays there in real time in 7:23 with all 65 clips and no stalls; clips are cached for an hour |
-| **Next task** | None planned. Safari confirmed by Stefan (2026-10-11). Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`); a line to redo is re-recorded as `<beatId>.m4a` and imported with `pnpm tour:import` on a new branch |
+| **Current phase** | Phase 11: Brand motion (◐ in progress) |
+| **Branch** | `phase-11-brand-motion` (worked in `.worktrees/phase-11-brand-motion`, locally excluded) |
+| **Last completed** | 11.0 Plan and tracking: spec approved by Stefan 2026-10-12, plan written, issue #23 |
+| **Next task** | 11.1 Geometry and the session flag ([plan](plans/phase-11-brand-motion.md)) |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
@@ -99,8 +99,9 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 8 | Stories and portfolio layer | ☑ Merged | `phase-8-stories` | [#9](https://github.com/StefanNav/agent-control-plane/issues/9) | [#18](https://github.com/StefanNav/agent-control-plane/pull/18) | [phase-8-stories.md](plans/phase-8-stories.md) |
 | 9 | Polish and launch | ☑ Merged | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | [#19](https://github.com/StefanNav/agent-control-plane/pull/19) | [phase-9-polish.md](plans/phase-9-polish.md) |
 | 10 | Guided tour | ☑ Merged | `phase-10-guided-tour` | [#20](https://github.com/StefanNav/agent-control-plane/issues/20) | [#21](https://github.com/StefanNav/agent-control-plane/pull/21) | [phase-10-guided-tour.md](plans/phase-10-guided-tour.md) |
+| 11 | Brand motion | ◐ In progress | `phase-11-brand-motion` | [#23](https://github.com/StefanNav/agent-control-plane/issues/23) | not yet | [phase-11-brand-motion.md](plans/phase-11-brand-motion.md) |
 
-GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
+GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11 is #23 (#22 was the voice meter PR). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
 ---
 
@@ -692,6 +693,22 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0). Status values: ☐ Not 
 
 ---
 
+## Phase 11: Brand motion
+
+**Goal:** Attune's four-pebble mark: the motion kit's "First hello" on the landing page once a session, and the still mark in the prototype bar, About, the narrow-screen page and the tab icon. Product screens are unchanged.
+**Spec:** [`specs/2026-10-12-attune-brand-motion-design.md`](specs/2026-10-12-attune-brand-motion-design.md) · **Detailed steps:** [`plans/phase-11-brand-motion.md`](plans/phase-11-brand-motion.md)
+
+- [x] 11.0 Plan and tracking
+- [ ] 11.1 Geometry and the session flag
+- [ ] 11.2 Tokens, the still mark and the tab icon
+- [ ] 11.3 The welcome
+- [ ] 11.4 Placements
+- [ ] 11.5 Phase checkpoint → **CHECKPOINT** (Stefan reviews the preview)
+
+**Done when:** the landing welcomes once a session and rests; reduced motion and the open tour keep it still; the still mark shows in the bar, About, the gate and the tab; `pnpm check` and `pnpm e2e` are green; Stefan approves the PR.
+
+---
+
 ## Frame tracker
 
 Tick **Built** when the screen exists at its route; tick **QA'd** after the side-by-side visual check at a checkpoint. Phase 9 re-swept all 54 frames side by side on 2026-10-09 (`QA=1 pnpm capture tests/capture/qa.spec.ts`) and fixed the drift it found (see the Phase 9 handoff notes).
@@ -904,3 +921,4 @@ One row per working session. Newest last.
 | 2026-10-11 | 10 | Checkpoint E feedback ("really good"; the Play button is hard to find from a link): built the tour welcome (dimmed product, a card pointing at Play tour) to the approved mockup; reviewed, one small fix round. 1208 unit and 296 e2e tests green. Then "Best with sound on" under the landing page's Play and in the welcome (a page can't read the visitor's volume) | CHECKPOINT E: Stefan reviews the welcome on the preview, then Safari and merge |
 | 2026-10-11 | 10 | Stefan approved; PR #21 squash-merged; #20 closed. Production verified: routes, stories, the tour and axe pass against the live URL (296 e2e; the caption-fit test now waits for the fonts), and the whole tour plays there in real time in 7:23 with all 65 clips and no stalls; clips are cached for an hour | Stefan: Safari and the listen list on the live URL |
 | 2026-10-11 | 10 | Stefan confirmed Safari plays with sound. Built the voice meter (levels pipeline, `VoiceLevel`, `tour:audio --levels`); reviewed, one fix round (visible only while playing, grouped with the button, a livelier level range). 1241 unit and 298 e2e tests green | Stefan: the listen list on the live URL |
+| 2026-10-12 | 11 | Explored the Attune motion kit and proposed placements; Stefan chose the landing plus a still mark, in product indigo, and approved the spec. Kit kept in `reference/attune-motion-kit/`; plan written; issue #23 | 11.1 |
