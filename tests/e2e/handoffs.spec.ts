@@ -20,7 +20,7 @@ test('H1: Dana starts Med Rec; Marcus finds the job description in his inbox and
 
   await viewAs(page, 'Marcus')
   await page.goto('/operations/inbox')
-  await page.getByRole('link', { name: /Job: description and systems to write/ }).first().click()
+  await page.getByRole('link', { name: /Job and systems to write/ }).first().click()
   await expect(page.getByRole('heading', { name: 'Med Rec Agent from REQ-0093: write the job description, then systems and verbs' })).toBeVisible()
   await page.getByRole('link', { name: 'Open the job description' }).click()
   await expect(page).toHaveURL(/\/inventory\/agents\/med-rec\/onboarding\/job$/)

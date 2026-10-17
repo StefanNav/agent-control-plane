@@ -119,7 +119,7 @@ test('change-detected-v150 (9a): 15 Dec 09:52, v1.5.0 held, Duplicate Rx due to 
   // The week between is settled: 08 Dec's items were handled; what stays open belongs to 15 Dec (or is an incident or the lapse).
   const open = s.exceptions.filter((e) => e.state !== 'resolved' && e.state !== 'dismissed' && e.type !== 'Unregistered caller')
   // Hand-offs still waiting stay open too (Phase 12): PRM-0007 hasn't been signed in this week.
-  expect(open.map((e) => e.type).sort()).toEqual(['Job: description and systems to write', 'Promotion to sign · Allergy Recon Agent', 'Re-validation needed', 'Review overdue', 'Review: HS-04 v3', 'Wrong-patient draft'])
+  expect(open.map((e) => e.type).sort()).toEqual(['Job and systems to write', 'Promotion to sign · Allergy Recon Agent', 'Re-validation needed', 'Review overdue', 'Review: HS-04 v3', 'Wrong-patient draft'])
   // Handled agents read "Within scope" again and stale feeds came back; Med Rec waits on re-validation.
   expect(s.agents.find((a) => a.id === 'med-rec')!.judgment).toEqual({ status: 'review', label: 'Re-validation needed' })
   expect(s.agents.find((a) => a.id === 'renal-dosing')!.judgment).toEqual({ status: 'normal', label: 'Within scope' })

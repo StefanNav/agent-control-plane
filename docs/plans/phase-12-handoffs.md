@@ -60,7 +60,7 @@
 **Interfaces — Produces:**
 - `endOfDayDeadline(at: string): string`: 17:00 on `at`'s day, or the next day's 17:00 when `at` is 15:00 or later.
 - `tell(s: DemoState, e: { at: string; agentId?: string; text: string; sub: string; to: string[] }): void`: pushes a `LogEvent` with id `log-tell-{n}`.
-- `JOB_ITEM = 'Job: description and systems to write'` (exported from `onboarding.ts`).
+- `JOB_ITEM = 'Job and systems to write'` (exported from `onboarding.ts`).
 
 - [ ] **Step 1: Failing tests** (`handoffs.test.ts`, using the store harness from `store.test.ts`)
   - `endOfDayDeadline('2026-12-08T11:58:00')` → `'2026-12-08T17:00:00'`; `endOfDayDeadline('2026-12-08T15:00:00')` → `'2026-12-09T17:00:00'`.
@@ -186,7 +186,7 @@ The deadline uses the tier rule: Tier ≥ 3 → 17:00 the day before the first `
 
 **Files:** `tests/e2e/inbox.spec.ts`, `journeys.spec.ts`, `epic.spec.ts` and any other spec the run names. Add one e2e test in `tests/e2e/handoffs.spec.ts`.
 
-- [ ] **Step 1:** Add `handoffs.spec.ts`. As Dana at `onboarding-intake`, start onboarding with Sam. Switch to Marcus. Inbox shows "Job: description and systems to write". "Open the job description" lands on `/onboarding/job`.
+- [ ] **Step 1:** Add `handoffs.spec.ts`. As Dana at `onboarding-intake`, start onboarding with Sam. Switch to Marcus. Inbox shows "Job and systems to write". "Open the job description" lands on `/onboarding/job`.
 - [ ] **Step 2:** Update the pins to spec §5:
   - Marcus baseline: Needs me · 5, Waiting on others · 3, and the waiting list count 3.
   - The nav reads "Inbox · 5".
@@ -201,11 +201,11 @@ The deadline uses the tier rule: Tier ≥ 3 → 17:00 the day before the first `
 **Files:** `tests/capture/flow-map.spec.ts`, `docs/flow-map/onboarding/spec.md`, `docs/flow-map/onboarding/screens/**`.
 
 - [ ] **Step 1: Capture changes:**
-  - Insert `03-marcus-inbox` (01 Oct). As Dana at `onboarding-intake`, choose Sam and press Start onboarding. Then `viewAs('marcus')`, go to `/operations/inbox` and open the item named `/Job: description and systems/`. The store persists across the persona switch, so the item is there.
+  - Insert `03-marcus-inbox` (01 Oct). As Dana at `onboarding-intake`, choose Sam and press Start onboarding. Then `viewAs('marcus')`, go to `/operations/inbox` and open the item named `/Job and systems to write/`. The store persists across the persona switch, so the item is there.
   - Renumber the later files (04–24).
 - [ ] **Step 2:** Remove the old PNGs. Run the capture. Check the new screen by eye.
 - [ ] **Step 3: Brief changes:**
-  - Add the new step after 02 (reached by "Inbox · Job: description and systems to write").
+  - Add the new step after 02 (reached by "Inbox · Job and systems to write").
   - Recast "Inventory → Drafts" as Marcus coming back on 04 Oct.
   - Remove §5.
   - The 02 → 03 arrow becomes solid.

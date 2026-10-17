@@ -123,7 +123,7 @@ export function applyJobEdit(s: DemoState, agentId: string, patch: Partial<JobDr
 
 /** 17:00 two days after `at`: the deadline for an onboarding hand-off. */
 /** Starting onboarding asks the agent owner for the job description and the systems grid (Phase 12, H1). */
-export const JOB_ITEM = 'Job: description and systems to write'
+export const JOB_ITEM = 'Job and systems to write'
 
 const handOffDeadline = (at: string) => `${addDays(at, 2).slice(0, 10)}T17:00:00`
 

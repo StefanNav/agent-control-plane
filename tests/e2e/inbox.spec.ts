@@ -10,7 +10,7 @@ test.describe('inbox (5a)', () => {
     await expect(page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Waiting on others · 3' })).toBeVisible()
     const items = page.getByRole('list', { name: 'Needs me' }).getByRole('listitem')
     await expect(items).toHaveCount(5)
-    await expect(items.last()).toContainText('Job: description and systems to write')
+    await expect(items.last()).toContainText('Job and systems to write')
     await expect(items.first()).toContainText('Monitor stale')
     await expect(items.first()).toContainText('Due 10:46')
     await expect(page.getByText('How this reaches you')).toBeVisible()

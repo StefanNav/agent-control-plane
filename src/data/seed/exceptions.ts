@@ -198,7 +198,7 @@ export const exceptions: AgentException[] = [
     code: 'EXC-5491',
     status: 'review',
     kind: 'review',
-    type: 'Job: description and systems to write',
+    type: 'Job and systems to write',
     reason: 'Culture Follow-up Agent from REQ-0099: write the job description, then systems and verbs',
     short: 'from REQ-0099: write the job description, then systems and verbs',
     agentId: 'culture-followup',

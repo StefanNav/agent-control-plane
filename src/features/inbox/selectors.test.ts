@@ -11,7 +11,7 @@ test('Marcus needs to act on five items, by deadline; three wait on others (Phas
     ['Review: 3 drafts', 'Due 11:00'],
     ['Edit rate rising', 'Due 15:00'],
     ['Question', 'Due tomorrow'],
-    ['Job: description and systems to write', 'Due Thursday'],
+    ['Job and systems to write', 'Due Thursday'],
   ])
   expect(inbox.needsMe[0]).toMatchObject({ source: 'Formulary Swap Agent · MON-02 v1', action: 'Action: check the feed with Sam' })
   expect(inbox.needsMe[3]!.source).toBe('Sam · Med Rec Agent')
@@ -100,7 +100,7 @@ test('the 07:00 digest (5c): what can wait for the morning email, what changed, 
     { id: 'exc-5512', status: 'warn', label: 'Edit rate rising', text: 'Renal Dosing Agent · edit rate 19.2 % against 10 %', due: 'Due today 15:00', link: 'Open' },
     { id: 'exc-5514', status: 'normal', label: 'Question from Sam', text: 'Move pyxis.dispense.read to the v2 endpoint?', due: 'Due tomorrow', link: 'Answer' },
     // Phase 12 H1: the hand-off's short form, so the agent isn't named twice.
-    { id: 'exc-5491', status: 'review', label: 'Job: description and systems to write', text: 'Culture Follow-up Agent · from REQ-0099: write the job description, then systems and verbs', due: 'Due Thursday', link: 'Open' },
+    { id: 'exc-5491', status: 'review', label: 'Job and systems to write', text: 'Culture Follow-up Agent · from REQ-0099: write the job description, then systems and verbs', due: 'Due Thursday', link: 'Open' },
   ])
   expect(digest.changes.map((c) => c.text)).toEqual([
     'Allergy Recon Agent v1.2.1 deployed by Sam. Re-validation passed on 200 replayed cases.',

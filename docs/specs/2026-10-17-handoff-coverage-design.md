@@ -47,7 +47,7 @@ Every hand-off in the product after this phase. Items marked "new" are this phas
 
 | # | When | From → to | Inbox item | Closes when | |
 |---|---|---|---|---|---|
-| 1 | Onboarding starts | Program lead → **owner** | Job: description and systems to write | Systems and verbs are done | **new** |
+| 1 | Onboarding starts | Program lead → **owner** | Job and systems to write | Systems and verbs are done | **new** |
 | 2 | Systems and verbs done | Owner → technical owner | Tools: hard stops to test | The set is sent | existing |
 | 3 | The set is sent | Technical owner → sponsor | Review: final set | Approved or sent back | existing |
 | 4 | Sponsor sends it back | Sponsor → technical owner or owner | Returned: HS-xx / job and reach | Sent again | existing |
@@ -86,7 +86,7 @@ Every hand-off in the product after this phase. Items marked "new" are this phas
 
 ### H1 · Onboarding starts → owner
 
-- **Item:** "Job: description and systems to write"
+- **Item:** "Job and systems to write"
   - reason: `{agent} from {REQ}: write the job description, then systems and verbs`
   - action: "write the job description"
   - actionSub: `Then systems and verbs. {tech} tests the hard stops after.`

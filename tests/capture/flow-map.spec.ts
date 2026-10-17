@@ -37,15 +37,30 @@ const SHOTS: Shot[] = [
       await page.getByLabel('Technical owner').selectOption('sam')
     },
   },
-  { file: '03-marcus-drafts', persona: 'marcus', url: '/inventory?tab=drafts&scenario=onboarding-at-5-of-7' },
-  { file: '04-marcus-job-description', persona: 'marcus', url: '/inventory/agents/med-rec/onboarding/job?scenario=onboarding-at-5-of-7' },
-  { file: '05-marcus-systems', persona: 'marcus', url: '/inventory/agents/med-rec/onboarding/systems?scenario=onboarding-systems' },
-  { file: '06-sam-inbox', persona: 'sam', url: '/operations/inbox?scenario=onboarding-tools-tested', act: openItem(/Tools: hard stops to test/) },
-  { file: '07-sam-tools', persona: 'sam', url: '/inventory/agents/med-rec/onboarding/tools?scenario=onboarding-tools-tested' },
-  { file: '08-priya-inbox', persona: 'priya', url: '/operations/inbox?scenario=onboarding-sponsor-review', act: openItem(/Review: final set/) },
-  { file: '09-priya-approval', persona: 'priya', url: '/inventory/agents/med-rec/onboarding/approval?scenario=onboarding-sponsor-review' },
   {
-    file: '10-priya-request-changes',
+    // 01 Oct: starting onboarding asks Marcus in his inbox (Phase 12 H1).
+    file: '03-marcus-inbox',
+    persona: 'dana',
+    url: '/inventory/agents/med-rec/onboarding/intake?scenario=onboarding-intake',
+    act: async (page) => {
+      await page.getByLabel('Technical owner').selectOption('sam')
+      await page.getByRole('button', { name: 'Start onboarding' }).click()
+      await expect(page).toHaveURL(/onboarding\/job$/)
+      await viewAs(page, 'marcus')
+      await page.goto('/operations/inbox')
+      await page.getByRole('heading', { level: 1 }).first().waitFor()
+      await openItem(/Job and systems to write/)(page)
+    },
+  },
+  { file: '04-marcus-drafts', persona: 'marcus', url: '/inventory?tab=drafts&scenario=onboarding-at-5-of-7' },
+  { file: '05-marcus-job-description', persona: 'marcus', url: '/inventory/agents/med-rec/onboarding/job?scenario=onboarding-at-5-of-7' },
+  { file: '06-marcus-systems', persona: 'marcus', url: '/inventory/agents/med-rec/onboarding/systems?scenario=onboarding-systems' },
+  { file: '07-sam-inbox', persona: 'sam', url: '/operations/inbox?scenario=onboarding-tools-tested', act: openItem(/Tools: hard stops to test/) },
+  { file: '08-sam-tools', persona: 'sam', url: '/inventory/agents/med-rec/onboarding/tools?scenario=onboarding-tools-tested' },
+  { file: '09-priya-inbox', persona: 'priya', url: '/operations/inbox?scenario=onboarding-sponsor-review', act: openItem(/Review: final set/) },
+  { file: '10-priya-approval', persona: 'priya', url: '/inventory/agents/med-rec/onboarding/approval?scenario=onboarding-sponsor-review' },
+  {
+    file: '11-priya-request-changes',
     persona: 'priya',
     url: '/inventory/agents/med-rec/onboarding/approval?scenario=onboarding-sponsor-review',
     act: async (page) => {
@@ -54,20 +69,20 @@ const SHOTS: Shot[] = [
       await page.getByRole('textbox', { name: 'Note for Sam' }).fill('HS-11 shows 0 blocks. Before I sign, please test it on September’s 8 East transfers.')
     },
   },
-  { file: '11-sam-returned', persona: 'sam', url: '/inventory/agents/med-rec/onboarding/tools?scenario=onboarding-returned-hs11' },
-  { file: '12-ready-for-review', persona: 'priya', url: '/inventory/agents/med-rec/onboarding/review?scenario=onboarding-ready' },
-  { file: '13-dana-inbox', persona: 'dana', url: '/operations/inbox?scenario=onboarding-ready', act: openItem(/Review: risk tier/) },
-  { file: '14-dana-risk-tier', persona: 'dana', url: '/inventory/agents/med-rec/risk-tier?scenario=review-risk-tier' },
-  { file: '15-drlee-inbox', persona: 'drlee', url: '/operations/inbox?scenario=review-committee', act: openItem(/Review: your decision/) },
-  { file: '16-drlee-packet', persona: 'drlee', url: '/portfolio/reviews/med-rec?scenario=review-committee' },
-  { file: '17-decision-logged', persona: 'dana', url: '/inventory/agents/med-rec?scenario=review-decided' },
-  { file: '18-marcus-scorecard', persona: 'marcus', url: '/operations/agents/med-rec?tab=scorecard&scenario=shadow-day-21' },
-  { file: '19-marcus-sample-case', persona: 'marcus', url: '/operations/agents/med-rec/cases/enc-4105?scenario=shadow-day-21' },
-  { file: '20-priya-inbox', persona: 'priya', url: '/operations/inbox?scenario=awaiting-signature', act: openItem(/Review: your signature/) },
-  { file: '21-priya-sign', persona: 'priya', url: '/inventory/privileges/prv-0142/sign?scenario=awaiting-signature' },
-  { file: '22-priya-signed', persona: 'priya', url: '/inventory/privileges/prv-0142/sign?scenario=awaiting-signature', act: (page) => sign(page) },
+  { file: '12-sam-returned', persona: 'sam', url: '/inventory/agents/med-rec/onboarding/tools?scenario=onboarding-returned-hs11' },
+  { file: '13-ready-for-review', persona: 'priya', url: '/inventory/agents/med-rec/onboarding/review?scenario=onboarding-ready' },
+  { file: '14-dana-inbox', persona: 'dana', url: '/operations/inbox?scenario=onboarding-ready', act: openItem(/Review: risk tier/) },
+  { file: '15-dana-risk-tier', persona: 'dana', url: '/inventory/agents/med-rec/risk-tier?scenario=review-risk-tier' },
+  { file: '16-drlee-inbox', persona: 'drlee', url: '/operations/inbox?scenario=review-committee', act: openItem(/Review: your decision/) },
+  { file: '17-drlee-packet', persona: 'drlee', url: '/portfolio/reviews/med-rec?scenario=review-committee' },
+  { file: '18-decision-logged', persona: 'dana', url: '/inventory/agents/med-rec?scenario=review-decided' },
+  { file: '19-marcus-scorecard', persona: 'marcus', url: '/operations/agents/med-rec?tab=scorecard&scenario=shadow-day-21' },
+  { file: '20-marcus-sample-case', persona: 'marcus', url: '/operations/agents/med-rec/cases/enc-4105?scenario=shadow-day-21' },
+  { file: '21-priya-inbox', persona: 'priya', url: '/operations/inbox?scenario=awaiting-signature', act: openItem(/Review: your signature/) },
+  { file: '22-priya-sign', persona: 'priya', url: '/inventory/privileges/prv-0142/sign?scenario=awaiting-signature' },
+  { file: '23-priya-signed', persona: 'priya', url: '/inventory/privileges/prv-0142/sign?scenario=awaiting-signature', act: (page) => sign(page) },
   {
-    file: '23-priya-my-privileges',
+    file: '24-priya-my-privileges',
     persona: 'priya',
     url: '/inventory/privileges/prv-0142/sign?scenario=awaiting-signature',
     act: async (page) => {

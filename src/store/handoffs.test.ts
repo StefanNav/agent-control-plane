@@ -31,7 +31,11 @@ describe('endOfDayDeadline', () => {
 })
 
 describe('H1 · starting onboarding asks the owner', () => {
-  test('Dana starts Med Rec: Marcus gets "Job: description and systems to write"', () => {
+  test('the item is called "Job and systems to write"', () => {
+    expect(JOB_ITEM).toBe('Job and systems to write')
+  })
+
+  test('Dana starts Med Rec: Marcus gets "Job and systems to write"', () => {
     const store = at('onboarding-intake', 'dana')
     expect(store.getState().startOnboarding('req-0093', { ownerId: 'marcus', techOwnerId: 'sam' })).toEqual({ ok: true })
     const items = store.getState().exceptions.filter((e) => e.type === JOB_ITEM && open(e))
