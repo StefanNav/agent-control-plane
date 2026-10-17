@@ -98,6 +98,8 @@ See `docs/BUILD_PLAN.md` → Global constraints and `CLAUDE.md`. Also:
   - "Review: your signature" to the sponsor
   
   Doing the step resolves its item. Codes continue from the highest existing code, with a floor of EXC-5400 so a rewound October doesn't restart at EXC-0001.
+
+  *Phase 12 (2026-10-17):* this list missed "Start onboarding" → the owner ("Job and systems to write"). R9 is now product-wide; the full hand-off registry is in [`specs/2026-10-17-handoff-coverage-design.md`](../specs/2026-10-17-handoff-coverage-design.md) §3.
 - **R10 Hard stops: library or plain language.**
   - A never-list item that matches the hard-stop library takes the library's code and rule:
     - "Change a dose" → HS-04, DOSE-CHANGE-01
