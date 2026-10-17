@@ -31,3 +31,6 @@ blob-report/
 
 # Tour assets handed over by Stefan; reviewed before anything moves into public/
 reference/tour-inbox/
+
+# Flow-map bundle for Claude Design (built from docs/flow-map/onboarding)
+docs/flow-map/*.zip
