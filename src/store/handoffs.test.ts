@@ -143,7 +143,7 @@ describe('H2 · a resume request reaches the other approver', () => {
     const retired = requested()
     retired.getState().setPersona('dana')
     expect(retired.getState().retireAgent('med-rec', { typedName: 'Med Rec Agent', reason: 'Replaced.' }).ok).toBe(true)
-    expect(resumeItems(retired)[0].state).toBe('resolved')
+    expect(resumeItems(retired)[0]!.state).toBe('resolved')
   })
 
   test('scenario resume-requested: Priya has the open item from 11:58', () => {
