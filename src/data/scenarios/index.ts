@@ -3,6 +3,7 @@ import { applyPause } from '../../store/mutations'
 import { DEMO_NOW } from '../../lib/clock'
 import { applyAccept, applyDeploy, applyHardStopApproval, applyReplay, applySystemsSignOff, changeId } from '../../store/changes'
 import { applyAddEpicDraft, applyFlag, applyFlagAnswer } from '../../store/feedback'
+import { raiseResumeItem } from '../../store/handoffs'
 import { applyDecidePromotion, applySignPromotion, c4 } from '../../store/promotions'
 import { applyThresholdStepDown, applyVersionDeploy } from '../../store/stepdowns'
 import { ALLERGY_V130, STEP_DOWN_MED_REC } from '../seed/autonomy'
@@ -211,6 +212,7 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
       reason,
       approvals: [{ personId: 'marcus', reason, at: s.now }],
     })
+    raiseResumeItem(s, 'med-rec', 'marcus', s.now)
     return s
   },
 

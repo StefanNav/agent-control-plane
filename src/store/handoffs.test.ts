@@ -2,7 +2,7 @@ import type { ScenarioId } from '../data/scenarios'
 import { createSeed } from '../data/seed'
 import type { AgentException, PersonaId } from '../data/types'
 import { selectDivisionSummaries, selectOpenExceptions } from '../features/board/selectors'
-import { endOfDayDeadline } from './handoffs'
+import { endOfDayDeadline, RESUME_ITEM } from './handoffs'
 import { createDemoStore } from './index'
 import { JOB_ITEM } from './onboarding'
 import { createMemoryStorage } from './storage'
@@ -78,5 +78,78 @@ describe('Review focus 3: hand-offs stay off the agent boards', () => {
     })
     expect(selectDivisionSummaries(withItem)).toEqual(selectDivisionSummaries(seed))
     expect(selectOpenExceptions(withItem)).toEqual(selectOpenExceptions(seed))
+  })
+})
+
+describe('H2 · a resume request reaches the other approver', () => {
+  const REASON = 'Dose mapping fixed; replayed clean.'
+  const requested = () => {
+    const store = at('med-rec-paused', 'marcus')
+    expect(store.getState().requestResume('med-rec', REASON)).toEqual({ ok: true })
+    return store
+  }
+  const resumeItems = (store: ReturnType<typeof fresh>) => store.getState().exceptions.filter((e) => e.type === RESUME_ITEM)
+
+  test('Marcus asks: Priya gets "Review: resume", due 17:00 today', () => {
+    const items = resumeItems(requested())
+    expect(items).toHaveLength(1)
+    expect(items[0]).toMatchObject({
+      agentId: 'med-rec',
+      state: 'new',
+      status: 'review',
+      ownerId: 'priya',
+      copied: ['marcus'],
+      reason: 'Marcus asks to resume Med Rec Agent. Paused by Marcus at 09:47.',
+      action: 'approve or decline the resume',
+      actionSub: 'It stays paused until you agree',
+      link: { label: 'Open the resume request', to: '/operations/agents/med-rec' },
+      deadline: '2026-12-08T17:00:00',
+    })
+  })
+
+  test('Priya approves: it closes as Approved', () => {
+    const store = requested()
+    store.getState().setPersona('priya')
+    expect(store.getState().approveResume('med-rec', 'Root cause fixed.').ok).toBe(true)
+    expect(resumeItems(store)[0]).toMatchObject({ state: 'resolved', outcome: 'Approved', closedBy: 'priya' })
+  })
+
+  test('Priya declines: it closes as Declined, and Marcus is told in the log', () => {
+    const store = requested()
+    store.getState().setPersona('priya')
+    expect(store.getState().declineResume('med-rec', 'Replay the newer-fill cases first.').ok).toBe(true)
+    const s = store.getState()
+    expect(resumeItems(store)[0]).toMatchObject({ state: 'resolved', outcome: 'Declined', closedBy: 'priya' })
+    expect(s.logEvents.at(-1)).toMatchObject({
+      agentId: 'med-rec',
+      text: 'Priya declined resuming Med Rec Agent',
+      sub: 'Replay the newer-fill cases first. · Marcus told',
+      to: ['marcus'],
+    })
+  })
+
+  test('Marcus withdraws: it closes as Withdrawn', () => {
+    const store = requested()
+    expect(store.getState().withdrawResume('med-rec').ok).toBe(true)
+    expect(resumeItems(store)[0]).toMatchObject({ state: 'resolved', outcome: 'Withdrawn' })
+  })
+
+  test('Review focus 2: disabling or retiring the agent leaves no open resume item', () => {
+    const disabled = requested()
+    disabled.getState().setPersona('dana')
+    expect(disabled.getState().disableAgent('med-rec', 'Replaced by a vendor tool.').ok).toBe(true)
+    expect(resumeItems(disabled)[0]).toMatchObject({ state: 'resolved', outcome: 'Agent disabled' })
+
+    const retired = requested()
+    retired.getState().setPersona('dana')
+    expect(retired.getState().retireAgent('med-rec', { typedName: 'Med Rec Agent', reason: 'Replaced.' }).ok).toBe(true)
+    expect(resumeItems(retired)[0].state).toBe('resolved')
+  })
+
+  test('scenario resume-requested: Priya has the open item from 11:58', () => {
+    const store = at('resume-requested', 'priya')
+    const items = resumeItems(store).filter(open)
+    expect(items).toHaveLength(1)
+    expect(items[0]).toMatchObject({ ownerId: 'priya', raisedAt: '2026-12-08T11:58:00', deadline: '2026-12-08T17:00:00' })
   })
 })
