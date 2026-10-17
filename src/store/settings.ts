@@ -1,6 +1,7 @@
 import type { DemoState, Division, Privilege, Role } from '../data/types'
 import { addDays, addMinutes, formatDate } from '../lib/clock'
 import { lowerBranches } from './branches'
+import { tell } from './handoffs'
 import { applyPause, nextVersion } from './mutations'
 import { personName } from './onboardingRules'
 
@@ -48,6 +49,16 @@ export function applyReturnToShadow(s: DemoState, activityId: string, by: string
   }
   if (!branchLevels) delete next.branchLevels
   s.privileges.push(next)
+  // H5 (Phase 12): the sponsor's privilege closed, so the sponsor is told; the way back is the owner's request.
+  const sponsor = s.agents.find((a) => a.id === target.agentId)?.sponsorId
+  if (sponsor && sponsor !== by && s.people.some((p) => p.id === by))
+    tell(s, {
+      at: s.now,
+      agentId: target.agentId,
+      text: `${personName(s, by)} returned ${target.name} to Shadow`,
+      sub: `${current.code} v${current.version} closed · ${personName(s, sponsor)} told`,
+      to: [sponsor],
+    })
   return s
 }
 
@@ -131,6 +142,8 @@ function handOver(s: DemoState, d: Division, role: Extract<Role, 'owner' | 'spon
     e.ownerId = to
     e.copied = [...e.copied.filter((p) => p !== to), ...(e.copied.includes(from) ? [] : [from])]
   }
+  // The owner commands the agent's open incidents, so the commander moves with the role (Phase 12).
+  if (role === 'owner') for (const i of s.incidents) if (agentIds.has(i.agentId) && i.state !== 'closed' && i.commanderId === from) i.commanderId = to
   if (d.resumeNeeds) d.resumeNeeds = d.resumeNeeds.map((n) => (n === personName(s, from) ? personName(s, to) : n))
   if (role === 'sponsor') {
     if (d.escalation.first === from) d.escalation.first = to

@@ -99,6 +99,8 @@ test('stale-escalated (5d): at 12:00 the unanswered stale monitor is escalated t
   const priya = selectInbox(s, 'priya')
   expect(priya.needsMe.map((i) => [i.id, i.escalated])).toEqual([
     ['exc-5508', true],
+    // Phase 12 H4: PRM-0007 waits for Priya, due before the 09 Dec board.
+    ['exc-5468', false],
     ['exc-5503', false],
     ['exc-5497', false],
   ])

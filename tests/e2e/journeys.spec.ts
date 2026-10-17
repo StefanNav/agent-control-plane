@@ -17,13 +17,13 @@ test('find the one problem among 20 (Marcus): board → division → agent → i
   await expect(page.getByText('3 drafts held by HS-04 v2 need a pharmacist decision.')).toBeVisible()
 
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Operations' }).click()
-  await page.getByRole('navigation', { name: 'Operations' }).getByRole('link', { name: 'Inbox · 4' }).click()
+  await page.getByRole('navigation', { name: 'Operations' }).getByRole('link', { name: 'Inbox · 5' }).click()
   await page.getByRole('link', { name: /Edit rate rising/ }).click()
   await page.getByRole('button', { name: 'Dismiss…' }).click()
   const dialog = page.getByRole('dialog')
   await dialog.getByRole('textbox', { name: 'Reason' }).fill('Formulary update F-112 explains the edits.')
   await dialog.getByRole('button', { name: 'Dismiss with reason' }).click()
-  await expect(page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Needs me · 3' })).toBeVisible()
+  await expect(page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Needs me · 4' })).toBeVisible()
 
   // Dismissing closes the exception; the agent's judgment (edit rate still 19.2 %) is unchanged,
   // so Medications still has 4 agents needing a human. This is the designed behaviour.

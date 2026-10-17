@@ -24,7 +24,7 @@ test('10a: Ana flags a draft from Epic in one action; Marcus answers in the inbo
 
   await viewAs(page, 'Marcus')
   await page.goto('/operations/inbox')
-  await expect(page.getByRole('link', { name: 'Needs me · 5' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Needs me · 6' })).toBeVisible()
   await page.getByText('Flag from Epic').first().click()
   await page.getByRole('button', { name: 'Working on a fix…' }).click()
   await page.getByLabel('What you’re doing about it').fill('Sam is changing how the frequency is read')

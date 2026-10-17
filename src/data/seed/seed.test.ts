@@ -155,10 +155,10 @@ describe('E4 and E5 refinements', () => {
     expect(statuses.filter((st) => ['crit', 'warn', 'review', 'stale'].includes(st)).sort()).toEqual(['review', 'stale', 'warn', 'warn'])
   })
 
-  test('Marcus owns the four items of 5a and is copied on two', () => {
+  test('Marcus owns the four items of 5a plus the culture draft’s hand-off, and is copied on three (Phase 12)', () => {
     const mine = seed.exceptions.filter((e) => e.ownerId === 'marcus' && open(e))
-    expect(mine.map((e) => e.type).sort()).toEqual(['Edit rate rising', 'Monitor stale', 'Question', 'Review: 3 drafts'])
-    expect(seed.exceptions.filter((e) => e.copied.includes('marcus') && e.ownerId !== 'marcus' && open(e))).toHaveLength(2)
+    expect(mine.map((e) => e.type).sort()).toEqual(['Edit rate rising', 'Job and systems to write', 'Monitor stale', 'Question', 'Review: 3 drafts'])
+    expect(seed.exceptions.filter((e) => e.copied.includes('marcus') && e.ownerId !== 'marcus' && open(e))).toHaveLength(3)
   })
 
   test('the edit-rate detail carries the 14-day chart and the 32 edits', () => {
@@ -253,8 +253,8 @@ describe('Phase 4: controls and audit data', () => {
 describe('Phase 5: onboarding data (seed v6)', () => {
   const s = createSeed()
 
-  test('seed version 8 (Phase 7: evidence, review levels, promotions and step-downs)', () => {
-    expect(SEED_VERSION).toBe(8)
+  test('seed version 9 (Phase 12: hand-offs reach the inbox)', () => {
+    expect(SEED_VERSION).toBe(9)
   })
 
   test('every intake reserves a unique agent id and code; only a started intake’s agent uses them', () => {

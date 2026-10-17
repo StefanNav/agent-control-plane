@@ -36,7 +36,7 @@ test('1a: what carries over from REQ-0093, and what starting does', () => {
     'Creates AGT-0123 as a draft in Inventory → Drafts',
     'Fills name, division, requester, purpose and domain from REQ-0093',
     'Asks Marcus for the job description, systems and verbs',
-    'Asks Sam for tools and hard stops',
+    'Asks Sam for tools and hard stops once systems are done',
     'Tells Priya when 2 to 4 are done',
   ])
   expect(selectIntakeStep(s, 'nope')).toBeNull()

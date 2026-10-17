@@ -5,8 +5,9 @@ import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type Condition, type DemoState, type FlagReason, type ReviewChange, type ReviewRules, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
-import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, signMode, testResult, type SystemsChange } from './onboarding'
-import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, readyToSend, recordItems, shadowProgress } from './onboardingRules'
+import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, resolveItems, signMode, testResult, type SystemsChange } from './onboarding'
+import { closeResumeItem, commanderItem, raiseCommanderItem, raiseResumeItem, syncResumeItems, tell } from './handoffs'
+import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, personName, readyToSend, recordItems, shadowProgress } from './onboardingRules'
 import { applyAccept, applyHardStopApproval, applyReplay, applySystemsSignOff, pendingChecks } from './changes'
 import { applyFlag, applyFlagAnswer, applySeenFix, type FlagAnswer } from './feedback'
 import { applyBlockCaller, applyDismissCaller, applyMessageOwner } from './gateway'
@@ -183,13 +184,14 @@ const DATA_KEYS = Object.keys(createSeed()) as Array<keyof DemoState>
 const isPaused = (agent: DemoState['agents'][number]) => agent.lifecycle === 'paused' || (agent.lifecycle === 'live' && agent.pause?.scope === 'activity')
 
 /** Drop a pause and its resume request: disabling or retiring supersedes them. */
-function clearPause(draft: DemoState, agentId: string) {
+function clearPause(draft: DemoState, agentId: string, outcome = 'Agent disabled') {
   const agent = draft.agents.find((a) => a.id === agentId)!
   delete agent.pause
   delete agent.pausedBy
   delete agent.pausedAt
   for (const activity of draft.activities) if (activity.agentId === agentId) delete activity.paused
   draft.resumeRequests = draft.resumeRequests.filter((r) => r.agentId !== agentId)
+  closeResumeItem(draft, agentId, draft.personaId, draft.now, outcome)
 }
 
 /** Every tool grant to none: the agent loses gateway access (disable, retire). */
@@ -434,6 +436,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Requested resume', target: agent.code, reason: why },
               mutate: (draft) => {
                 draft.resumeRequests.push({ agentId, requestedBy: draft.personaId, requestedAt: draft.now, reason: why, approvals: [{ personId: draft.personaId, reason: why, at: draft.now }] })
+                raiseResumeItem(draft, agentId, draft.personaId, draft.now)
                 incidentEntry(draft, agentId, 'Resume requested')
               },
             })
@@ -457,7 +460,10 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: complete ? 'Resumed' : 'Approved resume', target: agent.code, reason: why },
               mutate: (draft) => {
                 draft.resumeRequests.find((r) => r.agentId === agentId)!.approvals.push({ personId: draft.personaId, reason: why, at: draft.now })
-                if (complete) applyResume(draft, agentId, draft.personaId)
+                if (complete) {
+                  closeResumeItem(draft, agentId, draft.personaId, draft.now, 'Approved')
+                  applyResume(draft, agentId, draft.personaId)
+                } else syncResumeItems(draft, agentId, draft.personaId, draft.now)
               },
             })
           },
@@ -475,6 +481,14 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Declined resume', target: agent.code, reason: why },
               mutate: (draft) => {
                 draft.resumeRequests = draft.resumeRequests.filter((r) => r.agentId !== agentId)
+                closeResumeItem(draft, agentId, draft.personaId, draft.now, 'Declined')
+                tell(draft, {
+                  at: draft.now,
+                  agentId,
+                  text: `${personName(draft, draft.personaId)} declined resuming ${agent.name}`,
+                  sub: `${why} · ${personName(draft, request.requestedBy)} told`,
+                  to: [request.requestedBy],
+                })
                 incidentEntry(draft, agentId, 'Resume declined')
               },
             })
@@ -494,6 +508,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Withdrew resume request', target: agent.code },
               mutate: (draft) => {
                 draft.resumeRequests = draft.resumeRequests.filter((r) => r.agentId !== agentId)
+                closeResumeItem(draft, agentId, draft.personaId, draft.now, 'Withdrawn')
               },
             })
           },
@@ -534,7 +549,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
               audit: { action: 'Retired', target: agent.code, reason: why },
               mutate: (draft) => {
                 const target = draft.agents.find((a) => a.id === agentId)!
-                clearPause(draft, agentId)
+                clearPause(draft, agentId, 'Agent retired')
                 target.retirement = { at: draft.now, by: draft.personaId, code: nextArchiveCode(draft), reason: why }
                 target.lifecycle = 'retired'
                 target.judgment = { status: 'normal', label: 'Retired' }
@@ -587,6 +602,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                   corrections: [],
                   timeline,
                 })
+                raiseCommanderItem(draft, draft.incidents.at(-1)!, draft.personaId, draft.now)
                 // Review fix I4: a linked incident is a step-down trigger for branches above Draft (14a, 15b).
                 applyIncidentStepDown(draft, agentId, code, draft.now)
               },
@@ -654,6 +670,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                 target.state = 'closed'
                 target.closedAt = draft.now
                 target.timeline.push({ at: draft.now, title: 'Incident closed', sub: name, by: draft.personaId })
+                resolveItems(draft, target.agentId, commanderItem(target.code), draft.personaId, draft.now, 'Incident closed')
               },
             })
           },

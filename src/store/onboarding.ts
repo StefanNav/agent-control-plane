@@ -42,6 +42,21 @@ export function applyStart(s: DemoState, intakeId: string, people: { ownerId: st
   })
   intake.startedAt = at
   markCallerOnboarding(s, intakeId, intake.agentId, by, at)
+  // H1 (Phase 12): the owner is asked for the job description and the systems grid in their inbox.
+  if (people.ownerId !== by)
+    raiseItem(s, {
+      agentId: intake.agentId,
+      type: JOB_ITEM,
+      reason: `${intake.agentName} from ${intake.code}: write the job description, then systems and verbs`,
+      short: `from ${intake.code}: write the job description, then systems and verbs`,
+      action: 'write the job description',
+      actionSub: `Then systems and verbs. ${personName(s, people.techOwnerId)} tests the hard stops after.`,
+      ownerId: people.ownerId,
+      copied: [by],
+      link: { label: 'Open the job description', to: `/inventory/agents/${intake.agentId}/onboarding/job` },
+      at,
+      deadline: `${addDays(at, 7).slice(0, 10)}T17:00:00`,
+    })
   return s
 }
 
@@ -106,13 +121,17 @@ export function applyJobEdit(s: DemoState, agentId: string, patch: Partial<JobDr
   return s
 }
 
+/** Starting onboarding asks the agent owner for the job description and the systems grid (Phase 12, H1). */
+export const JOB_ITEM = 'Job and systems to write'
+
 /** 17:00 two days after `at`: the deadline for an onboarding hand-off. */
+
 const handOffDeadline = (at: string) => `${addDays(at, 2).slice(0, 10)}T17:00:00`
 
 /** Raise an onboarding hand-off in someone's inbox (ruling R9): a review item that links to the step. */
 export function raiseItem(
   s: DemoState,
-  input: { agentId: string; type: string; reason: string; action: string; actionSub: string; ownerId: string; copied: string[]; link: { label: string; to: string }; at: string; deadline?: string },
+  input: { agentId: string; type: string; reason: string; short?: string; action: string; actionSub: string; ownerId: string; copied: string[]; link: { label: string; to: string }; at: string; deadline?: string; board?: boolean },
 ): AgentException {
   const code = nextExceptionCode(s)
   const item: AgentException = {
@@ -122,6 +141,8 @@ export function raiseItem(
     kind: 'review',
     type: input.type,
     reason: input.reason,
+    // The digest names the agent before it; a reason that starts with the agent's name gives a short form.
+    ...(input.short ? { short: input.short } : {}),
     agentId: input.agentId,
     raisedAt: input.at,
     action: input.action,
@@ -132,6 +153,7 @@ export function raiseItem(
     state: 'new',
     route: 'inbox',
     link: input.link,
+    ...(input.board ? { board: true } : {}),
   }
   s.exceptions.push(item)
   return item
@@ -173,6 +195,7 @@ export function applySystemsEdit(s: DemoState, agentId: string, change: SystemsC
   if (systemsProgress(s, agentId).complete) {
     if (!record.done.systems) {
       record.done.systems = { at, by }
+      resolveItems(s, agentId, JOB_ITEM, by, at, 'Job and systems done')
       if (record.limits.length && !openItem(s, agentId, 'Tools: hard stops to test'))
         raiseItem(s, {
           agentId,
@@ -558,7 +581,7 @@ export function applyExtendShadow(s: DemoState, activityId: string, days: number
   return s
 }
 
-/** Flag a sample-case line for the SOP (3b): the technical owner is asked to check the mapping. */
+/** Flag a sample-case line for the SOP (3b): shared with the technical owner in the log (an FYI, Phase 12 H6). */
 export function applyFlagLine(s: DemoState, caseId: string, line: number, by: string, at: string): DemoState {
   const c = s.sampleCases.find((x) => x.id === caseId)
   const l = c?.lines[line - 1]
@@ -571,7 +594,8 @@ export function applyFlagLine(s: DemoState, caseId: string, line: number, by: st
     at,
     agentId: c.agentId,
     text: `Flagged for SOP: line ${line} · ${l.agent ? word(l.agent) : 'missing'} → ${theirs.charAt(0).toLowerCase()}${theirs.slice(1)}`,
-    sub: `${personName(s, agent?.techOwnerId)} is asked to check the SOP mapping · ${personName(s, by)}`,
+    sub: `Shared with ${personName(s, agent?.techOwnerId)} to check the SOP mapping · ${personName(s, by)}`,
+    ...(agent?.techOwnerId ? { to: [agent.techOwnerId] } : {}),
   })
   return s
 }

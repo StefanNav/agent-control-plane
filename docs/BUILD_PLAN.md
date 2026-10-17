@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | All phases merged: Attune's brand motion is live (Phase 11 ☑) |
-| **Branch** | `main` |
-| **Last completed** | Links for one recipient squash-merged (PR #26, 2026-10-12): `/for/<name>` is the landing page under its own address, and a visit is recorded at the address opened, so `/for/polly?tour=open` (the walkthrough's start) is recorded as `/for/polly`. Before that, Phase 11 (PR #25) and visitor analytics (PR #24) |
-| **Next task** | Stefan opens Polly's link (`/for/polly?tour=open`) once in Chrome incognito, checks Vercel → Analytics → Pages shows `/for/polly` with 1 visitor (himself), then emails it to Polly. Still pending from earlier: Stefan opens `/?notrack` once in each browser he uses; Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`). Separately, PR #26 (links made for one recipient) is open from another session |
+| **Current phase** | Phase 12 · Every hand-off reaches an inbox · ⏸ at checkpoint (PR open, awaiting Stefan's review) |
+| **Branch** | `phase-12-handoffs` |
+| **Last completed** | Phase 12 built (2026-10-17): every hand-off raises an inbox item for the person who acts next (start onboarding → owner, resume request → the other approver, incident → commander, promotion → sponsor); declines and returns to Shadow tell people in the log; hand-offs stay off the boards; the onboarding flow map for Claude Design (`docs/flow-map/onboarding/`). Before that: links for one recipient squash-merged (PR #26, 2026-10-12): `/for/<name>` is the landing page under its own address, and a visit is recorded at the address opened, so `/for/polly?tour=open` (the walkthrough's start) is recorded as `/for/polly`. Before that, Phase 11 (PR #25) and visitor analytics (PR #24) |
+| **Next task** | Stefan reviews the Phase 12 preview (PR #28, closes #27), including the frame departures in spec §5; merge only after approval. Then sync the Claude Design project from the merge commit. Earlier: Stefan opens Polly's link (`/for/polly?tour=open`) once in Chrome incognito, checks Vercel → Analytics → Pages shows `/for/polly` with 1 visitor (himself), then emails it to Polly. Still pending from earlier: Stefan opens `/?notrack` once in each browser he uses; Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`). Separately, PR #26 (links made for one recipient) is open from another session |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none open |
+| **Latest preview** | [PR #28](https://github.com/StefanNav/agent-control-plane/pull/28) (Vercel preview link in the PR) |
 
 ### How to resume in a new session
 
@@ -100,6 +100,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 9 | Polish and launch | ☑ Merged | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | [#19](https://github.com/StefanNav/agent-control-plane/pull/19) | [phase-9-polish.md](plans/phase-9-polish.md) |
 | 10 | Guided tour | ☑ Merged | `phase-10-guided-tour` | [#20](https://github.com/StefanNav/agent-control-plane/issues/20) | [#21](https://github.com/StefanNav/agent-control-plane/pull/21) | [phase-10-guided-tour.md](plans/phase-10-guided-tour.md) |
 | 11 | Brand motion | ☑ Merged | `phase-11-brand-motion` | [#23](https://github.com/StefanNav/agent-control-plane/issues/23) | [#25](https://github.com/StefanNav/agent-control-plane/pull/25) | [phase-11-brand-motion.md](plans/phase-11-brand-motion.md) |
+| 12 | Every hand-off reaches an inbox | ⏸ At checkpoint | `phase-12-handoffs` | [#27](https://github.com/StefanNav/agent-control-plane/issues/27) | [#28](https://github.com/StefanNav/agent-control-plane/pull/28) | [phase-12-handoffs.md](plans/phase-12-handoffs.md) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11 is #23 (#22 was the voice meter PR). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
@@ -739,6 +740,45 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11
 
 ---
 
+## Phase 12: Every hand-off reaches an inbox
+
+**Goal:** Every hand-off between people raises an inbox item for the person who acts next; information goes to the log; hand-offs stay off the agent boards.
+**Spec:** [`specs/2026-10-17-handoff-coverage-design.md`](specs/2026-10-17-handoff-coverage-design.md) · **Detailed steps:** [`plans/phase-12-handoffs.md`](plans/phase-12-handoffs.md) · Issue #27, milestone 13
+
+- [x] 12.1 Hand-off module (`src/store/handoffs.ts`); H1 start onboarding → owner; hand-offs off the boards
+- [x] 12.2 H2 resume request → the other approver; the decline FYI
+- [x] 12.3 H3 incident opened → commander
+- [x] 12.4 H4 promotion → sponsor (seed EXC-5468; resend and re-review raise it); seed v9
+- [x] 12.5 Seed: the Culture Follow-up draft re-dated to 03 Dec, its hand-off EXC-5491
+- [x] 12.6 FYIs: return to Shadow → sponsor; Flag for SOP → technical owner
+- [x] 12.7 E2E pins and `tests/e2e/handoffs.spec.ts`
+- [x] 12.8 Onboarding flow map (Marcus's hand-off is step 03)
+- [x] 12.9 Docs, whole-branch review, PR #28 → **CHECKPOINT** (awaiting Stefan)
+
+**Handoff notes (Phase 12)**
+
+- **What exists**
+  - `src/store/handoffs.ts`: `endOfDayDeadline`, `tell` (FYI log events with `to`), `RESUME_ITEM` + `raiseResumeItem`/`closeResumeItem`, `commanderItem` + `raiseCommanderItem`. `JOB_ITEM` lives in `onboarding.ts`; `promotionToSign` + `raisePromotionItem` in `promotions.ts`.
+  - `raiseItem` takes an optional `short` (the digest shows "agent · short").
+  - Board selectors ignore items with a `link` (`isHandOff`); the division view's "Work N exceptions" counts the viewer's inbox minus hand-offs.
+  - Seed v9: EXC-5468 (PRM-0007 waits for Priya, due 08 Dec 17:00) and EXC-5491 (Culture Follow-up's job and systems, due 10 Dec 17:00); the culture draft starts 03 Dec.
+  - Scenario `resume-requested` raises Marcus's "Commander: INC-0031" (10:05) and Priya's "Review: resume" (11:58).
+  - The flow map: `docs/flow-map/onboarding/` (brief `spec.md`, 24 screens + full-length versions); `tests/capture/flow-map.spec.ts` regenerates them. `docs/flow-map/*.zip` is git-ignored.
+- **The rule** (spec §2): a hand-off is an item with a `link`: owner = who acts next, copied = who acted, never escalates, closes when the step is done, never raised for yourself. Information is a `tell` log event. The registry of all 21 hand-offs is spec §3.
+- **Deferred:** D1 shadow minimum met → owner (needs a deadline policy; would seed a month-overdue item for Allergy flags); D2 channels and preferences; D3 escalating hand-offs.
+- **Final review (fresh reviewer, opus): 0 Critical, 2 Important, 7 Minor.** Both Important fixed test-first:
+  - 9a's held-build items are `board` signals, so the wall and 4f agree with Med Rec's judgment again.
+  - Resume items follow who must still agree (`syncResumeItems`), and the commander moves with the owner role.
+- **Deferred minors:**
+  - later-day scenarios (9a, 10b, 15a) show PRM-0007's and the culture job item overdue, and H4's "board decides on 09 Dec" goes stale;
+  - H6 tells the flagger when the technical owner flags;
+  - `raisePromotionItem` has no not-for-yourself guard, and the re-review copies only the chair;
+  - CasePage looks up the technical owner's name inline;
+  - Marcus's story step 4 says unhandled items go to Priya, but hand-offs never escalate.
+- **Gotchas**
+  - New seeded hand-offs are literals (seed has no store imports); store tests pin each to what the store raises.
+  - A hand-off's deadline is per type: owner's job 7 days; resume and commander 17:00 the same day (next day from 15:00); Tier 3+ promotion the day before the next board.
+
 ## Frame tracker
 
 Tick **Built** when the screen exists at its route; tick **QA'd** after the side-by-side visual check at a checkpoint. Phase 9 re-swept all 54 frames side by side on 2026-10-09 (`QA=1 pnpm capture tests/capture/qa.spec.ts`) and fixed the drift it found (see the Phase 9 handoff notes).
@@ -921,6 +961,15 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-12 | The full-page welcome plays on every load of a tour link, a refresh included (not once a session); the landing's own welcome stays once a session | Stefan, on the preview |
 | 2026-10-12 | Links for one recipient: `/for/<name>` (any name) renders the landing page and keeps its address, so Vercel's Pages panel records the visit as `/for/<name>`; a path rather than a `?ref=` tag, which the Hobby plan may not report. Stefan tests each link in an incognito window himself, so its first visit is his | Stefan wants to know whether a hiring manager opened the link he sent |
 | 2026-10-12 | A visit's first page view is reported at the address the visitor opened (`reportArrivalAt`, a `beforeSend`): a tour link moves to its first screen before the script loads, so `/for/polly?tour=open` was recorded as `/operations`. Later page views are reported as they happen | Found probing Polly's link before sending it; Stefan wants her to land on the walkthrough's start |
+| 2026-10-17 | R9 is product-wide: every hand-off between people raises an inbox item (owner = who acts next, copied = who acted, link to the step, never escalates, closes when done, never for yourself); information goes to the log via `tell` ("X told") | Claude Design's flow map found Start onboarding never told Marcus; the audit found the resume request, incident commander and promotion gaps (spec §1, §3) |
+| 2026-10-17 | Hand-offs stay off the agent boards (4a–4f, wall), and the division view's "Work N exceptions" counts agent exceptions only (`selectAgentExceptionCount`). Linked items that explain an agent's judgment (9a's held-build items) are marked `board` and stay | Boards show agent behaviour; a hand-off is a task for a person. Keeps the boards and 4b as drawn; the final review found 9a's wall and 4f contradicting the judgment without the `board` mark |
+| 2026-10-17 | Resume hand-offs go to everyone who must still agree: a requester not named on the agent asks both owner and sponsor, and after an owner change a partial approval re-routes; the incident commander moves with the owner role | Final review: an 8a owner change left a resume or commander item with someone who couldn't act |
+| 2026-10-17 | H4's copy is "Marcus asks to promote a branch to Supervised: add an allergy from outside records" (not the spec's first template), and the board's re-review also raises it ("Back from the board: …") | Reads better with a sentence-like branch name; a re-review sends the promotion back to the sponsor, which is a hand-off |
+| 2026-10-17 | H1's item is "Job and systems to write", and new hand-offs carry a `short` for the digest | The longer name truncated the agent's name in the inbox row; the digest put the agent's name twice |
+| 2026-10-17 | Return to Shadow raises no item: Priya is told in the log, and asked to sign through the owner's go-live request after the restarted scorecard (6c: "The scorecard restarts…"); Flag for SOP is an FYI to Sam | Spec H5, H6 |
+| 2026-10-17 | Frame departures: 5a Needs me 4 → 5, Waiting 2 → 3; 5c digest 2 → 3 things; 5d Priya 3 → 4 | The culture draft's and PRM-0007's hand-offs now reach inboxes (spec §5) |
+| 2026-10-17 | The Culture Follow-up draft starts 03 Dec (was 30 Nov, invented) | Its hand-off would otherwise sit six days overdue at the top of Marcus's inbox |
+| 2026-10-17 | Deferred: the shadow-minimum nudge (D1), channels and preferences (D2), escalating hand-offs (D3) | Spec §6 |
 
 ## Session log
 
@@ -967,3 +1016,4 @@ One row per working session. Newest last.
 | 2026-10-12 | 11 | Stefan's preview notes, built test-first: the voice meter leads the caption (fits at 1024 px; beside Play with captions off); a tour link opens behind Attune's full-page welcome (fresh session, skippable, never under reduced motion), then the welcome card. Merged main twice (visitor analytics); Vercel skipped two merge pushes. 1306 unit and 314 e2e tests green | CHECKPOINT: Stefan reviews the preview |
 | 2026-10-12 | 11 | Stefan: the full-page welcome replays on refresh (built test-first), then approved. PR #25 squash-merged; #23 and the milestone closed. Production verified: 314 e2e pass against the live URL; the new tab icon is live | None planned |
 | 2026-10-12 | – | Merged visitor analytics (PR #24); verified live (the bundle carries Vercel's script path and the site serves the script). Built links for one recipient (`/for/<name>`), merged main's Phase 11 into the branch, and made the first page view report the address opened, so Polly's tour link (`/for/polly?tour=open`) is recorded as `/for/polly`. 1307 unit and 318 e2e tests green. PR #26 squash-merged; production verified: the analytics, welcome and route specs (56) pass against the live URL, and `/for/polly?tour=open` opens on Attune's welcome, then the tour's welcome card | Stefan tests Polly's link in incognito, then sends it |
+| 2026-10-17 | 12 | Q&A walkthrough with Stefan (onboarding, risk tiers, gateway, evidence, scorecard); built the onboarding flow map for Claude Design; Claude Design found Start onboarding never notifies the owner; audited every hand-off; wrote the Phase 12 spec and plan; built H1–H6 test-first (1334 unit, 320 e2e green), re-captured the flow map; whole-branch review; PR opened | CHECKPOINT: Stefan reviews the preview |

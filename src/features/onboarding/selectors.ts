@@ -81,7 +81,7 @@ export function selectIntakeStep(s: DemoState, agentId: string) {
       `Creates ${intake.agentCode} as a draft in Inventory → Drafts`,
       `Fills name, division, requester, purpose and domain from ${intake.code}`,
       `Asks ${personName(s, ownerId) || 'the agent owner'} for the job description, systems and verbs`,
-      `Asks ${personName(s, techOwnerId) || 'the technical owner'} for tools and hard stops`,
+      `Asks ${personName(s, techOwnerId) || 'the technical owner'} for tools and hard stops once systems are done`,
       `Tells ${personName(s, intake.sponsorId)} when 2 to 4 are done`,
     ],
   }
