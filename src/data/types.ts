@@ -320,6 +320,8 @@ export interface AgentException {
   route: 'page' | 'inbox' | 'digest' | 'log'
   /** Where the work lives, for hand-offs that aren't about the agent's behaviour (onboarding, signatures). */
   link?: { label: string; to: string }
+  /** A linked item that also explains the agent's judgment (9a's held build): it stays on the boards (Phase 12). */
+  board?: boolean
   outcome?: string
   outcomeSub?: string
   closedAt?: string

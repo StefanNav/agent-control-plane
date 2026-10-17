@@ -6,7 +6,7 @@ import { PERSONA_IDS, type Condition, type DemoState, type FlagReason, type Revi
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
 import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, resolveItems, signMode, testResult, type SystemsChange } from './onboarding'
-import { closeResumeItem, commanderItem, raiseCommanderItem, raiseResumeItem, tell } from './handoffs'
+import { closeResumeItem, commanderItem, raiseCommanderItem, raiseResumeItem, syncResumeItems, tell } from './handoffs'
 import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, personName, readyToSend, recordItems, shadowProgress } from './onboardingRules'
 import { applyAccept, applyHardStopApproval, applyReplay, applySystemsSignOff, pendingChecks } from './changes'
 import { applyFlag, applyFlagAnswer, applySeenFix, type FlagAnswer } from './feedback'
@@ -463,7 +463,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                 if (complete) {
                   closeResumeItem(draft, agentId, draft.personaId, draft.now, 'Approved')
                   applyResume(draft, agentId, draft.personaId)
-                }
+                } else syncResumeItems(draft, agentId, draft.personaId, draft.now)
               },
             })
           },

@@ -130,7 +130,7 @@ const handOffDeadline = (at: string) => `${addDays(at, 2).slice(0, 10)}T17:00:00
 /** Raise an onboarding hand-off in someone's inbox (ruling R9): a review item that links to the step. */
 export function raiseItem(
   s: DemoState,
-  input: { agentId: string; type: string; reason: string; short?: string; action: string; actionSub: string; ownerId: string; copied: string[]; link: { label: string; to: string }; at: string; deadline?: string },
+  input: { agentId: string; type: string; reason: string; short?: string; action: string; actionSub: string; ownerId: string; copied: string[]; link: { label: string; to: string }; at: string; deadline?: string; board?: boolean },
 ): AgentException {
   const code = nextExceptionCode(s)
   const item: AgentException = {
@@ -152,6 +152,7 @@ export function raiseItem(
     state: 'new',
     route: 'inbox',
     link: input.link,
+    ...(input.board ? { board: true } : {}),
   }
   s.exceptions.push(item)
   return item

@@ -142,6 +142,8 @@ function handOver(s: DemoState, d: Division, role: Extract<Role, 'owner' | 'spon
     e.ownerId = to
     e.copied = [...e.copied.filter((p) => p !== to), ...(e.copied.includes(from) ? [] : [from])]
   }
+  // The owner commands the agent's open incidents, so the commander moves with the role (Phase 12).
+  if (role === 'owner') for (const i of s.incidents) if (agentIds.has(i.agentId) && i.state !== 'closed' && i.commanderId === from) i.commanderId = to
   if (d.resumeNeeds) d.resumeNeeds = d.resumeNeeds.map((n) => (n === personName(s, from) ? personName(s, to) : n))
   if (role === 'sponsor') {
     if (d.escalation.first === from) d.escalation.first = to

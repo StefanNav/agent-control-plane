@@ -9,6 +9,7 @@ import {
   minutesBetween,
 } from '../../lib/clock'
 import { FLAG_REASONS } from '../../store/feedback'
+import { isHandOff } from '../../store/handoffs'
 import { onBoard, personName } from '../board/selectors'
 
 export const isOpen = (e: AgentException) => e.state !== 'resolved' && e.state !== 'dismissed'
@@ -321,4 +322,12 @@ export function selectLog(s: DemoState) {
         sub: [agent, e.sub].filter(Boolean).join(' · '),
       }
     })
+}
+
+/** The division board's "Work N exceptions": what needs the viewer, without hand-offs (Phase 12). */
+export function selectAgentExceptionCount(s: DemoState, personaId: PersonaId | string): number {
+  return selectInbox(s, personaId as PersonaId).needsMe.filter((i) => {
+    const e = s.exceptions.find((x) => x.id === i.id)
+    return !e || !isHandOff(e)
+  }).length
 }

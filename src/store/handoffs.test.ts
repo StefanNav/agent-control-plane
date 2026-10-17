@@ -1,9 +1,10 @@
-import type { ScenarioId } from '../data/scenarios'
+import { buildScenario, type ScenarioId } from '../data/scenarios'
 import { rewindTo } from '../data/scenarios/rewind'
 import { createSeed } from '../data/seed'
 import type { AgentException, PersonaId } from '../data/types'
 import { selectDivisionSummaries, selectOpenExceptions } from '../features/board/selectors'
-import { commanderItem, endOfDayDeadline, RESUME_ITEM } from './handoffs'
+import { selectAgentExceptionCount, selectInbox } from '../features/inbox/selectors'
+import { commanderItem, endOfDayDeadline, raiseResumeItem, RESUME_ITEM } from './handoffs'
 import { createDemoStore } from './index'
 import { applyStart, JOB_ITEM } from './onboarding'
 import { promotionToSign, raisePromotionItem } from './promotions'
@@ -329,5 +330,48 @@ describe('FYIs go to the log, addressed to the person told', () => {
     const store = at('shadow-day-21', 'marcus')
     expect(store.getState().flagCaseLine('enc-4105', 4).ok).toBe(true)
     expect(store.getState().logEvents.at(-1)).toMatchObject({ sub: 'Shared with Sam to check the SOP mapping · Marcus', to: ['sam'] })
+  })
+})
+
+describe('final review fixes', () => {
+  test('fix 1: in 9a the gateway’s re-validation items stay on the boards, because they explain Med Rec’s judgment', async () => {
+    const { selectWall } = await import('../features/board/selectors')
+    const s = buildScenario('change-detected-v150')
+    const revalidate = s.exceptions.find((e) => e.type === 'Re-validation needed')!
+    expect(selectOpenExceptions(s).map((r) => r.id)).toContain(revalidate.id)
+    const medications = selectWall(s).attention.find((d) => d.id === 'medications')!
+    expect(medications.items.map((i) => i.fullName)).toContain('Med Rec Agent')
+    expect(selectAgentExceptionCount(s, 'marcus')).toBe(selectInbox(s, 'marcus').needsMe.filter((i) => i.type !== 'Job and systems to write').length)
+  })
+
+  test('fix 1: the division board’s Work button counts agent exceptions, not hand-offs (baseline: 4)', () => {
+    expect(selectAgentExceptionCount(createSeed(), 'marcus')).toBe(4)
+  })
+
+  test('fix 2: after an owner change, a partial approval hands the resume to whoever still has to agree', () => {
+    const store = at('resume-requested', 'dana')
+    expect(store.getState().updateDivisionSettings('medications', { ownerId: 'elena' }).ok).toBe(true)
+    store.getState().setPersona('priya')
+    expect(store.getState().approveResume('med-rec', 'Fixed and replayed.').ok).toBe(true)
+    const items = store.getState().exceptions.filter((e) => e.type === RESUME_ITEM)
+    expect(items.find((e) => e.ownerId === 'priya')).toMatchObject({ state: 'resolved', outcome: 'Approved' })
+    expect(items.filter(open)).toEqual([expect.objectContaining({ ownerId: 'elena', copied: ['marcus'] })])
+  })
+
+  test('fix 2: a request from someone not named on the agent asks both the owner and the sponsor', () => {
+    // Tom holds an owner role in Medications but isn't named on Med Rec; personas can't be Tom, so drive the helper.
+    const s = buildScenario('med-rec-paused')
+    s.resumeRequests.push({ agentId: 'med-rec', requestedBy: 'tom', requestedAt: s.now, reason: 'Covering for Marcus today.', approvals: [{ personId: 'tom', reason: 'Covering for Marcus today.', at: s.now }] })
+    raiseResumeItem(s, 'med-rec', 'tom', s.now)
+    const owners = s.exceptions.filter((e) => e.type === RESUME_ITEM && open(e)).map((e) => e.ownerId).sort()
+    expect(owners).toEqual(['marcus', 'priya'])
+  })
+
+  test('fix 2: an owner change moves the commander of the open incident with the commander item', () => {
+    const store = at('resume-requested', 'dana')
+    expect(store.getState().updateDivisionSettings('medications', { ownerId: 'elena' }).ok).toBe(true)
+    const s = store.getState()
+    expect(s.incidents.find((i) => i.id === 'inc-0031')!.commanderId).toBe('elena')
+    expect(s.exceptions.find((e) => e.type === commanderItem('INC-0031'))).toMatchObject({ ownerId: 'elena' })
   })
 })

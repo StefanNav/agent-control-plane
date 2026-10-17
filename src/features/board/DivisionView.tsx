@@ -5,7 +5,7 @@ import { LinkButton } from '../../design-system'
 import { NotFound } from '../../layout/NotFound'
 import { formatClock, formatClockSeconds, minutesBetween } from '../../lib/clock'
 import { useDemo } from '../../store'
-import { selectInbox } from '../inbox/selectors'
+import { selectAgentExceptionCount } from '../inbox/selectors'
 import { AgentPanel } from './AgentPanel'
 import { DivisionTabs } from './DivisionTabs'
 import { selectAgentPanel, selectAgentRows, selectDivisionSummaries } from './selectors'
@@ -21,10 +21,7 @@ export function DivisionView() {
   const rows = useMemo(() => (division ? selectAgentRows(state, division.id) : []), [state, division])
   const summary = useMemo(() => selectDivisionSummaries(state).find((d) => d.id === divisionId), [state, divisionId])
   // Hand-offs stay off the boards (Phase 12): the board's button counts the exceptions about agents.
-  const exceptionCount = useMemo(
-    () => selectInbox(state, state.personaId).needsMe.filter((i) => !state.exceptions.find((e) => e.id === i.id)?.link).length,
-    [state],
-  )
+  const exceptionCount = useMemo(() => selectAgentExceptionCount(state, state.personaId), [state])
   const selectedId = params.get('agent') ?? rows[0]?.id ?? null
   const panel = useMemo(() => (selectedId ? selectAgentPanel(state, selectedId) : null), [state, selectedId])
 

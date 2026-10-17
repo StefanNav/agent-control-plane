@@ -1,4 +1,4 @@
-import type { DemoState, Incident } from '../data/types'
+import type { AgentException, DemoState, Incident } from '../data/types'
 import { addDays, formatClock, formatDate } from '../lib/clock'
 import { raiseItem, resolveItems } from './onboarding'
 import { personName } from './onboardingRules'
@@ -7,6 +7,9 @@ import { personName } from './onboardingRules'
  * Hand-offs (Phase 12, R9 product-wide): when one person's action makes another named person
  * responsible for the next step, that person gets an inbox item. Information goes to the log.
  */
+
+/** A hand-off: a task for a person that links to its step. It stays off the agent boards, unless it explains the agent's judgment. */
+export const isHandOff = (e: AgentException) => Boolean(e.link) && !e.board
 
 /** 17:00 on `at`'s day, or the next day's 17:00 from 15:00 on: for hand-offs that shouldn't wait days. */
 export function endOfDayDeadline(at: string): string {
@@ -25,25 +28,43 @@ export const RESUME_ITEM = 'Review: resume'
 /** When a pause happened, as the item reads it: the time today, the day and time before. */
 const pausedWhen = (pausedAt: string, at: string) => (pausedAt.slice(0, 10) === at.slice(0, 10) ? formatClock(pausedAt) : `${formatDate(pausedAt)} ${formatClock(pausedAt)}`)
 
-/** The requester's counterpart gets the request; it waits until they approve or decline. */
+/** Whoever must still agree gets the request: the agent's owner and sponsor, less anyone who already approved. */
 export function raiseResumeItem(s: DemoState, agentId: string, requestedBy: string, at: string): void {
   const agent = s.agents.find((a) => a.id === agentId)
-  const other = agent && [agent.ownerId, agent.sponsorId].find((p) => p !== requestedBy)
-  if (!agent || !other) return
+  if (!agent) return
+  const request = s.resumeRequests.find((r) => r.agentId === agentId)
+  const approved = new Set([requestedBy, ...(request?.approvals.map((a) => a.personId) ?? [])])
+  const open = (p: string) => s.exceptions.some((e) => e.agentId === agentId && e.type === RESUME_ITEM && e.ownerId === p && e.state !== 'resolved' && e.state !== 'dismissed')
   const paused = agent.pausedBy && agent.pausedAt ? ` Paused by ${personName(s, agent.pausedBy)} at ${pausedWhen(agent.pausedAt, at)}.` : ''
-  raiseItem(s, {
-    agentId,
-    type: RESUME_ITEM,
-    reason: `${personName(s, requestedBy)} asks to resume ${agent.name}.${paused}`,
-    short: `${personName(s, requestedBy)} asks to resume it.${paused}`,
-    action: 'approve or decline the resume',
-    actionSub: 'It stays paused until you agree',
-    ownerId: other,
-    copied: [requestedBy],
-    link: { label: 'Open the resume request', to: `/operations/agents/${agentId}` },
-    at,
-    deadline: endOfDayDeadline(at),
-  })
+  for (const p of new Set([agent.ownerId, agent.sponsorId])) {
+    if (approved.has(p) || open(p)) continue
+    raiseItem(s, {
+      agentId,
+      type: RESUME_ITEM,
+      reason: `${personName(s, requestedBy)} asks to resume ${agent.name}.${paused}`,
+      short: `${personName(s, requestedBy)} asks to resume it.${paused}`,
+      action: 'approve or decline the resume',
+      actionSub: 'It stays paused until you agree',
+      ownerId: p,
+      copied: [requestedBy],
+      link: { label: 'Open the resume request', to: `/operations/agents/${agentId}` },
+      at,
+      deadline: endOfDayDeadline(at),
+    })
+  }
+}
+
+/**
+ * A partial approval (one of two still to agree, e.g. after an owner change in 8a): the approver's
+ * item closes and whoever must still agree is asked.
+ */
+export function syncResumeItems(s: DemoState, agentId: string, by: string, at: string): void {
+  const request = s.resumeRequests.find((r) => r.agentId === agentId)
+  if (!request) return
+  for (const e of s.exceptions)
+    if (e.agentId === agentId && e.type === RESUME_ITEM && e.ownerId === by && e.state !== 'resolved' && e.state !== 'dismissed')
+      Object.assign(e, { state: 'resolved', outcome: 'Approved', closedAt: at, closedBy: by })
+  raiseResumeItem(s, agentId, request.requestedBy, at)
 }
 
 /** The request is answered, withdrawn, or gone with the pause. */

@@ -63,6 +63,8 @@ export function applyDeploy(s: DemoState, def: ChangeDef, at: string, by: string
     link,
     at: told,
     deadline,
+    // It explains Med Rec's "Re-validation needed" on the boards, so it stays there (Phase 12).
+    board: true,
   })
   if (hs) {
     raiseItem(s, {
@@ -76,6 +78,7 @@ export function applyDeploy(s: DemoState, def: ChangeDef, at: string, by: string
       link,
       at: told,
       deadline,
+      board: true,
     })
   }
   // The board shows the agent waiting on its owner while the build is held (9a).

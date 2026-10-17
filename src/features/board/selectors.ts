@@ -11,6 +11,7 @@ import {
   minutesBetween,
 } from '../../lib/clock'
 import { trendPoints } from '../../lib/trend'
+import { isHandOff } from '../../store/handoffs'
 import { queueOf } from '../../store/mutations'
 import { conditionRange, shadowProgress } from '../../store/onboardingRules'
 
@@ -59,8 +60,6 @@ export const personName = (s: DemoState, id: string | undefined): string =>
   s.people.find((p) => p.id === id)?.name ?? '—'
 export const shortName = (name: string) => name.replace(/, PharmD/, '')
 const isOpen = (e: AgentException) => e.state !== 'resolved' && e.state !== 'dismissed'
-/** Hand-offs (items that link to a step) are tasks for a person, not signals about an agent: they stay off the boards (Phase 12). */
-const isHandOff = (e: AgentException) => Boolean(e.link)
 const pct = (v: number | null | undefined, space = false) =>
   v === null || v === undefined ? '—' : `${v.toFixed(1)}${space ? ' ' : ''}%`
 const count = (v: number | null) => (v === null ? '—' : String(v))
