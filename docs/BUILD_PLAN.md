@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 12 · Every hand-off reaches an inbox · ⏸ at checkpoint (PR open, awaiting Stefan's review) |
-| **Branch** | `phase-12-handoffs` |
-| **Last completed** | Phase 12 built (2026-10-17): every hand-off raises an inbox item for the person who acts next (start onboarding → owner, resume request → the other approver, incident → commander, promotion → sponsor); declines and returns to Shadow tell people in the log; hand-offs stay off the boards; the onboarding flow map for Claude Design (`docs/flow-map/onboarding/`). Before that: links for one recipient squash-merged (PR #26, 2026-10-12): `/for/<name>` is the landing page under its own address, and a visit is recorded at the address opened, so `/for/polly?tour=open` (the walkthrough's start) is recorded as `/for/polly`. Before that, Phase 11 (PR #25) and visitor analytics (PR #24) |
-| **Next task** | Stefan reviews the Phase 12 preview (PR #28, closes #27), including the frame departures in spec §5; merge only after approval. Then sync the Claude Design project from the merge commit. Earlier: Stefan opens Polly's link (`/for/polly?tour=open`) once in Chrome incognito, checks Vercel → Analytics → Pages shows `/for/polly` with 1 visitor (himself), then emails it to Polly. Still pending from earlier: Stefan opens `/?notrack` once in each browser he uses; Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`). Separately, PR #26 (links made for one recipient) is open from another session |
+| **Current phase** | All phases merged: every hand-off reaches an inbox (Phase 12 ☑) |
+| **Branch** | `main` |
+| **Last completed** | Phase 12 squash-merged (PR #28, 2026-10-17, `957a2a7`): every hand-off raises an inbox item for the person who acts next (start onboarding → owner, resume request → the other approver, incident → commander, promotion → sponsor); declines and returns to Shadow tell people in the log; hand-offs stay off the boards; the onboarding flow map for Claude Design (`docs/flow-map/onboarding/`). Before that: links for one recipient squash-merged (PR #26, 2026-10-12): `/for/<name>` is the landing page under its own address, and a visit is recorded at the address opened, so `/for/polly?tour=open` (the walkthrough's start) is recorded as `/for/polly`. Before that, Phase 11 (PR #25) and visitor analytics (PR #24) |
+| **Next task** | Sync the Claude Design project from `957a2a7` (the onboarding flow map in `docs/flow-map/onboarding/`). Ideas to decide on are in the local `docs/ideas-to-revisit.md`. Earlier, still pending: Stefan's listen pass on the doubtful tour lines; `/?notrack` once per browser |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | [PR #28](https://github.com/StefanNav/agent-control-plane/pull/28) (Vercel preview link in the PR) |
+| **Latest preview** | none open |
 
 ### How to resume in a new session
 
@@ -100,7 +100,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 9 | Polish and launch | ☑ Merged | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | [#19](https://github.com/StefanNav/agent-control-plane/pull/19) | [phase-9-polish.md](plans/phase-9-polish.md) |
 | 10 | Guided tour | ☑ Merged | `phase-10-guided-tour` | [#20](https://github.com/StefanNav/agent-control-plane/issues/20) | [#21](https://github.com/StefanNav/agent-control-plane/pull/21) | [phase-10-guided-tour.md](plans/phase-10-guided-tour.md) |
 | 11 | Brand motion | ☑ Merged | `phase-11-brand-motion` | [#23](https://github.com/StefanNav/agent-control-plane/issues/23) | [#25](https://github.com/StefanNav/agent-control-plane/pull/25) | [phase-11-brand-motion.md](plans/phase-11-brand-motion.md) |
-| 12 | Every hand-off reaches an inbox | ⏸ At checkpoint | `phase-12-handoffs` | [#27](https://github.com/StefanNav/agent-control-plane/issues/27) | [#28](https://github.com/StefanNav/agent-control-plane/pull/28) | [phase-12-handoffs.md](plans/phase-12-handoffs.md) |
+| 12 | Every hand-off reaches an inbox | ☑ Merged | `phase-12-handoffs` | [#27](https://github.com/StefanNav/agent-control-plane/issues/27) | [#28](https://github.com/StefanNav/agent-control-plane/pull/28) | [phase-12-handoffs.md](plans/phase-12-handoffs.md) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11 is #23 (#22 was the voice meter PR). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
@@ -753,7 +753,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11
 - [x] 12.6 FYIs: return to Shadow → sponsor; Flag for SOP → technical owner
 - [x] 12.7 E2E pins and `tests/e2e/handoffs.spec.ts`
 - [x] 12.8 Onboarding flow map (Marcus's hand-off is step 03)
-- [x] 12.9 Docs, whole-branch review, PR #28 → **CHECKPOINT** (awaiting Stefan)
+- [x] 12.9 Docs, whole-branch review, PR #28 → **CHECKPOINT** (Stefan approved and merged 2026-10-17)
 
 **Handoff notes (Phase 12)**
 
@@ -1017,3 +1017,4 @@ One row per working session. Newest last.
 | 2026-10-12 | 11 | Stefan: the full-page welcome replays on refresh (built test-first), then approved. PR #25 squash-merged; #23 and the milestone closed. Production verified: 314 e2e pass against the live URL; the new tab icon is live | None planned |
 | 2026-10-12 | – | Merged visitor analytics (PR #24); verified live (the bundle carries Vercel's script path and the site serves the script). Built links for one recipient (`/for/<name>`), merged main's Phase 11 into the branch, and made the first page view report the address opened, so Polly's tour link (`/for/polly?tour=open`) is recorded as `/for/polly`. 1307 unit and 318 e2e tests green. PR #26 squash-merged; production verified: the analytics, welcome and route specs (56) pass against the live URL, and `/for/polly?tour=open` opens on Attune's welcome, then the tour's welcome card | Stefan tests Polly's link in incognito, then sends it |
 | 2026-10-17 | 12 | Q&A walkthrough with Stefan (onboarding, risk tiers, gateway, evidence, scorecard); built the onboarding flow map for Claude Design; Claude Design found Start onboarding never notifies the owner; audited every hand-off; wrote the Phase 12 spec and plan; built H1–H6 test-first (1334 unit, 320 e2e green), re-captured the flow map; whole-branch review; PR opened | CHECKPOINT: Stefan reviews the preview |
+| 2026-10-17 | 12 | Stefan approved; PR #28 squash-merged (`957a2a7`); #27 and the milestone closed; production checked | Sync Claude Design from `957a2a7` |
