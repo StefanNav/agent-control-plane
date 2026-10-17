@@ -140,6 +140,7 @@ export function applySignPromotion(s: DemoState, id: string, reason: string, by:
   p.evidence = { days: daysAtLevel(s, p), outputs: PROMOTION_CONTENT[p.id]?.outputs ?? '', criteria: criteria(s, p.id) }
   p.sponsor = { by, at, reason }
   delete p.returned
+  resolveItems(s, agent.id, promotionToSign(agent.name), by, at, 'Signed')
   resolveItems(s, agent.id, boardItem(agent.name), by, at, 'Signed again')
   if (!needsBoard(s, p)) {
     promote(s, p, [], by, at)
@@ -171,6 +172,7 @@ export function applyReturnPromotion(s: DemoState, id: string, note: string, by:
   if (!p || !ctx || p.state !== 'sponsor') return s
   p.state = 'returned'
   p.returned = { by, at, note }
+  resolveItems(s, ctx.agent.id, promotionToSign(ctx.agent.name), by, at, 'Sent back')
   raiseItem(s, {
     agentId: ctx.agent.id,
     type: returnedItem(ctx.agent.name),
@@ -193,6 +195,7 @@ export function applyResendPromotion(s: DemoState, id: string, by: string, at: s
   p.state = 'sponsor'
   delete p.returned
   resolveItems(s, ctx.agent.id, returnedItem(ctx.agent.name), by, at, 'Sent again')
+  raisePromotionItem(s, id, by, at)
   return s
 }
 
@@ -210,10 +213,39 @@ export function applyDecidePromotion(s: DemoState, id: string, input: { kind: Re
   } else if (input.kind === 'reReview') {
     p.state = 'sponsor'
     p.returned = { by, at, note: input.reason }
+    raisePromotionItem(s, id, by, at, `Back from the board: ${input.reason}`)
     s.logEvents.push({ id: `log-rereview-${p.id}-${s.logEvents.length + 1}`, at, agentId: agent.id, text: `Promotion back to ${personName(s, agent.sponsorId)} with questions`, sub: input.reason, to: [agent.sponsorId, agent.ownerId] })
   } else {
     p.state = 'denied'
     s.logEvents.push({ id: `log-denied-${p.id}`, at, agentId: agent.id, text: `Promotion denied · stays at ${LEVEL_NAME[p.from]}`, sub: input.reason, to: [agent.sponsorId, agent.ownerId] })
   }
   return s
+}
+
+/** "Promotion to sign · Allergy Recon Agent": the sponsor's hand-off (Phase 12 H4). */
+export const promotionToSign = (agentName: string) => `Promotion to sign · ${agentName}`
+
+/**
+ * The promotion waits for the sponsor: from the owner's request, a resend, or the board's re-review.
+ * Above Tier 2 it's due the day before the next board meeting (as the risk tier hand-off is).
+ */
+export function raisePromotionItem(s: DemoState, id: string, by: string, at: string, reason?: string): void {
+  const p = promotionOf(s, id)
+  const ctx = p && promotionContext(s, p)
+  if (!p || !ctx) return
+  const { agent, branch } = ctx
+  const board = needsBoard(s, p)
+  const meeting = nextMeeting(at)
+  raiseItem(s, {
+    agentId: agent.id,
+    type: promotionToSign(agent.name),
+    reason: reason ?? `${personName(s, p.requestedBy)} asks to promote a branch to ${LEVEL_NAME[p.to]}: ${branch.name.toLowerCase()}`,
+    action: 'sign or send back',
+    actionSub: board ? `Tier ${agent.riskTier}: after you sign, the board decides on ${formatDate(meeting)}` : 'Takes effect when you sign',
+    ownerId: agent.sponsorId,
+    copied: [by],
+    link: { label: 'Open the promotion', to: `/inventory/promotions/${p.id}` },
+    at,
+    ...(board ? { deadline: `${addDays(meeting, -1).slice(0, 10)}T17:00:00` } : {}),
+  })
 }

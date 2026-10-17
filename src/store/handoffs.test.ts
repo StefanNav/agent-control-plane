@@ -5,6 +5,7 @@ import { selectDivisionSummaries, selectOpenExceptions } from '../features/board
 import { commanderItem, endOfDayDeadline, RESUME_ITEM } from './handoffs'
 import { createDemoStore } from './index'
 import { JOB_ITEM } from './onboarding'
+import { promotionToSign, raisePromotionItem } from './promotions'
 import { createMemoryStorage } from './storage'
 
 /** Phase 12: every hand-off reaches an inbox (spec 2026-10-17). */
@@ -194,5 +195,63 @@ describe('H3 · opening an incident tells its commander', () => {
     const items = commander(at('resume-requested', 'marcus')).filter(open)
     expect(items).toHaveLength(1)
     expect(items[0]).toMatchObject({ ownerId: 'marcus', copied: ['jordan'], raisedAt: '2026-12-08T10:05:00' })
+  })
+})
+
+describe('H4 · a promotion waiting for the sponsor reaches their inbox', () => {
+  const TYPE = promotionToSign('Allergy Recon Agent')
+  const items = (s: { exceptions: AgentException[] }) => s.exceptions.filter((e) => e.type === TYPE)
+
+  test('seed: PRM-0007 waits for Priya as EXC-5468, due the day before the 09 Dec board', () => {
+    expect(items(createSeed())).toEqual([
+      expect.objectContaining({
+        id: 'exc-5468',
+        code: 'EXC-5468',
+        agentId: 'allergy-recon',
+        state: 'new',
+        status: 'review',
+        kind: 'review',
+        ownerId: 'priya',
+        copied: ['marcus'],
+        reason: 'Marcus asks to promote a branch to Supervised: add an allergy from outside records',
+        action: 'sign or send back',
+        actionSub: 'Tier 3: after you sign, the board decides on 09 Dec',
+        link: { label: 'Open the promotion', to: '/inventory/promotions/prm-0007' },
+        raisedAt: '2026-11-25T11:00:00',
+        deadline: '2026-12-08T17:00:00',
+      }),
+    ])
+  })
+
+  test('the seeded item is exactly what the store raises', () => {
+    const s = createSeed()
+    const seeded = items(s)[0]!
+    s.exceptions = s.exceptions.filter((e) => e.id !== 'exc-5468')
+    raisePromotionItem(s, 'prm-0007', 'marcus', '2026-11-25T11:00:00')
+    const raised = items(s)[0]!
+    expect({ ...raised, id: seeded.id, code: seeded.code }).toEqual(seeded)
+  })
+
+  test('Review focus 4: signing closes it; returning closes it; sending again raises one new item', () => {
+    const signed = at('baseline', 'priya')
+    expect(signed.getState().signPromotion('prm-0007', { reason: 'Only adds caution.', accepted: true }).ok).toBe(true)
+    expect(items(signed.getState())[0]).toMatchObject({ state: 'resolved', outcome: 'Signed' })
+
+    const store = at('baseline', 'priya')
+    expect(store.getState().returnPromotion('prm-0007', 'Show me the 2 defects first.').ok).toBe(true)
+    expect(items(store.getState())[0]).toMatchObject({ state: 'resolved', outcome: 'Sent back' })
+    store.getState().setPersona('marcus')
+    expect(store.getState().resendPromotion('prm-0007').ok).toBe(true)
+    const open_ = items(store.getState()).filter(open)
+    expect(open_).toHaveLength(1)
+    expect(open_[0]).toMatchObject({ ownerId: 'priya', copied: ['marcus'], raisedAt: store.getState().now })
+  })
+
+  test('the board sending it back for re-review asks Priya again', () => {
+    const store = at('promotion-at-board', 'drlee')
+    expect(store.getState().decidePromotion('prm-0007', { kind: 'reReview', conditions: [], reason: 'What did the 2 defects have in common?' }).ok).toBe(true)
+    const open_ = items(store.getState()).filter(open)
+    expect(open_).toHaveLength(1)
+    expect(open_[0]).toMatchObject({ ownerId: 'priya', copied: ['drlee'], reason: 'Back from the board: What did the 2 defects have in common?' })
   })
 })

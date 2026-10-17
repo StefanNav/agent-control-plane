@@ -4,7 +4,7 @@ import { escalationOf, selectDigest, selectExceptionDetail, selectInbox, selectI
 
 const s = createSeed()
 
-test('Marcus needs to act on four items, by deadline; two wait on others', () => {
+test('Marcus needs to act on four items, by deadline; three wait on others', () => {
   const inbox = selectInbox(s, 'marcus')
   expect(inbox.needsMe.map((i) => [i.type, i.due])).toEqual([
     ['Monitor stale', 'Due 10:46'],
@@ -14,7 +14,7 @@ test('Marcus needs to act on four items, by deadline; two wait on others', () =>
   ])
   expect(inbox.needsMe[0]).toMatchObject({ source: 'Formulary Swap Agent · MON-02 v1', action: 'Action: check the feed with Sam' })
   expect(inbox.needsMe[3]!.source).toBe('Sam · Med Rec Agent')
-  expect(inbox.waiting).toHaveLength(2)
+  expect(inbox.waiting).toHaveLength(3)
   expect(inbox.logTotal).toBe(41)
 })
 
@@ -23,7 +23,8 @@ test('past its deadline and unclaimed, an item escalates to the sponsor', () => 
   late.exceptions = late.exceptions.map((e) => (e.id === 'exc-5530' ? { ...e, claimedAt: '2026-12-08T09:55:00', state: 'claimed' as const } : e))
   const priya = selectInbox(late, 'priya')
   expect(priya.needsMe[0]).toMatchObject({ type: 'Monitor stale', due: '1 h 14 min late', escalated: true, source: 'Formulary Swap Agent · escalated' })
-  expect(priya.needsMe).toHaveLength(3)
+  // Phase 12 H4: plus PRM-0007's "Promotion to sign", due 17:00.
+  expect(priya.needsMe).toHaveLength(4)
   expect(priya.waiting).toHaveLength(1)
 })
 

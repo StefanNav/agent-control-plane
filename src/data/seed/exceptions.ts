@@ -171,6 +171,26 @@ export const exceptions: AgentException[] = [
     state: 'new',
     route: 'inbox',
   },
+  // Phase 12 H4: PRM-0007 has waited for Priya since Marcus asked (14a). Tier 3, so it's due the day
+  // before the 09 Dec board. Literal seed data; a store test pins it to what raisePromotionItem raises.
+  {
+    id: 'exc-5468',
+    code: 'EXC-5468',
+    status: 'review',
+    kind: 'review',
+    type: 'Promotion to sign · Allergy Recon Agent',
+    reason: 'Marcus asks to promote a branch to Supervised: add an allergy from outside records',
+    agentId: 'allergy-recon',
+    raisedAt: '2026-11-25T11:00:00',
+    action: 'sign or send back',
+    actionSub: 'Tier 3: after you sign, the board decides on 09 Dec',
+    ownerId: 'priya',
+    copied: ['marcus'],
+    deadline: '2026-12-08T17:00:00',
+    state: 'new',
+    route: 'inbox',
+    link: { label: 'Open the promotion', to: '/inventory/promotions/prm-0007' },
+  },
   {
     id: 'exc-5503',
     code: 'EXC-5503',
