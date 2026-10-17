@@ -21,11 +21,11 @@ Update this block every time a session stops, even mid-phase.
 | **Current phase** | Phase 12 · Every hand-off reaches an inbox · ⏸ at checkpoint (PR open, awaiting Stefan's review) |
 | **Branch** | `phase-12-handoffs` |
 | **Last completed** | Phase 12 built (2026-10-17): every hand-off raises an inbox item for the person who acts next (start onboarding → owner, resume request → the other approver, incident → commander, promotion → sponsor); declines and returns to Shadow tell people in the log; hand-offs stay off the boards; the onboarding flow map for Claude Design (`docs/flow-map/onboarding/`). Before that: links for one recipient squash-merged (PR #26, 2026-10-12): `/for/<name>` is the landing page under its own address, and a visit is recorded at the address opened, so `/for/polly?tour=open` (the walkthrough's start) is recorded as `/for/polly`. Before that, Phase 11 (PR #25) and visitor analytics (PR #24) |
-| **Next task** | Stefan reviews the Phase 12 preview (PR from `phase-12-handoffs`, closes #27), including the frame departures in spec §5; merge only after approval. Then sync the Claude Design project from the merge commit. Earlier: Stefan opens Polly's link (`/for/polly?tour=open`) once in Chrome incognito, checks Vercel → Analytics → Pages shows `/for/polly` with 1 visitor (himself), then emails it to Polly. Still pending from earlier: Stefan opens `/?notrack` once in each browser he uses; Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`). Separately, PR #26 (links made for one recipient) is open from another session |
+| **Next task** | Stefan reviews the Phase 12 preview (PR #28, closes #27), including the frame departures in spec §5; merge only after approval. Then sync the Claude Design project from the merge commit. Earlier: Stefan opens Polly's link (`/for/polly?tour=open`) once in Chrome incognito, checks Vercel → Analytics → Pages shows `/for/polly` with 1 visitor (himself), then emails it to Polly. Still pending from earlier: Stefan opens `/?notrack` once in each browser he uses; Stefan listens on the live URL to the doubtful lines (`decisions-2`, `people-1`, `people-5`, `problem-2`, `close-2`, `open-3`, the end of `supervising-8`). Separately, PR #26 (links made for one recipient) is open from another session |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none open |
+| **Latest preview** | [PR #28](https://github.com/StefanNav/agent-control-plane/pull/28) (Vercel preview link in the PR) |
 
 ### How to resume in a new session
 
@@ -100,7 +100,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 9 | Polish and launch | ☑ Merged | `phase-9-polish` | [#10](https://github.com/StefanNav/agent-control-plane/issues/10) | [#19](https://github.com/StefanNav/agent-control-plane/pull/19) | [phase-9-polish.md](plans/phase-9-polish.md) |
 | 10 | Guided tour | ☑ Merged | `phase-10-guided-tour` | [#20](https://github.com/StefanNav/agent-control-plane/issues/20) | [#21](https://github.com/StefanNav/agent-control-plane/pull/21) | [phase-10-guided-tour.md](plans/phase-10-guided-tour.md) |
 | 11 | Brand motion | ☑ Merged | `phase-11-brand-motion` | [#23](https://github.com/StefanNav/agent-control-plane/issues/23) | [#25](https://github.com/StefanNav/agent-control-plane/pull/25) | [phase-11-brand-motion.md](plans/phase-11-brand-motion.md) |
-| 12 | Every hand-off reaches an inbox | ⏸ At checkpoint | `phase-12-handoffs` | [#27](https://github.com/StefanNav/agent-control-plane/issues/27) | (see Start here) | [phase-12-handoffs.md](plans/phase-12-handoffs.md) |
+| 12 | Every hand-off reaches an inbox | ⏸ At checkpoint | `phase-12-handoffs` | [#27](https://github.com/StefanNav/agent-control-plane/issues/27) | [#28](https://github.com/StefanNav/agent-control-plane/pull/28) | [phase-12-handoffs.md](plans/phase-12-handoffs.md) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11 is #23 (#22 was the voice meter PR). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
@@ -753,7 +753,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11
 - [x] 12.6 FYIs: return to Shadow → sponsor; Flag for SOP → technical owner
 - [x] 12.7 E2E pins and `tests/e2e/handoffs.spec.ts`
 - [x] 12.8 Onboarding flow map (Marcus's hand-off is step 03)
-- [ ] 12.9 Docs, whole-branch review, PR → **CHECKPOINT** (awaiting Stefan)
+- [x] 12.9 Docs, whole-branch review, PR #28 → **CHECKPOINT** (awaiting Stefan)
 
 **Handoff notes (Phase 12)**
 

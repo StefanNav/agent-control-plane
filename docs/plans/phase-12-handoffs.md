@@ -218,7 +218,7 @@ The deadline uses the tier rule: Tier ≥ 3 → 17:00 the day before the first `
   - `docs/plans/phase-5-onboarding.md` R9: add "Extended product-wide in Phase 12 (see the hand-off registry in the Phase 12 spec)".
   - `docs/BUILD_PLAN.md`: the Phase 12 row and section with handoff notes, Start here, decision log rows (the rule, FYIs, boards, the culture re-date, the D1–D3 deferrals, the §5 departures), and a session log row.
 - [x] **Step 2:** A whole-branch review by a fresh reviewer on the most capable model. Fix Critical and Important findings test-first.
-- [ ] **Step 3:**
+- [x] **Step 3:**
   - Run the forbidden-terms check (must print nothing).
   - Push `phase-12-handoffs`.
   - Open the PR: it closes the Phase 12 issue, lists the §5 departures, and links the preview.
