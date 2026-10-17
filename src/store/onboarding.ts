@@ -42,6 +42,20 @@ export function applyStart(s: DemoState, intakeId: string, people: { ownerId: st
   })
   intake.startedAt = at
   markCallerOnboarding(s, intakeId, intake.agentId, by, at)
+  // H1 (Phase 12): the owner is asked for the job description and the systems grid in their inbox.
+  if (people.ownerId !== by)
+    raiseItem(s, {
+      agentId: intake.agentId,
+      type: JOB_ITEM,
+      reason: `${intake.agentName} from ${intake.code}: write the job description, then systems and verbs`,
+      action: 'write the job description',
+      actionSub: `Then systems and verbs. ${personName(s, people.techOwnerId)} tests the hard stops after.`,
+      ownerId: people.ownerId,
+      copied: [by],
+      link: { label: 'Open the job description', to: `/inventory/agents/${intake.agentId}/onboarding/job` },
+      at,
+      deadline: `${addDays(at, 7).slice(0, 10)}T17:00:00`,
+    })
   return s
 }
 
@@ -107,6 +121,9 @@ export function applyJobEdit(s: DemoState, agentId: string, patch: Partial<JobDr
 }
 
 /** 17:00 two days after `at`: the deadline for an onboarding hand-off. */
+/** Starting onboarding asks the agent owner for the job description and the systems grid (Phase 12, H1). */
+export const JOB_ITEM = 'Job: description and systems to write'
+
 const handOffDeadline = (at: string) => `${addDays(at, 2).slice(0, 10)}T17:00:00`
 
 /** Raise an onboarding hand-off in someone's inbox (ruling R9): a review item that links to the step. */
@@ -173,6 +190,7 @@ export function applySystemsEdit(s: DemoState, agentId: string, change: SystemsC
   if (systemsProgress(s, agentId).complete) {
     if (!record.done.systems) {
       record.done.systems = { at, by }
+      resolveItems(s, agentId, JOB_ITEM, by, at, 'Job and systems done')
       if (record.limits.length && !openItem(s, agentId, 'Tools: hard stops to test'))
         raiseItem(s, {
           agentId,

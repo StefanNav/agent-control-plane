@@ -59,6 +59,8 @@ export const personName = (s: DemoState, id: string | undefined): string =>
   s.people.find((p) => p.id === id)?.name ?? '—'
 export const shortName = (name: string) => name.replace(/, PharmD/, '')
 const isOpen = (e: AgentException) => e.state !== 'resolved' && e.state !== 'dismissed'
+/** Hand-offs (items that link to a step) are tasks for a person, not signals about an agent: they stay off the boards (Phase 12). */
+const isHandOff = (e: AgentException) => Boolean(e.link)
 const pct = (v: number | null | undefined, space = false) =>
   v === null || v === undefined ? '—' : `${v.toFixed(1)}${space ? ' ' : ''}%`
 const count = (v: number | null) => (v === null ? '—' : String(v))
@@ -78,7 +80,7 @@ export function monitorFreshness(
 /** The open exception that explains an agent's judgment, if any. */
 function attentionException(s: DemoState, agentId: string): AgentException | undefined {
   return s.exceptions.find(
-    (e) => e.agentId === agentId && isOpen(e) && ATTENTION.includes(e.status),
+    (e) => e.agentId === agentId && isOpen(e) && !isHandOff(e) && ATTENTION.includes(e.status),
   )
 }
 
@@ -134,7 +136,7 @@ export function selectDivisionSummaries(s: DemoState): DivisionSummary[] {
     ].filter(Boolean)
     const open = s.exceptions
       .filter(
-        (e) => isOpen(e) && ATTENTION.includes(e.status) && agents.some((a) => a.id === e.agentId),
+        (e) => isOpen(e) && !isHandOff(e) && ATTENTION.includes(e.status) && agents.some((a) => a.id === e.agentId),
       )
       .filter((e) => e.kind !== 'incident')
       .sort((a, b) => a.deadline.localeCompare(b.deadline))
@@ -436,7 +438,7 @@ export function selectOpenExceptions(s: DemoState) {
   const nextByDivision = new Map(selectDivisionSummaries(s).map((d) => [d.id, d]))
   return s.exceptions
     // Items about a caller rather than an agent (9b) live in the inbox, not on the agent boards.
-    .filter((e) => isOpen(e) && ATTENTION.includes(e.status) && s.agents.some((a) => a.id === e.agentId))
+    .filter((e) => isOpen(e) && !isHandOff(e) && ATTENTION.includes(e.status) && s.agents.some((a) => a.id === e.agentId))
     .sort(
       (a, b) =>
         Number(b.status === 'crit') - Number(a.status === 'crit') ||
@@ -479,7 +481,7 @@ export function selectLast24h(s: DemoState) {
   const paged = s.divisions.filter((d) => d.page)
   const today = formatDate(s.now)
   const closedToday = s.exceptions.filter(
-    (e) => !isOpen(e) && e.closedAt && formatDate(e.closedAt) === today,
+    (e) => !isOpen(e) && !isHandOff(e) && e.closedAt && formatDate(e.closedAt) === today,
   ).length
   return {
     pages: paged.length
@@ -602,6 +604,7 @@ export function selectWall(s: DemoState) {
         .filter(
           (e) =>
             isOpen(e) &&
+            !isHandOff(e) &&
             ATTENTION.includes(e.status) &&
             s.agents.find((a) => a.id === e.agentId)?.divisionId === d.id,
         )
