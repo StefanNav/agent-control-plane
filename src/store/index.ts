@@ -5,8 +5,8 @@ import { createSeed, SEED_VERSION } from '../data/seed'
 import { PERSONA_IDS, type Condition, type DemoState, type FlagReason, type ReviewChange, type ReviewRules, type Incident, type JobDraft, type PersonaId, type ReviewDecision, type Tier, type Verb } from '../data/types'
 import { formatClock } from '../lib/clock'
 import { applyPause, applyResume, nextArchiveCode, nextIncidentCode } from './mutations'
-import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, signMode, testResult, type SystemsChange } from './onboarding'
-import { closeResumeItem, raiseResumeItem, tell } from './handoffs'
+import { applyAskEvidence, applyDecision, applyExtendShadow, applyFlagLine, applyGoLiveRequest, applyJobEdit, applyReply, applyRequestChanges, applyReturnRequest, applySend, applySetTier, applySignPrivilege, applySponsorSign, applyStart, applySystemsEdit, applyTest, DECISION_WORDS, latestByCode, latestPrivilege, resolveItems, signMode, testResult, type SystemsChange } from './onboarding'
+import { closeResumeItem, commanderItem, raiseCommanderItem, raiseResumeItem, tell } from './handoffs'
 import { criteriaStatus, FIELD_NAMES, JOB_KEY_FIELD, personName, readyToSend, recordItems, shadowProgress } from './onboardingRules'
 import { applyAccept, applyHardStopApproval, applyReplay, applySystemsSignOff, pendingChecks } from './changes'
 import { applyFlag, applyFlagAnswer, applySeenFix, type FlagAnswer } from './feedback'
@@ -602,6 +602,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                   corrections: [],
                   timeline,
                 })
+                raiseCommanderItem(draft, draft.incidents.at(-1)!, draft.personaId, draft.now)
                 // Review fix I4: a linked incident is a step-down trigger for branches above Draft (14a, 15b).
                 applyIncidentStepDown(draft, agentId, code, draft.now)
               },
@@ -669,6 +670,7 @@ export function createDemoStore(storage: StateStorage = safeStorage) {
                 target.state = 'closed'
                 target.closedAt = draft.now
                 target.timeline.push({ at: draft.now, title: 'Incident closed', sub: name, by: draft.personaId })
+                resolveItems(draft, target.agentId, commanderItem(target.code), draft.personaId, draft.now, 'Incident closed')
               },
             })
           },

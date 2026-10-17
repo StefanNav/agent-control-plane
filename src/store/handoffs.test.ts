@@ -2,7 +2,7 @@ import type { ScenarioId } from '../data/scenarios'
 import { createSeed } from '../data/seed'
 import type { AgentException, PersonaId } from '../data/types'
 import { selectDivisionSummaries, selectOpenExceptions } from '../features/board/selectors'
-import { endOfDayDeadline, RESUME_ITEM } from './handoffs'
+import { commanderItem, endOfDayDeadline, RESUME_ITEM } from './handoffs'
 import { createDemoStore } from './index'
 import { JOB_ITEM } from './onboarding'
 import { createMemoryStorage } from './storage'
@@ -151,5 +151,48 @@ describe('H2 · a resume request reaches the other approver', () => {
     const items = resumeItems(store).filter(open)
     expect(items).toHaveLength(1)
     expect(items[0]).toMatchObject({ ownerId: 'priya', raisedAt: '2026-12-08T11:58:00', deadline: '2026-12-08T17:00:00' })
+  })
+})
+
+describe('H3 · opening an incident tells its commander', () => {
+  const opened = (persona: PersonaId) => {
+    const store = at('baseline', persona)
+    expect(store.getState().openIncident('med-rec', { title: 'Dose changes proposed', actionIds: ['act-88213'] })).toEqual({ ok: true })
+    return store
+  }
+  const commander = (store: ReturnType<typeof fresh>) => store.getState().exceptions.filter((e) => e.type === commanderItem('INC-0031'))
+
+  test('Jordan opens INC-0031: Marcus, the commander, gets "Commander: INC-0031"', () => {
+    const items = commander(opened('jordan'))
+    expect(items).toHaveLength(1)
+    expect(items[0]).toMatchObject({
+      agentId: 'med-rec',
+      state: 'new',
+      status: 'review',
+      ownerId: 'marcus',
+      copied: ['jordan'],
+      reason: 'Jordan opened INC-0031: Dose changes proposed',
+      action: 'run the incident',
+      actionSub: 'Root cause and corrections, each with an owner',
+      link: { label: 'Open INC-0031', to: '/operations/incidents/inc-0031' },
+      deadline: '2026-12-08T17:00:00',
+    })
+  })
+
+  test('the commander opening it raises nothing', () => {
+    expect(commander(opened('marcus'))).toHaveLength(0)
+  })
+
+  test('closing the incident closes the item', () => {
+    const store = opened('jordan')
+    store.getState().setPersona('marcus')
+    expect(store.getState().closeIncident('inc-0031', 'No harm; HS-04 held every dose.').ok).toBe(true)
+    expect(commander(store)[0]).toMatchObject({ state: 'resolved', outcome: 'Incident closed', closedBy: 'marcus' })
+  })
+
+  test('scenario resume-requested: Marcus has the open item for INC-0031 from 10:05', () => {
+    const items = commander(at('resume-requested', 'marcus')).filter(open)
+    expect(items).toHaveLength(1)
+    expect(items[0]).toMatchObject({ ownerId: 'marcus', copied: ['jordan'], raisedAt: '2026-12-08T10:05:00' })
   })
 })

@@ -1,4 +1,4 @@
-import type { DemoState } from '../data/types'
+import type { DemoState, Incident } from '../data/types'
 import { addDays, formatClock, formatDate } from '../lib/clock'
 import { raiseItem, resolveItems } from './onboarding'
 import { personName } from './onboardingRules'
@@ -48,4 +48,24 @@ export function raiseResumeItem(s: DemoState, agentId: string, requestedBy: stri
 /** The request is answered, withdrawn, or gone with the pause. */
 export function closeResumeItem(s: DemoState, agentId: string, by: string, at: string, outcome: string): void {
   resolveItems(s, agentId, RESUME_ITEM, by, at, outcome)
+}
+
+/** Opening an incident makes the agent's owner its commander (7c; Phase 12 H3). */
+export const commanderItem = (code: string) => `Commander: ${code}`
+
+/** The commander runs the incident from its record; nothing is raised when they opened it themselves. */
+export function raiseCommanderItem(s: DemoState, incident: Incident, openedBy: string, at: string): void {
+  if (incident.commanderId === openedBy) return
+  raiseItem(s, {
+    agentId: incident.agentId,
+    type: commanderItem(incident.code),
+    reason: `${personName(s, openedBy)} opened ${incident.code}: ${incident.title}`,
+    action: 'run the incident',
+    actionSub: 'Root cause and corrections, each with an owner',
+    ownerId: incident.commanderId,
+    copied: [openedBy],
+    link: { label: `Open ${incident.code}`, to: `/operations/incidents/${incident.id}` },
+    at,
+    deadline: endOfDayDeadline(at),
+  })
 }

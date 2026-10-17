@@ -3,7 +3,7 @@ import { applyPause } from '../../store/mutations'
 import { DEMO_NOW } from '../../lib/clock'
 import { applyAccept, applyDeploy, applyHardStopApproval, applyReplay, applySystemsSignOff, changeId } from '../../store/changes'
 import { applyAddEpicDraft, applyFlag, applyFlagAnswer } from '../../store/feedback'
-import { raiseResumeItem } from '../../store/handoffs'
+import { raiseCommanderItem, raiseResumeItem } from '../../store/handoffs'
 import { applyDecidePromotion, applySignPromotion, c4 } from '../../store/promotions'
 import { applyThresholdStepDown, applyVersionDeploy } from '../../store/stepdowns'
 import { ALLERGY_V130, STEP_DOWN_MED_REC } from '../seed/autonomy'
@@ -203,6 +203,7 @@ export const scenarios: Record<ScenarioId, (seed: DemoState) => DemoState> = {
       { title: 'Incident INC-0031', sub: 'Root cause recorded · 1 correction open', meta: 'Marcus' },
     ]
     s.incidents.push(INC_0031)
+    raiseCommanderItem(s, INC_0031, 'jordan', INC_0031.openedAt)
     const reason =
       'Dose mapping fixed in SOP v1.3.2: strengths now come from the formulary table, not the latest fill. Replayed today’s 3 blocked cases and 20 more; HS-04 fired 0 times.'
     s.resumeRequests.push({
