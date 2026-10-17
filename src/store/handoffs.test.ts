@@ -297,3 +297,33 @@ describe('seed: the Culture Follow-up draft waits on Marcus, in his inbox', () =
     expect(s.exceptions.some((e) => e.id === 'exc-5468' || e.id === 'exc-5491')).toBe(false)
   })
 })
+
+describe('FYIs go to the log, addressed to the person told', () => {
+  const openCount = (store: ReturnType<typeof fresh>) => store.getState().exceptions.filter(open).length
+
+  test('H5: Sam returns admission med rec to Shadow; Priya is told, and nothing reaches an inbox', () => {
+    const store = at('baseline', 'sam')
+    const before = openCount(store)
+    expect(store.getState().returnToShadow('med-rec-admission', 'Dose proposals on 3 admissions today.').ok).toBe(true)
+    expect(openCount(store)).toBe(before)
+    expect(store.getState().logEvents.at(-1)).toMatchObject({
+      agentId: 'med-rec',
+      text: 'Sam returned Reconcile home medications at admission to Shadow',
+      sub: 'PRV-0142 v3 closed · Priya told',
+      to: ['priya'],
+    })
+  })
+
+  test('H5: the sponsor returning it tells nobody', () => {
+    const store = at('baseline', 'priya')
+    const before = store.getState().logEvents.length
+    expect(store.getState().returnToShadow('med-rec-admission', 'Holding until the fix.').ok).toBe(true)
+    expect(store.getState().logEvents.slice(before).some((e) => e.text.includes('returned'))).toBe(false)
+  })
+
+  test('H6: Flag for SOP is shared with the technical owner', () => {
+    const store = at('shadow-day-21', 'marcus')
+    expect(store.getState().flagCaseLine('enc-4105', 4).ok).toBe(true)
+    expect(store.getState().logEvents.at(-1)).toMatchObject({ sub: 'Shared with Sam to check the SOP mapping · Marcus', to: ['sam'] })
+  })
+})

@@ -6,6 +6,7 @@ import { cx } from '../../lib/cx'
 import { NotFound } from '../../layout/NotFound'
 import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { useDemo } from '../../store'
+import { personName } from '../../store/onboardingRules'
 import { can } from '../../store/permissions'
 import { selectCase } from './selectors'
 import styles from './golive.module.css'
@@ -100,7 +101,7 @@ export function CasePage() {
                 </Button>
               ) : null
             ) : null}
-            {flagged ? <span>Logged; the technical owner is asked to check the SOP mapping.</span> : null}
+            {flagged ? <span>Logged and shared with {personName(state, state.agents.find((a) => a.id === agentId)?.techOwnerId) || 'the technical owner'}.</span> : null}
           </div>
         </section>
       </div>

@@ -579,7 +579,7 @@ export function applyExtendShadow(s: DemoState, activityId: string, days: number
   return s
 }
 
-/** Flag a sample-case line for the SOP (3b): the technical owner is asked to check the mapping. */
+/** Flag a sample-case line for the SOP (3b): shared with the technical owner in the log (an FYI, Phase 12 H6). */
 export function applyFlagLine(s: DemoState, caseId: string, line: number, by: string, at: string): DemoState {
   const c = s.sampleCases.find((x) => x.id === caseId)
   const l = c?.lines[line - 1]
@@ -592,7 +592,8 @@ export function applyFlagLine(s: DemoState, caseId: string, line: number, by: st
     at,
     agentId: c.agentId,
     text: `Flagged for SOP: line ${line} · ${l.agent ? word(l.agent) : 'missing'} → ${theirs.charAt(0).toLowerCase()}${theirs.slice(1)}`,
-    sub: `${personName(s, agent?.techOwnerId)} is asked to check the SOP mapping · ${personName(s, by)}`,
+    sub: `Shared with ${personName(s, agent?.techOwnerId)} to check the SOP mapping · ${personName(s, by)}`,
+    ...(agent?.techOwnerId ? { to: [agent.techOwnerId] } : {}),
   })
   return s
 }
