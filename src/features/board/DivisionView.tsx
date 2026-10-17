@@ -20,7 +20,11 @@ export function DivisionView() {
   const division = state.divisions.find((d) => d.id === divisionId)
   const rows = useMemo(() => (division ? selectAgentRows(state, division.id) : []), [state, division])
   const summary = useMemo(() => selectDivisionSummaries(state).find((d) => d.id === divisionId), [state, divisionId])
-  const exceptionCount = useMemo(() => selectInbox(state, state.personaId).needsMe.length, [state])
+  // Hand-offs stay off the boards (Phase 12): the board's button counts the exceptions about agents.
+  const exceptionCount = useMemo(
+    () => selectInbox(state, state.personaId).needsMe.filter((i) => !state.exceptions.find((e) => e.id === i.id)?.link).length,
+    [state],
+  )
   const selectedId = params.get('agent') ?? rows[0]?.id ?? null
   const panel = useMemo(() => (selectedId ? selectAgentPanel(state, selectedId) : null), [state, selectedId])
 

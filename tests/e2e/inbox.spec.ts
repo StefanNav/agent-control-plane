@@ -2,14 +2,15 @@ import { expect, test } from '@playwright/test'
 import { collectErrors } from './console'
 
 test.describe('inbox (5a)', () => {
-  test('Marcus needs to act on four items, Monitor stale first', async ({ page }) => {
+  test('Marcus needs to act on five items (four of 5a and the culture draft’s hand-off), Monitor stale first', async ({ page }) => {
     const errors = collectErrors(page)
     await page.goto('/operations/inbox')
     await expect(page.getByRole('heading', { name: 'Inbox' })).toBeVisible()
-    await expect(page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Needs me · 4' })).toBeVisible()
-    await expect(page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Waiting on others · 2' })).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Needs me · 5' })).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Waiting on others · 3' })).toBeVisible()
     const items = page.getByRole('list', { name: 'Needs me' }).getByRole('listitem')
-    await expect(items).toHaveCount(4)
+    await expect(items).toHaveCount(5)
+    await expect(items.last()).toContainText('Job: description and systems to write')
     await expect(items.first()).toContainText('Monitor stale')
     await expect(items.first()).toContainText('Due 10:46')
     await expect(page.getByText('How this reaches you')).toBeVisible()
@@ -32,7 +33,7 @@ test.describe('inbox (5a)', () => {
     await page.goto('/operations/inbox/exc-5512')
     await page.getByRole('button', { name: 'Snooze' }).click()
     await page.getByRole('menuitem', { name: /1 hour/ }).click()
-    await expect(page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Needs me · 3' })).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Needs me · 4' })).toBeVisible()
     await expect(page.getByRole('list', { name: 'Needs me' })).not.toContainText('Edit rate rising')
   })
 
@@ -57,7 +58,7 @@ test('dismiss with a reason (5b): blocked until a reason is given, then logged o
   await dialog.getByRole('textbox', { name: 'Reason' }).fill('Formulary update F-112 explains the edits.')
   await confirm.click()
   await expect(dialog).toBeHidden()
-  await expect(page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Needs me · 3' })).toBeVisible()
+  await expect(page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Needs me · 4' })).toBeVisible()
   await page.goto('/operations/agents/renal-dosing?tab=history')
   await expect(page.getByText('Dismissed EXC-5512')).toBeVisible()
   expect(errors).toEqual([])
@@ -68,7 +69,7 @@ test.describe('digest, log and waiting (5c)', () => {
     const errors = collectErrors(page)
     await page.goto('/operations/inbox')
     await page.getByRole('link', { name: 'Daily digest' }).click()
-    await expect(page.getByText('2 things need you today')).toBeVisible()
+    await expect(page.getByText('3 things need you today')).toBeVisible()
     await expect(page.getByText('Changed yesterday · 2')).toBeVisible()
     await page.getByRole('link', { name: 'Open the log' }).click()
     await expect(page).toHaveURL(/tab=log/)
@@ -76,10 +77,10 @@ test.describe('digest, log and waiting (5c)', () => {
     expect(errors).toEqual([])
   })
 
-  test('Waiting on others lists the two items Marcus is copied on', async ({ page }) => {
+  test('Waiting on others lists the three items Marcus is copied on (Phase 12: PRM-0007 waits for Priya)', async ({ page }) => {
     await page.goto('/operations/inbox')
-    await page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Waiting on others · 2' }).click()
-    await expect(page.getByRole('list', { name: 'Waiting on others' }).getByRole('listitem')).toHaveCount(2)
+    await page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Waiting on others · 3' }).click()
+    await expect(page.getByRole('list', { name: 'Waiting on others' }).getByRole('listitem')).toHaveCount(3)
   })
 })
 
@@ -90,7 +91,8 @@ test('escalated to the sponsor (5d): Priya sees the late item and assigns it to 
   await page.getByRole('menuitem', { name: /Priya/ }).click()
   await page.goto('/operations/inbox')
   const tabs = page.getByRole('navigation', { name: 'Inbox' })
-  await expect(tabs.getByRole('link', { name: 'Needs me · 3' })).toBeVisible()
+  // Phase 12 H4: plus PRM-0007's "Promotion to sign", due 17:00.
+  await expect(tabs.getByRole('link', { name: 'Needs me · 4' })).toBeVisible()
   const first = page.getByRole('list', { name: 'Needs me' }).getByRole('listitem').first()
   await expect(first).toContainText('Formulary Swap Agent · escalated')
   await expect(first).toContainText('1 h 14 min late')
@@ -98,7 +100,7 @@ test('escalated to the sponsor (5d): Priya sees the late item and assigns it to 
   await expect(detail).toContainText('Escalated to you because nobody answered by the deadline.')
   await expect(detail).toContainText('Escalated to Priya under ORG-ESC-01')
   await detail.getByRole('button', { name: 'Assign to Sam' }).click()
-  await expect(tabs.getByRole('link', { name: 'Needs me · 2' })).toBeVisible()
+  await expect(tabs.getByRole('link', { name: 'Needs me · 3' })).toBeVisible()
   await expect(page.getByRole('list', { name: 'Needs me' })).not.toContainText('Monitor stale')
   expect(errors).toEqual([])
 })
@@ -126,7 +128,7 @@ test.describe('the detail follows the item (review fixes)', () => {
   test('a question can be answered from the inbox', async ({ page }) => {
     await page.goto('/operations/inbox/exc-5514')
     await page.getByRole('region', { name: 'Exception detail' }).getByRole('button', { name: 'Answer yes' }).click()
-    await expect(page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Needs me · 3' })).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'Inbox' }).getByRole('link', { name: 'Needs me · 4' })).toBeVisible()
   })
 
   test('the owner of an escalated item sees where it went, not the sponsor notice', async ({ page }) => {
