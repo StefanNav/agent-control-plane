@@ -1,10 +1,11 @@
 import type { ScenarioId } from '../data/scenarios'
+import { rewindTo } from '../data/scenarios/rewind'
 import { createSeed } from '../data/seed'
 import type { AgentException, PersonaId } from '../data/types'
 import { selectDivisionSummaries, selectOpenExceptions } from '../features/board/selectors'
 import { commanderItem, endOfDayDeadline, RESUME_ITEM } from './handoffs'
 import { createDemoStore } from './index'
-import { JOB_ITEM } from './onboarding'
+import { applyStart, JOB_ITEM } from './onboarding'
 import { promotionToSign, raisePromotionItem } from './promotions'
 import { createMemoryStorage } from './storage'
 
@@ -42,6 +43,7 @@ describe('H1 · starting onboarding asks the owner', () => {
       ownerId: 'marcus',
       copied: ['dana'],
       reason: 'Med Rec Agent from REQ-0093: write the job description, then systems and verbs',
+      short: 'from REQ-0093: write the job description, then systems and verbs',
       action: 'write the job description',
       actionSub: 'Then systems and verbs. Sam tests the hard stops after.',
       link: { label: 'Open the job description', to: '/inventory/agents/med-rec/onboarding/job' },
@@ -101,6 +103,7 @@ describe('H2 · a resume request reaches the other approver', () => {
       ownerId: 'priya',
       copied: ['marcus'],
       reason: 'Marcus asks to resume Med Rec Agent. Paused by Marcus at 09:47.',
+      short: 'Marcus asks to resume it. Paused by Marcus at 09:47.',
       action: 'approve or decline the resume',
       actionSub: 'It stays paused until you agree',
       link: { label: 'Open the resume request', to: '/operations/agents/med-rec' },
@@ -253,5 +256,44 @@ describe('H4 · a promotion waiting for the sponsor reaches their inbox', () => 
     const open_ = items(store.getState()).filter(open)
     expect(open_).toHaveLength(1)
     expect(open_[0]).toMatchObject({ ownerId: 'priya', copied: ['drlee'], reason: 'Back from the board: What did the 2 defects have in common?' })
+  })
+})
+
+describe('seed: the Culture Follow-up draft waits on Marcus, in his inbox', () => {
+  test('the draft started 03 Dec, and EXC-5491 asks Marcus for the job and systems by 10 Dec', () => {
+    const s = createSeed()
+    const record = s.onboardings.find((r) => r.agentId === 'culture-followup')!
+    expect(record).toMatchObject({ startedAt: '2026-12-03T10:00:00', done: { intake: { at: '2026-12-03T10:00:00', by: 'dana' } } })
+    expect(record.history[0]).toMatchObject({ at: '2026-12-03T10:00:00' })
+    expect(s.intakeRequests.find((r) => r.id === 'req-0099')!.startedAt).toBe('2026-12-03T10:00:00')
+    expect(s.exceptions.find((e) => e.id === 'exc-5491')).toMatchObject({
+      code: 'EXC-5491',
+      type: JOB_ITEM,
+      state: 'new',
+      agentId: 'culture-followup',
+      ownerId: 'marcus',
+      copied: ['dana'],
+      reason: 'Culture Follow-up Agent from REQ-0099: write the job description, then systems and verbs',
+      actionSub: 'Then systems and verbs. Sam tests the hard stops after.',
+      link: { label: 'Open the job description', to: '/inventory/agents/culture-followup/onboarding/job' },
+      raisedAt: '2026-12-03T10:00:00',
+      deadline: '2026-12-10T17:00:00',
+    })
+  })
+
+  test('the seeded item is exactly what starting onboarding raises', () => {
+    const seeded = createSeed().exceptions.find((e) => e.id === 'exc-5491')!
+    const s = createSeed()
+    s.exceptions = s.exceptions.filter((e) => e.id !== 'exc-5491')
+    s.onboardings = s.onboardings.filter((r) => r.agentId !== 'culture-followup')
+    s.agents = s.agents.filter((a) => a.id !== 'culture-followup')
+    applyStart(s, 'req-0099', { ownerId: 'marcus', techOwnerId: 'sam' }, 'dana', '2026-12-03T10:00:00')
+    const raised = s.exceptions.find((e) => e.type === JOB_ITEM && e.agentId === 'culture-followup')!
+    expect({ ...raised, id: seeded.id, code: seeded.code }).toEqual(seeded)
+  })
+
+  test('Review focus 1: rewinding to October drops both December hand-offs', () => {
+    const s = rewindTo(createSeed(), '2026-10-01T09:05:00')
+    expect(s.exceptions.some((e) => e.id === 'exc-5468' || e.id === 'exc-5491')).toBe(false)
   })
 })

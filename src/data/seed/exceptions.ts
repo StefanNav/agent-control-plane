@@ -191,6 +191,27 @@ export const exceptions: AgentException[] = [
     route: 'inbox',
     link: { label: 'Open the promotion', to: '/inventory/promotions/prm-0007' },
   },
+  // Phase 12 H1: starting the Culture Follow-up draft asked Marcus for the job and systems (1a).
+  // Literal seed data; a store test pins it to what applyStart raises.
+  {
+    id: 'exc-5491',
+    code: 'EXC-5491',
+    status: 'review',
+    kind: 'review',
+    type: 'Job: description and systems to write',
+    reason: 'Culture Follow-up Agent from REQ-0099: write the job description, then systems and verbs',
+    short: 'from REQ-0099: write the job description, then systems and verbs',
+    agentId: 'culture-followup',
+    raisedAt: '2026-12-03T10:00:00',
+    action: 'write the job description',
+    actionSub: 'Then systems and verbs. Sam tests the hard stops after.',
+    ownerId: 'marcus',
+    copied: ['dana'],
+    deadline: '2026-12-10T17:00:00',
+    state: 'new',
+    route: 'inbox',
+    link: { label: 'Open the job description', to: '/inventory/agents/culture-followup/onboarding/job' },
+  },
   {
     id: 'exc-5503',
     code: 'EXC-5503',

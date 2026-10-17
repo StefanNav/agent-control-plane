@@ -36,7 +36,7 @@ export const intakeRequests: IntakeRequest[] = [
     domain: { units: ['7 West', '8 East'], patients: 'Adults 18+', hours: 'Weekdays' },
     patientImpact: 'A missed positive culture can leave an infection untreated after discharge',
     volume: 'About 25 positive cultures a week on 2 units',
-    startedAt: '2026-11-30T10:00:00',
+    startedAt: '2026-12-03T10:00:00',
   },
   {
     id: 'req-0106',
@@ -250,11 +250,14 @@ const medRecRecord: Onboarding = {
   ],
 }
 
-/** Culture Follow-up Agent: started 30 Nov, the job description at 3 of 7, waiting on Marcus (invented). */
+/**
+ * Culture Follow-up Agent: started 03 Dec, the job description at 3 of 7, waiting on Marcus (invented).
+ * Phase 12: re-dated from 30 Nov, so Marcus's hand-off (EXC-5491, due a week after the start) isn't overdue on 08 Dec.
+ */
 const cultureRecord: Onboarding = {
   agentId: 'culture-followup',
   intakeId: 'req-0099',
-  startedAt: '2026-11-30T10:00:00',
+  startedAt: '2026-12-03T10:00:00',
   startedBy: 'dana',
   version: 3,
   savedAt: '2026-12-07T15:30:00',
@@ -270,11 +273,11 @@ const cultureRecord: Onboarding = {
   grants: [],
   limits: [],
   sponsor: { state: 'notSent', round: 0, earlier: [] },
-  done: { intake: { at: '2026-11-30T10:00:00', by: 'dana' } },
-  history: [{ at: '2026-11-30T10:00:00', by: 'dana', text: 'Dana · started onboarding', sub: 'From REQ-0099' }],
+  done: { intake: { at: '2026-12-03T10:00:00', by: 'dana' } },
+  history: [{ at: '2026-12-03T10:00:00', by: 'dana', text: 'Dana · started onboarding', sub: 'From REQ-0099' }],
 }
 
 export const onboardings: Onboarding[] = [medRecRecord, cultureRecord]
 
 /** Agents being onboarded: off every board until AIMS Review approves them. */
-export const draftAgents: Agent[] = [agentFromIntake(intakeRequests[1]!, { ownerId: 'marcus', techOwnerId: 'sam' }, '2026-11-30T10:00:00')]
+export const draftAgents: Agent[] = [agentFromIntake(intakeRequests[1]!, { ownerId: 'marcus', techOwnerId: 'sam' }, '2026-12-03T10:00:00')]

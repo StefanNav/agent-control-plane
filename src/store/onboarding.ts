@@ -48,6 +48,7 @@ export function applyStart(s: DemoState, intakeId: string, people: { ownerId: st
       agentId: intake.agentId,
       type: JOB_ITEM,
       reason: `${intake.agentName} from ${intake.code}: write the job description, then systems and verbs`,
+      short: `from ${intake.code}: write the job description, then systems and verbs`,
       action: 'write the job description',
       actionSub: `Then systems and verbs. ${personName(s, people.techOwnerId)} tests the hard stops after.`,
       ownerId: people.ownerId,
@@ -129,7 +130,7 @@ const handOffDeadline = (at: string) => `${addDays(at, 2).slice(0, 10)}T17:00:00
 /** Raise an onboarding hand-off in someone's inbox (ruling R9): a review item that links to the step. */
 export function raiseItem(
   s: DemoState,
-  input: { agentId: string; type: string; reason: string; action: string; actionSub: string; ownerId: string; copied: string[]; link: { label: string; to: string }; at: string; deadline?: string },
+  input: { agentId: string; type: string; reason: string; short?: string; action: string; actionSub: string; ownerId: string; copied: string[]; link: { label: string; to: string }; at: string; deadline?: string },
 ): AgentException {
   const code = nextExceptionCode(s)
   const item: AgentException = {
@@ -139,6 +140,8 @@ export function raiseItem(
     kind: 'review',
     type: input.type,
     reason: input.reason,
+    // The digest names the agent before it; a reason that starts with the agent's name gives a short form.
+    ...(input.short ? { short: input.short } : {}),
     agentId: input.agentId,
     raisedAt: input.at,
     action: input.action,

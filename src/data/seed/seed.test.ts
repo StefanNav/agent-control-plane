@@ -155,9 +155,9 @@ describe('E4 and E5 refinements', () => {
     expect(statuses.filter((st) => ['crit', 'warn', 'review', 'stale'].includes(st)).sort()).toEqual(['review', 'stale', 'warn', 'warn'])
   })
 
-  test('Marcus owns the four items of 5a and is copied on three (Phase 12: PRM-0007 waits for Priya)', () => {
+  test('Marcus owns the four items of 5a plus the culture draft’s hand-off, and is copied on three (Phase 12)', () => {
     const mine = seed.exceptions.filter((e) => e.ownerId === 'marcus' && open(e))
-    expect(mine.map((e) => e.type).sort()).toEqual(['Edit rate rising', 'Monitor stale', 'Question', 'Review: 3 drafts'])
+    expect(mine.map((e) => e.type).sort()).toEqual(['Edit rate rising', 'Job: description and systems to write', 'Monitor stale', 'Question', 'Review: 3 drafts'])
     expect(seed.exceptions.filter((e) => e.copied.includes('marcus') && e.ownerId !== 'marcus' && open(e))).toHaveLength(3)
   })
 

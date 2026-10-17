@@ -4,13 +4,14 @@ import { escalationOf, selectDigest, selectExceptionDetail, selectInbox, selectI
 
 const s = createSeed()
 
-test('Marcus needs to act on four items, by deadline; three wait on others', () => {
+test('Marcus needs to act on five items, by deadline; three wait on others (Phase 12: the culture draft and PRM-0007)', () => {
   const inbox = selectInbox(s, 'marcus')
   expect(inbox.needsMe.map((i) => [i.type, i.due])).toEqual([
     ['Monitor stale', 'Due 10:46'],
     ['Review: 3 drafts', 'Due 11:00'],
     ['Edit rate rising', 'Due 15:00'],
     ['Question', 'Due tomorrow'],
+    ['Job: description and systems to write', 'Due Thursday'],
   ])
   expect(inbox.needsMe[0]).toMatchObject({ source: 'Formulary Swap Agent · MON-02 v1', action: 'Action: check the feed with Sam' })
   expect(inbox.needsMe[3]!.source).toBe('Sam · Med Rec Agent')
@@ -56,8 +57,8 @@ describe('the escalation chain comes from the division (8a)', () => {
 
 test('a snoozed item leaves until its time', () => {
   const snoozed = { ...s, exceptions: s.exceptions.map((e) => (e.id === 'exc-5512' ? { ...e, snoozedUntil: '2026-12-08T10:52:00' } : e)) }
-  expect(selectInbox(snoozed, 'marcus').needsMe).toHaveLength(3)
-  expect(selectInbox({ ...snoozed, now: '2026-12-08T10:53:00' }, 'marcus').needsMe).toHaveLength(4)
+  expect(selectInbox(snoozed, 'marcus').needsMe).toHaveLength(4)
+  expect(selectInbox({ ...snoozed, now: '2026-12-08T10:53:00' }, 'marcus').needsMe).toHaveLength(5)
 })
 
 test('the detail of the edit-rate item reads like 5a', () => {
@@ -75,6 +76,7 @@ test('due within two hours (or late) is emphasised; later deadlines are not', ()
     ['Due 11:00', true],
     ['Due 15:00', false],
     ['Due tomorrow', false],
+    ['Due Thursday', false],
   ])
 })
 
@@ -90,13 +92,15 @@ test('the 07:00 digest (5c): what can wait for the morning email, what changed, 
     from: 'AIMS · Lakeshore Health',
     to: 'Marcus',
     subject: 'Medications · daily digest · Tue 08 Dec',
-    title: '2 things need you today',
+    title: '3 things need you today',
     sub: '17 of 20 agents within scope overnight. Nothing paged you.',
     logTotal: 41,
   })
   expect(digest.needs).toEqual([
     { id: 'exc-5512', status: 'warn', label: 'Edit rate rising', text: 'Renal Dosing Agent · edit rate 19.2 % against 10 %', due: 'Due today 15:00', link: 'Open' },
     { id: 'exc-5514', status: 'normal', label: 'Question from Sam', text: 'Move pyxis.dispense.read to the v2 endpoint?', due: 'Due tomorrow', link: 'Answer' },
+    // Phase 12 H1: the hand-off's short form, so the agent isn't named twice.
+    { id: 'exc-5491', status: 'review', label: 'Job: description and systems to write', text: 'Culture Follow-up Agent · from REQ-0099: write the job description, then systems and verbs', due: 'Due Thursday', link: 'Open' },
   ])
   expect(digest.changes.map((c) => c.text)).toEqual([
     'Allergy Recon Agent v1.2.1 deployed by Sam. Re-validation passed on 200 replayed cases.',

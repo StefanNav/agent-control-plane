@@ -35,6 +35,7 @@ export function raiseResumeItem(s: DemoState, agentId: string, requestedBy: stri
     agentId,
     type: RESUME_ITEM,
     reason: `${personName(s, requestedBy)} asks to resume ${agent.name}.${paused}`,
+    short: `${personName(s, requestedBy)} asks to resume it.${paused}`,
     action: 'approve or decline the resume',
     actionSub: 'It stays paused until you agree',
     ownerId: other,

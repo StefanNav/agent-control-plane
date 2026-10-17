@@ -40,7 +40,7 @@ test('Ana flags DR-88412 in one action: FB-2291 reaches Marcus with her edit att
     action: 'answer Ana R.’s flag',
     state: 'new',
   })
-  expect(selectInbox(s, 'marcus').needsMe).toHaveLength(5)
+  expect(selectInbox(s, 'marcus').needsMe).toHaveLength(6)
 })
 
 test('with a note, the flag’s title is the note', () => {
