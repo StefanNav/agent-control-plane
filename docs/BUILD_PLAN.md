@@ -766,6 +766,15 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11
   - The flow map: `docs/flow-map/onboarding/` (brief `spec.md`, 24 screens + full-length versions); `tests/capture/flow-map.spec.ts` regenerates them. `docs/flow-map/*.zip` is git-ignored.
 - **The rule** (spec §2): a hand-off is an item with a `link`: owner = who acts next, copied = who acted, never escalates, closes when the step is done, never raised for yourself. Information is a `tell` log event. The registry of all 21 hand-offs is spec §3.
 - **Deferred:** D1 shadow minimum met → owner (needs a deadline policy; would seed a month-overdue item for Allergy flags); D2 channels and preferences; D3 escalating hand-offs.
+- **Final review (fresh reviewer, opus): 0 Critical, 2 Important, 7 Minor.** Both Important fixed test-first:
+  - 9a's held-build items are `board` signals, so the wall and 4f agree with Med Rec's judgment again.
+  - Resume items follow who must still agree (`syncResumeItems`), and the commander moves with the owner role.
+- **Deferred minors:**
+  - later-day scenarios (9a, 10b, 15a) show PRM-0007's and the culture job item overdue, and H4's "board decides on 09 Dec" goes stale;
+  - H6 tells the flagger when the technical owner flags;
+  - `raisePromotionItem` has no not-for-yourself guard, and the re-review copies only the chair;
+  - CasePage looks up the technical owner's name inline;
+  - Marcus's story step 4 says unhandled items go to Priya, but hand-offs never escalate.
 - **Gotchas**
   - New seeded hand-offs are literals (seed has no store imports); store tests pin each to what the store raises.
   - A hand-off's deadline is per type: owner's job 7 days; resume and commander 17:00 the same day (next day from 15:00); Tier 3+ promotion the day before the next board.
@@ -953,7 +962,10 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-12 | Links for one recipient: `/for/<name>` (any name) renders the landing page and keeps its address, so Vercel's Pages panel records the visit as `/for/<name>`; a path rather than a `?ref=` tag, which the Hobby plan may not report. Stefan tests each link in an incognito window himself, so its first visit is his | Stefan wants to know whether a hiring manager opened the link he sent |
 | 2026-10-12 | A visit's first page view is reported at the address the visitor opened (`reportArrivalAt`, a `beforeSend`): a tour link moves to its first screen before the script loads, so `/for/polly?tour=open` was recorded as `/operations`. Later page views are reported as they happen | Found probing Polly's link before sending it; Stefan wants her to land on the walkthrough's start |
 | 2026-10-17 | R9 is product-wide: every hand-off between people raises an inbox item (owner = who acts next, copied = who acted, link to the step, never escalates, closes when done, never for yourself); information goes to the log via `tell` ("X told") | Claude Design's flow map found Start onboarding never told Marcus; the audit found the resume request, incident commander and promotion gaps (spec §1, §3) |
-| 2026-10-17 | Hand-offs stay off the agent boards (4a–4f, wall), and the division view's "Work N exceptions" counts agent exceptions only | Boards show agent behaviour; a hand-off is a task for a person. Keeps the boards and 4b as drawn |
+| 2026-10-17 | Hand-offs stay off the agent boards (4a–4f, wall), and the division view's "Work N exceptions" counts agent exceptions only (`selectAgentExceptionCount`). Linked items that explain an agent's judgment (9a's held-build items) are marked `board` and stay | Boards show agent behaviour; a hand-off is a task for a person. Keeps the boards and 4b as drawn; the final review found 9a's wall and 4f contradicting the judgment without the `board` mark |
+| 2026-10-17 | Resume hand-offs go to everyone who must still agree: a requester not named on the agent asks both owner and sponsor, and after an owner change a partial approval re-routes; the incident commander moves with the owner role | Final review: an 8a owner change left a resume or commander item with someone who couldn't act |
+| 2026-10-17 | H4's copy is "Marcus asks to promote a branch to Supervised: add an allergy from outside records" (not the spec's first template), and the board's re-review also raises it ("Back from the board: …") | Reads better with a sentence-like branch name; a re-review sends the promotion back to the sponsor, which is a hand-off |
+| 2026-10-17 | H1's item is "Job and systems to write", and new hand-offs carry a `short` for the digest | The longer name truncated the agent's name in the inbox row; the digest put the agent's name twice |
 | 2026-10-17 | Return to Shadow raises no item: Priya is told in the log, and asked to sign through the owner's go-live request after the restarted scorecard (6c: "The scorecard restarts…"); Flag for SOP is an FYI to Sam | Spec H5, H6 |
 | 2026-10-17 | Frame departures: 5a Needs me 4 → 5, Waiting 2 → 3; 5c digest 2 → 3 things; 5d Priya 3 → 4 | The culture draft's and PRM-0007's hand-offs now reach inboxes (spec §5) |
 | 2026-10-17 | The Culture Follow-up draft starts 03 Dec (was 30 Nov, invented) | Its hand-off would otherwise sit six days overdue at the top of Marcus's inbox |

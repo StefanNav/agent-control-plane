@@ -76,19 +76,19 @@ Each step names its screenshot in `screens/` (full-length versions are in `scree
 - **Start onboarding → creates AGT-0123 v0.1 → raises "Job and systems to write" in Marcus's inbox → hand-off to 03**
 
 **03 · Marcus's inbox** · Marcus · 01 Oct · 5a pattern · `/operations/inbox` · `03-marcus-inbox.png`
-- For: Marcus learning his part has started.
+- For: Marcus learning that the job description and systems grid are now Marcus's to write.
 - On it: "Job and systems to write" · "Med Rec Agent from REQ-0093: write the job description, then systems and verbs", due 08 Oct.
 - **Open the job description → 05** (the same day, or any time before it's due)
 
 **04 · Inventory → Drafts (coming back)** · Marcus · 04 Oct · 1i · `/inventory?tab=drafts` · `04-marcus-drafts.png`
-- For: Marcus coming back on 04 Oct to a draft he left at 5 of 7. The inbox told him; Drafts is how he returns to work in progress.
+- For: Marcus coming back on 04 Oct to a draft left at 5 of 7. The inbox gave the first notice; Drafts is the way back to work in progress.
 - On it: "Waiting on me · 1". Med Rec Agent, open step "2 · Job description", missing "Escalation triggers, inaccuracy target", waiting on "Marcus · you", 6 of 13.
 - **Continue → opens the first missing field → 05**
 
 **05 · Job description** · Marcus · 04 Oct · 1b · `/inventory/agents/med-rec/onboarding/job` · `05-marcus-job-description.png`
 - For: what the agent is for and what it must never do. "The committee and every pharmacist will read this."
 - On it:
-  - "Welcome back, Marcus": he left at 5 of 7, and it opens at the first missing field.
+  - "Welcome back, Marcus": the draft was left at 5 of 7, and it opens at the first missing field.
   - Seven fields: purpose, activities, never list, acting for, escalation triggers, success criteria, rollout domain.
   - Two activities, each earning its own privilege: reconcile home medications at admission; flag allergy conflicts.
   - Never list: change a dose → HS-04, remove an allergy → HS-07, draft for anyone but the encounter's patient → HS-11. The line "Sign, release or order anything" is already locked by ORG-POL-02.
@@ -104,7 +104,7 @@ Each step names its screenshot in `screens/` (full-length versions are in `scree
 - **Last grant gets its activity → "the list goes to Sam's inbox" → hand-off to 07**
 
 **07 · Sam's inbox** · Sam · 06 Oct · 5a pattern · `/operations/inbox` · `07-sam-inbox.png`
-- For: Sam learning his part is ready.
+- For: Sam learning that the hard stops are ready to test.
 - On it: "Tools: hard stops to test" · "3 hard stops from Marcus's never list to test on the last 30 days".
 - **Open tools and hard stops → 08**
 
@@ -176,7 +176,7 @@ Each step names its screenshot in `screens/` (full-length versions are in `scree
 **17 · Committee packet** · Dr. Lee · 14 Oct · 2c · `/portfolio/reviews/med-rec` · `17-drlee-packet.png`
 - For: the board decides from one page. AI review board, 14 Oct 2026, item 3 of 5.
 - On it:
-  - The job description, the never list and its hard stops, the systems grid, the tested hard stops (including HS-11 re-tested on 212 transfers), the success criteria, the rollout domain, and Dana's tier with her reason.
+  - The job description, the never list and its hard stops, the systems grid, the tested hard stops (including HS-11 re-tested on 212 transfers), the success criteria, the rollout domain, and Dana's tier with Dana's reason.
   - The decision: Approve · Approve with conditions · Re-review · Deny.
   - Conditions C1 (a pharmacist signs every draft), C2 (weekly edit-rate report to Priya for the first 4 weeks), C3 (exclude patients on dialysis). A reason is required.
 - **Approve with conditions + reason → Record decision → 18**

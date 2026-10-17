@@ -293,7 +293,7 @@ export interface AgentException {
   kind: 'review' | 'question' | 'notify' | 'incident' | 'flag'
   type: string
   reason: string
-  /** Board phrasing, e.g. "3 drafts held by HS-04 v2". */
+  /** Board and digest phrasing, e.g. "3 drafts held by HS-04 v2"; the digest puts the agent's name before it. */
   short?: string
   /** The hospital exception list's reason when it differs from the inbox (4f). */
   boardReason?: string

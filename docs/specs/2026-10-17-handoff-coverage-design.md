@@ -7,7 +7,7 @@
 
 ## 1. Why
 
-While building the onboarding flow map in Claude Design, we found that **Start onboarding doesn't tell the agent owner**. The 1a panel promises "Asks Marcus for the job description, systems and verbs", but nothing reaches Marcus; he only finds the draft in Inventory → Drafts.
+While building the onboarding flow map in Claude Design, we found that **Start onboarding doesn't tell the agent owner**. The 1a panel promises "Asks Marcus for the job description, systems and verbs", but nothing reaches Marcus, who only finds the draft in Inventory → Drafts.
 
 An audit of all 60 store actions and the clock rules found more of the same. Some hand-offs never reach the person who has to act next:
 
@@ -39,7 +39,7 @@ Every hand-off raises an inbox item for that person (R9, now product-wide):
 Two companion rules:
 
 - **Information is not a hand-off.** When someone should *know* but needn't *act*, it's a log event with a `to` list ("Priya told"), as ruling R18 already does for FYIs. It never becomes an inbox item. That's E5: "Information stays in the log."
-- **Hand-offs stay off the agent boards.** The hospital board, division board, exceptions-first view and wall display (4a, 4b, 4f, 4e) show what agents are doing. A hand-off is a task for a person, not a signal about an agent, so items with a link don't count on the boards. Items about callers and units already work this way (Phase 6).
+- **Hand-offs stay off the agent boards.** The hospital board, division board, exceptions-first view and wall display (4a, 4b, 4f, 4e) show what agents are doing. A hand-off is a task for a person, not a signal about an agent, so items with a link don't count on the boards. The exception is an item that also explains the agent's judgment: 9a's held-build items ("Re-validation needed", the hard-stop approval) are marked `board` and stay. Items about callers and units already stay off the boards (Phase 6).
 
 ## 3. The hand-off registry
 
@@ -99,7 +99,7 @@ Every hand-off in the product after this phase. Items marked "new" are this phas
 
 ### H2 · A resume is requested → the other approver
 
-- **Item:** "Review: resume", owned by whichever of the agent's owner and sponsor hasn't approved yet.
+- **Item:** "Review: resume", one for each of the agent's owner and sponsor who hasn't approved yet. Usually that's one person. A requester not named on the agent asks both. After an owner change, a partial approval closes the approver's item and asks whoever must still agree (added in the final review).
   - reason: `{requester} asks to resume {agent}. Paused by {who} at {hh:mm}.`
   - action: "approve or decline the resume"
   - actionSub: "It stays paused until you agree"
@@ -121,18 +121,19 @@ Every hand-off in the product after this phase. Items marked "new" are this phas
 - **Deadline:** the same-day rule as H2.
 - **Closes:** when the incident closes ("Incident closed").
 - **Not raised:** when the opener is the commander. INC-0029 was opened by Tom, its commander, so it gets none.
+- **An owner change** in settings moves the commander of the division's open incidents along with the item (added in the final review).
 - **Scenario `resume-requested`:** Marcus's item for INC-0031, raised 10:05 by Jordan's opening, is open.
 
 ### H4 · A promotion waits for the sponsor → sponsor
 
 - **Item:** "Promotion to sign · {agent}"
-  - reason: `{requester} asks to promote {branch} to {level}`
+  - reason: `{requester} asks to promote a branch to {level}: {branch, lower case}` (ruled in the build: it reads better than the first template)
   - action: "sign or send back"
   - actionSub: Tier 3 and above, `Tier {n}: after you sign, the board decides on {meeting date}`; otherwise "Takes effect when you sign"
   - copied: the requester
   - link: "Open the promotion" → `/inventory/promotions/:id`
 - **Deadline:** Tier 3 and above, 17:00 the day before the next board meeting, the same rule as the tier hand-off. Otherwise 17:00 two days after.
-- **Raised:** when a promotion reaches the sponsor. That's PRM-0007 in the seed (requested 25 Nov 11:00, item EXC-5468, due 08 Dec 17:00), and again whenever a returned promotion is sent again.
+- **Raised:** when a promotion reaches the sponsor. That's PRM-0007 in the seed (requested 25 Nov 11:00, item EXC-5468, due 08 Dec 17:00), and again whenever a returned promotion is sent again, or the board sends it back for re-review (reason `Back from the board: {question}`, copied the chair).
 - **Closes:** when it's signed ("Signed") or sent back ("Sent back").
 
 ### H5 · Return to Shadow → sponsor FYI
@@ -148,7 +149,7 @@ Every hand-off in the product after this phase. Items marked "new" are this phas
 
 ### Boards
 
-Board and wall selectors ignore exceptions with a `link`.
+Board and wall selectors ignore hand-offs (`isHandOff`: a `link` and no `board` mark). The division view's "Work N exceptions" counts the viewer's inbox minus hand-offs (`selectAgentExceptionCount`), so 4b keeps "Work 4" while the nav reads "Inbox · 5".
 
 ### Seed (`SEED_VERSION` 9)
 
@@ -176,7 +177,7 @@ The boards (4a–4f, the wall) are unchanged, by the "hand-offs stay off the boa
 The onboarding flow map (`docs/flow-map/onboarding/`) is updated as the Claude Design brief asks:
 
 - A new step, **Marcus's inbox on 01 Oct**, reached from Start onboarding by an inbox hand-off.
-- **"Inventory → Drafts"** recast as Marcus coming back on 04 Oct to a draft he left at 5 of 7.
+- **"Inventory → Drafts"** recast as Marcus coming back on 04 Oct to a draft left at 5 of 7.
 - **§5 "Mark this gap"** removed; the 02 → 03 arrow becomes a solid hand-off.
 - Steps and screenshot files renumbered, and the captures re-run.
 
