@@ -8,7 +8,7 @@ import tseslint from 'typescript-eslint'
 
 export default defineConfig(
   {
-    ignores: ['dist', 'designs', 'reference', 'playwright-report', 'test-results', '.superpowers'],
+    ignores: ['dist', 'designs', 'reference', 'playwright-report', 'test-results', '.superpowers', '.visual'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
