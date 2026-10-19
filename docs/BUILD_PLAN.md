@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | Phase 13: Countersign at scale (◐, at 13.8) |
+| **Current phase** | Phase 13: Countersign at scale (⏸ at checkpoint) |
 | **Branch** | `phase-13-system-at-scale` |
 | **Last completed** | Phase 13 tasks 13.1–13.7 (2026-10-19): screenshot gate (`pnpm visual`, 100 screens), debt audit and ratchet (`pnpm ds:audit`), tokens for every foundation and a pixel-identical migration (1,990 values), layer rules in ESLint, SidePanel promoted, `docs/design-system/`. Before that: Phase 12 squash-merged (PR #28, 2026-10-17, `957a2a7`): every hand-off raises an inbox item for the person who acts next (start onboarding → owner, resume request → the other approver, incident → commander, promotion → sponsor); declines and returns to Shadow tell people in the log; hand-offs stay off the boards; the onboarding flow map for Claude Design (`docs/flow-map/onboarding/`). Before that: links for one recipient squash-merged (PR #26, 2026-10-12): `/for/<name>` is the landing page under its own address, and a visit is recorded at the address opened, so `/for/polly?tour=open` (the walkthrough's start) is recorded as `/for/polly`. Before that, Phase 11 (PR #25) and visitor analytics (PR #24) |
-| **Next task** | 13.8: whole-branch review, PR closing #29, CHECKPOINT (Stefan reviews the preview). After merge: sync the Countersign design-system project in Claude Design (Stefan starts `/design-sync`). Ideas to decide on are in the local `docs/ideas-to-revisit.md` |
+| **Next task** | CHECKPOINT: Stefan reviews the PR #30 preview, then merge. After merge: sync the Countersign design-system project in Claude Design (Stefan starts `/design-sync`). Ideas to decide on are in the local `docs/ideas-to-revisit.md` |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none open |
+| **Latest preview** | [PR #30 preview](https://agent-control-plane-git-phase-13-sys-f65512-stefannavs-projects.vercel.app) |
 
 ### How to resume in a new session
 
@@ -101,7 +101,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 10 | Guided tour | ☑ Merged | `phase-10-guided-tour` | [#20](https://github.com/StefanNav/agent-control-plane/issues/20) | [#21](https://github.com/StefanNav/agent-control-plane/pull/21) | [phase-10-guided-tour.md](plans/phase-10-guided-tour.md) |
 | 11 | Brand motion | ☑ Merged | `phase-11-brand-motion` | [#23](https://github.com/StefanNav/agent-control-plane/issues/23) | [#25](https://github.com/StefanNav/agent-control-plane/pull/25) | [phase-11-brand-motion.md](plans/phase-11-brand-motion.md) |
 | 12 | Every hand-off reaches an inbox | ☑ Merged | `phase-12-handoffs` | [#27](https://github.com/StefanNav/agent-control-plane/issues/27) | [#28](https://github.com/StefanNav/agent-control-plane/pull/28) | [phase-12-handoffs.md](plans/phase-12-handoffs.md) |
-| 13 | Countersign at scale | ◐ In progress | `phase-13-system-at-scale` | [#29](https://github.com/StefanNav/agent-control-plane/issues/29) | pending | [phase-13-system-at-scale.md](plans/phase-13-system-at-scale.md) |
+| 13 | Countersign at scale | ⏸ At checkpoint | `phase-13-system-at-scale` | [#29](https://github.com/StefanNav/agent-control-plane/issues/29) | [#30](https://github.com/StefanNav/agent-control-plane/pull/30) | [phase-13-system-at-scale.md](plans/phase-13-system-at-scale.md) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11 is #23 (#22 was the voice meter PR). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
@@ -792,7 +792,7 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11
 - [x] 13.5 ESLint enforces the layers and the design system's front door
 - [x] 13.6 SidePanel promoted; onboarding and review use it; gallery entry
 - [x] 13.7 Docs (`docs/design-system/`) and the rules in `CLAUDE.md`
-- [ ] 13.8 Whole-branch review, PR → **CHECKPOINT**
+- [x] 13.8 Whole-branch review (0 Critical, 3 Important fixed, minors fixed), PR #30 → **CHECKPOINT**
 
 **Handoff notes (Phase 13)**
 
@@ -1045,3 +1045,4 @@ One row per working session. Newest last.
 | 2026-10-17 | 12 | Q&A walkthrough with Stefan (onboarding, risk tiers, gateway, evidence, scorecard); built the onboarding flow map for Claude Design; Claude Design found Start onboarding never notifies the owner; audited every hand-off; wrote the Phase 12 spec and plan; built H1–H6 test-first (1334 unit, 320 e2e green), re-captured the flow map; whole-branch review; PR opened | CHECKPOINT: Stefan reviews the preview |
 | 2026-10-17 | 12 | Stefan approved; PR #28 squash-merged (`957a2a7`); #27 and the milestone closed; production checked | Sync Claude Design from `957a2a7` |
 | 2026-10-19 | 13 | Audited Countersign with Stefan (what held: colour and status; what drifted: spacing, type, copied patterns). Built the screenshot gate (100 screens), the debt audit and ratchet, tokens for every foundation, a scripted migration (1,990 values, pixel-identical), layer rules in ESLint, SidePanel (onboarding and review), and `docs/design-system/` | 13.8: review, PR, CHECKPOINT; then sync Claude Design |
+| 2026-10-19 | 13 | Whole-branch review (fresh reviewer): 0 Critical; fixed the audit's sign on negative offsets, counted line heights (425 → 45), widened the front-door lint rule, aligned the docs. 1395 unit and 320 e2e green; `pnpm visual` 100 of 100 (the gallery accepted). PR #30 opened | CHECKPOINT: Stefan reviews the preview; after merge, `/design-sync` |

@@ -17,7 +17,7 @@
 - [x] **13.5 Layers in ESLint.** The design system may not import product code; components may not import the store, features or the prototype; screens import the system only through `src/design-system/index.ts` (the prototype may also use `type.module.css`).
 - [x] **13.6 SidePanel.** Built to the design source (`side`, `sideHead`, `sBlock`) in `src/design-system/primitives/SidePanel`, test first. It replaces onboarding's local `SideCard` (also imported by review) and `StepSide`'s head. `pnpm visual`: 100 of 100 identical. The gallery shows it light and dark (the one intended change). The other 19 copies in 7 features differ from the spec by 1 to 12 px and are listed in `docs/design-system/audit.md` for a decision.
 - [x] **13.7 Docs.** `docs/design-system/README.md` (overview and foundations), `components.md` (reference), `contributing.md` (how to add, definition of done, the checks), `audit.md` (findings, before and after, backlog). Rules for AI sessions in `CLAUDE.md`.
-- [ ] **13.8 Whole-branch review, PR, checkpoint.** `pnpm check`, `pnpm e2e`, `pnpm visual` green; forbidden-terms check; PR closes #29; Stefan reviews the preview before merge.
+- [x] **13.8 Whole-branch review, PR, checkpoint.** Review: 0 Critical; 3 Important and the minors fixed. PR #30. `pnpm check`, `pnpm e2e`, `pnpm visual` green; forbidden-terms check; PR closes #29; Stefan reviews the preview before merge.
 
 ## After merge
 
