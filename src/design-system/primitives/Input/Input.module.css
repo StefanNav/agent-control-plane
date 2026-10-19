@@ -1,12 +1,12 @@
 .box {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--cs-space-12);
   min-height: 44px;
-  padding: 10px 14px;
+  padding: var(--cs-space-10) var(--cs-space-14);
   background: var(--cs-raised);
   border: 1px solid var(--cs-line-strong);
-  border-radius: 3px;
+  border-radius: var(--cs-radius-3);
 }
 
 .locked {
@@ -20,8 +20,8 @@
   padding: 0;
   border: none;
   background: transparent;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   outline: none;
 }
 

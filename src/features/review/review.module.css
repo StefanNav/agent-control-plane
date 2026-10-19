@@ -10,21 +10,21 @@
 .compare {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 72px 72px;
-  gap: 0 12px;
-  padding: 0 20px 12px;
-  font-size: 14px;
-  line-height: 20px;
+  gap: 0 var(--cs-space-12);
+  padding: 0 var(--cs-space-20) var(--cs-space-12);
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
 }
 
 .compare > span {
-  padding: 6px 0;
+  padding: var(--cs-space-6) 0;
   border-top: 1px solid var(--cs-line);
 }
 
 .compareHead {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -38,23 +38,23 @@
 
 .quote {
   margin: 0;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   color: var(--cs-ink);
 }
 
 .peopleRow {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  gap: var(--cs-space-16);
 }
 
 .peopleRow > span {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  font-size: 16px;
-  line-height: 24px;
+  gap: var(--cs-space-2);
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
 }
 
 .peopleRow strong {
@@ -64,49 +64,49 @@
 .twoCol {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  font-size: 16px;
-  line-height: 24px;
+  gap: var(--cs-space-24);
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
 }
 
 .condition {
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr) auto;
   align-items: baseline;
-  gap: 8px;
-  font-size: 14px;
-  line-height: 20px;
+  gap: var(--cs-space-8);
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
 }
 
 .decisionCard {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 16px 20px;
+  gap: var(--cs-space-4);
+  padding: var(--cs-space-16) var(--cs-space-20);
   background: var(--cs-fill);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
 }
 
 .decisionCard strong {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   font-weight: 600;
 }
 
 .log {
   margin: 0;
-  padding: 0 20px 12px;
+  padding: 0 var(--cs-space-20) var(--cs-space-12);
   list-style: none;
 }
 
 .log li {
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr);
-  gap: 8px;
-  padding: 8px 0;
+  gap: var(--cs-space-8);
+  padding: var(--cs-space-8) 0;
   border-top: 1px solid var(--cs-line);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-ink);
 }
 
@@ -116,7 +116,7 @@
 }
 
 .log small {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }

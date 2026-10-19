@@ -4,23 +4,23 @@
   min-width: 0;
   background: var(--cs-raised);
   border: 1px solid var(--cs-line);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
   overflow: hidden;
 }
 
 .head {
   display: grid;
-  column-gap: 16px;
+  column-gap: var(--cs-space-16);
   align-items: center;
   height: 32px;
-  padding: 0 16px;
+  padding: 0 var(--cs-space-16);
   background: var(--cs-sunk);
 }
 
 .label {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -31,25 +31,25 @@
 .group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--cs-space-8);
   height: 32px;
-  padding: 0 16px;
+  padding: 0 var(--cs-space-16);
   background: var(--cs-sunk);
   border-top: 1px solid var(--cs-line);
 }
 
 .row {
   display: grid;
-  column-gap: 16px;
+  column-gap: var(--cs-space-16);
   align-items: center;
   /* The design's rows are min-height 44 + padding 6 (content-box), i.e. 56 in all. */
   min-height: 56px;
-  padding: 6px 16px;
+  padding: var(--cs-space-6) var(--cs-space-16);
   border-top: 1px solid var(--cs-line);
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   cursor: default;
-  transition: background-color 150ms ease-out;
+  transition: background-color var(--cs-motion-row);
 }
 
 /* With the header hidden, the first row needs no top border. */
@@ -64,8 +64,8 @@
 }
 
 .text14 {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
 }
 
 .row:hover {
@@ -90,7 +90,7 @@
 .cell {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cs-space-2);
   min-width: 0;
 }
 

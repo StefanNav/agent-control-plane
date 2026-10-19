@@ -21,7 +21,8 @@ export function ToolsStep({ agentId }: { agentId: string }) {
   if (!view) return null
   if (view.state === 'returned' && view.returned) return <ReturnedPanel agentId={agentId} />
   const allowed = !view.frozen && can(state, state.personaId, 'configureTools', { agentId })
-  const expanded = view.limits.find((l) => l.code === open) ?? view.limits.find((l) => l.test) ?? view.limits[0]
+  const expanded =
+    view.limits.find((l) => l.code === open) ?? view.limits.find((l) => l.test) ?? view.limits[0]
   const readyLeft = view.items.total - view.items.done
   return (
     <Split
@@ -32,7 +33,11 @@ export function ToolsStep({ agentId }: { agentId: string }) {
           sub={`Tools come from the gateway catalogue and must match a verb granted in step 3. Hard stops run at the gateway, outside the model, and each is tested on the last 30 days before ${view.sponsor} sees it.`}
           meta={view.meta}
         >
-          {!allowed && !view.frozen ? <span className={styles.note}>Read only: {lockReason('configureTools', state.personaId)}.</span> : null}
+          {!allowed && !view.frozen ? (
+            <span className={styles.note}>
+              Read only: {lockReason('configureTools', state.personaId)}.
+            </span>
+          ) : null}
           <section className={styles.section}>
             <h3 className={styles.caps}>Tools · {view.tools.length} from the gateway catalogue</h3>
             <Table
@@ -41,12 +46,18 @@ export function ToolsStep({ agentId }: { agentId: string }) {
               getRowId={(r) => r.id}
               minRowHeight={48}
               columns={[
-                { id: 'tool', header: 'Tool', width: '200px', render: (r) => <span className={styles.monoStrong}>{r.tool}</span> },
+                {
+                  id: 'tool',
+                  header: 'Tool',
+                  width: '200px',
+                  render: (r) => <span className={styles.monoStrong}>{r.tool}</span>,
+                },
                 { id: 'grants', header: 'Grants', width: '180px', render: (r) => r.grants },
                 { id: 'for', header: 'For', width: 'minmax(0, 1fr)', render: (r) => r.for },
                 {
                   id: 'match',
-                  header: '', hiddenHeader: 'Check',
+                  header: '',
+                  hiddenHeader: 'Check',
                   width: '140px',
                   render: () => (
                     <span className={styles.status}>
@@ -61,7 +72,11 @@ export function ToolsStep({ agentId }: { agentId: string }) {
             <h3 className={styles.caps}>
               Hard stops · {view.limits.length} from {view.owner}’s never list
             </h3>
-            {view.limits.length === 0 ? <span className={styles.note}>The never list is empty, so there are no hard stops to test yet.</span> : null}
+            {view.limits.length === 0 ? (
+              <span className={styles.note}>
+                The never list is empty, so there are no hard stops to test yet.
+              </span>
+            ) : null}
             {view.limits.map((l) =>
               l === expanded ? (
                 <HardStopCard
@@ -70,7 +85,14 @@ export function ToolsStep({ agentId }: { agentId: string }) {
                   title={l.title}
                   description={`${l.text} From ${view.owner}’s never list: “${l.from}”.`}
                   rows={[
-                    { key: l.library ? 'Library rule' : 'Written', value: l.library ? <RuleTag>{l.library}</RuleTag> : `Plain language · ${view.tech} confirms the wording` },
+                    {
+                      key: l.library ? 'Library rule' : 'Written',
+                      value: l.library ? (
+                        <RuleTag>{l.library}</RuleTag>
+                      ) : (
+                        `Plain language · ${view.tech} confirms the wording`
+                      ),
+                    },
                     { key: 'Owner', value: l.owner },
                   ]}
                 >
@@ -90,7 +112,12 @@ export function ToolsStep({ agentId }: { agentId: string }) {
                           ))}
                         </ul>
                       ) : null}
-                      {l.test.examples.length ? <span className={styles.note}>In each, the gateway would have held the draft and the pharmacist would have seen the flag.</span> : null}
+                      {l.test.examples.length ? (
+                        <span className={styles.note}>
+                          In each, the gateway would have held the draft and the pharmacist would
+                          have seen the flag.
+                        </span>
+                      ) : null}
                     </div>
                   ) : (
                     <div className={styles.testBox}>
@@ -109,7 +136,11 @@ export function ToolsStep({ agentId }: { agentId: string }) {
                 <div key={l.code} className={styles.limitRow}>
                   <Icon name="lock" color="var(--cs-text2)" />
                   <RuleTag>{l.label}</RuleTag>
-                  <button type="button" className={styles.limitMain} onClick={() => setOpen(l.code)}>
+                  <button
+                    type="button"
+                    className={styles.limitMain}
+                    onClick={() => setOpen(l.code)}
+                  >
                     <VisuallyHidden>Show {l.code}: </VisuallyHidden>
                     <span className={styles.listName}>{l.title}</span>
                     <span className={styles.listSub}>
@@ -139,12 +170,30 @@ export function ToolsStep({ agentId }: { agentId: string }) {
       side={
         <StepSide
           storyTarget="tools-send"
-          title={view.ready || view.state === 'waiting' ? 'Tools and hard stops · done' : `Tools and hard stops · ${view.progress.tested} of ${view.progress.total}`}
-          sub={view.ready ? `${view.items.done} of ${view.items.total} items done · only ${view.sponsor}’s approval left` : `${view.items.done} of ${view.items.total} items done across the record`}
+          title={
+            view.ready || view.state === 'waiting'
+              ? 'Tools and hard stops · done'
+              : `Tools and hard stops · ${view.progress.tested} of ${view.progress.total}`
+          }
+          sub={
+            view.ready
+              ? `${view.items.done} of ${view.items.total} items done · only ${view.sponsor}’s approval left`
+              : `${view.items.done} of ${view.items.total} items done across the record`
+          }
           progress={view.items.done / view.items.total}
           rows={[
-            { key: 'tools', label: `Tools · ${view.tools.length}`, done: true, right: 'match step 3' },
-            ...view.limits.map((l) => ({ key: l.code, label: `${l.code} · ${l.tested ? 'tested' : 'not tested'}`, done: l.tested, right: l.test && l.tested ? l.test.blocks : undefined })),
+            {
+              key: 'tools',
+              label: `Tools · ${view.tools.length}`,
+              done: true,
+              right: 'match step 3',
+            },
+            ...view.limits.map((l) => ({
+              key: l.code,
+              label: `${l.code} · ${l.tested ? 'tested' : 'not tested'}`,
+              done: l.tested,
+              right: l.test && l.tested ? l.test.blocks : undefined,
+            })),
           ]}
           foot={
             <>
@@ -155,11 +204,13 @@ export function ToolsStep({ agentId }: { agentId: string }) {
                 </span>
               ) : view.ready ? (
                 <span>
-                  Raises “Review: final set” in {view.sponsor}’s inbox. Any edit after you send resets the review.
+                  Raises “Review: final set” in {view.sponsor}’s inbox. Any edit after you send
+                  resets the review.
                 </span>
               ) : (
                 <span className={cx(styles.blocked)}>
-                  <strong>Blocked: {readyLeft - 1} items left</strong> before {view.sponsor} can review.
+                  <strong>Blocked: {readyLeft - 1} items left</strong> before {view.sponsor} can
+                  review.
                 </span>
               )}
             </>

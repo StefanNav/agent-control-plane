@@ -1,54 +1,54 @@
 /* Type roles from docs/design-handoff.md → "Typography". Plex 400/600 only. */
 .pageTitle {
-  font-size: 24px;
-  line-height: 32px;
+  font-size: var(--cs-type-title-size);
+  line-height: var(--cs-type-title-line);
   font-weight: 600;
 }
 
 .statValue {
-  font-size: 20px;
-  line-height: 28px;
+  font-size: var(--cs-type-stat-size);
+  line-height: var(--cs-type-stat-line);
   font-weight: 600;
 }
 
 .sectionTitle {
-  font-size: 18px;
-  line-height: 24px;
+  font-size: var(--cs-type-section-size);
+  line-height: var(--cs-type-section-line);
   font-weight: 600;
 }
 
 .body {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
 }
 
 .ui {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
 }
 
 .dense {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
 }
 
 .meta {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
 .mono {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
 .label {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -56,7 +56,7 @@
 }
 
 .wordmark {
-  font-size: 14px;
+  font-size: var(--cs-type-ui-size);
   font-weight: 600;
   letter-spacing: 0.04em;
 }

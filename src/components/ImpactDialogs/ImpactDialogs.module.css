@@ -1,13 +1,13 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--cs-space-10);
 }
 
 .label {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -17,23 +17,23 @@
 .impact {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 16px;
+  gap: var(--cs-space-8);
+  padding: var(--cs-space-16);
   background: var(--cs-sunk);
   border: 1px solid var(--cs-line);
-  border-radius: 3px;
+  border-radius: var(--cs-radius-3);
 }
 
 .lead {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   font-weight: 600;
   text-wrap: pretty;
 }
 
 .text {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-text2);
   text-wrap: pretty;
 }
@@ -41,30 +41,30 @@
 .rule {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 4px;
-  padding-top: 10px;
+  gap: var(--cs-space-4);
+  margin-top: var(--cs-space-4);
+  padding-top: var(--cs-space-10);
   border-top: 1px solid var(--cs-line);
 }
 
 .ruleLead {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   font-weight: 600;
 }
 
 .paused {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  line-height: 18px;
+  gap: var(--cs-space-6);
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-meta);
 }
 
 .mono {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
 }
 
 .needs {
@@ -77,11 +77,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 0;
+  gap: var(--cs-space-12);
+  padding: var(--cs-space-10) 0;
   border-top: 1px solid var(--cs-line);
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
 }
 
 .need:last-child {
@@ -91,7 +91,7 @@
 .who {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--cs-space-10);
 }
 
 .signed,
@@ -101,7 +101,7 @@
   justify-content: center;
   width: 18px;
   height: 18px;
-  border-radius: 2px;
+  border-radius: var(--cs-radius-2);
 }
 
 .signed {
@@ -123,8 +123,8 @@
 .returns {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
 }
 
 .level {
@@ -141,14 +141,14 @@
 .effect {
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr);
-  column-gap: 12px;
-  padding: 10px 0;
+  column-gap: var(--cs-space-12);
+  padding: var(--cs-space-10) 0;
   border-top: 1px solid var(--cs-line);
 }
 
 .effectValue {
-  font-size: 20px;
-  line-height: 28px;
+  font-size: var(--cs-type-stat-size);
+  line-height: var(--cs-type-stat-line);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -156,7 +156,7 @@
 .effectBody {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cs-space-2);
   padding-top: 5px;
 }
 
@@ -167,8 +167,8 @@
 }
 
 .effectText {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
 }
 

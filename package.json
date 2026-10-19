@@ -16,6 +16,9 @@
     "designs": "serve designs -l 4599",
     "format": "prettier --write .",
     "capture": "playwright test -c playwright.capture.config.ts",
+    "visual": "playwright test -c playwright.visual.config.ts",
+    "visual:baseline": "playwright test -c playwright.visual.config.ts --update-snapshots=all",
+    "ds:audit": "node scripts/ds-audit.mjs",
     "tour:audio": "node scripts/tour-audio.mjs",
     "tour:import": "node scripts/tour-import.mjs",
     "tour:script": "node scripts/tour-print.mjs"

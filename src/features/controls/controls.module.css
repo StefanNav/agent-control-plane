@@ -2,19 +2,19 @@
 .body {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--cs-space-20);
 }
 
 .section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--cs-space-10);
 }
 
 .label {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -24,7 +24,7 @@
 .lines {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--cs-space-6);
   margin: 0;
   padding: 0;
   list-style: none;

@@ -2,15 +2,15 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--cs-space-10);
   width: 640px;
   max-width: 100%;
 }
 
 .caption {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -40,14 +40,14 @@
   top: -8px;
   transform: translate(-50%, -100%);
   display: flex;
-  gap: 8px;
-  padding: 4px 8px;
+  gap: var(--cs-space-8);
+  padding: var(--cs-space-4) var(--cs-space-8);
   background: var(--cs-raised);
   border: 1px solid var(--cs-line-strong);
-  border-radius: 3px;
+  border-radius: var(--cs-radius-3);
   box-shadow: 0 2px 6px oklch(0 0 0 / 0.08);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   white-space: nowrap;
   pointer-events: none;
 }
@@ -65,8 +65,8 @@
   display: flex;
   justify-content: space-between;
   margin-top: -4px;
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 

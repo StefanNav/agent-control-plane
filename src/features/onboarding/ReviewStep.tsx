@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 import { StatusChip } from '../../components'
-import { DefinitionList, Icon, LinkButton, Notice } from '../../design-system'
+import { DefinitionList, Icon, LinkButton, Notice, SidePanel } from '../../design-system'
 import { Split } from '../../layout/layouts'
 import { useDemo } from '../../store'
 import { onboardingContext, personName } from '../../store/onboardingRules'
 import { selectReviewStep } from './selectors'
-import { SideCard, StepCard } from './StepCard'
+import { StepCard } from './StepCard'
 import styles from './onboarding.module.css'
 
 /** Step 6: onboarding is complete; the record is frozen at v1.0 and sits with AIMS Review (1h). */
@@ -50,10 +50,15 @@ export function ReviewStep({ agentId }: { agentId: string }) {
           </section>
           <section className={styles.section}>
             <h3 className={styles.caps}>What happens next</h3>
-            <DefinitionList items={view.next.map(([key, value]) => ({ key, value }))} keyWidth={180} />
+            <DefinitionList
+              items={view.next.map(([key, value]) => ({ key, value }))}
+              keyWidth={180}
+            />
           </section>
           <span className={styles.runRow}>
-            <LinkButton to={`/portfolio/reviews/${agentId}`}>Open committee packet preview</LinkButton>
+            <LinkButton to={`/portfolio/reviews/${agentId}`}>
+              Open committee packet preview
+            </LinkButton>
             <LinkButton to={`/reports/export?agent=${agentId}`} variant="ghost">
               Download v1.0 as PDF
             </LinkButton>
@@ -61,14 +66,17 @@ export function ReviewStep({ agentId }: { agentId: string }) {
         </StepCard>
       }
       side={
-        <SideCard
+        <SidePanel
           label={view.side.title}
           title={view.side.title}
           sub={view.side.sub}
           foot={
             view.side.decided ? (
               <span>
-                {view.side.decided}. <LinkButton to={`/inventory/agents/${agentId}`} variant="ghost">Open the record</LinkButton>
+                {view.side.decided}.{' '}
+                <LinkButton to={`/inventory/agents/${agentId}`} variant="ghost">
+                  Open the record
+                </LinkButton>
               </span>
             ) : (
               <>
@@ -91,7 +99,7 @@ export function ReviewStep({ agentId }: { agentId: string }) {
               </li>
             ))}
           </ul>
-        </SideCard>
+        </SidePanel>
       }
     />
   )

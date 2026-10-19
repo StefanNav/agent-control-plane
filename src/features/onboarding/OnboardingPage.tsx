@@ -7,7 +7,13 @@ import { Split } from '../../layout/layouts'
 import { StatusChip } from '../../components'
 import { formatClock } from '../../lib/clock'
 import { useDemo } from '../../store'
-import { onboardingContext, personName, STEP_NAMES, STEP_ORDER, type StepId } from '../../store/onboardingRules'
+import {
+  onboardingContext,
+  personName,
+  STEP_NAMES,
+  STEP_ORDER,
+  type StepId,
+} from '../../store/onboardingRules'
 import { IntakeStep } from './IntakeStep'
 import { JobStep } from './JobStep'
 import { ApprovalStep } from './ApprovalStep'
@@ -68,11 +74,23 @@ export function OnboardingPage() {
         people={header.people}
         actions={
           <span className={styles.headRight}>
-            {header.saved ? <span className={styles.saved}>Autosaved {formatClock(header.saved)}</span> : null}
+            {header.saved ? (
+              <span className={styles.saved}>Autosaved {formatClock(header.saved)}</span>
+            ) : null}
             <RecordHistory agentId={agentId} title={header.title} />
           </span>
         }
-        steps={<Rail agentId={agentId} current={step} override={step === 'approval' && requesting ? { approval: `${personName(state, people.sponsor)} · requesting changes` } : undefined} />}
+        steps={
+          <Rail
+            agentId={agentId}
+            current={step}
+            override={
+              step === 'approval' && requesting
+                ? { approval: `${personName(state, people.sponsor)} · requesting changes` }
+                : undefined
+            }
+          />
+        }
       />
       {content}
     </>

@@ -3,9 +3,9 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: var(--cs-space-28);
   min-height: 100vh;
-  padding: 36px 48px;
+  padding: 36px var(--cs-space-48);
   background: var(--cs-bg);
   color: var(--cs-ink);
 }
@@ -14,30 +14,30 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 24px;
+  gap: var(--cs-space-24);
 }
 
 .headText {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--cs-space-4);
 }
 
 .kicker,
 .kickerPad {
-  font-size: 18px;
-  line-height: 24px;
+  font-size: var(--cs-type-section-size);
+  line-height: var(--cs-type-section-line);
   letter-spacing: 0.04em;
   color: var(--cs-meta);
 }
 
 .kickerPad {
-  padding-bottom: 6px;
+  padding-bottom: var(--cs-space-6);
 }
 
 .kickerPlain {
-  font-size: 18px;
-  line-height: 24px;
+  font-size: var(--cs-type-section-size);
+  line-height: var(--cs-type-section-line);
   color: var(--cs-meta);
   white-space: nowrap;
 }
@@ -52,7 +52,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
+  gap: var(--cs-space-2);
 }
 
 .clock {
@@ -65,36 +65,36 @@
   flex: 1;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 400px;
-  gap: 40px;
+  gap: var(--cs-space-40);
   min-height: 0;
 }
 
 .attention {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--cs-space-20);
 }
 
 .card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 28px 32px;
+  gap: var(--cs-space-16);
+  padding: var(--cs-space-28) var(--cs-space-32);
   background: var(--cs-raised);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
 }
 
 .cardHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: var(--cs-space-20);
 }
 
 .cardTitleBlock {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cs-space-2);
 }
 
 .cardTitle {
@@ -104,20 +104,20 @@
 }
 
 .cardSub {
-  font-size: 20px;
-  line-height: 28px;
+  font-size: var(--cs-type-stat-size);
+  line-height: var(--cs-type-stat-line);
   color: var(--cs-meta);
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--cs-space-10);
   align-self: flex-start;
   height: 40px;
-  padding: 0 14px 0 12px;
+  padding: 0 var(--cs-space-14) 0 var(--cs-space-12);
   border: 1.5px solid var(--cs-line-strong);
-  border-radius: 3px;
+  border-radius: var(--cs-radius-3);
   font-size: 22px;
   line-height: 28px;
   font-weight: 600;
@@ -148,9 +148,9 @@
 .item {
   display: grid;
   grid-template-columns: 18px minmax(0, 1fr) auto;
-  column-gap: 14px;
+  column-gap: var(--cs-space-14);
   align-items: baseline;
-  padding: 10px 0;
+  padding: var(--cs-space-10) 0;
   border-top: 1px solid var(--cs-line);
 }
 
@@ -174,7 +174,7 @@
 
 .itemAge {
   font-family: var(--cs-font-mono);
-  font-size: 18px;
+  font-size: var(--cs-type-section-size);
   line-height: 30px;
   color: var(--cs-meta);
 }
@@ -188,7 +188,7 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--cs-space-16);
   padding: 18px 0;
   border-top: 1px solid var(--cs-line);
 }
@@ -196,7 +196,7 @@
 .quietName {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cs-space-2);
 }
 
 .quietTitle {
@@ -209,7 +209,7 @@
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--cs-space-6);
   padding-top: 18px;
   border-top: 1px solid var(--cs-line);
 }
@@ -224,10 +224,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding-top: 16px;
+  gap: var(--cs-space-24);
+  padding-top: var(--cs-space-16);
   border-top: 1px solid var(--cs-line);
-  font-size: 16px;
+  font-size: var(--cs-type-body-size);
   line-height: 22px;
   color: var(--cs-meta);
 }
@@ -237,7 +237,7 @@
   position: absolute;
   top: 8px;
   right: 12px;
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   color: var(--cs-meta);
   opacity: 0;
   text-decoration: none;

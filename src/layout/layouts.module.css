@@ -1,29 +1,29 @@
 .split {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
-  column-gap: 40px;
+  column-gap: var(--cs-space-40);
   align-items: start;
-  padding: 32px 40px 48px;
+  padding: var(--cs-space-32) var(--cs-space-40) var(--cs-space-48);
 }
 
 .splitL {
   display: grid;
   grid-template-columns: 420px minmax(0, 1fr);
-  column-gap: 24px;
+  column-gap: var(--cs-space-24);
   align-items: start;
-  padding: 24px 40px 48px;
+  padding: var(--cs-space-24) var(--cs-space-40) var(--cs-space-48);
 }
 
 .body {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 28px 40px 48px;
+  gap: var(--cs-space-20);
+  padding: var(--cs-space-28) var(--cs-space-40) var(--cs-space-48);
 }
 
 .column {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--cs-space-20);
   min-width: 0;
 }

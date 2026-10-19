@@ -16,6 +16,7 @@ A clickable, front-end-only prototype of **Attune Agent Control Plane**: the ope
 | `docs/BUILD_PLAN.md` | Progress: phases, task checklists, frame tracker, decision log, session log |
 | `docs/plans/phase-N-*.md` | Step-by-step instructions for one phase |
 | `docs/specs/2026-10-08-agent-control-plane-prototype-design.md` | What and why: scope, visitor experience, architecture, routes, data model, permissions, frame inventory |
+| `docs/design-system/` | Countersign as it is now: overview, component reference, how to add to it, audit and backlog |
 | `docs/design-handoff.md` | Design handoff: tokens, type, primitives, the 10 components, interaction rules |
 | `reference/cs-build.js` | Exact token and primitive specs (wins over the handoff for E2–E15 detail) |
 | `designs/*.dc.html` | The frames. Copy, layout and values come from here |
@@ -41,11 +42,20 @@ View the designs: `pnpm designs` (after Phase 1) or `cd designs && python3 -m ht
 - `pnpm check`: typecheck, lint, unit tests, build. Must pass before every commit that touches code.
 - `pnpm e2e`: Playwright smoke tests (routes; later, stories)
 - `pnpm designs`: serve the design frames on port 4599 for side-by-side comparison
+- `pnpm ds:audit`: design-system debt report against the ratchet baseline (`--list <metric>`, `--write`)
+- `pnpm visual:baseline` / `pnpm visual`: screenshot gate over 100 screens (baseline local, in `.visual/`)
 
 ## Conventions
 
 - **Layers:** `src/design-system` (tokens and primitives, no hospital domain) → `src/components` (the 10 product components: pure, props in, callbacks out, no store) → `src/features` (pages: read via selectors, write only via store actions). Permissions only through `can()` in `src/store/permissions.ts`. Routes only through the table in `src/app/routes.ts`.
 - **Styling:** CSS Modules + `--cs-*` tokens from `src/design-system/tokens.css`. No UI or icon libraries, no Tailwind, no raw colour values in components. Plex Sans/Mono, weights 400 and 600 only. Tabular numbers everywhere.
+- **Design system (Countersign):** read `docs/design-system/README.md` once per session, and follow the rules below on every UI change.
+  - Before writing CSS in a feature, check `docs/design-system/components.md` → "Pick the right piece". Use the component; don't restyle it from outside.
+  - Values come from tokens only: `--cs-space-*`, `--cs-type-<role>-size` and `-line`, `--cs-radius-*`, `--cs-motion-row`, `--cs-layer-*`, and the colour tokens. A value off the scale is a design decision: ask, don't type it.
+  - Never copy another feature's CSS, and never import from another feature's folder. If a second feature needs it, move it into `src/design-system` (or `src/components`), following `docs/design-system/contributing.md`.
+  - Anything that carries meaning (status, lock, autonomy, signature) goes through the system on first use.
+  - `pnpm check` runs the debt ratchet (`scripts/ds-audit.test.mjs`). If it fails, use the token or component; don't raise the baseline. If you lowered debt, run `pnpm ds:audit --write`.
+  - For any change to a design-system file: run `pnpm visual:baseline` on the unchanged code first, then `pnpm visual` after, and list every screen that changed in the PR.
 - **Colour semantics:** indigo = primary action and current/selected; teal = review waiting only; amber/red = warning/critical only; healthy = grey. Every status is colour + shape + word. Dashed = no data (stale) only. No gradients, emoji or coloured left-border cards.
 - **Copy:** verbatim from the frames. Sample names, IDs, counts and dates also from the frames.
 - **Time:** the demo clock is Tue 08 Dec 2026, 09:52. Never call `Date.now()` in product code; use `src/lib/clock.ts`.

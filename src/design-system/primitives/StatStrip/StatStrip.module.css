@@ -5,9 +5,9 @@
 .stat {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cs-space-2);
   min-width: 0;
-  padding: 14px 16px;
+  padding: var(--cs-space-14) var(--cs-space-16);
 }
 
 .stat + .stat {
@@ -15,19 +15,19 @@
 }
 
 .label {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-meta);
 }
 
 .value {
-  font-size: 20px;
-  line-height: 28px;
+  font-size: var(--cs-type-stat-size);
+  line-height: var(--cs-type-stat-line);
   font-weight: 600;
 }
 
 .sub {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }

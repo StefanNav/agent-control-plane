@@ -13,18 +13,35 @@ export function RecordHistory({ agentId, title }: { agentId: string; title: stri
   const events = record
     ? record.history
     : intake
-      ? [{ at: intake.approvedAt, by: intake.requestedBy, text: `${intake.code} approved`, sub: `Requested by ${personName(state, intake.requestedBy)}` }]
+      ? [
+          {
+            at: intake.approvedAt,
+            by: intake.requestedBy,
+            text: `${intake.code} approved`,
+            sub: `Requested by ${personName(state, intake.requestedBy)}`,
+          },
+        ]
       : []
   return (
     <>
       <Button variant="ghost" onClick={() => setOpen(true)}>
         History
       </Button>
-      <Modal open={open} onClose={() => setOpen(false)} title="History" description={`Everything logged on ${title}, oldest first.`} actions={<Button onClick={() => setOpen(false)}>Close</Button>}>
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title="History"
+        description={`Everything logged on ${title}, oldest first.`}
+        actions={<Button onClick={() => setOpen(false)}>Close</Button>}
+      >
         <div className={styles.history}>
           {events.length ? (
             events.map((e) => (
-              <LogRow key={`${e.at}-${e.text}`} time={`${formatDate(e.at)} ${formatClock(e.at)}`} sub={e.sub}>
+              <LogRow
+                key={`${e.at}-${e.text}`}
+                time={`${formatDate(e.at)} ${formatClock(e.at)}`}
+                sub={e.sub}
+              >
                 {e.text}
               </LogRow>
             ))

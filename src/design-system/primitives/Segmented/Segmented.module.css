@@ -1,16 +1,16 @@
 /* choice: equal grid, radio-card treatment (cs-build `seg`) */
 .choice {
   display: grid;
-  gap: 8px;
+  gap: var(--cs-space-8);
 }
 
 .choice .segment {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
-  padding: 10px 14px;
-  border-radius: 3px;
+  gap: var(--cs-space-2);
+  padding: var(--cs-space-10) var(--cs-space-14);
+  border-radius: var(--cs-radius-3);
   border: 1px solid var(--cs-line-strong);
   background: var(--cs-raised);
   text-align: left;
@@ -23,8 +23,8 @@
 }
 
 .choice .label {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
 }
 
 .choice .on .label {
@@ -32,29 +32,29 @@
 }
 
 .sub {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
 /* control: compact switch (CountersignCore inbox header) */
 .control {
   display: inline-flex;
-  gap: 2px;
-  padding: 2px;
-  border-radius: 3px;
+  gap: var(--cs-space-2);
+  padding: var(--cs-space-2);
+  border-radius: var(--cs-radius-3);
   background: var(--cs-sunk);
   border: 1px solid var(--cs-line);
 }
 
 .control .segment {
-  padding: 4px 10px;
+  padding: var(--cs-space-4) var(--cs-space-10);
   border: none;
-  border-radius: 2px;
+  border-radius: var(--cs-radius-2);
   background: transparent;
   color: var(--cs-text2);
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   cursor: pointer;
 }
 

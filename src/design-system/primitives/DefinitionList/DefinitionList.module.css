@@ -4,9 +4,9 @@
 
 .row {
   display: grid;
-  column-gap: 20px;
+  column-gap: var(--cs-space-20);
   align-items: baseline;
-  padding: 12px 0;
+  padding: var(--cs-space-12) 0;
 }
 
 .row + .row {
@@ -14,7 +14,7 @@
 }
 
 .key {
-  font-size: 14px;
+  font-size: var(--cs-type-ui-size);
   line-height: 24px;
   color: var(--cs-meta);
 }
@@ -23,9 +23,9 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--cs-space-4);
   min-width: 0;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   text-wrap: pretty;
 }

@@ -19,6 +19,8 @@ coverage/
 playwright-report/
 test-results/
 blob-report/
+# Screenshot gate: baseline, results and report are local to the machine that took them
+.visual/
 
 # Env and deploy
 .env

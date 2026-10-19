@@ -13,8 +13,8 @@ body {
   background: var(--cs-bg);
   color: var(--cs-ink);
   font-family: var(--cs-font-sans);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }

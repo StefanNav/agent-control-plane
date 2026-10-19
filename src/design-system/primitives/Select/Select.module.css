@@ -5,7 +5,7 @@
   min-height: 44px;
   background: var(--cs-raised);
   border: 1px solid var(--cs-line-strong);
-  border-radius: 3px;
+  border-radius: var(--cs-radius-3);
 }
 
 .locked {
@@ -17,11 +17,11 @@
   appearance: none;
   flex: 1;
   min-width: 0;
-  padding: 10px 40px 10px 14px;
+  padding: var(--cs-space-10) var(--cs-space-40) var(--cs-space-10) var(--cs-space-14);
   border: none;
   background: transparent;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   cursor: pointer;
   outline: none;
 }

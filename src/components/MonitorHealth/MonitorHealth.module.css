@@ -1,13 +1,13 @@
 .health {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--cs-space-6);
 }
 
 .dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: var(--cs-radius-round);
   background: var(--cs-icon);
 }
 
@@ -17,8 +17,8 @@
 
 .text {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 

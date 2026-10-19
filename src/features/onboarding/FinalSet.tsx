@@ -16,7 +16,15 @@ function SetRow({ k, children, right }: { k: string; children: ReactNode; right?
 }
 
 /** Job, reach and limits on one page, as the committee will read them (1e, 1f). */
-export function FinalSet({ agentId, picked, onPick }: { agentId: string; picked?: string | null; onPick?: (code: string) => void }) {
+export function FinalSet({
+  agentId,
+  picked,
+  onPick,
+}: {
+  agentId: string
+  picked?: string | null
+  onPick?: (code: string) => void
+}) {
   const state = useDemo((s) => s)
   const set = selectFinalSet(state, agentId)
   if (!set) return null
@@ -68,7 +76,13 @@ export function FinalSet({ agentId, picked, onPick }: { agentId: string; picked?
         <div className={styles.list}>
           {set.limits.rows.map((l) =>
             onPick ? (
-              <button key={l.code} type="button" className={cx(styles.limitPick, picked === l.code && styles.limitPicked)} aria-pressed={picked === l.code} onClick={() => onPick(l.code)}>
+              <button
+                key={l.code}
+                type="button"
+                className={cx(styles.limitPick, picked === l.code && styles.limitPicked)}
+                aria-pressed={picked === l.code}
+                onClick={() => onPick(l.code)}
+              >
                 <RuleTag>{l.label}</RuleTag>
                 <span>{l.title}</span>
                 <span className={styles.setRight}>{l.result}</span>

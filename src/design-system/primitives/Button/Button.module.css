@@ -2,13 +2,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--cs-space-8);
   height: 36px;
-  padding: 0 14px;
-  border-radius: 3px;
+  padding: 0 var(--cs-space-14);
+  border-radius: var(--cs-radius-3);
   border: none;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
@@ -28,7 +28,7 @@
 
 .ghost {
   height: 32px;
-  padding: 0 8px;
+  padding: 0 var(--cs-space-8);
   background: transparent;
   color: var(--cs-text2);
 }
@@ -43,9 +43,9 @@
 /* In-card buttons (32 high, 13 px, padding 0 12), including ghost. */
 .sm {
   height: 32px;
-  padding: 0 12px;
-  font-size: 13px;
-  line-height: 18px;
+  padding: 0 var(--cs-space-12);
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
 }
 
 .link {

@@ -3,33 +3,33 @@
   flex-direction: column;
   background: var(--cs-raised);
   border: 1px solid var(--cs-line);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
   overflow: hidden;
 }
 
 .head {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 14px 16px 12px;
+  gap: var(--cs-space-6);
+  padding: var(--cs-space-14) var(--cs-space-16) var(--cs-space-12);
 }
 
 .statusRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--cs-space-12);
 }
 
 .status {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--cs-space-6);
 }
 
 .statusLabel {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
 }
 
 .plain {
@@ -48,45 +48,45 @@
 
 .code {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
 .title {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   font-weight: 600;
 }
 
 .scope {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-meta);
 }
 
 .ladderRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-top: 4px;
+  gap: var(--cs-space-8);
+  padding-top: var(--cs-space-4);
 }
 
 .ladderCaption {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-text2);
 }
 
 .row {
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr);
-  column-gap: 12px;
+  column-gap: var(--cs-space-12);
   align-items: baseline;
-  padding: 8px 16px;
+  padding: var(--cs-space-8) var(--cs-space-16);
   border-top: 1px solid var(--cs-line);
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
 }
 
 .key {
@@ -97,9 +97,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--cs-space-12);
   margin-top: auto;
-  padding: 12px 16px;
+  padding: var(--cs-space-12) var(--cs-space-16);
   border-top: 1px solid var(--cs-line);
   background: var(--cs-sunk);
 }
@@ -107,9 +107,9 @@
 .footnote {
   display: flex;
   align-items: baseline;
-  gap: 6px;
-  font-size: 12px;
-  line-height: 16px;
+  gap: var(--cs-space-6);
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-text2);
   text-wrap: pretty;
 }

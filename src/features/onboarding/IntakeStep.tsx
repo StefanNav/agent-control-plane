@@ -1,13 +1,21 @@
 import { useId, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Button, DefinitionList, Field, LinkButton, Notice, Select } from '../../design-system'
+import {
+  Button,
+  DefinitionList,
+  Field,
+  LinkButton,
+  Notice,
+  Select,
+  SidePanel,
+} from '../../design-system'
 import { formatClock, formatDate } from '../../lib/clock'
 import { Split } from '../../layout/layouts'
 import { useDemo } from '../../store'
 import { onboardingContext, personName } from '../../store/onboardingRules'
 import { can, lockReason } from '../../store/permissions'
 import { selectIntakeStep, selectSpan } from './selectors'
-import { SideCard, StepCard } from './StepCard'
+import { StepCard } from './StepCard'
 import styles from './onboarding.module.css'
 
 /** Step 1: start from the approved intake and name the humans (1a, 2a; ruling R3). */
@@ -23,7 +31,10 @@ export function IntakeStep({ agentId }: { agentId: string }) {
   const ownerField = useId()
   const techField = useId()
   const sponsorField = useId()
-  const span = useMemo(() => (ownerId ? selectSpan(state, ownerId, agentId) : null), [state, ownerId, agentId])
+  const span = useMemo(
+    () => (ownerId ? selectSpan(state, ownerId, agentId) : null),
+    [state, ownerId, agentId],
+  )
   if (!step) return null
   const lead = personName(state, people.lead)
   const carried = (
@@ -46,7 +57,8 @@ export function IntakeStep({ agentId }: { agentId: string }) {
         />
       </div>
       <span className={styles.note}>
-        {personName(state, record ? agent?.ownerId : ownerId) || 'The agent owner'} can refine purpose and domain in the job description. Changes are shown against the request.
+        {personName(state, record ? agent?.ownerId : ownerId) || 'The agent owner'} can refine
+        purpose and domain in the job description. Changes are shown against the request.
       </span>
     </section>
   )
@@ -82,13 +94,14 @@ export function IntakeStep({ agentId }: { agentId: string }) {
                 Open job description
               </LinkButton>
               <span className={styles.monoMeta}>
-                Started by {personName(state, started.by)} · {formatDate(started.at)} {formatClock(started.at)} · created {agent.code}
+                Started by {personName(state, started.by)} · {formatDate(started.at)}{' '}
+                {formatClock(started.at)} · created {agent.code}
               </span>
             </div>
           </StepCard>
         }
         side={
-          <SideCard title="What starting did" sub={`${agent.code} is a draft. Nothing runs yet.`}>
+          <SidePanel title="What starting did" sub={`${agent.code} is a draft. Nothing runs yet.`}>
             <ol className={styles.steps}>
               {step.starting(agent.ownerId, agent.techOwnerId).map((line, i) => (
                 <li key={line} className={styles.stepRow}>
@@ -97,13 +110,15 @@ export function IntakeStep({ agentId }: { agentId: string }) {
                 </li>
               ))}
             </ol>
-          </SideCard>
+          </SidePanel>
         }
       />
     )
   }
 
-  const allowed = can(state, state.personaId, 'startOnboarding', { divisionId: step.intake.divisionId })
+  const allowed = can(state, state.personaId, 'startOnboarding', {
+    divisionId: step.intake.divisionId,
+  })
   const named = 2 + (ownerId ? 1 : 0) + (techOwnerId ? 1 : 0)
   const blocked = !ownerId ? 'agent owner not set' : !techOwnerId ? 'technical owner not set' : null
   const owner = step.owners.find((o) => o.id === ownerId)
@@ -125,14 +140,25 @@ export function IntakeStep({ agentId }: { agentId: string }) {
           {carried}
           <section className={styles.sectionWide} data-story-target="intake-owners">
             <h3 className={styles.caps}>Owners</h3>
-            <span className={styles.note}>No agent goes live without four named people. Division and sponsor come from the intake; you choose the owner and the technical owner.</span>
-            <Field label="Agent owner" htmlFor={ownerField} hint="Job description · systems and verbs" help={owner?.sub}>
+            <span className={styles.note}>
+              No agent goes live without four named people. Division and sponsor come from the
+              intake; you choose the owner and the technical owner.
+            </span>
+            <Field
+              label="Agent owner"
+              htmlFor={ownerField}
+              hint="Job description · systems and verbs"
+              help={owner?.sub}
+            >
               <Select
                 id={ownerField}
                 value={ownerId}
                 onChange={setOwnerId}
                 locked={!allowed}
-                options={[{ value: '', label: 'Choose an agent owner' }, ...step.owners.map((o) => ({ value: o.id, label: o.label }))]}
+                options={[
+                  { value: '', label: 'Choose an agent owner' },
+                  ...step.owners.map((o) => ({ value: o.id, label: o.label })),
+                ]}
               />
             </Field>
             {span?.over ? (
@@ -141,35 +167,63 @@ export function IntakeStep({ agentId }: { agentId: string }) {
                 lead={`${span.name} would directly supervise ${span.total} agent activities.`}
                 actions={
                   <>
-                    <LinkButton to={`/settings/divisions/${step.intake.divisionId}`} variant="ghost">
+                    <LinkButton
+                      to={`/settings/divisions/${step.intake.divisionId}`}
+                      variant="ghost"
+                    >
                       Suggest a split
                     </LinkButton>
-                    <Button variant="ghost" onClick={() => document.getElementById(ownerField)?.focus()}>
+                    <Button
+                      variant="ghost"
+                      onClick={() => document.getElementById(ownerField)?.focus()}
+                    >
                       Choose another owner
                     </Button>
                   </>
                 }
               >
-                The guideline is {span.guideline}: past that, exceptions wait. Choose another owner, or split {step.division} so each owner stays within span. You can still continue.
+                The guideline is {span.guideline}: past that, exceptions wait. Choose another owner,
+                or split {step.division} so each owner stays within span. You can still continue.
               </Notice>
             ) : null}
-            <Field label="Technical owner" htmlFor={techField} hint="Tools and hard stops" help={tech?.sub}>
+            <Field
+              label="Technical owner"
+              htmlFor={techField}
+              hint="Tools and hard stops"
+              help={tech?.sub}
+            >
               <Select
                 id={techField}
                 data-story-target="intake-tech-owner"
                 value={techOwnerId}
                 onChange={setTechOwnerId}
                 locked={!allowed}
-                options={[{ value: '', label: 'Choose a technical owner' }, ...step.techOwners.map((o) => ({ value: o.id, label: o.label }))]}
+                options={[
+                  { value: '', label: 'Choose a technical owner' },
+                  ...step.techOwners.map((o) => ({ value: o.id, label: o.label })),
+                ]}
               />
             </Field>
             <Field label="Clinical sponsor" htmlFor={sponsorField} hint="Approves the set">
-              <Select id={sponsorField} value={step.sponsor.id} onChange={() => undefined} locked options={[{ value: step.sponsor.id, label: `${personName(state, step.sponsor.id)} · from ${step.sponsor.from}` }]} />
+              <Select
+                id={sponsorField}
+                value={step.sponsor.id}
+                onChange={() => undefined}
+                locked
+                options={[
+                  {
+                    value: step.sponsor.id,
+                    label: `${personName(state, step.sponsor.id)} · from ${step.sponsor.from}`,
+                  },
+                ]}
+              />
             </Field>
           </section>
           <div className={styles.foot}>
             {!allowed ? (
-              <Button locked={lockReason('startOnboarding', state.personaId)}>Start onboarding</Button>
+              <Button locked={lockReason('startOnboarding', state.personaId)}>
+                Start onboarding
+              </Button>
             ) : blocked ? (
               <Button variant="blocked">Start onboarding</Button>
             ) : (
@@ -182,7 +236,9 @@ export function IntakeStep({ agentId }: { agentId: string }) {
                 <strong>Blocked:</strong> {blocked}.
               </span>
             ) : (
-              <span className={styles.monoMeta}>{error ?? `Creates ${step.intake.agentCode} · v0.1 draft`}</span>
+              <span className={styles.monoMeta}>
+                {error ?? `Creates ${step.intake.agentCode} · v0.1 draft`}
+              </span>
             )}
           </div>
         </StepCard>
@@ -190,11 +246,24 @@ export function IntakeStep({ agentId }: { agentId: string }) {
       side={
         <>
           {span?.over ? (
-            <SideCard label={`${span.name}’s span`} title={`${span.name}’s span`} sub={`${span.total} activities if ${span.name} owns ${step.intake.agentName} · guideline ${span.guideline}`} foot={<span><strong>Splitting</strong> creates a second owner inside {step.division}, for example Inpatient and Transitions. Agents, privileges and sponsors stay as they are.</span>}>
+            <SidePanel
+              label={`${span.name}’s span`}
+              title={`${span.name}’s span`}
+              sub={`${span.total} activities if ${span.name} owns ${step.intake.agentName} · guideline ${span.guideline}`}
+              foot={
+                <span>
+                  <strong>Splitting</strong> creates a second owner inside {step.division}, for
+                  example Inpatient and Transitions. Agents, privileges and sponsors stay as they
+                  are.
+                </span>
+              }
+            >
               <div>
                 {span.rows.map((row) => (
                   <div key={row.name} className={styles.spanRow}>
-                    <span className={row.name.endsWith('· new') ? styles.spanNew : undefined}>{row.name}</span>
+                    <span className={row.name.endsWith('· new') ? styles.spanNew : undefined}>
+                      {row.name}
+                    </span>
                     <span>
                       {row.activities} {row.activities === 1 ? 'activity' : 'activities'}
                     </span>
@@ -202,22 +271,21 @@ export function IntakeStep({ agentId }: { agentId: string }) {
                 ))}
                 {span.more ? (
                   <div className={styles.spanRow}>
-                    <span>
-                      and {span.more.agents} more agents
-                    </span>
+                    <span>and {span.more.agents} more agents</span>
                     <span>{span.more.activities} activities</span>
                   </div>
                 ) : null}
               </div>
-            </SideCard>
+            </SidePanel>
           ) : null}
-          <SideCard
+          <SidePanel
             label="What starting does"
             title="What starting does"
             sub="Nothing runs yet"
             foot={
               <span>
-                <strong>The agent can’t act.</strong> It stays a draft until AIMS Review and a signed privilege. Owners can work in any order once you start.
+                <strong>The agent can’t act.</strong> It stays a draft until AIMS Review and a
+                signed privilege. Owners can work in any order once you start.
               </span>
             }
           >
@@ -229,7 +297,7 @@ export function IntakeStep({ agentId }: { agentId: string }) {
                 </li>
               ))}
             </ol>
-          </SideCard>
+          </SidePanel>
         </>
       }
     />

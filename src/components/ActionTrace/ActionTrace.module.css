@@ -3,7 +3,7 @@
   flex-direction: column;
   background: var(--cs-raised);
   border: 1px solid var(--cs-line);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
   overflow: hidden;
 }
 
@@ -11,58 +11,58 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  padding: 16px 20px;
+  gap: var(--cs-space-16);
+  padding: var(--cs-space-16) var(--cs-space-20);
   border-bottom: 1px solid var(--cs-line);
 }
 
 .heading {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--cs-space-4);
 }
 
 .titleRow {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: var(--cs-space-10);
 }
 
 .title {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   font-weight: 600;
 }
 
 .code,
 .mono {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
 .meta {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-meta);
 }
 
 .steps {
   margin: 0;
-  padding: 20px 20px 4px;
+  padding: var(--cs-space-20) var(--cs-space-20) var(--cs-space-4);
   list-style: none;
 }
 
 .step {
   display: grid;
   grid-template-columns: 104px 24px minmax(0, 1fr);
-  column-gap: 12px;
+  column-gap: var(--cs-space-12);
 }
 
 .time {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   line-height: 18px;
   color: var(--cs-meta);
 }
@@ -76,7 +76,7 @@
 .line {
   flex: 1;
   width: 1px;
-  margin-top: 6px;
+  margin-top: var(--cs-space-6);
   background: var(--cs-line);
 }
 
@@ -90,13 +90,13 @@
 .toolMark {
   width: 8px;
   height: 8px;
-  margin-top: 6px;
-  border-radius: 50%;
+  margin-top: var(--cs-space-6);
+  border-radius: var(--cs-radius-round);
   background: var(--cs-icon);
 }
 
 .iconMark {
-  margin-top: 4px;
+  margin-top: var(--cs-space-4);
 }
 
 .outputMark {
@@ -110,22 +110,22 @@
   width: 10px;
   height: 10px;
   margin-top: 5px;
-  border-radius: 50%;
+  border-radius: var(--cs-radius-round);
   background: var(--cs-ink);
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cs-space-2);
   min-width: 0;
-  padding-bottom: 20px;
+  padding-bottom: var(--cs-space-20);
 }
 
 .kind {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--cs-meta);
@@ -139,9 +139,9 @@
 .stepTitle {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  font-size: 13px;
-  line-height: 18px;
+  gap: var(--cs-space-8);
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
 }
 
 .monoTitle {
@@ -153,26 +153,26 @@
 }
 
 .detail {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
 .decision {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--cs-space-4);
   max-width: 720px;
-  margin-top: 4px;
-  padding: 10px 12px;
+  margin-top: var(--cs-space-4);
+  padding: var(--cs-space-10) var(--cs-space-12);
   background: var(--cs-sunk);
   border: 1px solid var(--cs-line);
-  border-radius: 3px;
+  border-radius: var(--cs-radius-3);
 }
 
 .decisionText {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   text-wrap: pretty;
 }
 
@@ -186,8 +186,8 @@
 .row {
   display: grid;
   grid-template-columns: 116px 140px minmax(0, 1fr);
-  column-gap: 16px;
-  padding: 14px 20px;
+  column-gap: var(--cs-space-16);
+  padding: var(--cs-space-14) var(--cs-space-20);
 }
 
 .row + .row {
@@ -200,7 +200,7 @@
 
 .rowTime {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   line-height: 22px;
   color: var(--cs-meta);
 }
@@ -208,8 +208,8 @@
 .rowKind {
   padding-top: 3px;
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -219,21 +219,21 @@
 .rowBody {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--cs-space-4);
   min-width: 0;
 }
 
 .rowTitle {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--cs-space-8);
   font-size: 15px;
   line-height: 22px;
 }
 
 .rowDetail {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
   text-wrap: pretty;
 }

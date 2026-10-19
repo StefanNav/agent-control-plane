@@ -16,13 +16,30 @@ import { StepSide } from './StepSide'
 import styles from './onboarding.module.css'
 
 const FIELD_COPY: Record<JobFieldId, { label: string; help: string; fromRequest?: boolean }> = {
-  purpose: { label: 'Purpose', help: 'One or two sentences anyone in the hospital would understand.', fromRequest: true },
-  activities: { label: 'Activities', help: 'Each activity earns its own privilege, so keep them separate.' },
+  purpose: {
+    label: 'Purpose',
+    help: 'One or two sentences anyone in the hospital would understand.',
+    fromRequest: true,
+  },
+  activities: {
+    label: 'Activities',
+    help: 'Each activity earns its own privilege, so keep them separate.',
+  },
   never: { label: 'Never', help: '' },
   actingFor: { label: 'Acting for', help: 'Whose work the drafts belong to, and where they land.' },
-  escalation: { label: 'Escalation triggers', help: 'When should the agent stop and hand the case to a pharmacist? Add at least one.' },
-  criteria: { label: 'Success criteria', help: 'Measured against pharmacist work during a 21-day shadow. Go-live is decided on these.' },
-  domain: { label: 'Rollout domain', help: 'Where the agent may work. Expanding it later needs a new privilege.', fromRequest: true },
+  escalation: {
+    label: 'Escalation triggers',
+    help: 'When should the agent stop and hand the case to a pharmacist? Add at least one.',
+  },
+  criteria: {
+    label: 'Success criteria',
+    help: 'Measured against pharmacist work during a 21-day shadow. Go-live is decided on these.',
+  },
+  domain: {
+    label: 'Rollout domain',
+    help: 'Where the agent may work. Expanding it later needs a new privilege.',
+    fromRequest: true,
+  },
 }
 
 function Status({ done }: { done: boolean }) {
@@ -37,7 +54,19 @@ function Status({ done }: { done: boolean }) {
   )
 }
 
-function Block({ id, done, request, help, children }: { id: JobFieldId; done: boolean; request?: string; help?: ReactNode; children: ReactNode }) {
+function Block({
+  id,
+  done,
+  request,
+  help,
+  children,
+}: {
+  id: JobFieldId
+  done: boolean
+  request?: string
+  help?: ReactNode
+  children: ReactNode
+}) {
   const copy = FIELD_COPY[id]
   return (
     <div id={`field-${id}`} className={styles.block}>
@@ -55,7 +84,17 @@ function Block({ id, done, request, help, children }: { id: JobFieldId; done: bo
 }
 
 /** "Add" behind a ghost button: one input, Enter or Add saves (1b "+ Add activity", "+ Add unit"). */
-function AddInline({ label, placeholder, onAdd, disabled }: { label: string; placeholder: string; onAdd: (text: string) => void; disabled?: boolean }) {
+function AddInline({
+  label,
+  placeholder,
+  onAdd,
+  disabled,
+}: {
+  label: string
+  placeholder: string
+  onAdd: (text: string) => void
+  disabled?: boolean
+}) {
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
   const id = useId()
@@ -131,12 +170,19 @@ export function JobStep({ agentId }: { agentId: string }) {
     setTrigger('')
   }
   const fieldLink = (field: JobFieldId) => `?field=${field}`
-  const readOnlyReason = view.frozen ? 'Frozen at v1.0 · with AIMS Review' : lockReason('editJobDescription', state.personaId)
+  const readOnlyReason = view.frozen
+    ? 'Frozen at v1.0 · with AIMS Review'
+    : lockReason('editJobDescription', state.personaId)
 
   return (
     <Split
       main={
-        <StepCard number="02" title="Job description" sub={`What ${view.agentName} is for and what it must never do. The committee and every pharmacist will read this.`} meta={`${view.owner} · ${view.done} of 7`}>
+        <StepCard
+          number="02"
+          title="Job description"
+          sub={`What ${view.agentName} is for and what it must never do. The committee and every pharmacist will read this.`}
+          meta={`${view.owner} · ${view.done} of 7`}
+        >
           {view.welcome ? (
             <div className={styles.welcome} role="status">
               <span className={styles.welcomeText}>
@@ -158,7 +204,8 @@ export function JobStep({ agentId }: { agentId: string }) {
                   value={editing?.field === 'purpose' ? editing.text : job.purpose}
                   onChange={(e) => setEditing({ field: 'purpose', text: e.target.value })}
                   onBlur={() => {
-                    if (editing?.field === 'purpose' && editing.text !== job.purpose) save({ purpose: editing.text })
+                    if (editing?.field === 'purpose' && editing.text !== job.purpose)
+                      save({ purpose: editing.text })
                     setEditing(null)
                   }}
                 />
@@ -185,11 +232,26 @@ export function JobStep({ agentId }: { agentId: string }) {
                 label="+ Add activity"
                 placeholder="What the activity does, e.g. Flag allergy conflicts"
                 disabled={!editable}
-                onAdd={(name) => save({ activities: [...job.activities, { id: `${agentId}-a${job.activities.length + 1}`, name, branch: 'No adverse branch noted yet' }] })}
+                onAdd={(name) =>
+                  save({
+                    activities: [
+                      ...job.activities,
+                      {
+                        id: `${agentId}-a${job.activities.length + 1}`,
+                        name,
+                        branch: 'No adverse branch noted yet',
+                      },
+                    ],
+                  })
+                }
               />
             </Block>
 
-            <Block id="never" done={fieldDone('never')} help={`What the agent must never do, in plain words. ${view.tech} turns these into enforced hard stops in step 4.`}>
+            <Block
+              id="never"
+              done={fieldDone('never')}
+              help={`What the agent must never do, in plain words. ${view.tech} turns these into enforced hard stops in step 4.`}
+            >
               <div className={styles.list}>
                 {view.never.map((n) => (
                   <div key={n.text} className={styles.listRow}>
@@ -198,13 +260,19 @@ export function JobStep({ agentId }: { agentId: string }) {
                     </span>
                     {n.locked ? (
                       <span className={styles.listRightMeta}>
-                        <Icon name="lock" color="var(--cs-meta)" /> already locked by <RuleTag>{n.becomes}</RuleTag>
+                        <Icon name="lock" color="var(--cs-meta)" /> already locked by{' '}
+                        <RuleTag>{n.becomes}</RuleTag>
                       </span>
                     ) : (
                       <span className={styles.listRightMeta}>
-                        {n.plain ? 'becomes a plain-language hard stop' : 'becomes'} <RuleTag>{n.becomes}</RuleTag>
+                        {n.plain ? 'becomes a plain-language hard stop' : 'becomes'}{' '}
+                        <RuleTag>{n.becomes}</RuleTag>
                         {editable ? (
-                          <Button variant="ghost" aria-label={`Remove ${n.text}`} onClick={() => save({ never: job.never.filter((t) => t !== n.text) })}>
+                          <Button
+                            variant="ghost"
+                            aria-label={`Remove ${n.text}`}
+                            onClick={() => save({ never: job.never.filter((t) => t !== n.text) })}
+                          >
                             Remove
                           </Button>
                         ) : null}
@@ -213,7 +281,12 @@ export function JobStep({ agentId }: { agentId: string }) {
                   </div>
                 ))}
               </div>
-              <AddInline label="+ Add a never item" placeholder="In plain words, e.g. Change a dose" disabled={!editable} onAdd={(text) => save({ never: [...job.never, text] })} />
+              <AddInline
+                label="+ Add a never item"
+                placeholder="In plain words, e.g. Change a dose"
+                disabled={!editable}
+                onAdd={(text) => save({ never: [...job.never, text] })}
+              />
             </Block>
 
             <Block id="actingFor" done={fieldDone('actingFor')}>
@@ -223,12 +296,17 @@ export function JobStep({ agentId }: { agentId: string }) {
                   aria-label="Acting for"
                   value={job.actingFor ?? ''}
                   onChange={(value) => save({ actingFor: value || null })}
-                  options={[{ value: '', label: 'Choose whose work it is' }, ...view.actingForOptions.map((o) => ({ value: o, label: o }))]}
+                  options={[
+                    { value: '', label: 'Choose whose work it is' },
+                    ...view.actingForOptions.map((o) => ({ value: o, label: o })),
+                  ]}
                 />
               ) : (
                 <span className={styles.listName}>{job.actingFor ?? '—'}</span>
               )}
-              {view.actingForNote && job.actingFor ? <span className={styles.help}>{view.actingForNote}</span> : null}
+              {view.actingForNote && job.actingFor ? (
+                <span className={styles.help}>{view.actingForNote}</span>
+              ) : null}
             </Block>
 
             <Block id="escalation" done={fieldDone('escalation')}>
@@ -240,7 +318,13 @@ export function JobStep({ agentId }: { agentId: string }) {
                         <span className={styles.listName}>{t}</span>
                       </span>
                       {editable ? (
-                        <Button variant="ghost" aria-label={`Remove ${t}`} onClick={() => save({ escalation: job.escalation.filter((e) => e !== t) })}>
+                        <Button
+                          variant="ghost"
+                          aria-label={`Remove ${t}`}
+                          onClick={() =>
+                            save({ escalation: job.escalation.filter((e) => e !== t) })
+                          }
+                        >
                           Remove
                         </Button>
                       ) : null}
@@ -263,7 +347,12 @@ export function JobStep({ agentId }: { agentId: string }) {
                     <div className={styles.chips}>
                       <span className={styles.help}>{view.suggestionsLabel}</span>
                       {view.suggestions.map((t) => (
-                        <button key={t} type="button" className={styles.suggestion} onClick={() => addTrigger(t)}>
+                        <button
+                          key={t}
+                          type="button"
+                          className={styles.suggestion}
+                          onClick={() => addTrigger(t)}
+                        >
                           + {t}
                         </button>
                       ))}
@@ -284,7 +373,9 @@ export function JobStep({ agentId }: { agentId: string }) {
                 {view.criteria.map((c) => (
                   <div key={c.id} className={styles.criteriaRow}>
                     <span>{c.label}</span>
-                    <span className={styles.direction}>{c.direction === 'atLeast' ? 'at least' : 'at most'}</span>
+                    <span className={styles.direction}>
+                      {c.direction === 'atLeast' ? 'at least' : 'at most'}
+                    </span>
                     {editable ? (
                       <Input
                         className={styles.target}
@@ -331,10 +422,17 @@ export function JobStep({ agentId }: { agentId: string }) {
                       aria-label="Add unit"
                       value=""
                       onChange={(unit) => {
-                        if (unit) save({ domain: { ...job.domain, units: [...job.domain.units, unit] } })
+                        if (unit)
+                          save({ domain: { ...job.domain, units: [...job.domain.units, unit] } })
                         setAddingUnit(false)
                       }}
-                      options={[{ value: '', label: 'Choose a unit' }, ...UNITS.filter((u) => !job.domain.units.includes(u)).map((u) => ({ value: u, label: u }))]}
+                      options={[
+                        { value: '', label: 'Choose a unit' },
+                        ...UNITS.filter((u) => !job.domain.units.includes(u)).map((u) => ({
+                          value: u,
+                          label: u,
+                        })),
+                      ]}
                     />
                   ) : editable ? (
                     <Button variant="ghost" onClick={() => setAddingUnit(true)}>
@@ -360,7 +458,13 @@ export function JobStep({ agentId }: { agentId: string }) {
           title={`Job description · ${view.done} of 7`}
           sub={`${view.items.done} of ${view.items.total} items done across the record`}
           progress={view.items.done / view.items.total}
-          rows={view.fields.map((f) => ({ key: f.id, label: f.label, done: f.done, current: !f.done && f.id === (fieldParam ?? view.first), to: fieldLink(f.id) }))}
+          rows={view.fields.map((f) => ({
+            key: f.id,
+            label: f.label,
+            done: f.done,
+            current: !f.done && f.id === (fieldParam ?? view.first),
+            to: fieldLink(f.id),
+          }))}
           also={view.alsoNeeded}
           alsoLabel={`Also needed before ${view.sponsor}`}
           foot={
@@ -371,7 +475,11 @@ export function JobStep({ agentId }: { agentId: string }) {
                   <strong>Blocked: {view.blocked.left} items left.</strong>{' '}
                   {view.blocked.next.length ? (
                     <>
-                      Next for {state.personaId === state.agents.find((a) => a.id === agentId)?.ownerId ? 'you' : view.owner}:{' '}
+                      Next for{' '}
+                      {state.personaId === state.agents.find((a) => a.id === agentId)?.ownerId
+                        ? 'you'
+                        : view.owner}
+                      :{' '}
                       {view.blocked.next.map((n, i) => (
                         <span key={n.label}>
                           {i ? ', ' : ''}

@@ -1,17 +1,17 @@
 .group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--cs-space-8);
 }
 
 .card {
   display: grid;
   grid-template-columns: 18px minmax(0, 1fr);
-  column-gap: 10px;
+  column-gap: var(--cs-space-10);
   align-items: start;
-  padding: 10px 12px;
+  padding: var(--cs-space-10) var(--cs-space-12);
   border: 1px solid var(--cs-line-strong);
-  border-radius: 3px;
+  border-radius: var(--cs-radius-3);
   background: var(--cs-raised);
   cursor: pointer;
 }
@@ -30,7 +30,7 @@
   width: 18px;
   height: 18px;
   margin-top: 3px;
-  border-radius: 50%;
+  border-radius: var(--cs-radius-round);
   border: 1.5px solid var(--cs-icon);
   display: flex;
   align-items: center;
@@ -44,7 +44,7 @@
 .dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--cs-radius-round);
   background: var(--cs-acc);
 }
 
@@ -54,8 +54,8 @@
 }
 
 .title {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
 }
 
 .checked .title {
@@ -63,8 +63,8 @@
 }
 
 .description {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-meta);
   text-wrap: pretty;
 }

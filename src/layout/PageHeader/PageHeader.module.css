@@ -1,13 +1,13 @@
 .header {
   display: flex;
   flex-direction: column;
-  padding: 24px 40px 24px;
+  padding: var(--cs-space-24) var(--cs-space-40) var(--cs-space-24);
   background: var(--cs-raised);
   border-bottom: 1px solid var(--cs-line);
 }
 
 .low {
-  gap: 16px;
+  gap: var(--cs-space-16);
   padding-bottom: 0;
 }
 
@@ -15,53 +15,53 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 24px;
+  gap: var(--cs-space-24);
 }
 
 .text {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--cs-space-6);
   min-width: 0;
 }
 
 .crumb {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
 .titleRow {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--cs-space-12);
   flex-wrap: wrap;
 }
 
 .title {
-  font-size: 24px;
-  line-height: 32px;
+  font-size: var(--cs-type-title-size);
+  line-height: var(--cs-type-title-line);
   font-weight: 600;
 }
 
 .status {
-  font-size: 14px;
+  font-size: var(--cs-type-ui-size);
   color: var(--cs-meta);
 }
 
 .ids {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
 .people {
   display: flex;
-  gap: 20px;
+  gap: var(--cs-space-20);
   flex-wrap: wrap;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-meta);
 }
 
@@ -71,8 +71,8 @@
 
 .sub {
   max-width: 900px;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
   text-wrap: pretty;
 }
@@ -80,6 +80,6 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--cs-space-12);
   flex: none;
 }

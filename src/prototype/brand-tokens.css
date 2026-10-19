@@ -1,0 +1,15 @@
+/*
+ * Scoped tokens: the Attune mark (prototype layer only). Product indigo, deep and soft, and a pair
+ * for the ink prototype bar. Product code never uses these; `pnpm ds:audit` counts them as a leak.
+ */
+:root {
+  --cs-mark-deep: var(--cs-acc);
+  --cs-mark-soft: oklch(0.7 0.1 268);
+  --cs-mark-deep-on-ink: oklch(0.74 0.12 268);
+  --cs-mark-soft-on-ink: oklch(0.86 0.06 268);
+}
+
+[data-theme="dark"] {
+  --cs-mark-deep: oklch(0.74 0.12 268);
+  --cs-mark-soft: oklch(0.86 0.06 268);
+}

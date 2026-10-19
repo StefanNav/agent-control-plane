@@ -1,9 +1,12 @@
 /*
- * Countersign design tokens (docs/design-handoff.md → "Design tokens").
+ * Countersign design tokens (docs/design-handoff.md → "Design tokens"; docs/design-system/README.md).
  * Light is the default; dark applies under [data-theme="dark"] (wall display, gallery).
- * Components use only these variables for colour, shadow and scrim.
+ * Product code takes every colour, space, size, radius, shadow, motion and layer from here.
+ * Scoped tokens live in their own files: tokens-ehr.css (the Epic stand-in only) and
+ * src/prototype/brand-tokens.css (the Attune mark, prototype layer only).
  */
 :root {
+  /* Colour: surfaces and lines */
   --cs-bg: oklch(0.985 0.002 90);
   --cs-raised: oklch(1 0 0);
   --cs-sunk: oklch(0.985 0.002 90);
@@ -16,12 +19,14 @@
   --cs-focus: oklch(0.21 0.004 90);
   --cs-line: oklch(0.925 0.004 90);
   --cs-line-strong: oklch(0.87 0.005 90);
+  /* Colour: text and icons, lightest to darkest */
   --cs-off: oklch(0.72 0.006 90);
   --cs-icon: oklch(0.6 0.006 90);
   --cs-meta: oklch(0.5 0.006 90);
   --cs-text2: oklch(0.41 0.006 90);
   --cs-strong: oklch(0.31 0.005 90);
   --cs-ink: oklch(0.21 0.004 90);
+  /* Colour: status. Teal is review waiting only; amber and red are warning and critical only. */
   --cs-rev: oklch(0.5 0.085 200);
   --cs-warn: oklch(0.65 0.14 70);
   --cs-warn-text: oklch(0.5 0.1 62);
@@ -29,28 +34,65 @@
   --cs-lad-pass: oklch(0.72 0.006 90);
   --cs-lad-lock: oklch(0.925 0.004 90);
   --cs-canvas: oklch(0.93 0.003 90);
+  /* Elevation: only menus and modals have shadows */
   --cs-scrim: oklch(0.21 0.004 90 / 0.32);
   /* The tour's welcome: the same scrim, darker, so its card and the tour bar read first. */
   --cs-scrim-strong: oklch(0.21 0.004 90 / 0.55);
   --cs-shadow-menu: 0 8px 24px oklch(0.21 0.004 90 / 0.14);
   --cs-shadow-modal: 0 16px 48px oklch(0.21 0.004 90 / 0.2);
-  /* The Attune mark (prototype layer): product indigo, deep and soft, and a pair for the ink prototype bar. */
-  --cs-mark-deep: var(--cs-acc);
-  --cs-mark-soft: oklch(0.7 0.1 268);
-  --cs-mark-deep-on-ink: oklch(0.74 0.12 268);
-  --cs-mark-soft-on-ink: oklch(0.86 0.06 268);
 
+  /* Type: IBM Plex Sans and Mono, weights 400 and 600 only. One size and line per role. */
   --cs-font-sans: 'IBM Plex Sans', system-ui, sans-serif;
   --cs-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  /* E10's Epic stand-in: neutral cool greys from the frame, so it never reads as Countersign. */
-  --cs-ehr-bg: oklch(0.97 0.004 240);
-  --cs-ehr-bar: oklch(0.9 0.006 240);
-  --cs-ehr-band: oklch(1 0 0);
-  --cs-ehr-head: oklch(0.94 0.004 240);
-  --cs-ehr-edit: oklch(0.955 0.008 240);
-  --cs-ehr-line: oklch(0.89 0.006 240);
-  --cs-ehr-ink: oklch(0.25 0.01 240);
-  --cs-ehr-meta: oklch(0.48 0.01 240);
+  --cs-type-title-size: 24px; /* page title */
+  --cs-type-title-line: 32px;
+  --cs-type-stat-size: 20px; /* stat value */
+  --cs-type-stat-line: 28px;
+  --cs-type-section-size: 18px; /* section, modal and hard-stop title */
+  --cs-type-section-line: 24px;
+  --cs-type-body-size: 16px; /* forms and signing, card titles (600), field text */
+  --cs-type-body-line: 24px;
+  --cs-type-ui-size: 14px; /* UI text, buttons, tabs, nav, notes */
+  --cs-type-ui-line: 20px;
+  --cs-type-dense-size: 13px; /* monitoring tables and boards, compact chips */
+  --cs-type-dense-line: 18px;
+  --cs-type-meta-size: 12px; /* meta, sub-lines, mono values and labels */
+  --cs-type-meta-line: 16px;
+
+  /* Space: the handoff's scale, named by its value. A value off this list is a decision; write it down. */
+  --cs-space-2: 2px;
+  --cs-space-4: 4px;
+  --cs-space-6: 6px;
+  --cs-space-8: 8px;
+  --cs-space-10: 10px;
+  --cs-space-12: 12px;
+  --cs-space-14: 14px;
+  --cs-space-16: 16px;
+  --cs-space-20: 20px;
+  --cs-space-24: 24px;
+  --cs-space-28: 28px;
+  --cs-space-32: 32px;
+  --cs-space-40: 40px;
+  --cs-space-48: 48px;
+  --cs-space-56: 56px;
+
+  /* Radius: 1 ladder segments · 2 chips, rule tags, hard stop · 3 buttons, fields, pills, menus ·
+     4 instruction well · 6 cards, paper, modals · 8 outer screen frame · round avatars */
+  --cs-radius-1: 1px;
+  --cs-radius-2: 2px;
+  --cs-radius-3: 3px;
+  --cs-radius-4: 4px;
+  --cs-radius-6: 6px;
+  --cs-radius-8: 8px;
+  --cs-radius-round: 50%;
+
+  /* Motion: rows fade their background; nothing else moves in the product. Off under reduced motion. */
+  --cs-motion-row: 150ms ease-out;
+
+  /* Layers: the product's stack. The prototype layer (story panel, tour) sits from 55 to 80. */
+  --cs-layer-menu: 20;
+  --cs-layer-modal: 50;
+  --cs-layer-skip-link: 70;
 }
 
 [data-theme="dark"] {
@@ -80,15 +122,5 @@
   --cs-crit: oklch(0.7 0.17 27);
   --cs-lad-pass: oklch(0.52 0.006 90);
   --cs-lad-lock: oklch(0.3 0.005 90);
-  --cs-mark-deep: oklch(0.74 0.12 268);
-  --cs-mark-soft: oklch(0.86 0.06 268);
   color: var(--cs-ink);
-  --cs-ehr-bg: oklch(0.18 0.006 240);
-  --cs-ehr-bar: oklch(0.26 0.008 240);
-  --cs-ehr-band: oklch(0.21 0.006 240);
-  --cs-ehr-head: oklch(0.24 0.006 240);
-  --cs-ehr-edit: oklch(0.25 0.012 240);
-  --cs-ehr-line: oklch(0.3 0.008 240);
-  --cs-ehr-ink: oklch(0.93 0.006 240);
-  --cs-ehr-meta: oklch(0.7 0.008 240);
 }

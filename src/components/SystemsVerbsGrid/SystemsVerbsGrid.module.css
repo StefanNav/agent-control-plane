@@ -3,7 +3,7 @@
   flex-direction: column;
   background: var(--cs-raised);
   border: 1px solid var(--cs-line);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
   overflow: hidden;
 }
 
@@ -11,7 +11,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) repeat(6, 96px);
   align-items: center;
-  padding-left: 20px;
+  padding-left: var(--cs-space-20);
   border-top: 1px solid var(--cs-line);
 }
 
@@ -20,8 +20,8 @@
   border-top: none;
   background: var(--cs-sunk);
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -32,25 +32,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: var(--cs-space-6);
   height: 100%;
 }
 
 .system {
   display: flex;
   flex-direction: column;
-  padding: 8px 0;
+  padding: var(--cs-space-8) 0;
 }
 
 .systemName {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   font-weight: 600;
 }
 
 .detail {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
@@ -71,7 +71,7 @@
 
 .toggle {
   display: flex;
-  padding: 6px;
+  padding: var(--cs-space-6);
   border: none;
   background: none;
   cursor: pointer;
@@ -82,7 +82,7 @@
   flex: none;
   width: 16px;
   height: 16px;
-  border-radius: 3px;
+  border-radius: var(--cs-radius-3);
 }
 
 .granted {
@@ -106,21 +106,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 12px 20px;
+  gap: var(--cs-space-16);
+  padding: var(--cs-space-12) var(--cs-space-20);
   border-top: 1px solid var(--cs-line);
   background: var(--cs-sunk);
 }
 
 .footText {
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   line-height: 18px;
   color: var(--cs-text2);
 }
 
 .actions {
   display: flex;
-  gap: 8px;
+  gap: var(--cs-space-8);
 }
 
 /* The row that needs attention: selection tint and an indigo edge, as 1c draws it. */

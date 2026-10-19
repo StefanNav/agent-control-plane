@@ -1,15 +1,15 @@
 .row {
   display: grid;
   grid-template-columns: 64px minmax(0, 1fr);
-  column-gap: 12px;
-  padding: 8px 20px;
-  font-size: 14px;
-  line-height: 20px;
+  column-gap: var(--cs-space-12);
+  padding: var(--cs-space-8) var(--cs-space-20);
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
 }
 
 .time {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   line-height: 20px;
   color: var(--cs-meta);
 }
@@ -17,12 +17,12 @@
 .body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cs-space-2);
 }
 
 .sub {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-meta);
   text-wrap: pretty;
 }

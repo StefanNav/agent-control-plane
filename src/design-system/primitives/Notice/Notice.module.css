@@ -1,12 +1,12 @@
 .notice {
   display: grid;
   grid-template-columns: 12px minmax(0, 1fr);
-  column-gap: 10px;
+  column-gap: var(--cs-space-10);
   align-items: start;
-  padding: 12px 14px;
+  padding: var(--cs-space-12) var(--cs-space-14);
   background: var(--cs-sunk);
   border: 1px solid var(--cs-line-strong);
-  border-radius: 3px;
+  border-radius: var(--cs-radius-3);
 }
 
 .mark {
@@ -18,13 +18,13 @@
 .body {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--cs-space-6);
   min-width: 0;
 }
 
 .text {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
   text-wrap: pretty;
 }
@@ -36,6 +36,6 @@
 
 .actions {
   display: flex;
-  gap: 4px;
+  gap: var(--cs-space-4);
   margin-left: -8px;
 }

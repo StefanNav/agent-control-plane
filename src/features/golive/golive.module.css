@@ -2,29 +2,29 @@
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 40px;
+  gap: var(--cs-space-40);
   align-items: start;
-  padding: 24px 40px 48px;
+  padding: var(--cs-space-24) var(--cs-space-40) var(--cs-space-48);
 }
 
 .main {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--cs-space-24);
   min-width: 0;
 }
 
 .line {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-meta);
 }
 
 .caps {
-  margin: 0 0 10px;
+  margin: 0 0 var(--cs-space-10);
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -36,14 +36,14 @@
 }
 
 .result {
-  font-size: 16px;
+  font-size: var(--cs-type-body-size);
   font-weight: 600;
 }
 
 .met {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--cs-space-6);
   color: var(--cs-meta);
 }
 
@@ -52,18 +52,18 @@
   flex-direction: column;
   background: var(--cs-raised);
   border: 1px solid var(--cs-line);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
 }
 
 .cause {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 140px minmax(0, 1fr);
   align-items: center;
-  gap: 16px;
+  gap: var(--cs-space-16);
   min-height: 44px;
-  padding: 0 16px;
-  font-size: 14px;
-  line-height: 20px;
+  padding: 0 var(--cs-space-16);
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
 }
 
 .cause + .cause {
@@ -73,21 +73,21 @@
 .bar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--cs-space-10);
   font-variant-numeric: tabular-nums;
 }
 
 .track {
   flex: 1;
   height: 4px;
-  border-radius: 2px;
+  border-radius: var(--cs-radius-2);
   background: var(--cs-line);
 }
 
 .fill {
   display: block;
   height: 100%;
-  border-radius: 2px;
+  border-radius: var(--cs-radius-2);
   background: var(--cs-text2);
 }
 
@@ -100,32 +100,32 @@
   flex-direction: column;
   background: var(--cs-raised);
   border: 1px solid var(--cs-line);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
 }
 
 .sideHead {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 16px 20px 8px;
+  gap: var(--cs-space-2);
+  padding: var(--cs-space-16) var(--cs-space-20) var(--cs-space-8);
 }
 
 .sideTitle {
   margin: 0;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   font-weight: 600;
 }
 
 .sideSub {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-meta);
 }
 
 .rows {
   margin: 0;
-  padding: 0 20px 12px;
+  padding: 0 var(--cs-space-20) var(--cs-space-12);
   list-style: none;
 }
 
@@ -133,15 +133,15 @@
   display: grid;
   grid-template-columns: 14px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
+  gap: var(--cs-space-8);
   min-height: 32px;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
 }
 
 .rows li > :last-child {
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   color: var(--cs-meta);
   text-align: right;
 }
@@ -154,11 +154,11 @@
 .foot {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 16px 20px 20px;
+  gap: var(--cs-space-10);
+  padding: var(--cs-space-16) var(--cs-space-20) var(--cs-space-20);
   border-top: 1px solid var(--cs-line);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
 }
 
@@ -179,18 +179,18 @@
   flex-direction: column;
   background: var(--cs-raised);
   border: 1px solid var(--cs-line);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
 }
 
 .compareRow {
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr) minmax(0, 1fr) 160px 200px;
   align-items: center;
-  gap: 16px;
+  gap: var(--cs-space-16);
   min-height: 48px;
-  padding: 0 16px;
-  font-size: 14px;
-  line-height: 20px;
+  padding: 0 var(--cs-space-16);
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   border-top: 1px solid var(--cs-line);
 }
 
@@ -200,12 +200,12 @@
   border-top: 0;
   background: var(--cs-bg);
   font-family: var(--cs-font-mono);
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--cs-meta);
-  border-radius: 6px 6px 0 0;
+  border-radius: var(--cs-radius-6) var(--cs-radius-6) 0 0;
 }
 
 .differs {
@@ -224,7 +224,7 @@
 
 .num {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   color: var(--cs-meta);
 }
 
@@ -235,11 +235,11 @@
 .note {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 16px 20px;
+  gap: var(--cs-space-6);
+  padding: var(--cs-space-16) var(--cs-space-20);
   border-top: 1px solid var(--cs-line);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
 }
 
@@ -251,19 +251,19 @@
 .lines {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--cs-space-8);
   margin: 0;
-  padding: 0 20px 16px;
+  padding: 0 var(--cs-space-20) var(--cs-space-16);
   list-style: none;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
 }
 
 .conditionLine {
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr);
-  gap: 8px;
+  gap: var(--cs-space-8);
 }
 
 .evidenceHead {
@@ -276,7 +276,7 @@
 .agrees {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--cs-space-6);
   color: var(--cs-meta);
 }
 
@@ -284,12 +284,12 @@
 .hardStops {
   display: flex;
   flex-wrap: wrap;
-  column-gap: 12px;
-  row-gap: 4px;
+  column-gap: var(--cs-space-12);
+  row-gap: var(--cs-space-4);
 }
 
 .hardStop {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--cs-space-6);
 }

@@ -2,43 +2,43 @@
 .body {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 28px 40px 48px;
+  gap: var(--cs-space-20);
+  padding: var(--cs-space-28) var(--cs-space-40) var(--cs-space-48);
 }
 
 .boardGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 380px;
-  column-gap: 40px;
+  column-gap: var(--cs-space-40);
   align-items: start;
-  padding: 32px 40px 48px;
+  padding: var(--cs-space-32) var(--cs-space-40) var(--cs-space-48);
 }
 
 .column {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--cs-space-16);
   min-width: 0;
 }
 
 .headerActions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--cs-space-16);
 }
 
 .mono {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
   white-space: nowrap;
 }
 
 .monoStrong {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-strong);
   white-space: nowrap;
 }
@@ -48,14 +48,14 @@
 }
 
 .metaDense {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-meta);
 }
 
 .metaSmall {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
@@ -64,14 +64,14 @@
 }
 
 .text2Dense {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-text2);
 }
 
 .note {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-meta);
   text-wrap: pretty;
 }
@@ -80,39 +80,39 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--cs-space-16);
 }
 
 .sectionTitle {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   font-weight: 600;
 }
 
 .pills {
   display: flex;
-  gap: 8px;
+  gap: var(--cs-space-8);
 }
 
 .divisionName {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   font-weight: 600;
 }
 
 .counts {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--cs-space-12);
   flex-wrap: wrap;
 }
 
 .count {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  line-height: 18px;
+  gap: var(--cs-space-6);
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-strong);
 }
 
@@ -120,39 +120,39 @@
 .panelColumn {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--cs-space-16);
   min-width: 0;
 }
 
 .panelHead {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 16px 20px;
+  gap: var(--cs-space-2);
+  padding: var(--cs-space-16) var(--cs-space-20);
 }
 
 .panelTitle {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   font-weight: 600;
 }
 
 .panelSub {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-meta);
 }
 
 .panelBody {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 4px 20px 16px;
+  gap: var(--cs-space-10);
+  padding: var(--cs-space-4) var(--cs-space-20) var(--cs-space-16);
 }
 
 .panelText {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
   text-wrap: pretty;
 }
@@ -160,25 +160,25 @@
 .panelRow {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  column-gap: 10px;
+  column-gap: var(--cs-space-10);
   align-items: center;
   min-height: 36px;
-  padding: 0 20px;
-  font-size: 14px;
-  line-height: 20px;
+  padding: 0 var(--cs-space-20);
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
 }
 
 .panelRowValue {
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   color: var(--cs-meta);
   text-align: right;
 }
 
 .panelFoot {
   display: flex;
-  gap: 10px;
-  padding: 16px 20px 20px;
+  gap: var(--cs-space-10);
+  padding: var(--cs-space-16) var(--cs-space-20) var(--cs-space-20);
   border-top: 1px solid var(--cs-line);
 }
 
@@ -190,12 +190,12 @@
 .attentionRow {
   display: grid;
   grid-template-columns: 12px minmax(0, 1fr) auto;
-  column-gap: 10px;
+  column-gap: var(--cs-space-10);
   align-items: baseline;
-  padding: 8px 0;
+  padding: var(--cs-space-8) 0;
   border-top: 1px solid var(--cs-line);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
 }
 
 .attentionRow > :first-child {
@@ -210,19 +210,19 @@
 .tiles {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 16px;
+  gap: var(--cs-space-16);
   align-items: start;
 }
 
 .tile {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--cs-space-16);
   min-width: 0;
-  padding: 20px;
+  padding: var(--cs-space-20);
   background: var(--cs-raised);
   border: 1px solid var(--cs-line-strong);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
 }
 
 .tileWide {
@@ -238,25 +238,25 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--cs-space-12);
 }
 
 .tileTitleBlock {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cs-space-2);
 }
 
 .tileTitle {
-  font-size: 18px;
-  line-height: 24px;
+  font-size: var(--cs-type-section-size);
+  line-height: var(--cs-type-section-line);
   font-weight: 600;
 }
 
 .squares {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--cs-space-4);
 }
 
 .square {
@@ -265,7 +265,7 @@
   justify-content: center;
   width: 18px;
   height: 18px;
-  border-radius: 2px;
+  border-radius: var(--cs-radius-2);
   background: var(--cs-fill);
   border: 1px solid var(--cs-line);
 }
@@ -298,11 +298,11 @@
 .tileNotes {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-top: 10px;
+  gap: var(--cs-space-6);
+  padding-top: var(--cs-space-10);
   border-top: 1px solid var(--cs-line);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
 }
 
@@ -310,7 +310,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--cs-space-12);
 }
 
 /* Exceptions first (4f) */
@@ -322,9 +322,9 @@
 .stripCell {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--cs-space-6);
   min-width: 0;
-  padding: 14px 16px;
+  padding: var(--cs-space-14) var(--cs-space-16);
   border: none;
   background: none;
   text-align: left;
@@ -343,19 +343,19 @@
 .stripHead {
   display: flex;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--cs-space-8);
 }
 
 .stripName {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   font-weight: 600;
 }
 
 .exceptionsGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
-  column-gap: 32px;
+  column-gap: var(--cs-space-32);
   align-items: start;
 }
 
@@ -363,13 +363,13 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: var(--cs-space-12);
+  padding: var(--cs-space-14) var(--cs-space-16);
 }
 
 .cardTitle {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   font-weight: 600;
 }
 
@@ -377,17 +377,17 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 16px;
+  gap: var(--cs-space-12);
+  padding: var(--cs-space-10) var(--cs-space-16);
   border-top: 1px solid var(--cs-line);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
 }
 
 .cardNote {
-  padding: 10px 16px 14px;
+  padding: var(--cs-space-10) var(--cs-space-16) var(--cs-space-14);
   border-top: 1px solid var(--cs-line);
-  font-size: 13px;
+  font-size: var(--cs-type-dense-size);
 }
 
 .bold {
@@ -397,6 +397,6 @@
 .cardHeadStacked {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 14px 16px;
+  gap: var(--cs-space-2);
+  padding: var(--cs-space-14) var(--cs-space-16);
 }

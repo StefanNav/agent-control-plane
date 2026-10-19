@@ -18,14 +18,14 @@ Update this block every time a session stops, even mid-phase.
 
 | | |
 |---|---|
-| **Current phase** | All phases merged: every hand-off reaches an inbox (Phase 12 ☑) |
-| **Branch** | `main` |
-| **Last completed** | Phase 12 squash-merged (PR #28, 2026-10-17, `957a2a7`): every hand-off raises an inbox item for the person who acts next (start onboarding → owner, resume request → the other approver, incident → commander, promotion → sponsor); declines and returns to Shadow tell people in the log; hand-offs stay off the boards; the onboarding flow map for Claude Design (`docs/flow-map/onboarding/`). Before that: links for one recipient squash-merged (PR #26, 2026-10-12): `/for/<name>` is the landing page under its own address, and a visit is recorded at the address opened, so `/for/polly?tour=open` (the walkthrough's start) is recorded as `/for/polly`. Before that, Phase 11 (PR #25) and visitor analytics (PR #24) |
-| **Next task** | Sync the Claude Design project from `957a2a7` (the onboarding flow map in `docs/flow-map/onboarding/`). Ideas to decide on are in the local `docs/ideas-to-revisit.md`. Earlier, still pending: Stefan's listen pass on the doubtful tour lines; `/?notrack` once per browser |
+| **Current phase** | Phase 13: Countersign at scale (⏸ at checkpoint) |
+| **Branch** | `phase-13-system-at-scale` |
+| **Last completed** | Phase 13 tasks 13.1–13.7 (2026-10-19): screenshot gate (`pnpm visual`, 100 screens), debt audit and ratchet (`pnpm ds:audit`), tokens for every foundation and a pixel-identical migration (1,990 values), layer rules in ESLint, SidePanel promoted, `docs/design-system/`. Before that: Phase 12 squash-merged (PR #28, 2026-10-17, `957a2a7`): every hand-off raises an inbox item for the person who acts next (start onboarding → owner, resume request → the other approver, incident → commander, promotion → sponsor); declines and returns to Shadow tell people in the log; hand-offs stay off the boards; the onboarding flow map for Claude Design (`docs/flow-map/onboarding/`). Before that: links for one recipient squash-merged (PR #26, 2026-10-12): `/for/<name>` is the landing page under its own address, and a visit is recorded at the address opened, so `/for/polly?tour=open` (the walkthrough's start) is recorded as `/for/polly`. Before that, Phase 11 (PR #25) and visitor analytics (PR #24) |
+| **Next task** | CHECKPOINT: Stefan reviews the PR #30 preview, then merge. After merge: sync the Countersign design-system project in Claude Design (Stefan starts `/design-sync`). Ideas to decide on are in the local `docs/ideas-to-revisit.md` |
 | **Blockers** | None |
 | **Repo** | [github.com/StefanNav/agent-control-plane](https://github.com/StefanNav/agent-control-plane) (public) |
 | **Live URL** | https://agent-control-plane-mocha.vercel.app (public, deploys from `main`) |
-| **Latest preview** | none open |
+| **Latest preview** | [PR #30 preview](https://agent-control-plane-git-phase-13-sys-f65512-stefannavs-projects.vercel.app) |
 
 ### How to resume in a new session
 
@@ -101,6 +101,7 @@ The failure modes most likely to bite a visitor that no screen-level test natura
 | 10 | Guided tour | ☑ Merged | `phase-10-guided-tour` | [#20](https://github.com/StefanNav/agent-control-plane/issues/20) | [#21](https://github.com/StefanNav/agent-control-plane/pull/21) | [phase-10-guided-tour.md](plans/phase-10-guided-tour.md) |
 | 11 | Brand motion | ☑ Merged | `phase-11-brand-motion` | [#23](https://github.com/StefanNav/agent-control-plane/issues/23) | [#25](https://github.com/StefanNav/agent-control-plane/pull/25) | [phase-11-brand-motion.md](plans/phase-11-brand-motion.md) |
 | 12 | Every hand-off reaches an inbox | ☑ Merged | `phase-12-handoffs` | [#27](https://github.com/StefanNav/agent-control-plane/issues/27) | [#28](https://github.com/StefanNav/agent-control-plane/pull/28) | [phase-12-handoffs.md](plans/phase-12-handoffs.md) |
+| 13 | Countersign at scale | ⏸ At checkpoint | `phase-13-system-at-scale` | [#29](https://github.com/StefanNav/agent-control-plane/issues/29) | [#30](https://github.com/StefanNav/agent-control-plane/pull/30) | [phase-13-system-at-scale.md](plans/phase-13-system-at-scale.md) |
 
 GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11 is #23 (#22 was the voice meter PR). Status values: ☐ Not started · ◐ In progress · ⏸ At checkpoint (awaiting review) · ☑ Merged.
 
@@ -779,6 +780,27 @@ GitHub issue numbers are phase + 1 (issue #1 = Phase 0) up to Phase 10; Phase 11
   - New seeded hand-offs are literals (seed has no store imports); store tests pin each to what the store raises.
   - A hand-off's deadline is per type: owner's job 7 days; resume and commander 17:00 the same day (next day from 15:00); Tier 3+ promotion the day before the next board.
 
+## Phase 13: Countersign at scale
+
+**Goal:** The design system holds up as more people and AI build on it: tokens for every foundation, a debt ratchet, a screenshot gate, one copied pattern promoted end to end, and the docs for adding to the system. Product screens stay pixel-identical.
+**Detailed steps:** [`plans/phase-13-system-at-scale.md`](plans/phase-13-system-at-scale.md) · **Docs:** [`design-system/`](design-system/README.md) · Issue #29, milestone 14
+
+- [x] 13.1 Screenshot gate over 100 screens (`pnpm visual`)
+- [x] 13.2 Debt audit and ratchet (`pnpm ds:audit`, in `pnpm check`)
+- [x] 13.3 Tokens for space, type roles, radius, motion, layers; scoped token files
+- [x] 13.4 Scripted migration to tokens (1,990 values), pixel-identical
+- [x] 13.5 ESLint enforces the layers and the design system's front door
+- [x] 13.6 SidePanel promoted; onboarding and review use it; gallery entry
+- [x] 13.7 Docs (`docs/design-system/`) and the rules in `CLAUDE.md`
+- [x] 13.8 Whole-branch review (0 Critical, 3 Important fixed, minors fixed), PR #30 → **CHECKPOINT**
+
+**Handoff notes (Phase 13)**
+
+- **What exists:** `scripts/ds-audit.mjs` (+ baseline JSON and test), `scripts/ds-migrate-tokens.mjs` (one-off, safe to rerun), `tests/visual/` + `playwright.visual.config.ts`, `src/design-system/primitives/SidePanel`, `src/design-system/tokens-ehr.css`, `src/prototype/brand-tokens.css`, `docs/design-system/`.
+- **The ratchet:** a count above `scripts/ds-audit.baseline.json` fails `pnpm check`; a count below it fails too until `pnpm ds:audit --write` locks the gain in.
+- **The gate's baseline is local** (`.visual/`, ignored): take it on `main` (or before any change) with `pnpm visual:baseline`. CI doesn't run it yet (baselines are per machine); backlog item 10.
+- **Gotchas:** `copiedBlocks` counts copies only outside `src/design-system` (a block the system defines once isn't a copy). The migration skips negative values and anything off the scale on purpose.
+
 ## Frame tracker
 
 Tick **Built** when the screen exists at its route; tick **QA'd** after the side-by-side visual check at a checkpoint. Phase 9 re-swept all 54 frames side by side on 2026-10-09 (`QA=1 pnpm capture tests/capture/qa.spec.ts`) and fixed the drift it found (see the Phase 9 handoff notes).
@@ -970,6 +992,10 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-17 | Frame departures: 5a Needs me 4 → 5, Waiting 2 → 3; 5c digest 2 → 3 things; 5d Priya 3 → 4 | The culture draft's and PRM-0007's hand-offs now reach inboxes (spec §5) |
 | 2026-10-17 | The Culture Follow-up draft starts 03 Dec (was 30 Nov, invented) | Its hand-off would otherwise sit six days overdue at the top of Marcus's inbox |
 | 2026-10-17 | Deferred: the shadow-minimum nudge (D1), channels and preferences (D2), escalating hand-offs (D3) | Spec §6 |
+| 2026-10-19 | The design system's spacing and radius tokens are named by value (`--cs-space-16`, `--cs-radius-6`), its type tokens by role (`--cs-type-meta-size`) | The handoff defines spacing and radii as scales of values and type as roles; value names make the migration provably exact and an off-scale value obvious |
+| 2026-10-19 | Product screens stay pixel-identical through Phase 13; only the gallery changes. Side-panel copies that differ from the spec (1 to 12 px) aren't moved; they're listed for a decision | Stefan: the live prototype must keep working exactly as it does |
+| 2026-10-19 | Debt is a ratchet, not a goal: `pnpm check` fails if any audit count rises, and when one falls until the baseline is locked in | A lean team can't review every line; the build can refuse new debt without anyone fixing old debt first |
+| 2026-10-19 | A feature never imports from another feature's folder; a second user is the signal to move the piece into the system. Counted by the audit (55 on `main`) rather than enforced by lint, so the count can fall over time | Onboarding's local `SideCard` was imported by review and copied by seven features, which drifted |
 
 ## Session log
 
@@ -1018,3 +1044,5 @@ One row per working session. Newest last.
 | 2026-10-12 | – | Merged visitor analytics (PR #24); verified live (the bundle carries Vercel's script path and the site serves the script). Built links for one recipient (`/for/<name>`), merged main's Phase 11 into the branch, and made the first page view report the address opened, so Polly's tour link (`/for/polly?tour=open`) is recorded as `/for/polly`. 1307 unit and 318 e2e tests green. PR #26 squash-merged; production verified: the analytics, welcome and route specs (56) pass against the live URL, and `/for/polly?tour=open` opens on Attune's welcome, then the tour's welcome card | Stefan tests Polly's link in incognito, then sends it |
 | 2026-10-17 | 12 | Q&A walkthrough with Stefan (onboarding, risk tiers, gateway, evidence, scorecard); built the onboarding flow map for Claude Design; Claude Design found Start onboarding never notifies the owner; audited every hand-off; wrote the Phase 12 spec and plan; built H1–H6 test-first (1334 unit, 320 e2e green), re-captured the flow map; whole-branch review; PR opened | CHECKPOINT: Stefan reviews the preview |
 | 2026-10-17 | 12 | Stefan approved; PR #28 squash-merged (`957a2a7`); #27 and the milestone closed; production checked | Sync Claude Design from `957a2a7` |
+| 2026-10-19 | 13 | Audited Countersign with Stefan (what held: colour and status; what drifted: spacing, type, copied patterns). Built the screenshot gate (100 screens), the debt audit and ratchet, tokens for every foundation, a scripted migration (1,990 values, pixel-identical), layer rules in ESLint, SidePanel (onboarding and review), and `docs/design-system/` | 13.8: review, PR, CHECKPOINT; then sync Claude Design |
+| 2026-10-19 | 13 | Whole-branch review (fresh reviewer): 0 Critical; fixed the audit's sign on negative offsets, counted line heights (425 → 45), widened the front-door lint rule, aligned the docs. 1395 unit and 320 e2e green; `pnpm visual` 100 of 100 (the gallery accepted). PR #30 opened | CHECKPOINT: Stefan reviews the preview; after merge, `/design-sync` |

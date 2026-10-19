@@ -1,0 +1,45 @@
+/* The side panel (design source `side`, `sideHead`, `sBlock`): a card beside the main column. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--cs-raised);
+  border: 1px solid var(--cs-line);
+  border-radius: var(--cs-radius-6);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cs-space-2);
+  padding: var(--cs-space-16) var(--cs-space-20);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
+  font-weight: 600;
+  color: var(--cs-ink);
+}
+
+.sub {
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
+  color: var(--cs-meta);
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cs-space-10);
+  padding: var(--cs-space-16) var(--cs-space-20) var(--cs-space-20);
+  border-top: 1px solid var(--cs-line);
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
+  color: var(--cs-text2);
+}
+
+.block strong {
+  font-weight: 600;
+  color: var(--cs-ink);
+}

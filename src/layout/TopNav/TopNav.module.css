@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: space-between;
   height: 48px;
-  padding: 0 24px;
+  padding: 0 var(--cs-space-24);
   background: var(--cs-raised);
   border-bottom: 1px solid var(--cs-line);
 }
@@ -11,12 +11,12 @@
 .left {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: var(--cs-space-32);
   height: 100%;
 }
 
 .wordmark {
-  font-size: 14px;
+  font-size: var(--cs-type-ui-size);
   font-weight: 600;
   letter-spacing: 0.04em;
 }
@@ -24,14 +24,14 @@
 .nav {
   display: flex;
   align-items: stretch;
-  gap: 24px;
+  gap: var(--cs-space-24);
   height: 100%;
 }
 
 .item {
   display: flex;
   align-items: center;
-  font-size: 14px;
+  font-size: var(--cs-type-ui-size);
   color: var(--cs-text2);
   text-decoration: none;
 }
@@ -45,7 +45,7 @@
 .right {
   display: flex;
   align-items: center;
-  gap: 14px;
-  font-size: 14px;
+  gap: var(--cs-space-14);
+  font-size: var(--cs-type-ui-size);
   color: var(--cs-text2);
 }

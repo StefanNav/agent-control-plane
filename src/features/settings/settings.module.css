@@ -2,29 +2,29 @@
 .layout {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
-  column-gap: 24px;
+  column-gap: var(--cs-space-24);
   align-items: start;
-  padding: 24px 40px 48px;
+  padding: var(--cs-space-24) var(--cs-space-40) var(--cs-space-48);
 }
 
 .body {
-  padding: 24px 40px 48px;
+  padding: var(--cs-space-24) var(--cs-space-40) var(--cs-space-48);
 }
 
 .divisions {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--cs-line);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
   background: var(--cs-raised);
   overflow: hidden;
 }
 
 .listHead {
-  padding: 12px 16px;
+  padding: var(--cs-space-12) var(--cs-space-16);
   border-bottom: 1px solid var(--cs-line);
   font-family: var(--cs-font-mono);
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   font-weight: 600;
   letter-spacing: 0.05em;
   color: var(--cs-meta);
@@ -34,8 +34,8 @@
 .divisionCurrent {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 10px 16px;
+  gap: var(--cs-space-2);
+  padding: var(--cs-space-10) var(--cs-space-16);
   border-bottom: 1px solid var(--cs-line);
   color: var(--cs-ink);
   text-decoration: none;
@@ -50,78 +50,78 @@
 }
 
 .divisionName {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   font-weight: 600;
 }
 
 .divisionSub {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
 .listFoot {
-  padding: 12px 16px;
+  padding: var(--cs-space-12) var(--cs-space-16);
 }
 
 .card {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--cs-line);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
   background: var(--cs-raised);
-  padding: 8px 32px 32px;
+  padding: var(--cs-space-8) var(--cs-space-32) var(--cs-space-32);
 }
 
 .section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px 0 28px;
+  gap: var(--cs-space-16);
+  padding: var(--cs-space-20) 0 var(--cs-space-28);
   border-bottom: 1px solid var(--cs-line);
 }
 
 .headingBlock {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--cs-space-4);
 }
 
 .heading {
   margin: 0;
-  font-size: 18px;
-  line-height: 24px;
+  font-size: var(--cs-type-section-size);
+  line-height: var(--cs-type-section-line);
   font-weight: 600;
   color: var(--cs-ink);
 }
 
 .lede {
   margin: 0;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   color: var(--cs-text2);
 }
 
 .pair {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
+  gap: var(--cs-space-20);
 }
 
 .value {
   display: block;
   min-height: 44px;
-  padding: 10px 0;
-  font-size: 16px;
-  line-height: 24px;
+  padding: var(--cs-space-10) 0;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   color: var(--cs-ink);
 }
 
 .grace {
   display: flex;
   align-items: flex-end;
-  gap: 24px;
+  gap: var(--cs-space-24);
 }
 
 .graceSelect {
@@ -130,38 +130,38 @@
 
 .preview {
   margin: 0;
-  padding-bottom: 12px;
-  font-size: 14px;
-  line-height: 20px;
+  padding-bottom: var(--cs-space-12);
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
 }
 
 .foot {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding-top: 20px;
+  gap: var(--cs-space-16);
+  padding-top: var(--cs-space-20);
 }
 
 .meta {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   color: var(--cs-meta);
 }
 
 .modalForm {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--cs-space-16);
 }
 
 .agentPicker {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--cs-space-10);
   max-height: 280px;
   margin: 0;
-  padding: 0 0 4px;
+  padding: 0 0 var(--cs-space-4);
   overflow-y: auto;
   border: 0;
 }
@@ -170,21 +170,21 @@
 .peopleLayout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 380px;
-  column-gap: 40px;
+  column-gap: var(--cs-space-40);
   align-items: start;
-  padding: 24px 40px 48px;
+  padding: var(--cs-space-24) var(--cs-space-40) var(--cs-space-48);
 }
 
 .personName {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   font-weight: 600;
   color: var(--cs-ink);
 }
 
 .personTitle {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
 }
 
@@ -192,23 +192,23 @@
   display: flex;
   flex-direction: column;
   border: 1px solid var(--cs-line);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
   background: var(--cs-raised);
 }
 
 .panelHead {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 16px 20px;
+  gap: var(--cs-space-2);
+  padding: var(--cs-space-16) var(--cs-space-20);
   border-bottom: 1px solid var(--cs-line);
 }
 
 .panelSection {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px 20px;
+  gap: var(--cs-space-12);
+  padding: var(--cs-space-16) var(--cs-space-20);
   border-bottom: 1px solid var(--cs-line);
 }
 
@@ -218,7 +218,7 @@
 
 .caps {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -226,8 +226,8 @@
 }
 
 .addHead {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   font-weight: 600;
   color: var(--cs-ink);
 }
@@ -237,26 +237,26 @@
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 4px 12px;
-  font-size: 14px;
-  line-height: 20px;
+  gap: var(--cs-space-4) var(--cs-space-12);
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-ink);
 }
 
 .roleMeta {
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   color: var(--cs-meta);
 }
 
 .roleRow .textButton {
   flex-basis: 100%;
   text-align: left;
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
 }
 
 .roleError {
   flex-basis: 100%;
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   color: var(--cs-warn-text);
 }
 
@@ -277,7 +277,7 @@
 .inline {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--cs-space-12);
 }
 
 .capList {
@@ -293,10 +293,10 @@
 .capLocked {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--cs-space-10);
   min-height: 32px;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
 }
 
 .capOk {
