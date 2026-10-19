@@ -2,12 +2,12 @@
   display: inline-flex;
   align-items: center;
   height: 32px;
-  padding: 0 12px;
+  padding: 0 var(--cs-space-12);
   border: 1px solid var(--cs-line-strong);
-  border-radius: 3px;
+  border-radius: var(--cs-radius-3);
   background: var(--cs-raised);
   color: var(--cs-text2);
-  font-size: 14px;
+  font-size: var(--cs-type-ui-size);
   white-space: nowrap;
   cursor: pointer;
 }

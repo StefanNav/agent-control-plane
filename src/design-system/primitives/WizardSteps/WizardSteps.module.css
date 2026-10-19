@@ -8,9 +8,9 @@
 .step {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cs-space-2);
   min-width: 0;
-  padding: 12px 16px 14px;
+  padding: var(--cs-space-12) var(--cs-space-16) var(--cs-space-14);
 }
 
 .current {
@@ -21,7 +21,7 @@
 .button {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cs-space-2);
   padding: 0;
   border: none;
   background: none;
@@ -32,9 +32,9 @@
 .label {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  line-height: 20px;
+  gap: var(--cs-space-6);
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
 }
 
 .current .label {
@@ -46,8 +46,8 @@
 }
 
 .sub {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
@@ -56,5 +56,5 @@
   width: 14px;
   height: 14px;
   border: 1.5px solid var(--cs-text2);
-  border-radius: 2px;
+  border-radius: var(--cs-radius-2);
 }

@@ -1,10 +1,10 @@
 .paper {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: var(--cs-space-28);
   min-width: 0;
-  padding: 28px 32px 32px;
+  padding: var(--cs-space-28) var(--cs-space-32) var(--cs-space-32);
   background: var(--cs-raised);
   border: 1px solid var(--cs-line-strong);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
 }

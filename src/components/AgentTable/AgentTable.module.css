@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: var(--cs-space-8);
   min-width: 0;
 }
 
@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: row;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--cs-space-8);
   min-width: 0;
 }
 
@@ -28,8 +28,8 @@
 .due {
   flex: none;
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
@@ -55,7 +55,7 @@
 .privilege {
   display: grid;
   grid-template-columns: 38px 56px 56px auto;
-  column-gap: 8px;
+  column-gap: var(--cs-space-8);
   align-items: center;
   white-space: nowrap;
 }
@@ -70,5 +70,5 @@
 
 .privilegeTight {
   grid-template-columns: 38px 44px 44px auto;
-  column-gap: 6px;
+  column-gap: var(--cs-space-6);
 }

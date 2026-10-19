@@ -1,13 +1,15 @@
+import brand from '../prototype/brand-tokens.css?raw'
+import ehr from './tokens-ehr.css?raw'
 import css from './tokens.css?raw'
 
-function block(selector: string): string {
-  const start = css.indexOf(`${selector} {`)
+function block(source: string, selector: string): string {
+  const start = source.indexOf(`${selector} {`)
   if (start === -1) return ''
-  return css.slice(start, css.indexOf('}', start))
+  return source.slice(start, source.indexOf('}', start))
 }
 
-const rootBlock = block(':root')
-const darkBlock = block('[data-theme="dark"]')
+const rootBlock = block(css, ':root')
+const darkBlock = block(css, '[data-theme="dark"]')
 
 const LIGHT: Array<[string, string]> = [
   ['--cs-bg', 'oklch(0.985 0.002 90)'],
@@ -39,11 +41,6 @@ const LIGHT: Array<[string, string]> = [
   ['--cs-scrim-strong', 'oklch(0.21 0.004 90 / 0.55)'],
   ['--cs-shadow-menu', '0 8px 24px oklch(0.21 0.004 90 / 0.14)'],
   ['--cs-shadow-modal', '0 16px 48px oklch(0.21 0.004 90 / 0.2)'],
-  // The Attune mark (Phase 11): product indigo, deep and soft, and a pair for the ink prototype bar.
-  ['--cs-mark-deep', 'var(--cs-acc)'],
-  ['--cs-mark-soft', 'oklch(0.7 0.1 268)'],
-  ['--cs-mark-deep-on-ink', 'oklch(0.74 0.12 268)'],
-  ['--cs-mark-soft-on-ink', 'oklch(0.86 0.06 268)'],
 ]
 
 const DARK: Array<[string, string]> = [
@@ -70,8 +67,6 @@ const DARK: Array<[string, string]> = [
   ['--cs-crit', 'oklch(0.7 0.17 27)'],
   ['--cs-lad-pass', 'oklch(0.52 0.006 90)'],
   ['--cs-lad-lock', 'oklch(0.3 0.005 90)'],
-  ['--cs-mark-deep', 'oklch(0.74 0.12 268)'],
-  ['--cs-mark-soft', 'oklch(0.86 0.06 268)'],
 ]
 
 test.each(LIGHT)('light %s', (name, value) => {
@@ -84,4 +79,45 @@ test.each(DARK)('dark %s', (name, value) => {
 
 test('dark --cs-fill is defined', () => {
   expect(darkBlock).toMatch(/--cs-fill: oklch\([^)]+\);/)
+})
+
+// The Attune mark (Phase 11), scoped to the prototype layer: product indigo, deep and soft, and a pair for the ink prototype bar.
+test.each([
+  [':root', '--cs-mark-deep', 'var(--cs-acc)'],
+  [':root', '--cs-mark-soft', 'oklch(0.7 0.1 268)'],
+  [':root', '--cs-mark-deep-on-ink', 'oklch(0.74 0.12 268)'],
+  [':root', '--cs-mark-soft-on-ink', 'oklch(0.86 0.06 268)'],
+  ['[data-theme="dark"]', '--cs-mark-deep', 'oklch(0.74 0.12 268)'],
+  ['[data-theme="dark"]', '--cs-mark-soft', 'oklch(0.86 0.06 268)'],
+])('brand %s %s', (selector, name, value) => {
+  expect(block(brand, selector)).toContain(`${name}: ${value};`)
+})
+
+test('the Epic stand-in keeps its own tokens, light and dark', () => {
+  expect(block(ehr, ':root')).toContain('--cs-ehr-bg: oklch(0.97 0.004 240);')
+  expect(block(ehr, '[data-theme="dark"]')).toContain('--cs-ehr-bg: oklch(0.18 0.006 240);')
+  expect(css).not.toContain('--cs-ehr-')
+  expect(css).not.toContain('--cs-mark-')
+})
+
+/** The handoff's scales (docs/design-handoff.md → "Spacing, radius, borders, elevation" and "Typography"). */
+test.each([2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 56])('space %i', (px) => {
+  expect(rootBlock).toContain(`--cs-space-${px}: ${px}px;`)
+})
+
+test.each([1, 2, 3, 4, 6, 8])('radius %i', (px) => {
+  expect(rootBlock).toContain(`--cs-radius-${px}: ${px}px;`)
+})
+
+test.each([
+  ['title', 24, 32],
+  ['stat', 20, 28],
+  ['section', 18, 24],
+  ['body', 16, 24],
+  ['ui', 14, 20],
+  ['dense', 13, 18],
+  ['meta', 12, 16],
+])('type role %s is %i/%i', (role, size, line) => {
+  expect(rootBlock).toContain(`--cs-type-${role}-size: ${size}px;`)
+  expect(rootBlock).toContain(`--cs-type-${role}-line: ${line}px;`)
 })

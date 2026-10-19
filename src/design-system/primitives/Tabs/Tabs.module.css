@@ -1,18 +1,18 @@
 .tabs {
   display: flex;
   align-items: stretch;
-  gap: 24px;
+  gap: var(--cs-space-24);
   height: 40px;
 }
 
 .tab {
   display: flex;
   align-items: center;
-  padding: 0 2px;
+  padding: 0 var(--cs-space-2);
   border: none;
   background: none;
   color: var(--cs-text2);
-  font-size: 14px;
+  font-size: var(--cs-type-ui-size);
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;

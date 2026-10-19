@@ -3,15 +3,15 @@
   flex-direction: column;
   background: var(--cs-fill);
   border: 1.5px solid var(--cs-ink);
-  border-radius: 2px;
+  border-radius: var(--cs-radius-2);
 }
 
 .bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 16px;
+  gap: var(--cs-space-12);
+  padding: var(--cs-space-10) var(--cs-space-16);
   background: var(--cs-ink);
   color: var(--cs-raised);
 }
@@ -19,10 +19,10 @@
 .barLabel {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--cs-space-8);
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -30,45 +30,45 @@
 
 .barCode {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
 }
 
 .body {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 16px;
+  gap: var(--cs-space-10);
+  padding: var(--cs-space-16);
 }
 
 .title {
-  font-size: 18px;
-  line-height: 24px;
+  font-size: var(--cs-type-section-size);
+  line-height: var(--cs-type-section-line);
   font-weight: 600;
   margin: 0;
 }
 
 .description {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-text2);
   text-wrap: pretty;
 }
 
 .facts {
   margin: 0;
-  padding-top: 4px;
+  padding-top: var(--cs-space-4);
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
-  line-height: 18px;
+  gap: var(--cs-space-6);
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
 }
 
 .fact {
   display: grid;
   grid-template-columns: 120px minmax(0, 1fr);
-  column-gap: 12px;
+  column-gap: var(--cs-space-12);
 }
 
 .fact dt {
@@ -82,11 +82,11 @@
 .footer {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: var(--cs-space-8);
+  padding: var(--cs-space-10) var(--cs-space-16);
   border-top: 1px solid var(--cs-line-strong);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-text2);
 }
 
@@ -95,36 +95,36 @@
   flex-direction: column;
   background: var(--cs-raised);
   border: 1px solid var(--cs-line);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
 }
 
 .instructionHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--cs-space-12);
   min-height: 52px;
-  padding: 10px 12px 10px 16px;
+  padding: var(--cs-space-10) var(--cs-space-12) var(--cs-space-10) var(--cs-space-16);
 }
 
 .instructionLabel {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-meta);
 }
 
 .well {
-  margin: 0 16px;
-  padding: 14px 16px;
-  border-radius: 4px;
+  margin: 0 var(--cs-space-16);
+  padding: var(--cs-space-14) var(--cs-space-16);
+  border-radius: var(--cs-radius-4);
   background: var(--cs-sunk);
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   text-wrap: pretty;
 }
 
 .instructionFacts {
-  padding: 14px 16px 4px;
+  padding: var(--cs-space-14) var(--cs-space-16) var(--cs-space-4);
 }
 
 .instructionFacts .facts {
@@ -132,9 +132,9 @@
 }
 
 .guidance {
-  padding: 10px 16px 14px;
-  font-size: 12px;
-  line-height: 16px;
+  padding: var(--cs-space-10) var(--cs-space-16) var(--cs-space-14);
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
   text-wrap: pretty;
 }

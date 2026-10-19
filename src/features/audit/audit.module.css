@@ -2,20 +2,20 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 28px 40px 48px;
+  gap: var(--cs-space-20);
+  padding: var(--cs-space-28) var(--cs-space-40) var(--cs-space-48);
 }
 
 .readOnly {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--cs-space-6);
   height: 26px;
-  padding: 0 8px;
+  padding: 0 var(--cs-space-8);
   border: 1px solid var(--cs-line-strong);
-  border-radius: 2px;
-  font-size: 13px;
-  line-height: 18px;
+  border-radius: var(--cs-radius-2);
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-text2);
   white-space: nowrap;
 }
@@ -24,23 +24,23 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--cs-space-8);
 }
 
 .staticPill {
   display: inline-flex;
   align-items: center;
   height: 32px;
-  padding: 0 12px;
+  padding: 0 var(--cs-space-12);
   border: 1px solid var(--cs-ink);
-  border-radius: 3px;
-  font-size: 14px;
+  border-radius: var(--cs-radius-3);
+  font-size: var(--cs-type-ui-size);
   font-weight: 600;
 }
 
 .summary {
   margin-left: 0;
-  font-size: 14px;
+  font-size: var(--cs-type-ui-size);
   color: var(--cs-meta);
 }
 
@@ -48,7 +48,7 @@
 .monoStrong,
 .code {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   line-height: 18px;
   color: var(--cs-ink);
 }
@@ -68,66 +68,66 @@
 .policy {
   display: inline-flex;
   align-items: baseline;
-  gap: 6px;
+  gap: var(--cs-space-6);
 }
 
 .note {
   margin: 0;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-meta);
 }
 
 .headerActions {
   display: flex;
-  gap: 10px;
+  gap: var(--cs-space-10);
 }
 
 .split {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 40px;
+  gap: var(--cs-space-40);
   align-items: start;
-  padding: 32px 40px 48px;
+  padding: var(--cs-space-32) var(--cs-space-40) var(--cs-space-48);
 }
 
 .traceCard {
   overflow: hidden;
   background: var(--cs-raised);
   border: 1px solid var(--cs-line);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
 }
 
 .empty {
   margin: 0;
-  padding: 20px;
-  font-size: 14px;
-  line-height: 20px;
+  padding: var(--cs-space-20);
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-meta);
 }
 
 .side {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--cs-space-16);
 }
 
 .cardHead {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 16px 20px;
+  gap: var(--cs-space-2);
+  padding: var(--cs-space-16) var(--cs-space-20);
 }
 
 .cardTitle {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   font-weight: 600;
 }
 
 .cardSub {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-meta);
 }
 
@@ -135,10 +135,10 @@
 .kvIndented {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 20px;
-  font-size: 14px;
-  line-height: 20px;
+  gap: var(--cs-space-12);
+  padding: var(--cs-space-8) var(--cs-space-20);
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
 }
 
@@ -151,7 +151,7 @@
 }
 
 .value {
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   line-height: 20px;
   color: var(--cs-meta);
   text-align: right;
@@ -164,13 +164,13 @@
 .dialogBody {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--cs-space-20);
 }
 
 /* 7b: a policy decision's mark sits in the row's indent, left of its rule. */
 .rule {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--cs-space-8);
   margin-left: -20px;
 }

@@ -5,7 +5,7 @@
 }
 
 .row {
-  gap: 2px;
+  gap: var(--cs-space-2);
 }
 
 .row .segment {
@@ -23,7 +23,7 @@
 }
 
 .segment {
-  border-radius: 1px;
+  border-radius: var(--cs-radius-1);
 }
 
 .passed {
@@ -57,16 +57,16 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   background: var(--cs-raised);
   border: 1px solid var(--cs-line);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
   overflow: hidden;
 }
 
 .cell {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cs-space-2);
   min-height: 80px;
-  padding: 12px 16px;
+  padding: var(--cs-space-12) var(--cs-space-16);
 }
 
 .cell + .cell {
@@ -76,24 +76,24 @@
 .caption {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  line-height: 16px;
+  gap: var(--cs-space-6);
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
 .level {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
 }
 
 .evidence {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: var(--cs-space-6);
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
@@ -135,15 +135,15 @@
 .wide {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  column-gap: 4px;
-  row-gap: 4px;
+  column-gap: var(--cs-space-4);
+  row-gap: var(--cs-space-4);
 }
 
 .bar,
 .swatch {
   box-sizing: border-box;
   height: 10px;
-  border-radius: 2px;
+  border-radius: var(--cs-radius-2);
 }
 
 .bar_passed {
@@ -176,9 +176,9 @@
 .barLabel {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  line-height: 16px;
+  gap: var(--cs-space-4);
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
@@ -190,7 +190,7 @@
 .legend {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--cs-space-8);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -199,9 +199,9 @@
 .legendRow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  line-height: 18px;
+  gap: var(--cs-space-10);
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-text2);
 }
 

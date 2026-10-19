@@ -3,6 +3,8 @@ import '@fontsource/ibm-plex-sans/600.css'
 import '@fontsource/ibm-plex-mono/400.css'
 import '@fontsource/ibm-plex-mono/600.css'
 import './design-system/tokens.css'
+import './design-system/tokens-ehr.css'
+import './prototype/brand-tokens.css'
 import './design-system/global.css'
 
 import { Analytics } from '@vercel/analytics/react'

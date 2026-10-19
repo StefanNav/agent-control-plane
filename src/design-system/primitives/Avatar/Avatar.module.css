@@ -3,9 +3,9 @@
   align-items: center;
   justify-content: center;
   flex: none;
-  border-radius: 50%;
+  border-radius: var(--cs-radius-round);
   background: var(--cs-fill);
   color: var(--cs-ink);
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   font-weight: 600;
 }

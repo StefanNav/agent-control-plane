@@ -3,12 +3,12 @@
   flex: none;
   height: 4px;
   background: var(--cs-line);
-  border-radius: 2px;
+  border-radius: var(--cs-radius-2);
 }
 
 .fill {
   display: block;
   height: 4px;
   background: var(--cs-text2);
-  border-radius: 2px;
+  border-radius: var(--cs-radius-2);
 }

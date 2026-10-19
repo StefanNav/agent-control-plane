@@ -10,15 +10,15 @@
 .head {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 16px 28px;
+  gap: var(--cs-space-4);
+  padding: var(--cs-space-16) var(--cs-space-28);
   background: var(--cs-sunk);
   border-bottom: 1px solid var(--cs-line);
 }
 
 .line {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-text2);
 }
 
@@ -36,26 +36,26 @@
 .body {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 24px 28px 28px;
+  gap: var(--cs-space-24);
+  padding: var(--cs-space-24) var(--cs-space-28) var(--cs-space-28);
 }
 
 .intro {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--cs-space-4);
 }
 
 .title {
-  font-size: 20px;
-  line-height: 28px;
+  font-size: var(--cs-type-stat-size);
+  line-height: var(--cs-type-stat-line);
   font-weight: 600;
 }
 
 .sub {
   margin: 0;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
 }
 
@@ -66,7 +66,7 @@
 
 .label {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   line-height: 20px;
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -78,8 +78,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  padding: 14px 0;
+  gap: var(--cs-space-16);
+  padding: var(--cs-space-14) 0;
   border-top: 1px solid var(--cs-line);
 }
 
@@ -87,7 +87,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: var(--cs-space-6);
   min-width: 0;
 }
 
@@ -98,13 +98,13 @@
 }
 
 .meta {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-meta);
 }
 
 .open {
-  font-size: 14px;
+  font-size: var(--cs-type-ui-size);
   line-height: 22px;
   font-weight: 600;
   color: var(--cs-acc);
@@ -118,10 +118,10 @@
 
 .logLine {
   margin: 0;
-  padding-top: 8px;
+  padding-top: var(--cs-space-8);
   border-top: 1px solid var(--cs-line);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
 }
 
@@ -131,9 +131,9 @@
 }
 
 .foot {
-  padding-top: 16px;
+  padding-top: var(--cs-space-16);
   border-top: 1px solid var(--cs-line);
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-meta);
 }

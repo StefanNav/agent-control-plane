@@ -3,12 +3,12 @@
   position: fixed;
   top: 4px;
   left: 8px;
-  z-index: 70;
-  padding: 4px 8px;
-  border-radius: 4px;
+  z-index: var(--cs-layer-skip-link);
+  padding: var(--cs-space-4) var(--cs-space-8);
+  border-radius: var(--cs-radius-4);
   background: var(--cs-raised);
   color: var(--cs-ink);
-  font-size: 13px;
+  font-size: var(--cs-type-dense-size);
   line-height: 20px;
   font-weight: 600;
   text-decoration: none;

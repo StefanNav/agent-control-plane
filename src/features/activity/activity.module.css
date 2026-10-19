@@ -2,21 +2,21 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--cs-space-10);
 }
 
 .sectionHead {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--cs-space-16);
 }
 
 .caps {
   margin: 0;
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -25,8 +25,8 @@
 
 .help {
   margin: 0;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-meta);
 }
 
@@ -34,23 +34,23 @@
 .levels {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: var(--cs-space-8);
 }
 
 .level {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cs-space-2);
   min-height: 69px;
   box-sizing: border-box;
-  padding: 12px 14px;
+  padding: var(--cs-space-12) var(--cs-space-14);
   border: 1px solid var(--cs-line);
-  border-radius: 4px;
+  border-radius: var(--cs-radius-4);
   background: var(--cs-sunk);
 }
 
 .level[data-current='true'] {
-  padding: 12px 14px 12px 13.5px;
+  padding: var(--cs-space-12) var(--cs-space-14) var(--cs-space-12) 13.5px;
   border: 1.5px solid var(--cs-ink);
   background: var(--cs-raised);
 }
@@ -59,7 +59,7 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--cs-space-8);
   font-size: 15px;
   line-height: 22px;
   color: var(--cs-text2);
@@ -71,36 +71,36 @@
 }
 
 .levelSince {
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   font-weight: 400;
   color: var(--cs-meta);
 }
 
 .rate {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-meta);
 }
 
 .move {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   font-weight: 600;
   color: var(--cs-ink);
 }
 
 .rule {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-ink);
 }
 
 .now {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  line-height: 18px;
+  gap: var(--cs-space-6);
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-text2);
 }
 
@@ -115,7 +115,7 @@
 
 .counts {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   line-height: 18px;
   color: var(--cs-meta);
 }
@@ -125,7 +125,7 @@
   border: 0;
   background: none;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--cs-type-dense-size);
   line-height: 17px;
   color: var(--cs-ink);
   text-decoration: underline;
@@ -135,13 +135,13 @@
 /* 13a's "Last 90 days". */
 .bar {
   display: flex;
-  gap: 2px;
+  gap: var(--cs-space-2);
 }
 
 .segment {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--cs-space-6);
   min-width: 0;
 }
 
@@ -164,8 +164,8 @@
 .segmentText {
   display: flex;
   flex-direction: column;
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-ink);
   white-space: nowrap;
 }
@@ -179,55 +179,55 @@
   display: flex;
   flex-direction: column;
   border: 1px solid var(--cs-line);
-  border-radius: 6px;
+  border-radius: var(--cs-radius-6);
   background: var(--cs-raised);
 }
 
 .sideHead {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 16px 20px 0;
+  gap: var(--cs-space-2);
+  padding: var(--cs-space-16) var(--cs-space-20) 0;
 }
 
 .sideTitle {
   margin: 0;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: var(--cs-type-body-size);
+  line-height: var(--cs-type-body-line);
   font-weight: 600;
   color: var(--cs-ink);
 }
 
 .sideSub {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-meta);
 }
 
 .facts {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--cs-space-16);
   margin: 0;
-  padding: 24px 20px 16px;
+  padding: var(--cs-space-24) var(--cs-space-20) var(--cs-space-16);
 }
 
 .fact {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--cs-space-12);
 }
 
 .fact dt {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
 }
 
 .fact dd {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   line-height: 20px;
   color: var(--cs-meta);
   text-align: right;
@@ -235,10 +235,10 @@
 
 .sideNote {
   margin: 0;
-  padding: 16px 20px 20px;
+  padding: var(--cs-space-16) var(--cs-space-20) var(--cs-space-20);
   border-top: 1px solid var(--cs-line);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-text2);
 }
 
@@ -250,21 +250,21 @@
 .changes {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--cs-space-16);
   margin: 0;
-  padding: 24px 20px 20px;
+  padding: var(--cs-space-24) var(--cs-space-20) var(--cs-space-20);
   list-style: none;
 }
 
 .change {
   display: grid;
   grid-template-columns: 64px minmax(0, 1fr);
-  gap: 12px;
+  gap: var(--cs-space-12);
 }
 
 .changeDate {
   font-family: var(--cs-font-mono);
-  font-size: 12px;
+  font-size: var(--cs-type-meta-size);
   line-height: 20px;
   color: var(--cs-meta);
 }
@@ -272,18 +272,18 @@
 .changeText {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cs-space-2);
 }
 
 .changeTitle {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-ink);
 }
 
 .changeSub {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--cs-type-dense-size);
+  line-height: var(--cs-type-dense-line);
   color: var(--cs-meta);
 }
 
@@ -291,19 +291,19 @@
 .pair {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cs-space-2);
 }
 
 .name {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   font-weight: 600;
   color: var(--cs-ink);
 }
 
 .meta {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
@@ -319,18 +319,18 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--cs-space-16);
 }
 
 .rulesGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) repeat(3, 96px);
   align-items: end;
-  gap: 12px;
+  gap: var(--cs-space-12);
 }
 
 .rulesGrid > span {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
   color: var(--cs-ink);
 }

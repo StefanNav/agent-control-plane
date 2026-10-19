@@ -10,13 +10,13 @@
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
-  z-index: 20;
+  z-index: var(--cs-layer-menu);
   display: flex;
   flex-direction: column;
-  padding: 4px 0;
+  padding: var(--cs-space-4) 0;
   background: var(--cs-raised);
   border: 1px solid var(--cs-line-strong);
-  border-radius: 3px;
+  border-radius: var(--cs-radius-3);
   box-shadow: var(--cs-shadow-menu);
 }
 
@@ -31,16 +31,16 @@
 }
 
 .divided {
-  margin-top: 4px;
-  padding-top: 4px;
+  margin-top: var(--cs-space-4);
+  padding-top: var(--cs-space-4);
   border-top: 1px solid var(--cs-line);
 }
 
 .groupLabel {
-  padding: 8px 14px 4px;
+  padding: var(--cs-space-8) var(--cs-space-14) var(--cs-space-4);
   font-family: var(--cs-font-mono);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -50,8 +50,8 @@
 .item {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 8px 14px;
+  gap: var(--cs-space-2);
+  padding: var(--cs-space-8) var(--cs-space-14);
   cursor: pointer;
   outline: none;
 }
@@ -70,9 +70,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  font-size: 14px;
-  line-height: 20px;
+  gap: var(--cs-space-8);
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
 }
 
 .selected .itemLabel {
@@ -80,8 +80,8 @@
 }
 
 .sub {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--cs-type-meta-size);
+  line-height: var(--cs-type-meta-line);
   color: var(--cs-meta);
 }
 
