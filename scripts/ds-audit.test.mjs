@@ -61,6 +61,18 @@ describe('audit', () => {
     expect(counts.rawElements).toBe(1)
   })
 
+  test('a feature importing from another feature counts; from itself or the system, it does not', () => {
+    const { counts } = audit([
+      css(
+        'src/features/review/PacketPage.tsx',
+        `import { StepCard } from '../onboarding/StepCard'
+import { panel } from './panel'
+import { SidePanel } from '../../design-system'`,
+      ),
+    ])
+    expect(counts.crossFeatureImports).toBe(1)
+  })
+
   test('scoped tokens leak outside their scope', () => {
     const { counts } = audit([
       css('src/features/epic/epic.module.css', '.a { color: var(--cs-ehr-ink); }'),

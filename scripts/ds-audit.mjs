@@ -13,7 +13,7 @@
  * The prototype layer (landing, tour, About) is the portfolio wrapper around the product and isn't counted.
  */
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { dirname, join, normalize, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
@@ -33,6 +33,7 @@ export const METRICS = {
   labelRoleCopies: 'Copies of the label type role (mono, uppercase) outside the design system',
   copiedBlocks: 'Styled rule blocks (3+ declarations, one of them visual) repeated across stylesheets outside the design system',
   rawElements: 'Raw <button>, <table>, <input>, <select>, <textarea> in screens where a primitive exists',
+  crossFeatureImports: "Imports from one feature's folder into another's (shared UI belongs in the system, shared logic in src/store or src/lib)",
   scopedTokenLeaks: 'Scoped tokens used outside their scope (--cs-ehr-* outside the Epic stand-in, --cs-mark-* outside the prototype)',
 }
 
@@ -110,6 +111,14 @@ export function audit(files) {
       for (const m of text.matchAll(COLOUR_TS)) add('rawColours', path, lineOf(text, m.index), m[0])
       if (path.startsWith('src/features/') || path.startsWith('src/layout/'))
         for (const m of text.matchAll(RAW_ELEMENT)) add('rawElements', path, lineOf(text, m.index), `<${m[1]}>`)
+      if (path.startsWith('src/features/')) {
+        const own = path.split('/')[2]
+        for (const m of text.matchAll(/from '(\.[^']+)'/g)) {
+          const target = normalize(join(dirname(path), m[1]))
+          const other = target.startsWith('src/features/') ? target.split('/')[2] : null
+          if (other && other !== own) add('crossFeatureImports', path, lineOf(text, m.index), `${own} → ${other}: ${m[1]}`)
+        }
+      }
     }
   }
 
