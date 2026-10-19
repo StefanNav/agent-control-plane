@@ -19,6 +19,7 @@ import {
   RuleTag,
   Segmented,
   Select,
+  SidePanel,
   Sparkline,
   StatStrip,
   Table,
@@ -33,6 +34,39 @@ import { PageHeader } from '../../layout/PageHeader/PageHeader'
 import { Body } from '../../layout/layouts'
 import styles from './ComponentGallery.module.css'
 import { DarkSection, ProductSection } from './ProductSection'
+
+const STARTING = [
+  'Creates AGT-0123 as a draft in Inventory → Drafts',
+  'Fills name, division, requester, purpose and domain from REQ-0093',
+  'Asks Marcus for the job description, systems and verbs',
+  'Asks Sam for tools and hard stops once systems are done',
+  'Tells Priya when 2 to 4 are done',
+]
+
+/** The side panel (1a), as onboarding shows it. */
+function SidePanelSample() {
+  return (
+    <SidePanel
+      title="What starting does"
+      sub="Nothing runs yet"
+      foot={
+        <span>
+          <strong>The agent can’t act.</strong> It stays a draft until AIMS Review and a signed
+          privilege. Owners can work in any order once you start.
+        </span>
+      }
+    >
+      <ol className={styles.sideSteps}>
+        {STARTING.map((line, i) => (
+          <li key={line}>
+            <span>{i + 1}</span>
+            <span>{line}</span>
+          </li>
+        ))}
+      </ol>
+    </SidePanel>
+  )
+}
 
 const TOKENS = [
   'bg', 'raised', 'sunk', 'hover', 'fill', 'sel', 'acc', 'acc-fill', 'line', 'line-strong', 'off', 'icon',
@@ -299,6 +333,21 @@ export function ComponentGallery() {
             </LogRow>
             <LogRow time="09:52">Priya approved resume</LogRow>
           </Card>
+        </Section>
+
+        <Section title="Side panel">
+          <div className={styles.themes}>
+            <div className={styles.panel}>
+              <div className={styles.sideWidth}>
+                <SidePanelSample />
+              </div>
+            </div>
+            <div className={styles.panel} data-theme="dark">
+              <div className={styles.sideWidth}>
+                <SidePanelSample />
+              </div>
+            </div>
+          </div>
         </Section>
 
         <Section title="Table">

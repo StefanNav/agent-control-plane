@@ -147,3 +147,30 @@
   color: var(--cs-warn-text);
   font-weight: 600;
 }
+
+/* The side panel at its 340 px, with onboarding's numbered lines. */
+.sideWidth {
+  width: 340px;
+}
+
+.sideSteps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sideSteps li {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  column-gap: var(--cs-space-10);
+  padding: var(--cs-space-8) var(--cs-space-20);
+  font-size: var(--cs-type-ui-size);
+  line-height: var(--cs-type-ui-line);
+  color: var(--cs-text2);
+}
+
+.sideSteps li > :first-child {
+  font-family: var(--cs-font-mono);
+  font-size: var(--cs-type-meta-size);
+  color: var(--cs-meta);
+}
