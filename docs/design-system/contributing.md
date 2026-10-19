@@ -18,7 +18,7 @@ Before you write any CSS in a feature, open [components.md](components.md) → "
 
 Two rules make this hold:
 
-- **A feature never imports from another feature's folder.** If a second feature wants it, that's the signal to move it into the system. The side panel shows why. Onboarding made it a component, the review screens imported it from onboarding's folder, and six other features couldn't see it there, so they copied its CSS and drifted from the spec by 1 to 12 px ([audit.md](audit.md)). `pnpm ds:audit` counts these imports, and the count can only go down.
+- **A feature never imports from another feature's folder.** If a second feature wants it, that's the signal to move it into the system. The side panel shows why. Onboarding made it a component, the review screens imported it from onboarding's folder, and seven other features couldn't see it there, so they copied its CSS and drifted from the spec by 1 to 12 px ([audit.md](audit.md)). `pnpm ds:audit` counts these imports, and the count can only go down.
 - **Meaning goes into the system on day one.** A status, a lock or an autonomy level that looks slightly different on two screens is a safety problem, not a style problem.
 
 ## 3. Definition of done for a system component

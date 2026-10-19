@@ -23,8 +23,14 @@ describe('audit', () => {
     ])
     expect(counts.rawSpacing).toBe(2) // 14px and -6px; 0 is not a value
     expect(counts.rawFontSizes).toBe(1)
+    expect(counts.rawLineHeights).toBe(1)
     expect(counts.rawRadii).toBe(1)
     expect(counts.rawColours).toBe(1)
+  })
+
+  test('a negative offset keeps its sign in the list', () => {
+    const { places } = audit([css('src/features/x/x.module.css', '.a { margin-left: -8px; }')])
+    expect(places.rawSpacing[0]).toMatch(/margin-left: -8px$/)
   })
 
   test('ignores the token files, tests and the prototype layer', () => {
@@ -67,10 +73,12 @@ describe('audit', () => {
         'src/features/review/PacketPage.tsx',
         `import { StepCard } from '../onboarding/StepCard'
 import { panel } from './panel'
+import '../board/board.module.css'
+const Lazy = lazy(() => import('../inbox/InboxPage'))
 import { SidePanel } from '../../design-system'`,
       ),
     ])
-    expect(counts.crossFeatureImports).toBe(1)
+    expect(counts.crossFeatureImports).toBe(3)
   })
 
   test('scoped tokens leak outside their scope', () => {
@@ -83,7 +91,7 @@ import { SidePanel } from '../../design-system'`,
 
   test('coverage is the share of declarations that use a token', () => {
     const cov = coverage([css('src/features/x/x.module.css', '.a { padding: var(--cs-space-4); margin: 3px; font-size: var(--cs-type-ui-size); }')])
-    expect(cov).toEqual({ spacing: 50, fontSize: 100, radius: 100 })
+    expect(cov).toEqual({ spacing: 50, fontSize: 100, lineHeight: 100, radius: 100 })
   })
 })
 

@@ -59,7 +59,7 @@ export default defineConfig(
     },
   },
   {
-    files: ['src/features/**/*.{ts,tsx}', 'src/layout/**/*.{ts,tsx}', 'src/prototype/**/*.{ts,tsx}'],
+    files: ['src/features/**/*.{ts,tsx}', 'src/layout/**/*.{ts,tsx}', 'src/app/**/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [
@@ -67,7 +67,25 @@ export default defineConfig(
         {
           patterns: [
             {
-              regex: 'design-system/(primitives|icons)/',
+              regex: 'design-system/(?!index$)',
+              message: "Import from the design system's front door ('…/design-system'), so its insides can change.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // The prototype layer (gallery, About, tour) may also set type with the role classes.
+    files: ['src/prototype/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: 'design-system/(?!index$|type\\.module\\.css$)',
               message: "Import from the design system's front door ('…/design-system'), so its insides can change.",
             },
           ],

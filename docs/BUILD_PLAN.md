@@ -995,7 +995,7 @@ Dated decisions that aren't obvious from the code. Newest last.
 | 2026-10-19 | The design system's spacing and radius tokens are named by value (`--cs-space-16`, `--cs-radius-6`), its type tokens by role (`--cs-type-meta-size`) | The handoff defines spacing and radii as scales of values and type as roles; value names make the migration provably exact and an off-scale value obvious |
 | 2026-10-19 | Product screens stay pixel-identical through Phase 13; only the gallery changes. Side-panel copies that differ from the spec (1 to 12 px) aren't moved; they're listed for a decision | Stefan: the live prototype must keep working exactly as it does |
 | 2026-10-19 | Debt is a ratchet, not a goal: `pnpm check` fails if any audit count rises, and when one falls until the baseline is locked in | A lean team can't review every line; the build can refuse new debt without anyone fixing old debt first |
-| 2026-10-19 | A feature never imports from another feature's folder; a second user is the signal to move the piece into the system. Counted by the audit (55 on `main`) rather than enforced by lint, so the count can fall over time | Onboarding's local `SideCard` was imported by review and copied by six features, which drifted |
+| 2026-10-19 | A feature never imports from another feature's folder; a second user is the signal to move the piece into the system. Counted by the audit (55 on `main`) rather than enforced by lint, so the count can fall over time | Onboarding's local `SideCard` was imported by review and copied by seven features, which drifted |
 
 ## Session log
 

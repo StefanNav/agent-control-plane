@@ -13,7 +13,7 @@
  * The prototype layer (landing, tour, About) is the portfolio wrapper around the product and isn't counted.
  */
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
-import { dirname, join, normalize, relative } from 'node:path'
+import { dirname, join, normalize, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
@@ -29,6 +29,7 @@ export const METRICS = {
   rawColours: 'Colour values typed outside the token files',
   rawSpacing: 'Spacing (padding, margin, gap) typed in px instead of a --cs-space token',
   rawFontSizes: 'Font sizes typed in px instead of a --cs-type token',
+  rawLineHeights: 'Line heights typed in px instead of a --cs-type token',
   rawRadii: 'Corner radii typed in px instead of a --cs-radius token',
   labelRoleCopies: 'Copies of the label type role (mono, uppercase) outside the design system',
   copiedBlocks: 'Styled rule blocks (3+ declarations, one of them visual) repeated across stylesheets outside the design system',
@@ -38,7 +39,7 @@ export const METRICS = {
 }
 
 const SPACING_PROPS = /^(padding|margin)(-(top|right|bottom|left|inline|block)(-(start|end))?)?$|^(gap|row-gap|column-gap)$/
-const PX = /(?<![\w.#])(\d*\.?\d+)px\b/g
+const PX = /(?<![\w.#-])(-?\d*\.?\d+)px\b/g
 const COLOUR_CSS = /#[0-9a-fA-F]{3,8}\b|\b(rgba?|hsla?|oklch|oklab|lab|lch|color)\(/g
 const COLOUR_TS = /['"`]#[0-9a-fA-F]{3,8}['"`]|\b(rgba?|hsla?|oklch)\(/g
 const RAW_ELEMENT = /<(button|table|input|select|textarea)\b/g
@@ -98,6 +99,7 @@ export function audit(files) {
           const px = [...value.matchAll(PX)].filter((m) => Number(m[1]) !== 0)
           if (SPACING_PROPS.test(prop)) for (const m of px) add('rawSpacing', path, line, `${prop}: ${m[0]}`)
           if (prop === 'font-size') for (const m of px) add('rawFontSizes', path, line, `${prop}: ${m[0]}`)
+          if (prop === 'line-height') for (const m of px) add('rawLineHeights', path, line, `${prop}: ${m[0]}`)
           if (/^border(-[a-z]+)*-radius$/.test(prop)) for (const m of px) add('rawRadii', path, line, `${prop}: ${m[0]}`)
           if (prop === 'text-transform' && value === 'uppercase' && !path.startsWith('src/design-system/'))
             add('labelRoleCopies', path, line, 'text-transform: uppercase')
@@ -113,8 +115,8 @@ export function audit(files) {
         for (const m of text.matchAll(RAW_ELEMENT)) add('rawElements', path, lineOf(text, m.index), `<${m[1]}>`)
       if (path.startsWith('src/features/')) {
         const own = path.split('/')[2]
-        for (const m of text.matchAll(/from '(\.[^']+)'/g)) {
-          const target = normalize(join(dirname(path), m[1]))
+        for (const m of text.matchAll(/(?:from |import\(|import )'(\.[^']+)'/g)) {
+          const target = normalize(join(dirname(path), m[1])).split(sep).join('/')
           const other = target.startsWith('src/features/') ? target.split('/')[2] : null
           if (other && other !== own) add('crossFeatureImports', path, lineOf(text, m.index), `${own} → ${other}: ${m[1]}`)
         }
@@ -142,9 +144,9 @@ export function audit(files) {
   return { counts, places }
 }
 
-/** Share of spacing, font-size and radius declarations in product CSS that use a token. */
+/** Share of spacing, font-size, line-height and radius declarations in product CSS that use a token. */
 export function coverage(files) {
-  const totals = { spacing: [0, 0], fontSize: [0, 0], radius: [0, 0] }
+  const totals = { spacing: [0, 0], fontSize: [0, 0], lineHeight: [0, 0], radius: [0, 0] }
   for (const { path, text } of files) {
     if (!isProduct(path) || !path.endsWith('.css') || isTokenFile(path)) continue
     for (const { prop, value } of declarations(text)) {
@@ -152,6 +154,8 @@ export function coverage(files) {
         ? 'spacing'
         : prop === 'font-size'
           ? 'fontSize'
+          : prop === 'line-height'
+            ? 'lineHeight'
           : /^border(-[a-z]+)*-radius$/.test(prop)
             ? 'radius'
             : null
@@ -184,7 +188,7 @@ export function readSources(root = ROOT) {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const full = join(dir, entry.name)
       if (entry.isDirectory()) walk(full)
-      else if (/\.(css|tsx?)$/.test(entry.name)) files.push({ path: relative(root, full), text: readFileSync(full, 'utf8') })
+      else if (/\.(css|tsx?)$/.test(entry.name)) files.push({ path: relative(root, full).split(sep).join('/'), text: readFileSync(full, 'utf8') })
     }
   }
   walk(join(root, 'src'))
@@ -222,7 +226,7 @@ function main(argv) {
     const delta = now === was ? '' : now < was ? `  (down ${was - now})` : `  (UP ${now - was})`
     console.log(`${String(now).padStart(5)}  ${label}${delta}`)
   }
-  console.log(`\nToken coverage: spacing ${cov.spacing}% · font sizes ${cov.fontSize}% · radii ${cov.radius}%`)
+  console.log(`\nToken coverage: spacing ${cov.spacing}% · font sizes ${cov.fontSize}% · line heights ${cov.lineHeight}% · radii ${cov.radius}%`)
 
   const { rose, fell } = compare(counts, baseline)
   if (rose.length) {
