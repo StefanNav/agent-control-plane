@@ -8,7 +8,17 @@ import { selectOnboardingHeader } from '../onboarding/selectors'
 import { reviewRail, type ReviewStepId } from './selectors'
 
 /** The record header with the AIMS Review rail (2b, 2d). */
-export function ReviewHeader({ agentId, current, chip, crumb }: { agentId: string; current: ReviewStepId; chip?: string | null; crumb?: string }) {
+export function ReviewHeader({
+  agentId,
+  current,
+  chip,
+  crumb,
+}: {
+  agentId: string
+  current: ReviewStepId
+  chip?: string | null
+  crumb?: string
+}) {
   const state = useDemo((s) => s)
   const navigate = useNavigate()
   const header = selectOnboardingHeader(state, agentId)
@@ -24,7 +34,13 @@ export function ReviewHeader({ agentId, current, chip, crumb }: { agentId: strin
       chips={chip ? <StatusChip status="review" label={chip} /> : undefined}
       people={header.people}
       actions={<RecordHistory agentId={agentId} title={header.title} />}
-      steps={<WizardSteps steps={rail.map((r) => ({ id: r.id, label: r.label, sub: r.sub, mark: r.mark }))} current={current} onSelect={(id) => navigate(rail.find((r) => r.id === id)!.to)} />}
+      steps={
+        <WizardSteps
+          steps={rail.map((r) => ({ id: r.id, label: r.label, sub: r.sub, mark: r.mark }))}
+          current={current}
+          onSelect={(id) => navigate(rail.find((r) => r.id === id)!.to)}
+        />
+      }
     />
   )
 }

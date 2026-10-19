@@ -15,7 +15,16 @@ export { Segmented, type SegmentedProps } from './primitives/Segmented/Segmented
 export { FilterPill, type FilterPillProps } from './primitives/FilterPill/FilterPill'
 export { Card, type CardProps } from './primitives/Card/Card'
 export { Paper, type PaperProps } from './primitives/Paper/Paper'
-export { DefinitionList, type DefinitionListProps } from './primitives/DefinitionList/DefinitionList'
+export {
+  SidePanel,
+  SidePanelBlock,
+  type SidePanelBlockProps,
+  type SidePanelProps,
+} from './primitives/SidePanel/SidePanel'
+export {
+  DefinitionList,
+  type DefinitionListProps,
+} from './primitives/DefinitionList/DefinitionList'
 export { Notice, type NoticeMark, type NoticeProps } from './primitives/Notice/Notice'
 export { StatStrip, type StatStripProps } from './primitives/StatStrip/StatStrip'
 export { Sparkline, type SparklineProps } from './primitives/Sparkline/Sparkline'
@@ -34,4 +43,7 @@ export {
 } from './primitives/WizardSteps/WizardSteps'
 export { Menu, type MenuGroup, type MenuItem, type MenuProps } from './primitives/Menu/Menu'
 export { Modal, type ModalProps } from './primitives/Modal/Modal'
-export { VisuallyHidden, type VisuallyHiddenProps } from './primitives/VisuallyHidden/VisuallyHidden'
+export {
+  VisuallyHidden,
+  type VisuallyHiddenProps,
+} from './primitives/VisuallyHidden/VisuallyHidden'

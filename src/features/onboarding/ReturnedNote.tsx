@@ -21,11 +21,19 @@ export function ReturnedNote({ agentId }: { agentId: string }) {
       <p className={styles.quoteText}>“{view.note}”</p>
       {view.reply ? (
         <p className={styles.reply}>
-          <strong>{view.toName} replied · {view.reply.at}:</strong> {view.reply.text}
+          <strong>
+            {view.toName} replied · {view.reply.at}:
+          </strong>{' '}
+          {view.reply.text}
         </p>
       ) : view.canReply && open ? (
         <div className={styles.replyForm}>
-          <Textarea aria-label={`Reply to ${view.sponsor}`} rows={2} value={text} onChange={(e) => setText(e.target.value)} />
+          <Textarea
+            aria-label={`Reply to ${view.sponsor}`}
+            rows={2}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
           <span className={styles.inline}>
             <Button
               variant="primary"

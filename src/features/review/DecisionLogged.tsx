@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import { StatusChip } from '../../components'
-import { RuleTag, Table } from '../../design-system'
+import { RuleTag, SidePanel, Table } from '../../design-system'
 import { Split } from '../../layout/layouts'
 import { useDemo } from '../../store'
-import { SideCard, StepCard } from '../onboarding/StepCard'
+import { StepCard } from '../onboarding/StepCard'
 import { selectDecision } from './selectors'
 import onboarding from '../onboarding/onboarding.module.css'
 import styles from './review.module.css'
@@ -16,7 +16,12 @@ export function DecisionLogged({ agentId }: { agentId: string }) {
   return (
     <Split
       main={
-        <StepCard number="04" title="Committee decision" sub={`Recorded by ${view.by}. The conditions now sit on every privilege for this agent, and the gateway enforces the ones it can.`} meta={view.meta}>
+        <StepCard
+          number="04"
+          title="Committee decision"
+          sub={`Recorded by ${view.by}. The conditions now sit on every privilege for this agent, and the gateway enforces the ones it can.`}
+          meta={view.meta}
+        >
           <div className={styles.decisionCard} data-story-target="record-decision">
             <strong>{view.label}</strong>
             <span className={styles.quote}>“{view.reason}”</span>
@@ -30,10 +35,35 @@ export function DecisionLogged({ agentId }: { agentId: string }) {
                 getRowId={(c) => c.id}
                 minRowHeight={56}
                 columns={[
-                  { id: 'id', header: '', hiddenHeader: 'ID', width: '56px', render: (c) => <span><RuleTag>{c.id}</RuleTag></span> },
-                  { id: 'condition', header: 'Condition', width: 'minmax(0, 1fr)', render: (c) => c.text },
-                  { id: 'applies', header: 'Applies to', width: '200px', render: (c) => c.appliesTo },
-                  { id: 'checked', header: 'Checked by', width: '170px', render: (c) => c.checkedBy },
+                  {
+                    id: 'id',
+                    header: '',
+                    hiddenHeader: 'ID',
+                    width: '56px',
+                    render: (c) => (
+                      <span>
+                        <RuleTag>{c.id}</RuleTag>
+                      </span>
+                    ),
+                  },
+                  {
+                    id: 'condition',
+                    header: 'Condition',
+                    width: 'minmax(0, 1fr)',
+                    render: (c) => c.text,
+                  },
+                  {
+                    id: 'applies',
+                    header: 'Applies to',
+                    width: '200px',
+                    render: (c) => c.appliesTo,
+                  },
+                  {
+                    id: 'checked',
+                    header: 'Checked by',
+                    width: '170px',
+                    render: (c) => c.checkedBy,
+                  },
                 ]}
               />
             </section>
@@ -47,12 +77,22 @@ export function DecisionLogged({ agentId }: { agentId: string }) {
                 getRowId={(p) => p.id}
                 minRowHeight={56}
                 columns={[
-                  { id: 'activity', header: 'Activity', width: 'minmax(0, 1fr)', render: (p) => <span className={styles.factor}>{p.activity}</span> },
+                  {
+                    id: 'activity',
+                    header: 'Activity',
+                    width: 'minmax(0, 1fr)',
+                    render: (p) => <span className={styles.factor}>{p.activity}</span>,
+                  },
                   {
                     id: 'level',
                     header: 'Level',
                     width: '190px',
-                    render: (p) => (p.level.startsWith('Shadow') ? <StatusChip status="shadow" label={p.level} /> : p.level),
+                    render: (p) =>
+                      p.level.startsWith('Shadow') ? (
+                        <StatusChip status="shadow" label={p.level} />
+                      ) : (
+                        p.level
+                      ),
                   },
                   { id: 'domain', header: 'Domain', width: '220px', render: (p) => p.domain },
                   {
@@ -74,7 +114,12 @@ export function DecisionLogged({ agentId }: { agentId: string }) {
         </StepCard>
       }
       side={
-        <SideCard label="Decision log" title="Decision log" sub="Every decision and its reason, newest first" foot={view.next ? <span>{view.next}</span> : undefined}>
+        <SidePanel
+          label="Decision log"
+          title="Decision log"
+          sub="Every decision and its reason, newest first"
+          foot={view.next ? <span>{view.next}</span> : undefined}
+        >
           <ol className={styles.log}>
             {view.log.map((entry) => (
               <li key={`${entry.date}-${entry.text}`}>
@@ -86,7 +131,7 @@ export function DecisionLogged({ agentId }: { agentId: string }) {
               </li>
             ))}
           </ol>
-        </SideCard>
+        </SidePanel>
       }
     />
   )

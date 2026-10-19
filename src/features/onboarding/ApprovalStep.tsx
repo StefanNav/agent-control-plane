@@ -1,13 +1,21 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { StatusChip } from '../../components'
-import { Button, LinkButton, Notice, RadioCardGroup, RuleTag, Textarea } from '../../design-system'
+import {
+  Button,
+  LinkButton,
+  Notice,
+  RadioCardGroup,
+  RuleTag,
+  SidePanel,
+  Textarea,
+} from '../../design-system'
 import { Split } from '../../layout/layouts'
 import { useDemo } from '../../store'
 import { can, lockReason } from '../../store/permissions'
 import { FinalSet } from './FinalSet'
 import { selectApprovalStep, selectFinalSet } from './selectors'
-import { SideCard, StepCard } from './StepCard'
+import { StepCard } from './StepCard'
 import styles from './onboarding.module.css'
 
 /** Step 5: the sponsor reads job, reach and limits as one page, then approves or sends one row back (1e, 1f). */
@@ -124,7 +132,7 @@ export function ApprovalStep({
       }
       side={
         requesting ? (
-          <SideCard
+          <SidePanel
             label="Request changes"
             title="Request changes"
             sub="Goes back with your note. Nothing is approved."
@@ -195,9 +203,9 @@ export function ApprovalStep({
                 </Button>
               </span>
             </div>
-          </SideCard>
+          </SidePanel>
         ) : (
-          <SideCard
+          <SidePanel
             label="Review: final set"
             title={
               waiting ? (
@@ -228,7 +236,7 @@ export function ApprovalStep({
                 <span className={styles.monoMeta}>{w.date}</span>
               </div>
             ))}
-          </SideCard>
+          </SidePanel>
         )
       }
     />

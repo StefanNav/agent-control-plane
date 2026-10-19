@@ -12,7 +12,8 @@ import { StepSide } from './StepSide'
 import styles from './onboarding.module.css'
 
 /** The case set for a range and filter, if the catalogue names one; otherwise the plain 30-day test. */
-const caseSet = (range: string, only: string) => Object.entries(RETEST_CASES.sets).find(([, set]) => set.range === range && set.only === only)?.[0]
+const caseSet = (range: string, only: string) =>
+  Object.entries(RETEST_CASES.sets).find(([, set]) => set.range === range && set.only === only)?.[0]
 
 /** Step 4 sent back by the sponsor (1g): only the row it's about reopens; everything else stays as reviewed. */
 export function ReturnedPanel({ agentId }: { agentId: string }) {
@@ -47,25 +48,46 @@ export function ReturnedPanel({ agentId }: { agentId: string }) {
               <div className={styles.retest}>
                 <span>
                   <h4 className={styles.retestTitle}>{target.title}</h4>
-                  <span className={styles.note}>{target.reopened ? target.last : `${target.test?.result} · ${target.test?.when}`}</span>
+                  <span className={styles.note}>
+                    {target.reopened
+                      ? target.last
+                      : `${target.test?.result} · ${target.test?.when}`}
+                  </span>
                 </span>
                 <div className={styles.selects}>
                   <Field label="Cases" htmlFor={casesId}>
-                    <Select id={casesId} value={range} onChange={setRange} locked={!allowed} options={RETEST_CASES.ranges.map((r) => ({ value: r, label: r }))} />
+                    <Select
+                      id={casesId}
+                      value={range}
+                      onChange={setRange}
+                      locked={!allowed}
+                      options={RETEST_CASES.ranges.map((r) => ({ value: r, label: r }))}
+                    />
                   </Field>
                   <Field label="Only" htmlFor={onlyId}>
-                    <Select id={onlyId} value={only} onChange={setOnly} locked={!allowed} options={RETEST_CASES.only.map((o) => ({ value: o, label: o }))} />
+                    <Select
+                      id={onlyId}
+                      value={only}
+                      onChange={setOnly}
+                      locked={!allowed}
+                      options={RETEST_CASES.only.map((o) => ({ value: o, label: o }))}
+                    />
                   </Field>
                 </div>
                 <span className={styles.runRow}>
                   {allowed ? (
-                    <Button variant="primary" onClick={() => testHardStop(agentId, target.code, caseSet(range, only))}>
+                    <Button
+                      variant="primary"
+                      onClick={() => testHardStop(agentId, target.code, caseSet(range, only))}
+                    >
                       Run test
                     </Button>
                   ) : (
                     <Button locked={lockReason('configureTools', state.personaId)}>Run test</Button>
                   )}
-                  <span className={styles.monoMeta}>about 2 min · results replace the last test</span>
+                  <span className={styles.monoMeta}>
+                    about 2 min · results replace the last test
+                  </span>
                 </span>
               </div>
             </section>
@@ -95,7 +117,13 @@ export function ReturnedPanel({ agentId }: { agentId: string }) {
             { key: 'tools', label: `Tools · ${view.tools.length}`, done: true, right: 'unchanged' },
             ...view.limits.map((l) =>
               l.code === about?.code
-                ? { key: l.code, label: `${l.code} · ${l.reopened ? 're-test' : 're-tested'}`, done: !l.reopened, current: l.reopened, right: l.reopened ? `${returned.sponsor} asked` : l.test?.blocks }
+                ? {
+                    key: l.code,
+                    label: `${l.code} · ${l.reopened ? 're-test' : 're-tested'}`,
+                    done: !l.reopened,
+                    current: l.reopened,
+                    right: l.reopened ? `${returned.sponsor} asked` : l.test?.blocks,
+                  }
                 : { key: l.code, label: `${l.code} · tested`, done: true, right: 'unchanged' },
             ),
           ]}
@@ -104,7 +132,8 @@ export function ReturnedPanel({ agentId }: { agentId: string }) {
               <SendToSponsor agentId={agentId} again />
               {target?.reopened ? (
                 <span>
-                  <strong>Blocked:</strong> re-run {target.code} on the cases {returned.sponsor} named. Replying is optional.
+                  <strong>Blocked:</strong> re-run {target.code} on the cases {returned.sponsor}{' '}
+                  named. Replying is optional.
                 </span>
               ) : (
                 <span>Raises “Review: final set” in {returned.sponsor}’s inbox again.</span>

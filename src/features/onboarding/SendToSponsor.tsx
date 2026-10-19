@@ -17,12 +17,17 @@ export function SendToSponsor({ agentId, again = false }: { agentId: string; aga
   if (record.sponsor.state === 'waiting' || record.sponsor.state === 'signed') {
     return (
       <Button variant="blocked">
-        {record.sponsor.state === 'signed' ? `Signed by ${sponsor}` : `Sent · ${formatDate(record.sponsor.sentAt!)} ${formatClock(record.sponsor.sentAt!)}`}
+        {record.sponsor.state === 'signed'
+          ? `Signed by ${sponsor}`
+          : `Sent · ${formatDate(record.sponsor.sentAt!)} ${formatClock(record.sponsor.sentAt!)}`}
       </Button>
     )
   }
-  const allowed = can(state, state.personaId, 'editJobDescription', { agentId }) || can(state, state.personaId, 'configureTools', { agentId })
-  if (!allowed) return <Button locked={lockReason('configureTools', state.personaId)}>{label}</Button>
+  const allowed =
+    can(state, state.personaId, 'editJobDescription', { agentId }) ||
+    can(state, state.personaId, 'configureTools', { agentId })
+  if (!allowed)
+    return <Button locked={lockReason('configureTools', state.personaId)}>{label}</Button>
   if (!readyToSend(state, agentId)) return <Button variant="blocked">{label}</Button>
   return (
     <>

@@ -2,13 +2,22 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { TIER_RULES } from '../../data/seed/catalogue'
 import type { Tier } from '../../data/types'
-import { Button, Field, LinkButton, Notice, Segmented, Table, Textarea } from '../../design-system'
+import {
+  Button,
+  Field,
+  LinkButton,
+  Notice,
+  Segmented,
+  SidePanel,
+  Table,
+  Textarea,
+} from '../../design-system'
 import { NotFound } from '../../layout/NotFound'
 import { Split } from '../../layout/layouts'
 import { useDemo } from '../../store'
 import { onboardingContext, personName } from '../../store/onboardingRules'
 import { can, lockReason } from '../../store/permissions'
-import { SideCard, StepCard } from '../onboarding/StepCard'
+import { StepCard } from '../onboarding/StepCard'
 import { ReviewHeader } from './ReviewHeader'
 import { selectRiskTier } from './selectors'
 import onboarding from '../onboarding/onboarding.module.css'
@@ -39,9 +48,22 @@ export function RiskTierPage() {
         <ReviewHeader agentId={agentId} current="tier" crumb="AIMS Review" />
         <Split
           main={
-            <StepCard number="02" title="Risk tier" meta={`Tier ${agent.riskTier} · ${TIER_RULES[agent.riskTier].label}`}>
-              <Notice mark="lock" lead={record ? 'Not ready.' : `Tier ${agent.riskTier} · ${TIER_RULES[agent.riskTier].label}.`}>
-                {record ? `The tier is set once ${personName(state, people.sponsor)} approves the set.` : 'Set before AIMS Review kept tier records for this agent.'}
+            <StepCard
+              number="02"
+              title="Risk tier"
+              meta={`Tier ${agent.riskTier} · ${TIER_RULES[agent.riskTier].label}`}
+            >
+              <Notice
+                mark="lock"
+                lead={
+                  record
+                    ? 'Not ready.'
+                    : `Tier ${agent.riskTier} · ${TIER_RULES[agent.riskTier].label}.`
+                }
+              >
+                {record
+                  ? `The tier is set once ${personName(state, people.sponsor)} approves the set.`
+                  : 'Set before AIMS Review kept tier records for this agent.'}
               </Notice>
             </StepCard>
           }
@@ -56,14 +78,26 @@ export function RiskTierPage() {
   const submit = () => {
     const result = setRiskTier(agentId, { tier: pick, ...(reason.trim() ? { reason } : {}) })
     if (!result.ok) return setError(result.reason)
-    navigate(pick >= 2 ? `/portfolio/reviews/${agentId}` : `/operations/agents/${agentId}?tab=scorecard`)
+    navigate(
+      pick >= 2 ? `/portfolio/reviews/${agentId}` : `/operations/agents/${agentId}?tab=scorecard`,
+    )
   }
   return (
     <>
-      <ReviewHeader agentId={agentId} current="tier" chip={set ? null : 'Review: risk tier'} crumb="AIMS Review" />
+      <ReviewHeader
+        agentId={agentId}
+        current="tier"
+        chip={set ? null : 'Review: risk tier'}
+        crumb="AIMS Review"
+      />
       <Split
         main={
-          <StepCard number="02" title="Risk tier" sub="Suggested from the job description and the systems grid. Change it if you know something the record doesn’t, and say why." meta={view.lead}>
+          <StepCard
+            number="02"
+            title="Risk tier"
+            sub="Suggested from the job description and the systems grid. Change it if you know something the record doesn’t, and say why."
+            meta={view.lead}
+          >
             <section className={onboarding.section}>
               <h3 className={onboarding.caps}>Suggested · Tier {view.suggested}</h3>
               <Table
@@ -72,9 +106,24 @@ export function RiskTierPage() {
                 getRowId={(r) => r.factor}
                 minRowHeight={56}
                 columns={[
-                  { id: 'factor', header: 'Factor', width: '150px', render: (r) => <span className={styles.factor}>{r.factor}</span> },
-                  { id: 'finding', header: 'Finding', width: 'minmax(0, 1fr)', render: (r) => r.finding },
-                  { id: 'from', header: 'From', width: '190px', render: (r) => <span className={styles.from}>{r.from}</span> },
+                  {
+                    id: 'factor',
+                    header: 'Factor',
+                    width: '150px',
+                    render: (r) => <span className={styles.factor}>{r.factor}</span>,
+                  },
+                  {
+                    id: 'finding',
+                    header: 'Finding',
+                    width: 'minmax(0, 1fr)',
+                    render: (r) => r.finding,
+                  },
+                  {
+                    id: 'from',
+                    header: 'From',
+                    width: '190px',
+                    render: (r) => <span className={styles.from}>{r.from}</span>,
+                  },
                   { id: 'effect', header: 'Effect', width: '90px', render: (r) => r.effect },
                 ]}
               />
@@ -85,9 +134,13 @@ export function RiskTierPage() {
                 lead={`Tier ${set.tier} · ${set.label}, set by ${set.by} · ${set.at}.`}
                 actions={
                   set.tier >= 2 ? (
-                    <LinkButton to={`/portfolio/reviews/${agentId}`}>Open the committee packet</LinkButton>
+                    <LinkButton to={`/portfolio/reviews/${agentId}`}>
+                      Open the committee packet
+                    </LinkButton>
                   ) : (
-                    <LinkButton to={`/operations/agents/${agentId}?tab=scorecard`}>Open the scorecard</LinkButton>
+                    <LinkButton to={`/operations/agents/${agentId}?tab=scorecard`}>
+                      Open the scorecard
+                    </LinkButton>
                   )
                 }
               >
@@ -105,18 +158,35 @@ export function RiskTierPage() {
                     options={TIERS.map((t) => ({
                       value: String(t),
                       label: `Tier ${t} · ${TIER_RULES[t].label}`,
-                      sub: t === view.suggested ? 'Suggested' : t === pick ? 'Your choice' : TIER_RULES[t].sub,
+                      sub:
+                        t === view.suggested
+                          ? 'Suggested'
+                          : t === pick
+                            ? 'Your choice'
+                            : TIER_RULES[t].sub,
                     }))}
                   />
                 </section>
                 {needsReason ? (
-                  <Field label="Reason for changing the suggested tier" htmlFor="tier-reason" hint="Required · goes in the packet">
-                    <Textarea id="tier-reason" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} readOnly={!allowed} />
+                  <Field
+                    label="Reason for changing the suggested tier"
+                    htmlFor="tier-reason"
+                    hint="Required · goes in the packet"
+                  >
+                    <Textarea
+                      id="tier-reason"
+                      rows={3}
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      readOnly={!allowed}
+                    />
                   </Field>
                 ) : null}
                 <div className={onboarding.foot}>
                   {!allowed ? (
-                    <Button locked={lockReason('prepareGoLive', state.personaId)}>{view.button}</Button>
+                    <Button locked={lockReason('prepareGoLive', state.personaId)}>
+                      {view.button}
+                    </Button>
                   ) : needsReason && !reason.trim() ? (
                     <Button variant="blocked">{view.button}</Button>
                   ) : (
@@ -124,14 +194,25 @@ export function RiskTierPage() {
                       {view.button}
                     </Button>
                   )}
-                  <span className={onboarding.monoMeta}>{error ?? `Logged as ${view.lead} · suggested tier stays on record`}</span>
+                  <span className={onboarding.monoMeta}>
+                    {error ?? `Logged as ${view.lead} · suggested tier stays on record`}
+                  </span>
                 </div>
               </>
             )}
           </StepCard>
         }
         side={
-          <SideCard label="What the tier sets" title="What the tier sets" sub={pick === view.suggested ? `${view.compare.head[0]}, as suggested` : `${view.compare.head[0]} against your ${view.compare.head[1]}`} foot={<span>{view.compare.note}</span>}>
+          <SidePanel
+            label="What the tier sets"
+            title="What the tier sets"
+            sub={
+              pick === view.suggested
+                ? `${view.compare.head[0]}, as suggested`
+                : `${view.compare.head[0]} against your ${view.compare.head[1]}`
+            }
+            foot={<span>{view.compare.note}</span>}
+          >
             <div className={styles.compare}>
               <span className={styles.compareHead} />
               <span className={styles.compareHead}>{view.compare.head[0]}</span>
@@ -144,7 +225,7 @@ export function RiskTierPage() {
                 </span>,
               ])}
             </div>
-          </SideCard>
+          </SidePanel>
         }
       />
     </>

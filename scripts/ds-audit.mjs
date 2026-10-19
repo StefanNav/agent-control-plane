@@ -31,7 +31,7 @@ export const METRICS = {
   rawFontSizes: 'Font sizes typed in px instead of a --cs-type token',
   rawRadii: 'Corner radii typed in px instead of a --cs-radius token',
   labelRoleCopies: 'Copies of the label type role (mono, uppercase) outside the design system',
-  copiedBlocks: 'Styled rule blocks (3+ declarations, one of them visual) copied into another stylesheet',
+  copiedBlocks: 'Styled rule blocks (3+ declarations, one of them visual) repeated across stylesheets outside the design system',
   rawElements: 'Raw <button>, <table>, <input>, <select>, <textarea> in screens where a primitive exists',
   scopedTokenLeaks: 'Scoped tokens used outside their scope (--cs-ehr-* outside the Epic stand-in, --cs-mark-* outside the prototype)',
 }
@@ -114,8 +114,9 @@ export function audit(files) {
   }
 
   // Copies across stylesheets: the same declarations under any selector, in more than one file.
+  // The design system defines a block once; a screen repeating it is the copy.
   const seen = new Map()
-  for (const { path, text } of product.filter((f) => f.path.endsWith('.css') && !isTokenFile(f.path))) {
+  for (const { path, text } of product.filter((f) => f.path.endsWith('.css') && !f.path.startsWith('src/design-system/'))) {
     for (const block of blocks(text)) {
       const where = seen.get(block.body) ?? new Map()
       if (!where.has(path)) where.set(path, `${block.selector} (line ${block.line})`)
