@@ -57,13 +57,13 @@ test('a tour link made for one recipient opens the walkthrough and is recorded a
         window.__reported = hook({ type: 'pageview', url: location.href })?.url`,
     }),
   )
-  await page.goto('/for/polly?tour=open')
+  await page.goto('/for/recipient?tour=open')
   await expect(page.locator('[data-tour="welcome"]')).toBeVisible({ timeout: 10_000 })
   // The tour has moved on to its first screen...
   await expect(page).toHaveURL(/\/operations\?tour=open$/)
   // ...but the visit is recorded at the link that was opened.
   await expect.poll(() => page.evaluate(() => (window as { __reported?: string }).__reported)).toMatch(
-    /\/for\/polly\?tour=open$/,
+    /\/for\/recipient\?tour=open$/,
   )
 })
 

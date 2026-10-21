@@ -44,11 +44,11 @@ test('opting out or back in says so in the console', () => {
 })
 
 test('the first page view is reported at the address the visitor opened', () => {
-  const beforeSend = reportArrivalAt('https://example.app/for/polly?tour=open')
+  const beforeSend = reportArrivalAt('https://example.app/for/recipient?tour=open')
   // A tour link has moved on to its first screen by the time the script loads.
   expect(beforeSend({ type: 'pageview', url: 'https://example.app/operations?tour=open' })).toEqual({
     type: 'pageview',
-    url: 'https://example.app/for/polly?tour=open',
+    url: 'https://example.app/for/recipient?tour=open',
   })
   expect(beforeSend({ type: 'pageview', url: 'https://example.app/about' })).toEqual({
     type: 'pageview',
@@ -57,7 +57,7 @@ test('the first page view is reported at the address the visitor opened', () => 
 })
 
 test('a custom event passes unchanged and leaves the arrival to the first page view', () => {
-  const beforeSend = reportArrivalAt('https://example.app/for/polly')
+  const beforeSend = reportArrivalAt('https://example.app/for/recipient')
   expect(beforeSend({ type: 'event', url: 'https://example.app/' })).toEqual({ type: 'event', url: 'https://example.app/' })
-  expect(beforeSend({ type: 'pageview', url: 'https://example.app/' })?.url).toBe('https://example.app/for/polly')
+  expect(beforeSend({ type: 'pageview', url: 'https://example.app/' })?.url).toBe('https://example.app/for/recipient')
 })
